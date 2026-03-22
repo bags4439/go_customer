@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "359295127098",
+    "project_id": "velocitech-auto-go",
+    "storage_bucket": "velocitech-auto-go.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359295127098:android:c12582adcf6f001c8a2f03",
+        "android_client_info": {
+          "package_name": "com.velocitech.go_customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9KM4yzaxzGWnzwJhiQWjta7Z7oORdlcg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

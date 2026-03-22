@@ -1,0 +1,2266 @@
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:in_app_review/in_app_review.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../../core/constants/app_version.dart';
+import '../../../../core/constants/route_constants.dart';
+import '../../../../core/error/error_handler.dart';
+import '../../../../core/widgets/styled_snackbar.dart';
+import '../../../../shared/providers/exchange_rate_provider.dart';
+import '../../../auth/domain/entities/app_user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../core/constants/profile_constants.dart';
+import '../../domain/entities/user_session_entity.dart';
+import '../providers/profile_providers.dart';
+
+const Color _kPrimary = Color(0xFF378ADD);
+const Color _kSuccess = Color(0xFF1D9E75);
+const Color _kWarning = Color(0xFFBA7517);
+const Color _kDanger = Color(0xFFE24B4A);
+const Color _kSurface = Color(0xFFF5F4F0);
+const Color _kBorder = Color(0xFFE0DFD8);
+const Color _kTextTertiary = Color(0xFFAAAAAA);
+const Color _kAmberBg = Color(0xFFFAEEDA);
+const Color _kBlueTint = Color(0xFFE6F1FB);
+const Color _kBlueText = Color(0xFF185FA5);
+const Color _kDarkBrown = Color(0xFF633806);
+
+class ProfileScreen extends ConsumerStatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _headerController;
+  late AnimationController _pulseController;
+  late Animation<double> _headerAnimation;
+  final Map<int, AnimationController> _sectionControllers = {};
+  final Map<int, Animation<double>> _sectionAnimations = {};
+  static const int _kSectionCount = 6;
+  bool _headerAnimated = false;
+  bool _sectionsAnimated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _headerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _headerAnimation = CurvedAnimation(
+      parent: _headerController,
+      curve: Curves.easeOut,
+    );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+    for (int i = 0; i < _kSectionCount; i++) {
+      final c = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 200),
+      );
+      _sectionControllers[i] = c;
+      _sectionAnimations[i] = CurvedAnimation(
+        parent: c,
+        curve: Curves.easeOut,
+      );
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _headerController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _headerController.dispose();
+    _pulseController.dispose();
+    for (final c in _sectionControllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  void _startSectionAnimations() {
+    if (_sectionsAnimated) return;
+    _sectionsAnimated = true;
+    for (int i = 0; i < _kSectionCount; i++) {
+      Future.delayed(Duration(milliseconds: 60 * (i + 1)), () {
+        if (mounted) _sectionControllers[i]?.forward();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileAsync = ref.watch(currentUserProfileProvider);
+    final orderSummaryAsync = ref.watch(orderSummaryProvider);
+    final sessionsAsync = ref.watch(sessionListProvider);
+
+    return profileAsync.when(
+      data: (user) {
+        if (user != null && !_headerAnimated) {
+          _headerAnimated = true;
+        }
+        if (_headerAnimated && user != null && !_sectionsAnimated) {
+          _startSectionAnimations();
+        }
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: Text(
+              ProfileConstants.appBarTitle,
+              style: GoogleFonts.dmSans(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            ),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(0.5),
+              child: Container(color: _kBorder),
+            ),
+          ),
+          body: user == null
+              ? const _ProfileShimmer()
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(currentUserProfileProvider);
+                    ref.invalidate(orderSummaryProvider);
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _AnimatedHeaderCard(
+                          controller: _headerController,
+                          animation: _headerAnimation,
+                          user: user,
+                        ),
+                        const SizedBox(height: 12),
+                        orderSummaryAsync.when(
+                          data: (summary) => _OrderSummaryRow(
+                            animation: _sectionControllers[0]?.value ?? 0,
+                            activeCount: summary.activeCount,
+                            completedCount: summary.completedCount,
+                            agentFirstName: summary.agentFirstName,
+                          ),
+                          loading: () => _OrderSummaryShimmer(
+                            animation: _sectionAnimations[0]?.value ?? 0,
+                          ),
+                          error: (_, __) => _OrderSummaryRow(
+                            animation: _sectionControllers[0]?.value ?? 0,
+                            activeCount: 0,
+                            completedCount: 0,
+                            agentFirstName: ProfileConstants.noAgentYet,
+                          ),
+                        ),
+                        if (!user.ghanaidVerified) ...[
+                          const SizedBox(height: 12),
+                          _IdVerificationBanner(
+                            user: user,
+                            pulse: _pulseController,
+                          ),
+                        ],
+                        _AnimatedSection(
+                          index: 1,
+                          animation: _sectionAnimations[1]?.value ?? 0,
+                          title: ProfileConstants.sectionPersonalDetails,
+                          hasUnsaved: _hasPersonalUnsaved(ref),
+                          child: _PersonalDetailsSection(
+                            user: user,
+                            onSaveFullName: _saveFullName,
+                            onSaveLocation: _saveLocation,
+                            onPhoneTap: _onPhoneEditTap,
+                          ),
+                        ),
+                        _AnimatedSection(
+                          index: 2,
+                          animation: _sectionAnimations[2]?.value ?? 0,
+                          title: ProfileConstants.sectionNotifications,
+                          hasUnsaved: false,
+                          child: _NotificationsSection(user: user),
+                        ),
+                        _AnimatedSection(
+                          index: 3,
+                          animation: _sectionAnimations[3]?.value ?? 0,
+                          title: ProfileConstants.sectionLanguageCurrency,
+                          hasUnsaved: false,
+                          child: _LanguageCurrencySection(user: user),
+                        ),
+                        _AnimatedSection(
+                          index: 4,
+                          animation: _sectionAnimations[4]?.value ?? 0,
+                          title: ProfileConstants.sectionSupport,
+                          hasUnsaved: false,
+                          child: const _SupportSection(),
+                        ),
+                        _AnimatedSection(
+                          index: 5,
+                          animation: _sectionAnimations[5]?.value ?? 0,
+                          title: ProfileConstants.sectionSession,
+                          hasUnsaved: false,
+                          child: _SessionSection(
+                            sessions: sessionsAsync.valueOrNull ?? [],
+                            userId: user.id,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _LogOutButton(onPressed: () => _showLogOutConfirm(context)),
+                        const SizedBox(height: 12),
+                        _DeleteAccountLink(
+                            onPressed: () => _showDeleteAccountSheet(context)),
+                        ...[
+                          const SizedBox(height: 16),
+                          Center(
+                            child: Text(
+                              appVersionLabel,
+                              style: GoogleFonts.dmSans(
+                                fontSize: 11,
+                                color: _kTextTertiary,
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+        );
+      },
+      loading: () => Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: Text(
+            ProfileConstants.appBarTitle,
+            style: GoogleFonts.dmSans(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: const _ProfileShimmer(),
+      ),
+      error: (e, _) => Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: Text(
+            ProfileConstants.appBarTitle,
+            style: GoogleFonts.dmSans(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: _ProfileError(
+          message: ProfileConstants.errorLoadProfile,
+          onRetry: () => ref.invalidate(currentUserProfileProvider),
+        ),
+      ),
+    );
+  }
+
+  bool _hasPersonalUnsaved(WidgetRef r) {
+    final edit = r.watch(profileEditProvider);
+    const personal = ['fullName', 'location', 'phone'];
+    return edit.expandedField != null &&
+        personal.contains(edit.expandedField);
+  }
+
+  Future<void> _saveFullName(String value) async {
+    final user = ref.read(currentUserProfileProvider).value;
+    if (user == null) return;
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateFullName(user.id, value);
+    if (!mounted) return;
+    result.fold(
+      (_) => showErrorSnackBar(context, ProfileConstants.errorSaveField,
+          actionLabel: ProfileConstants.retry, onAction: () => _saveFullName(value)),
+      (_) {
+        ref.read(profileEditProvider.notifier).collapse();
+      },
+    );
+  }
+
+  Future<void> _saveLocation(String value) async {
+    final user = ref.read(currentUserProfileProvider).value;
+    if (user == null) return;
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateLocation(user.id, value);
+    if (!mounted) return;
+    result.fold(
+      (_) => showErrorSnackBar(context, ProfileConstants.errorSaveField,
+          actionLabel: ProfileConstants.retry, onAction: () => _saveLocation(value)),
+      (_) {
+        ref.read(profileEditProvider.notifier).collapse();
+      },
+    );
+  }
+
+  void _onPhoneEditTap() {
+    _showPhoneVerificationSheet(context);
+  }
+
+  void _showLogOutConfirm(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          ProfileConstants.logOutConfirmTitle,
+          style: GoogleFonts.dmSans(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          ProfileConstants.logOutConfirmBody,
+          style: GoogleFonts.dmSans(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              ProfileConstants.stayLoggedInAction,
+              style: GoogleFonts.dmSans(color: _kPrimary),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              await _doLogOut(ctx);
+            },
+            child: Text(
+              ProfileConstants.logOutConfirmAction,
+              style: GoogleFonts.dmSans(color: _kDanger, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _doLogOut(BuildContext context) async {
+    final userId = ref.read(authStateProvider).value;
+    if (userId == null) {
+      await _signOutAndGoLogin(context);
+      return;
+    }
+    final sessions = ref.read(sessionListProvider).valueOrNull ?? [];
+    for (final s in sessions) {
+      final res = await ref.read(profileRepositoryProvider).deleteSession(s.id);
+      res.fold((_) {}, (_) {});
+    }
+    await _signOutAndGoLogin(context);
+  }
+
+  Future<void> _signOutAndGoLogin(BuildContext context) async {
+    try {
+      await ref.read(authRepositoryProvider).signOut();
+      if (!mounted) return;
+      context.go('/login');
+    } catch (_) {
+      if (!mounted) return;
+      showErrorSnackBar(context, ProfileConstants.errorLogOut,
+            actionLabel: ProfileConstants.retry,
+            onAction: () => _doLogOut(context));
+    }
+  }
+
+  void _showDeleteAccountSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _DeleteAccountBottomSheet(
+        userId: ref.read(authStateProvider).value ?? '',
+        onDeleted: () => context.go('/login'),
+      ),
+    );
+  }
+
+  void _showPhoneVerificationSheet(BuildContext context) {
+    final user = ref.read(currentUserProfileProvider).value;
+    if (user == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => _PhoneChangeSheet(
+        currentPhone: user.phone,
+        onVerified: () {
+          ref.read(profileEditProvider.notifier).collapse();
+          ref.invalidate(currentUserProfileProvider);
+        },
+      ),
+    );
+  }
+}
+
+class _AnimatedHeaderCard extends StatelessWidget {
+  const _AnimatedHeaderCard({
+    required this.controller,
+    required this.animation,
+    required this.user,
+  });
+
+  final AnimationController controller;
+  final Animation<double> animation;
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.15),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: controller,
+          curve: Curves.easeOut,
+        )),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _kSurface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              _AvatarCircle(user: user),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.fullName,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      user.phone,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      user.location.isEmpty ? '—' : user.location,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    if (user.isFirstTimeBuyer) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _kBlueTint,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          ProfileConstants.firstTimeBuyerPill,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: _kBlueText,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarCircle extends StatelessWidget {
+  const _AvatarCircle({required this.user});
+
+  final AppUser user;
+
+  String get _initials {
+    final parts = user.fullName.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) {
+      return parts.first.length >= 1
+          ? parts.first.substring(0, 1).toUpperCase()
+          : '?';
+    }
+    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
+        .toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 56,
+      height: 56,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: _kPrimary,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              _initials,
+              style: GoogleFonts.dmSans(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          if (user.isVerified)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: const BoxDecoration(
+                  color: _kSuccess,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check,
+                  size: 10,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderSummaryRow extends StatelessWidget {
+  const _OrderSummaryRow({
+    required this.animation,
+    required this.activeCount,
+    required this.completedCount,
+    required this.agentFirstName,
+  });
+
+  final double animation;
+  final int activeCount;
+  final int completedCount;
+  final String agentFirstName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: animation.clamp(0.0, 1.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _SummaryBox(
+              value: '$activeCount',
+              valueColor: _kPrimary,
+              label: ProfileConstants.activeLabel,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SummaryBox(
+              value: '$completedCount',
+              valueColor: _kSuccess,
+              label: ProfileConstants.completedLabel,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SummaryBox(
+              value: agentFirstName,
+              valueColor: Colors.black87,
+              valueSize: 14,
+              label: ProfileConstants.yourAgentLabel,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryBox extends StatelessWidget {
+  const _SummaryBox({
+    required this.value,
+    required this.valueColor,
+    required this.label,
+    this.valueSize = 18,
+  });
+
+  final String value;
+  final Color valueColor;
+  final String label;
+  final double valueSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: _kSurface,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.dmSans(
+              fontSize: valueSize,
+              fontWeight: FontWeight.w600,
+              color: valueColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.dmSans(
+              fontSize: 10,
+              color: Colors.black54,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderSummaryShimmer extends StatelessWidget {
+  const _OrderSummaryShimmer({required this.animation});
+
+  final double animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: animation.clamp(0.0, 1.0),
+      child: Row(
+        children: List.generate(
+          3,
+          (_) => Expanded(
+            child: Container(
+              height: 60,
+              margin: const EdgeInsets.only(right: 4),
+              decoration: BoxDecoration(
+                color: _kSurface,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IdVerificationBanner extends StatelessWidget {
+  const _IdVerificationBanner({
+    required this.user,
+    required this.pulse,
+  });
+
+  final AppUser user;
+  final AnimationController pulse;
+
+  @override
+  Widget build(BuildContext context) {
+    final underReview = user.ghanaidUrl != null && user.ghanaidUrl!.isNotEmpty;
+    return AnimatedBuilder(
+      animation: pulse,
+      builder: (context, child) {
+        final opacity = 0.85 + 0.15 * (1 - (pulse.value - 0.5).abs() * 2);
+        return Opacity(
+          opacity: opacity.clamp(0.85, 1.0),
+          child: child,
+        );
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: underReview
+              ? null
+              : () => context.pushNamed(RouteConstants.idVerification),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: _kAmberBg,
+              borderRadius: BorderRadius.circular(8),
+              border: const Border(
+                left: BorderSide(color: _kWarning, width: 3),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 20,
+                  color: _kWarning,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        underReview
+                            ? ProfileConstants.idBannerTitleUnderReview
+                            : ProfileConstants.idBannerTitlePending,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _kDarkBrown,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        underReview
+                            ? ProfileConstants.idBannerSubtitleUnderReview
+                            : ProfileConstants.idBannerSubtitlePending,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          color: _kWarning,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!underReview)
+                  const Icon(
+                    Icons.chevron_right,
+                    color: _kWarning,
+                    size: 24,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedSection extends StatelessWidget {
+  const _AnimatedSection({
+    required this.index,
+    required this.animation,
+    required this.title,
+    required this.hasUnsaved,
+    required this.child,
+  });
+
+  final int index;
+  final double animation;
+  final String title;
+  final bool hasUnsaved;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: animation.clamp(0.0, 1.0),
+      child: Transform.translate(
+        offset: Offset(0, 20 * (1 - animation)),
+        child: Container(
+          margin: const EdgeInsets.only(top: 14),
+          decoration: BoxDecoration(
+            color: _kSurface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
+                child: Row(
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: _kTextTertiary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    if (hasUnsaved) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: _kPrimary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonalDetailsSection extends ConsumerWidget {
+  const _PersonalDetailsSection({
+    required this.user,
+    required this.onSaveFullName,
+    required this.onSaveLocation,
+    required this.onPhoneTap,
+  });
+
+  final AppUser user;
+  final void Function(String) onSaveFullName;
+  final void Function(String) onSaveLocation;
+  final VoidCallback onPhoneTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final edit = ref.watch(profileEditProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _EditRow(
+          label: ProfileConstants.fullNameLabel,
+          value: user.fullName,
+          expanded: edit.expandedField == 'fullName',
+          draftValue: edit.draftValue,
+          errorMessage: edit.expandedField == 'fullName' ? edit.errorMessage : null,
+          onTap: () => ref.read(profileEditProvider.notifier).expandField('fullName', user.fullName),
+          onDraftChanged: (v) => ref.read(profileEditProvider.notifier).updateDraft(v),
+          onSave: () {
+            final v = (edit.draftValue ?? user.fullName).trim();
+            if (v.length < 2) {
+              ref.read(profileEditProvider.notifier).setError('At least 2 characters');
+              return;
+            }
+            onSaveFullName(v);
+          },
+          onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
+          validator: (v) => v.trim().length < 2 ? 'At least 2 characters' : null,
+        ),
+        _DividerIndent(),
+        _EditRow(
+          label: ProfileConstants.phoneLabel,
+          value: user.phone,
+          expanded: edit.expandedField == 'phone',
+          draftValue: edit.draftValue,
+          isPhone: true,
+          onTap: onPhoneTap,
+          onDraftChanged: (v) => ref.read(profileEditProvider.notifier).updateDraft(v),
+          onSave: () {},
+          onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
+          subtitle: ProfileConstants.phoneChangeNote,
+        ),
+        _DividerIndent(),
+        _EditRow(
+          label: ProfileConstants.locationLabel,
+          value: user.location,
+          expanded: edit.expandedField == 'location',
+          draftValue: edit.draftValue,
+          errorMessage: edit.expandedField == 'location' ? edit.errorMessage : null,
+          onTap: () => ref.read(profileEditProvider.notifier).expandField('location', user.location),
+          onDraftChanged: (v) => ref.read(profileEditProvider.notifier).updateDraft(v),
+          onSave: () {
+            final v = (edit.draftValue ?? user.location).trim();
+            if (v.isEmpty) {
+              ref.read(profileEditProvider.notifier).setError('Required');
+              return;
+            }
+            onSaveLocation(v);
+          },
+          onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
+          validator: (v) => v.trim().isEmpty ? 'Required' : null,
+        ),
+        if (user.email != null && user.email!.isNotEmpty) ...[
+          _DividerIndent(),
+          _ReadOnlyRow(
+            label: ProfileConstants.emailLabel,
+            value: user.email!,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _EditRow extends StatelessWidget {
+  const _EditRow({
+    required this.label,
+    required this.value,
+    required this.expanded,
+    required this.onTap,
+    required this.onSave,
+    required this.onCancel,
+    this.draftValue,
+    this.errorMessage,
+    this.onDraftChanged,
+    this.validator,
+    this.isPhone = false,
+    this.subtitle,
+  });
+
+  final String label;
+  final String value;
+  final bool expanded;
+  final String? draftValue;
+  final String? errorMessage;
+  final VoidCallback onTap;
+  final void Function(String)? onDraftChanged;
+  final VoidCallback onSave;
+  final VoidCallback onCancel;
+  final String? Function(String)? validator;
+  final bool isPhone;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 52),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        if (!expanded)
+                          Text(
+                            value,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 13,
+                              color: Colors.black54,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (!expanded)
+                    const Icon(
+                      Icons.edit_outlined,
+                      size: 20,
+                      color: _kTextTertiary,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: expanded
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        initialValue: draftValue ?? value,
+                        keyboardType:
+                            isPhone ? TextInputType.phone : TextInputType.text,
+                        decoration: InputDecoration(
+                          hintText: isPhone ? '+233 XX XXX XXXX' : null,
+                          isDense: true,
+                          errorText: errorMessage,
+                          errorStyle: GoogleFonts.dmSans(
+                            fontSize: 11,
+                            color: _kDanger,
+                          ),
+                        ),
+                        onChanged: onDraftChanged,
+                        autofocus: true,
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          subtitle!,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 11,
+                            color: _kTextTertiary,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: onCancel,
+                            child: Text(
+                              ProfileConstants.cancel,
+                              style: GoogleFonts.dmSans(color: _kTextTertiary),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              final v = draftValue ?? value;
+                              if (validator != null && validator!(v) != null) {
+                                return;
+                              }
+                              onSave();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _kPrimary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text(
+                              'Save',
+                              style: GoogleFonts.dmSans(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+        if (expanded && errorMessage != null)
+          AnimatedOpacity(
+            opacity: 1,
+            duration: const Duration(milliseconds: 150),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+              child: Text(
+                errorMessage!,
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  color: _kDanger,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ReadOnlyRow extends StatelessWidget {
+  const _ReadOnlyRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DividerIndent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 14),
+      child: Divider(height: 1, color: _kBorder, thickness: 0.5),
+    );
+  }
+}
+
+class _NotificationsSection extends ConsumerWidget {
+  const _NotificationsSection({required this.user});
+
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final prefs = user.notificationPreferences;
+    return Column(
+      children: [
+        _ToggleRow(
+          label: ProfileConstants.notifAgentMessages,
+          subtitle: ProfileConstants.notifAgentMessagesSubtitle,
+          value: prefs['agentMessages'] ?? true,
+          prefKey: 'agentMessages',
+          userId: user.id,
+        ),
+        _DividerIndent(),
+        _ToggleRow(
+          label: ProfileConstants.notifOrderUpdates,
+          subtitle: ProfileConstants.notifOrderUpdatesSubtitle,
+          value: prefs['orderUpdates'] ?? true,
+          prefKey: 'orderUpdates',
+          userId: user.id,
+        ),
+        _DividerIndent(),
+        _ToggleRow(
+          label: ProfileConstants.notifPaymentRequests,
+          subtitle: ProfileConstants.notifPaymentRequestsSubtitle,
+          value: prefs['paymentRequests'] ?? true,
+          prefKey: 'paymentRequests',
+          userId: user.id,
+        ),
+        _DividerIndent(),
+        _ToggleRow(
+          label: ProfileConstants.notifPromotions,
+          subtitle: ProfileConstants.notifPromotionsSubtitle,
+          value: prefs['promotionsAndNews'] ?? false,
+          prefKey: 'promotionsAndNews',
+          userId: user.id,
+        ),
+      ],
+    );
+  }
+}
+
+class _ToggleRow extends ConsumerStatefulWidget {
+  const _ToggleRow({
+    required this.label,
+    required this.subtitle,
+    required this.value,
+    required this.prefKey,
+    required this.userId,
+  });
+
+  final String label;
+  final String subtitle;
+  final bool value;
+  final String prefKey;
+  final String userId;
+
+  @override
+  ConsumerState<_ToggleRow> createState() => _ToggleRowState();
+}
+
+class _ToggleRowState extends ConsumerState<_ToggleRow> {
+  bool _saving = false;
+  bool _localValue = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _localValue = widget.value;
+  }
+
+  @override
+  void didUpdateWidget(_ToggleRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_saving) _localValue = widget.value;
+  }
+
+  Future<void> _onToggle(bool v) async {
+    setState(() {
+      _saving = true;
+      _localValue = v;
+    });
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateNotificationPreference(widget.userId, widget.prefKey, v);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    result.fold(
+      (_) {
+        setState(() => _localValue = widget.value);
+        showErrorSnackBar(context, ProfileConstants.errorUpdatePreference,
+            actionLabel: ProfileConstants.retry, onAction: () => _onToggle(v));
+      },
+      (_) {},
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.label,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  widget.subtitle,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_saving)
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: Center(
+                child: SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: _kPrimary,
+                  ),
+                ),
+              ),
+            )
+          else
+            CupertinoSwitch(
+              value: _localValue,
+              onChanged: _onToggle,
+              activeTrackColor: _kPrimary,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LanguageCurrencySection extends ConsumerWidget {
+  const _LanguageCurrencySection({required this.user});
+
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      children: [
+        _LanguageRow(currentLanguage: user.preferredLanguage),
+        _DividerIndent(),
+        _CurrencyRow(
+          currentCurrency: user.preferredCurrency,
+          userId: user.id,
+        ),
+      ],
+    );
+  }
+}
+
+class _LanguageRow extends StatelessWidget {
+  const _LanguageRow({required this.currentLanguage});
+
+  final String currentLanguage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          showModalBottomSheet<void>(
+            context: context,
+            builder: (ctx) => Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    ProfileConstants.languageLabel,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      ProfileConstants.languageEnglish,
+                      style: GoogleFonts.dmSans(),
+                    ),
+                    onTap: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  ProfileConstants.languageLabel,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              Text(
+                ProfileConstants.languageEnglish,
+                style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black54),
+              ),
+              const Icon(Icons.chevron_right, color: _kTextTertiary, size: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CurrencyRow extends ConsumerWidget {
+  const _CurrencyRow({
+    required this.currentCurrency,
+    required this.userId,
+  });
+
+  final String currentCurrency;
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Text(
+            ProfileConstants.displayCurrencyLabel,
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+          const Spacer(),
+          _SegmentedCurrency(
+            value: currentCurrency,
+            onChanged: (v) async {
+              final result = await ref
+                  .read(profileRepositoryProvider)
+                  .updatePreferredCurrency(userId, v);
+              result.fold(
+                (_) => showErrorSnackBar(
+                    context, ProfileConstants.errorSaveField,
+                    actionLabel: ProfileConstants.retry),
+                (_) {
+                  ref.invalidate(currentUserProfileProvider);
+                  ref.invalidate(exchangeRateProvider);
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SegmentedCurrency extends StatelessWidget {
+  const _SegmentedCurrency({
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String value;
+  final void Function(String) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _kBorder,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _Segment(
+            label: 'GHS',
+            selected: value == 'GHS',
+            onTap: () => onChanged('GHS'),
+          ),
+          _Segment(
+            label: 'USD',
+            selected: value == 'USD',
+            onTap: () => onChanged('USD'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Segment extends StatelessWidget {
+  const _Segment({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? _kPrimary : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: selected ? Colors.white : Colors.black54,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SupportSection extends StatelessWidget {
+  const _SupportSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _SupportRow(
+          label: ProfileConstants.contactSupport,
+          onTap: () => launchUrl(
+            Uri(scheme: 'mailto', path: ProfileConstants.supportEmail),
+          ),
+        ),
+        _DividerIndent(),
+        _SupportRow(
+          label: ProfileConstants.faqs,
+          onTap: () => launchUrl(
+            Uri.parse(ProfileConstants.faqUrl),
+            mode: LaunchMode.inAppWebView,
+          ),
+        ),
+        _DividerIndent(),
+        _SupportRow(
+          label: ProfileConstants.termsAndPrivacy,
+          onTap: () => launchUrl(
+            Uri.parse(ProfileConstants.termsUrl),
+            mode: LaunchMode.inAppWebView,
+          ),
+        ),
+        _DividerIndent(),
+        _SupportRow(
+          label: ProfileConstants.rateTheApp,
+          icon: Icons.star,
+          iconColor: _kWarning,
+          onTap: () async {
+            final inAppReview = InAppReview.instance;
+            if (await inAppReview.isAvailable()) {
+              await inAppReview.requestReview();
+            } else {
+              await inAppReview.openStoreListing(
+                appStoreId: 'YOUR_APP_STORE_ID',
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _SupportRow extends StatelessWidget {
+  const _SupportRow({
+    required this.label,
+    required this.onTap,
+    this.icon,
+    this.iconColor,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final IconData? icon;
+  final Color? iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              Icon(
+                icon ?? Icons.open_in_new,
+                size: 20,
+                color: iconColor ?? _kTextTertiary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SessionSection extends ConsumerWidget {
+  const _SessionSection({
+    required this.sessions,
+    required this.userId,
+  });
+
+  final List<UserSessionEntity> sessions;
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final firstSession = sessions.isNotEmpty ? sessions.first : null;
+    return Column(
+      children: [
+        _StayLoggedInRow(
+          sessionId: firstSession?.id,
+          expiresAt: firstSession?.expiresAt,
+          userId: userId,
+        ),
+        _DividerIndent(),
+        _ActiveSessionsRow(
+          count: sessions.length,
+          sessions: sessions,
+          onSignOutSession: (id) async {
+            await ref.read(profileRepositoryProvider).deleteSession(id);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _StayLoggedInRow extends ConsumerStatefulWidget {
+  const _StayLoggedInRow({
+    this.sessionId,
+    this.expiresAt,
+    required this.userId,
+  });
+
+  final String? sessionId;
+  final DateTime? expiresAt;
+  final String userId;
+
+  @override
+  ConsumerState<_StayLoggedInRow> createState() => _StayLoggedInRowState();
+}
+
+class _StayLoggedInRowState extends ConsumerState<_StayLoggedInRow> {
+  bool _saving = false;
+  bool _localValue = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.expiresAt != null) {
+      final now = DateTime.now();
+      _localValue = widget.expiresAt!.difference(now).inHours > 24;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_StayLoggedInRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_saving && widget.expiresAt != null) {
+      final now = DateTime.now();
+      _localValue = widget.expiresAt!.difference(now).inHours > 24;
+    }
+  }
+
+  Future<void> _onToggle(bool v) async {
+    if (widget.sessionId == null) return;
+    setState(() => _saving = true);
+    final now = DateTime.now();
+    final expiresAt =
+        v ? now.add(const Duration(days: 30)) : now.add(const Duration(hours: 24));
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateSessionExpiry(widget.sessionId!, expiresAt);
+    if (!mounted) return;
+    setState(() {
+      _saving = false;
+      _localValue = v;
+    });
+    result.fold(
+      (_) => showErrorSnackBar(context, ProfileConstants.errorUpdatePreference),
+      (_) => ref.invalidate(sessionListProvider),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  ProfileConstants.stayLoggedIn,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  ProfileConstants.stayLoggedInSubtitle,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_saving)
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: _kPrimary,
+              ),
+            )
+          else
+            CupertinoSwitch(
+              value: _localValue,
+              onChanged: widget.sessionId != null ? _onToggle : null,
+              activeTrackColor: _kPrimary,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActiveSessionsRow extends StatelessWidget {
+  const _ActiveSessionsRow({
+    required this.count,
+    required this.sessions,
+    required this.onSignOutSession,
+  });
+
+  final int count;
+  final List<UserSessionEntity> sessions;
+  final void Function(String) onSignOutSession;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            builder: (ctx) => _SessionsBottomSheet(
+              sessions: sessions,
+              onSignOut: onSignOutSession,
+            ),
+          );
+        },
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  ProfileConstants.activeSessions,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              Text(
+                '$count ${ProfileConstants.devicesCount}',
+                style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black54),
+              ),
+              const Icon(Icons.chevron_right, color: _kTextTertiary, size: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SessionsBottomSheet extends StatelessWidget {
+  const _SessionsBottomSheet({
+    required this.sessions,
+    required this.onSignOut,
+  });
+
+  final List<UserSessionEntity> sessions;
+  final void Function(String) onSignOut;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            ProfileConstants.activeSessions,
+            style: GoogleFonts.dmSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...sessions.asMap().entries.map((e) {
+            final i = e.key;
+            final s = e.value;
+            final date = s.lastUsedAt != null
+                ? '${s.lastUsedAt!.day}/${s.lastUsedAt!.month}/${s.lastUsedAt!.year}'
+                : '—';
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.phone_android, color: _kTextTertiary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Device ${i + 1}',
+                          style: GoogleFonts.dmSans(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          date,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            color: _kTextTertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      onSignOut(s.id);
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Sign out of this session',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: _kDanger,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _LogOutButton extends StatelessWidget {
+  const _LogOutButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _kDanger,
+          side: const BorderSide(color: _kDanger, width: 1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Text(
+          ProfileConstants.logOut,
+          style: GoogleFonts.dmSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DeleteAccountLink extends StatelessWidget {
+  const _DeleteAccountLink({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: GestureDetector(
+        onTap: onPressed,
+        child: Text(
+          ProfileConstants.deleteAccount,
+          style: GoogleFonts.dmSans(
+            fontSize: 12,
+            color: _kDanger,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DeleteAccountBottomSheet extends ConsumerStatefulWidget {
+  const _DeleteAccountBottomSheet({
+    required this.userId,
+    required this.onDeleted,
+  });
+
+  final String userId;
+  final VoidCallback onDeleted;
+
+  @override
+  ConsumerState<_DeleteAccountBottomSheet> createState() =>
+      _DeleteAccountBottomSheetState();
+}
+
+class _DeleteAccountBottomSheetState
+    extends ConsumerState<_DeleteAccountBottomSheet> {
+  final _controller = TextEditingController();
+  bool _canConfirm = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() => _canConfirm = _controller.text == 'DELETE');
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        24,
+        24,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            ProfileConstants.deleteConfirmHeading,
+            style: GoogleFonts.dmSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            ProfileConstants.deleteConfirmWarning,
+            style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black87),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _kAmberBg,
+              borderRadius: BorderRadius.circular(8),
+              border: const Border(
+                left: BorderSide(color: _kWarning, width: 3),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: _kWarning),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    ProfileConstants.deleteConfirmWarning,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      color: _kDarkBrown,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              labelText: ProfileConstants.deleteTypeToConfirm,
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (_) => setState(() => _canConfirm = _controller.text == 'DELETE'),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(ProfileConstants.cancel),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _canConfirm ? _confirmDelete : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kDanger,
+                    disabledBackgroundColor: _kTextTertiary,
+                  ),
+                  child: Text(
+                    ProfileConstants.deleteConfirmButton,
+                    style: GoogleFonts.dmSans(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete() async {
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .deleteUserAccount(widget.userId);
+    if (!mounted) return;
+    result.fold(
+      (_) => showErrorSnackBar(context, 'Could not delete account.'),
+      (_) {
+        Navigator.pop(context);
+        widget.onDeleted();
+      },
+    );
+  }
+}
+
+class _PhoneChangeSheet extends ConsumerStatefulWidget {
+  const _PhoneChangeSheet({
+    required this.currentPhone,
+    required this.onVerified,
+  });
+
+  final String currentPhone;
+  final VoidCallback onVerified;
+
+  @override
+  ConsumerState<_PhoneChangeSheet> createState() => _PhoneChangeSheetState();
+}
+
+class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
+  final _controller = TextEditingController();
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendOtp() async {
+    final digits = _controller.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length != 9) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter 9 digits for Ghana number')),
+      );
+      return;
+    }
+    final phone = '+233$digits';
+    setState(() => _busy = true);
+    final result = await ref
+        .read(startPhoneVerificationUseCaseProvider)
+        .call(phoneNumber: phone);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    result.fold(
+      (f) => showFailureSnackBar(context, f),
+      (session) {
+        ref.read(otpVerificationSessionProvider.notifier).state = session;
+        Navigator.pop(context);
+        context.pushNamed(
+          RouteConstants.otpVerification,
+          extra: {'register': false, 'phoneChange': true, 'newPhone': phone},
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        24,
+        24,
+        24 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            ProfileConstants.phoneLabel,
+            style: GoogleFonts.dmSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Text('+233 '),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    hintText: 'XX XXX XXXX',
+                    isDense: true,
+                  ),
+                  maxLength: 9,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _busy ? null : _sendOtp,
+            child: Text(_busy ? 'Sending...' : 'Send verification code'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileShimmer extends StatelessWidget {
+  const _ProfileShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          height: 100,
+          decoration: BoxDecoration(
+            color: _kSurface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: List.generate(
+            3,
+            (_) => Expanded(
+              child: Container(
+                height: 60,
+                margin: const EdgeInsets.only(right: 4),
+                decoration: BoxDecoration(
+                  color: _kSurface,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileError extends StatelessWidget {
+  const _ProfileError({
+    required this.message,
+    required this.onRetry,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.black87),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(backgroundColor: _kPrimary),
+              child: Text(
+                ProfileConstants.retry,
+                style: GoogleFonts.dmSans(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,60 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'user_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
+    _$UserModelImpl(
+      id: json['id'] as String,
+      fullName: json['fullName'] as String,
+      phone: json['phone'] as String,
+      email: json['email'] as String?,
+      role: json['role'] as String,
+      location: json['location'] as String?,
+      isFirstTimeBuyer: json['isFirstTimeBuyer'] as bool? ?? false,
+      isVerified: json['isVerified'] as bool? ?? false,
+      ghanaidUrl: json['ghanaidUrl'] as String?,
+      ghanaidVerified: json['ghanaidVerified'] as bool? ?? false,
+      ghanaidVerifiedAt: json['ghanaidVerifiedAt'] == null
+          ? null
+          : DateTime.parse(json['ghanaidVerifiedAt'] as String),
+      preferredCurrency: json['preferredCurrency'] as String? ?? 'GHS',
+      preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
+      pushToken: json['pushToken'] as String?,
+      notificationPreferences:
+          json['notificationPreferences'] as Map<String, dynamic>?,
+      lastActiveAt: json['lastActiveAt'] == null
+          ? null
+          : DateTime.parse(json['lastActiveAt'] as String),
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
+    );
+
+Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'fullName': instance.fullName,
+      'phone': instance.phone,
+      'email': instance.email,
+      'role': instance.role,
+      'location': instance.location,
+      'isFirstTimeBuyer': instance.isFirstTimeBuyer,
+      'isVerified': instance.isVerified,
+      'ghanaidUrl': instance.ghanaidUrl,
+      'ghanaidVerified': instance.ghanaidVerified,
+      'ghanaidVerifiedAt': instance.ghanaidVerifiedAt?.toIso8601String(),
+      'preferredCurrency': instance.preferredCurrency,
+      'preferredLanguage': instance.preferredLanguage,
+      'pushToken': instance.pushToken,
+      'notificationPreferences': instance.notificationPreferences,
+      'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
+      'createdAt': instance.createdAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
+    };

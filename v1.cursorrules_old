@@ -1,0 +1,872 @@
+# AutoImport GH — Customer App
+# Cursor Rules — Clean Architecture · Flutter · Firebase · Riverpod
+
+---
+
+## PROJECT IDENTITY
+
+This is the **Customer App** for AutoImport GH — a vehicle import platform that helps
+Ghanaian buyers purchase cars from US auctions (Copart/IAA) with full agent support
+covering search, bidding, shipping, duty, clearance, repairs, and delivery.
+
+Separate project from the Agent App. Shares the same Firebase backend.
+
+---
+
+## TECH STACK
+
+- **Language**: Dart (Flutter)
+- **Platforms**: Android (primary), iOS (primary), Web (secondary)
+- **State management**: Riverpod (`flutter_riverpod`, `riverpod_annotation`, `riverpod_generator`)
+- **Navigation**: GoRouter
+- **Backend**: Firebase (Auth, Firestore, Storage, Cloud Functions, FCM)
+- **Push notifications**: OneSignal
+- **Payments**: Paystack (`flutter_paystack`)
+- **Serialization**: `freezed` + `json_serializable`
+- **Error handling**: `dartz` (Either/Option)
+- **DI**: Riverpod only — no get_it or injectable
+- **Other key packages**:
+  - `google_fonts`
+  - `image_picker`, `file_picker`
+  - `cached_network_image`
+  - `intl` (currency + date formatting)
+  - `record`, `just_audio` (voice notes)
+  - `url_launcher`
+  - `flutter_secure_storage`
+  - `connectivity_plus`
+  - `shimmer`
+  - `share_plus`
+
+---
+
+## FLUTTER VERSION MANAGER
+
+This project uses FVM (Flutter Version Manager).
+Always use `fvm flutter` instead of `flutter` for all commands.
+Always use `fvm dart` instead of `dart` for all Dart commands.
+Flutter version: 3.35.7
+
+Examples:
+- `fvm flutter pub get`
+- `fvm flutter pub run build_runner build --delete-conflicting-outputs`
+- `fvm flutter test`
+- `fvm flutter build apk`
+- `fvm dart format .`
+
+---
+
+## DEPENDENCY VERSIONS
+
+Always use the latest stable version of each package that:
+- Is compatible with Flutter 3.35.7
+- Does not introduce breaking changes
+- Has null-safety support
+- Is not marked as discontinued or deprecated on pub.dev
+
+Before suggesting a package version, verify compatibility with
+Flutter 3.35.7 and Dart SDK constraints.
+Never pin to an outdated version unless a newer one causes a known
+breaking change — in that case, explain why.
+
+---
+
+## UI/UX QUALITY STANDARD — INVESTOR DEMO GRADE
+
+This app must be built to **investor demo grade AND production ready** at all times.
+Every screen, every widget, every interaction must meet this standard — there is no
+"placeholder for now" or "we'll polish this later." Every screen is potentially the
+first screen an investor sees.
+
+### What this means concretely:
+
+**Completeness — no detail may be skipped:**
+- Every label, badge, status indicator, icon, and piece of copy specified in the
+  designs must be implemented exactly as described.
+- Every state must be handled: loading, empty, error, success, partial data.
+- If a design specifies a shimmer loader — build a shimmer loader.
+- If a design specifies an inline action button — build the inline action button.
+- If a design specifies a deadline countdown — build the deadline countdown.
+- Skipping, stubbing, or using a TODO placeholder for any UI detail is NOT acceptable.
+
+**Improvement is allowed — omission is not:**
+- Cursor may improve animations, transitions, micro-interactions, and visual polish
+  beyond what the designs specify — but ONLY in addition to the specified details,
+  never instead of them.
+- If Cursor identifies a better UX pattern for a specific interaction, it may
+  implement it AND note the improvement — but the original specified behaviour
+  must still be present unless explicitly replacing it makes the UX unambiguously better.
+
+**Production readiness:**
+- Every screen handles all edge cases (null data, empty lists, network errors,
+  expired sessions, permission denials).
+- No debug prints, no hardcoded test data, no Lorem Ipsum text in any screen.
+- All tap targets meet minimum 48x48dp touch target size.
+- All text meets WCAG AA contrast ratio against its background.
+- All images use CachedNetworkImage with shimmer placeholders and error fallbacks.
+- All lists use proper pagination or infinite scroll — never load unbounded data.
+- All forms validate inputs before submission.
+- All async operations show loading state and handle errors gracefully.
+
+---
+
+## BACKGROUNDS — WHITE / OFF-WHITE ONLY
+
+The app background is **never dark**. All backgrounds are white or off-white:
+
+| Surface | Colour | Usage |
+|---|---|---|
+| Primary background | `#FFFFFF` | Main screen background, cards, bubbles |
+| Secondary background | `#F5F4F0` | Section backgrounds, input fields, inactive areas |
+| Tertiary background | `#F0EFE8` | Subtle dividers, nested containers |
+
+**Never use dark backgrounds** (`#000`, `#111`, `#1A1A1A`, `#2C2C2C`, or any dark grey)
+as a page or section background. The only exception is hero banners (e.g. bid won green
+hero, payment confirmed green hero) which use brand colours, not dark colours.
+
+Dark mode is NOT supported. Do not implement dark mode. Do not use
+`MediaQuery.platformBrightness` to switch backgrounds to dark.
+
+---
+
+## TYPOGRAPHY — DM SANS (GOOGLE FONTS)
+
+This app uses **DM Sans** as the sole typeface via the `google_fonts` package.
+Never use system fonts (SF Pro, Roboto) directly.
+
+Setup in `core/theme/app_theme.dart`:
+```dart
+import 'package:google_fonts/google_fonts.dart';
+
+ThemeData buildAppTheme() {
+  final base = ThemeData(
+    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF378ADD)),
+    useMaterial3: true,
+    scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+  );
+  return base.copyWith(
+    textTheme: GoogleFonts.dmSansTextTheme(base.textTheme),
+  );
+}
+```
+
+When applying text styles directly in widgets:
+```dart
+// Correct — via theme (textTheme is already DM Sans)
+Text('Hello', style: Theme.of(context).textTheme.bodyLarge)
+
+// WRONG — never do this
+Text('Hello', style: TextStyle(fontFamily: 'Roboto'))
+Text('Hello', style: TextStyle(fontFamily: 'SF Pro'))
+Text(
+  'Hello',
+  style: GoogleFonts.dmSans(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  ),
+)
+```
+
+Font weight conventions:
+- Regular body text: `FontWeight.w400`
+- Medium / labels / buttons / subtitles: `FontWeight.w500`
+- Headings / emphasis: `FontWeight.w600`
+- Never use `w700` or `w800` — too heavy for this design system
+
+Type scale:
+- Screen title: 17–18sp w600
+- Section heading: 15–16sp w600
+- Body: 13–14sp w400
+- Label / caption: 11–12sp w500
+- Micro / tags: 10sp w500
+
+---
+
+## ARCHITECTURE — CLEAN ARCHITECTURE (STRICT)
+
+### Layer Rules
+
+```
+Presentation  →  Domain  ←  Data
+```
+
+- **Domain layer** has ZERO dependencies on Flutter, Firebase, or any external package.
+  It only contains: Entities, Repository interfaces (abstract classes), Use cases, Failures.
+- **Data layer** implements Domain repository interfaces. It knows about Firebase, Firestore,
+  freezed models, and JSON. It maps data models to domain entities.
+- **Presentation layer** calls Use Cases via Riverpod providers/notifiers. It NEVER calls
+  repositories directly. It knows about Flutter widgets and Riverpod.
+- Dependencies always point inward: Presentation → Domain ← Data.
+
+### Folder Structure (feature-first + clean architecture)
+
+```
+lib/
+├── core/
+│   ├── constants/
+│   │   ├── app_constants.dart
+│   │   ├── firestore_collections.dart
+│   │   └── route_constants.dart
+│   ├── error/
+│   │   ├── failures.dart
+│   │   └── exceptions.dart
+│   ├── network/
+│   │   └── network_info.dart
+│   ├── theme/
+│   │   ├── app_theme.dart
+│   │   ├── app_colors.dart
+│   │   └── app_text_styles.dart
+│   ├── utils/
+│   │   ├── currency_formatter.dart
+│   │   ├── date_formatter.dart
+│   │   └── validators.dart
+│   └── widgets/
+│
+├── features/
+│   └── [feature_name]/
+│       ├── domain/
+│       │   ├── entities/
+│       │   ├── repositories/
+│       │   └── usecases/
+│       ├── data/
+│       │   ├── models/
+│       │   ├── repositories/
+│       │   └── datasources/
+│       └── presentation/
+│           ├── screens/
+│           ├── widgets/
+│           └── providers/
+│
+├── shared/
+│   └── providers/
+│       ├── firebase_providers.dart
+│       └── exchange_rate_provider.dart
+│
+├── router.dart
+├── main.dart
+└── firebase_options.dart
+```
+
+### Feature List
+
+```
+features/
+  auth/           # OTP login, registration, ID upload
+  orders/         # Order dashboard, timeline, multi-order list
+  preferences/    # Car preference form (5 steps), edit preferences
+  chat/           # Per-order messaging (all message types)
+  vehicles/       # Vehicle option card detail + max bid
+  bids/           # Bid status (won/lost)
+  payments/       # Payment request view, checkout (Paystack), confirmation
+  shipping/       # Shipping tracker
+  clearance/      # Clearance choice + self-clearance checklist
+  repairs/        # Repair choice + status screens
+  documents/      # Per-order document vault
+  notifications/  # Global notifications centre
+  profile/        # Account settings, ID verification
+```
+
+---
+
+## NAMING CONVENTIONS
+
+| Thing | Convention | Example |
+|---|---|---|
+| Files | snake_case | `order_repository.dart` |
+| Classes | PascalCase | `OrderRepository` |
+| Variables/methods | camelCase | `fetchOrders()` |
+| Constants | camelCase | `firestoreCollections` |
+| Riverpod providers | camelCase + Provider suffix | `activeOrdersProvider` |
+| Riverpod notifiers | PascalCase + Notifier suffix | `OrdersNotifier` |
+| Use cases | PascalCase + UseCase suffix | `GetActiveOrdersUseCase` |
+| Entities | PascalCase, no suffix | `Order`, `CarPreferences` |
+| Data models | PascalCase + Model suffix | `OrderModel`, `CarPreferencesModel` |
+| Failures | PascalCase + Failure suffix | `FirestoreFailure`, `AuthFailure` |
+| Repositories (interface) | PascalCase + Repository | `OrderRepository` |
+| Repositories (impl) | PascalCase + RepositoryImpl | `OrderRepositoryImpl` |
+| Data sources | PascalCase + DataSource | `OrderFirestoreDataSource` |
+
+---
+
+## CODE GENERATION RULES
+
+Always run after adding freezed/json_serializable files:
+```
+fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Every freezed class needs:
+```dart
+part 'filename.freezed.dart';
+part 'filename.g.dart'; // if json_serializable
+```
+
+---
+
+## ENTITIES (Domain Layer)
+
+```dart
+// Pure Dart — no Flutter, no Firebase, no freezed
+class Order {
+  final String id;
+  final String orderRef;
+  final String buyerId;
+  final String? agentId;
+  final OrderStatus status;
+  final bool firstPaymentMade;
+  final DateTime createdAt;
+
+  const Order({
+    required this.id,
+    required this.orderRef,
+    required this.buyerId,
+    this.agentId,
+    required this.status,
+    required this.firstPaymentMade,
+    required this.createdAt,
+  });
+}
+
+enum OrderStatus {
+  open, agentAssigned, searching, bidPlaced, bidWon, bidLost,
+  paymentPending, paymentReceived, shipping, arrived, dutyPending,
+  dutyPaid, clearanceInProgress, clearanceComplete, repairPending,
+  repairInProgress, repairComplete, delivered, cancelled, dormant,
+}
+```
+
+---
+
+## DATA MODELS (Data Layer)
+
+```dart
+@freezed
+class OrderModel with _$OrderModel {
+  const factory OrderModel({
+    required String id,
+    required String orderRef,
+    required String buyerId,
+    String? agentId,
+    required String status,
+    required bool firstPaymentMade,
+    required Timestamp createdAt,
+  }) = _OrderModel;
+
+  factory OrderModel.fromJson(Map<String, dynamic> json) =>
+      _$OrderModelFromJson(json);
+
+  factory OrderModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return OrderModel.fromJson({...data, 'id': doc.id});
+  }
+}
+
+extension OrderModelX on OrderModel {
+  Order toEntity() => Order(
+    id: id,
+    orderRef: orderRef,
+    buyerId: buyerId,
+    agentId: agentId,
+    status: OrderStatus.values.firstWhere((e) => e.name == status),
+    firstPaymentMade: firstPaymentMade,
+    createdAt: createdAt.toDate(),
+  );
+}
+```
+
+---
+
+## REPOSITORY INTERFACES (Domain Layer)
+
+```dart
+abstract class OrderRepository {
+  Stream<Either<Failure, List<Order>>> watchBuyerOrders(String buyerId);
+  Future<Either<Failure, Order>> getOrder(String orderId);
+  Future<Either<Failure, String>> createOrder(CreateOrderParams params);
+  Future<Either<Failure, Unit>> cancelOrder(CancelOrderParams params);
+  Future<Either<Failure, Unit>> updateOrderStatus(String orderId, OrderStatus status);
+}
+```
+
+---
+
+## REPOSITORY IMPLEMENTATIONS (Data Layer)
+
+```dart
+class OrderRepositoryImpl implements OrderRepository {
+  final OrderFirestoreDataSource _dataSource;
+  OrderRepositoryImpl(this._dataSource);
+
+  @override
+  Stream<Either<Failure, List<Order>>> watchBuyerOrders(String buyerId) {
+    return _dataSource.watchBuyerOrders(buyerId).map(
+      (models) => Right<Failure, List<Order>>(models.map((m) => m.toEntity()).toList()),
+    ).handleError(
+      (error) => Left<Failure, List<Order>>(FirestoreFailure(message: error.toString())),
+    );
+  }
+}
+```
+
+---
+
+## USE CASES (Domain Layer)
+
+```dart
+// One use case per file — returns Either<Failure, T>
+class GetActiveOrdersUseCase {
+  final OrderRepository _repository;
+  GetActiveOrdersUseCase(this._repository);
+
+  Stream<Either<Failure, List<Order>>> call(String buyerId) =>
+      _repository.watchBuyerOrders(buyerId);
+}
+
+class CancelOrderParams {
+  final String orderId;
+  final String reason;
+  const CancelOrderParams({required this.orderId, required this.reason});
+}
+```
+
+---
+
+## FAILURES (Domain Layer)
+
+```dart
+abstract class Failure {
+  final String message;
+  const Failure({required this.message});
+}
+class FirestoreFailure extends Failure {
+  const FirestoreFailure({required super.message});
+}
+class AuthFailure extends Failure {
+  const AuthFailure({required super.message});
+}
+class StorageFailure extends Failure {
+  const StorageFailure({required super.message});
+}
+class NetworkFailure extends Failure {
+  const NetworkFailure({required super.message});
+}
+class PaymentFailure extends Failure {
+  const PaymentFailure({required super.message});
+}
+class ValidationFailure extends Failure {
+  const ValidationFailure({required super.message});
+}
+class UnexpectedFailure extends Failure {
+  const UnexpectedFailure({required super.message});
+}
+```
+
+---
+
+## RIVERPOD PROVIDERS (Presentation Layer)
+
+```dart
+// shared/providers/firebase_providers.dart
+@riverpod
+FirebaseFirestore firestore(FirestoreRef ref) => FirebaseFirestore.instance;
+
+@riverpod
+FirebaseAuth firebaseAuth(FirebaseAuthRef ref) => FirebaseAuth.instance;
+
+@riverpod
+FirebaseStorage storage(StorageRef ref) => FirebaseStorage.instance;
+
+// Data source → Repository → Use case → Presentation chain
+@riverpod
+OrderFirestoreDataSource orderDataSource(OrderDataSourceRef ref) =>
+    OrderFirestoreDataSource(ref.watch(firestoreProvider));
+
+@riverpod
+OrderRepository orderRepository(OrderRepositoryRef ref) =>
+    OrderRepositoryImpl(ref.watch(orderDataSourceProvider));
+
+@riverpod
+GetActiveOrdersUseCase getActiveOrdersUseCase(GetActiveOrdersUseCaseRef ref) =>
+    GetActiveOrdersUseCase(ref.watch(orderRepositoryProvider));
+
+@riverpod
+Stream<Either<Failure, List<Order>>> buyerOrders(BuyerOrdersRef ref) {
+  final currentUser = ref.watch(currentUserProvider).value;
+  if (currentUser == null) {
+    return Stream.value(Left(AuthFailure(message: 'Not authenticated')));
+  }
+  return ref.watch(getActiveOrdersUseCaseProvider).call(currentUser.id);
+}
+
+@riverpod
+class PreferenceFormNotifier extends _$PreferenceFormNotifier {
+  @override
+  PreferenceFormState build() => PreferenceFormState.initial();
+
+  void updateMake(String make) => state = state.copyWith(make: make);
+  void updateCondition(VehicleCondition condition) =>
+      state = state.copyWith(condition: condition);
+}
+```
+
+---
+
+## NAVIGATION (GoRouter)
+
+```dart
+final router = GoRouter(
+  routes: [
+    GoRoute(name: 'splash', path: '/splash', builder: ...),
+    GoRoute(name: 'home', path: '/home', builder: ...),
+    GoRoute(
+      name: 'order-detail',
+      path: '/order/:orderId',
+      builder: (context, state) => OrderDetailScreen(
+        orderId: state.pathParameters['orderId']!,
+      ),
+    ),
+  ],
+  redirect: (context, state) {
+    final isAuthenticated = // check auth state
+    if (!isAuthenticated && !state.matchedLocation.startsWith('/login')) {
+      return '/login';
+    }
+    return null;
+  },
+);
+```
+
+---
+
+## FIRESTORE COLLECTIONS (use constants — never hardcode strings)
+
+```dart
+class FirestoreCollections {
+  static const String users = 'users';
+  static const String agents = 'agents';
+  static const String orders = 'orders';
+  static const String carPreferences = 'car_preferences';
+  static const String preferenceEditHistory = 'preference_edit_history';
+  static const String notifications = 'notifications';
+  static const String otpSessions = 'otp_sessions';
+  static const String userSessions = 'user_sessions';
+  static const String vehicleOptions = 'vehicle_options';
+  static const String bidOutcomes = 'bid_outcomes';
+  static const String shipping = 'shipping';
+  static const String dutyClearance = 'duty_clearance';
+  static const String repairJobs = 'repair_jobs';
+  static const String stageUpdates = 'stage_updates';
+  static const String inactivityReminders = 'inactivity_reminders';
+  static const String agentNewOrderRequests = 'agent_new_order_requests';
+  static const String messages = 'messages';
+  static const String messageReactions = 'message_reactions';
+  static const String maxBids = 'max_bids';
+  static const String payments = 'payments';
+  static const String paymentRequests = 'payment_requests';
+  static const String documents = 'documents';
+  static const String orderTimeline = 'order_timeline';
+  static const String delivery = 'delivery';
+  static const String buyerReviews = 'buyer_reviews';
+  static const String garages = 'garages';
+  static const String exchangeRates = 'exchange_rates';
+  static const String costDefaults = 'cost_defaults';
+  static const String systemSettings = 'system_settings';
+}
+```
+
+---
+
+## FIRESTORE SCHEMA REFERENCE
+
+All field names use camelCase. Must match exactly across both apps and Cloud Functions.
+
+### users
+id, fullName, phone, email, role (buyer/agent/admin), location, isFirstTimeBuyer,
+isVerified, ghanaidUrl, ghanaidVerified, ghanaidVerifiedAt, preferredCurrency,
+preferredLanguage, pushToken, lastActiveAt, createdAt, updatedAt
+
+### agents
+id, userId, employeeId, status (active/inactive/suspended), maxActiveOrders,
+totalOrdersCompleted, successRate, rating, createdAt
+
+### orders
+id, orderRef, buyerId, agentId, status (open/agentAssigned/searching/bidPlaced/
+bidWon/bidLost/paymentPending/paymentReceived/shipping/arrived/dutyPending/
+dutyPaid/clearanceInProgress/clearanceComplete/repairPending/repairInProgress/
+repairComplete/delivered/cancelled/dormant), currentStage, stageNumber,
+firstPaymentMade, cancelledBy, cancellationReason, cancellationNote,
+cancelledAt, deliveredAt, createdAt, updatedAt
+
+### car_preferences
+id, orderId, make, model, yearMin, yearMax, isSingleYear, condition
+(run_and_drive/repairable/full_rebuild), conditionLabel, maxMileage,
+repairOptedIn, clearanceOptedIn, editedBy, editedAt, editReason, createdAt
+
+### preference_edit_history
+id, orderId, editedByUserId, editedByRole, previousValuesJson, newValuesJson,
+reason, buyerNotified, editedAt
+
+### notifications
+id, userId, orderId, type (payment_request/payment_confirmed/bid_won/bid_lost/
+stage_update/message/agent_assigned/order_edited/order_cancelled/
+inactivity_reminder/auction_deadline/shipping_update/arrival/id_reminder/system),
+title, body, actionUrl, isRead, sentAt
+
+### otp_sessions
+id, userId, phone, codeHash, attempts, expiresAt, verified, createdAt
+
+### user_sessions
+id, userId, deviceToken, sessionToken, role, expiresAt, lastUsedAt, createdAt
+
+### vehicle_options
+id, orderId, agentId, lotNumber, source (copart/iaa), yearMakeModel, year,
+make, model, trim, mileage, condition, conditionLabel, damageDescription,
+photoUrl, photoUrlsJson, auctionDate, auctionLocation, vin, colour, engine,
+transmission, auctionPriceUsd, buyersPremiumPct, buyersPremiumUsd,
+towingStorageUsd, shippingUsd, marineInsuranceUsd, exchangeRate, dutyGhs,
+clearanceGhs, repairEstimateGhs, serviceFeeGhs, totalLandedGhs, agentNote,
+status (draft/sent/confirmed/rejected), confirmedAt, sentAt, createdAt
+
+### bid_outcomes
+id, orderId, vehicleOptionId, agentId, outcome (won/lost), maxBidUsd,
+finalPriceUsd, savingUsd, finalPriceGhs, lossReason, lossPriceUsd, nextStep,
+noteToBuyer, bidDate, loggedAt
+
+### shipping
+id, orderId, vesselName, shippingLine, blNumber, containerNumber, originPort,
+destinationPort, trackingUrl, estimatedDeparture, actualDeparture,
+estimatedArrival, actualArrival, journeyProgressPct,
+status (pending/booked/departed/in_transit/arrived/released),
+agentNotes, updatedAt, createdAt
+
+### duty_clearance
+id, orderId, handledBy (agent/buyer), clearanceFeeGhs, icumsRef,
+clearingAgentName, dutyAmountGhs, vatGhs, nhilGhs, otherLeviesGhs,
+totalPayableGhs, graStatus (not_started/submitted/assessed/paid/cleared),
+submittedAt, assessedAt, paidAt, clearedAt, notes, createdAt
+
+### repair_jobs
+id, orderId, garageId, garageNameCustom, garageLocation, workDescription,
+quoteGhs, platformServiceFeeGhs, totalQuotedGhs, finalCostGhs,
+quoteApprovedByBuyer, quoteApprovedAt, quoteDeclinedAt,
+status (not_started/quote_sent/quote_approved/quote_declined/in_progress/completed),
+startDate, estimatedCompletion, actualCompletion, beforePhotoUrlsJson,
+afterPhotoUrlsJson, notes, createdAt
+
+### stage_updates
+id, orderId, updatedByUserId, updatedByRole, fromStage, toStage,
+fromStageNumber, toStageNumber, note, buyerNotified, updatedAt
+
+### inactivity_reminders
+id, orderId, agentId, reminderLevel (1/2/3/4), triggeredAt, resolvedAt,
+actionTaken (none/message_sent/escalated/order_dormant), notes
+
+### agent_new_order_requests
+id, orderId, agentId, status (pending/accepted/declined), respondedAt,
+declineReason, createdAt
+
+### messages
+id, orderId, senderId, senderRole (agent/buyer), messageType
+(text/voice_note/image/file/vehicle_card/payment_request/payment_confirmed/
+bid_won/bid_lost/shipping_update/stage_update/system), body, mediaUrl,
+thumbnailUrl (optional, for video), status (optional: pending/sent),
+uploadProgress (optional, 0..1 while uploading),
+mediaDurationSecs, mediaFileName, vehicleOptionId, paymentRequestId,
+bidOutcomeId, shippingId, replyToMessageId, isRead, isDeleted, deletedAt, sentAt
+
+### message_reactions
+id, messageId, userId, emoji, createdAt
+
+### max_bids
+id, orderId, vehicleOptionId, buyerId, maxBidUsd, maxBidGhs, exchangeRate,
+confirmedAt, agentNotified, agentNotifiedAt
+
+### payments
+id, orderId, buyerId, paymentRequestId, paymentRef,type (deposit/service_fee/initial_combined/vehicle_balance_and_shipping/clearance_fee/repair_fee/delivery_fee), description, amountGhs, amountUsd, exchangeRate,
+currency, method (mtn_momo/vodafone_cash/airteltigo_money/card/bank_transfer),
+provider, providerRef, status (pending/processing/confirmed/failed/refunded),
+failureReason, initiatedAt, confirmedAt, refundedAt
+
+### payment_requests
+id, orderId, createdByAgentId, paymentId, type (initial/
+                                          vehicle_balance_and_shipping/clearance_fee/repair_fee/delivery_fee), description,
+breakdownJson (Array<{label, amountGhs, amountUsd, isDeduction}>), totalGhs, totalUsd, exchangeRate, depositDeductedGhs,
+deadlineAt, status (pending/paid/expired/cancelled),
+sentAt, paidAt, expiredAt, cancelledAt
+
+### documents
+id, orderId, uploadedByUserId, uploadedByRole, docType (ghana_id/vehicle_title/
+bill_of_lading/commercial_invoice/packing_list/payment_receipt/gra_declaration/
+duty_receipt/insurance_certificate/repair_quote/repair_receipt/delivery_note/other),
+label, fileUrl, fileType, fileSizeKb, vin, status (not_started/pending/verified/rejected),
+rejectionReason, isAutoPopulated, notes, uploadedAt, verifiedAt
+
+### order_timeline
+id, orderId, stageNumber (1-9), stageKey, label, detail, actionLabel,
+actionType (payment/chat/tracking/clearance/repair/none), actionTargetId,
+isComplete, isActive, isBlocked, completedAt, activatedAt
+
+### delivery
+id, orderId, deliveryAddress, deliveryCity, recipientName, recipientPhone,
+scheduledDate, actualDeliveryDate, deliveredBy, proofOfDeliveryUrl,
+buyerConfirmed, buyerConfirmedAt, status (pending_payment/payment_confirmed/scheduled/delivered),
+paymentConfirmed, paymentConfirmedAt, notes, createdAt
+
+### buyer_reviews
+id, orderId, buyerId, agentId, overallRating, agentRating,
+communicationRating, speedRating, comment, createdAt
+
+### garages
+id, name, location, city, phone, email, isVetted, rating, totalJobs,
+specialisations, isActive, addedAt
+
+### exchange_rates
+id, usdToGhs, source, fetchedAt, validForDate, isCurrent
+
+### cost_defaults
+id, key, value, label, currency, updatedBy, updatedAt
+
+### system_settings
+id, key, value, label, updatedBy, updatedAt
+# Key settings: depositPercentage, serviceFeeGhs, clearanceServiceFeeGhs,
+# repairPlatformFeeGhs, maxAgentOrders, inactivityDormantHours
+
+---
+
+## BUSINESS RULES — ALWAYS ENFORCE
+
+1. `orders.firstPaymentMade = false` → buyer can edit car_preferences and cancel order
+2. `orders.firstPaymentMade = true` → no edit/cancel without admin
+3. All payment requests created by agents — buyers only pay, never initiate
+4. Chat is per-order — no global inbox
+5. Documents are per-order — accessed within order detail tabs
+6. Notifications are global — aggregated across all orders
+7. Initial payment = deposit (10% of purchase price) + service fee (from system_settings)
+8. Deposit is deducted from balance payment — NOT an extra charge
+9. Exchange rate fetched from Firestore `exchange_rates` where `isCurrent = true`
+10. OTP login only — no email/password auth
+11. Role must be 'buyer' — redirect to error if user has role 'agent'
+12. Payment requests only show "Pay now" when status = 'pending'
+13. Agent assigned notification: sent by Cloud Function, not client
+14. Order edit creates a `preference_edit_history` document every time
+
+---
+
+## UI/UX RULES
+
+### Colours
+- Primary: `#378ADD`
+- Success: `#1D9E75`
+- Warning text: `#BA7517` / Warning background: `#FAEEDA`
+- Danger: `#E24B4A`
+- Info text: `#185FA5` / Info background: `#E6F1FB`
+- Primary background: `#FFFFFF` (white)
+- Secondary background: `#F5F4F0` (off-white)
+- Tertiary background: `#F0EFE8` (subtle off-white)
+- Border: `rgba(0,0,0,0.12)`
+- Text primary: `#1A1A18`
+- Text secondary: `#666666`
+- Text tertiary: `#AAAAAA`
+
+### Spacing & Layout
+- Base unit: 4dp
+- Standard padding: 14–16dp
+- Card internal padding: 12–13dp
+- Border radius: 8dp (md), 12dp (lg), 16dp (xl), 20dp (pill)
+- Card elevation: subtle shadow only — `BoxShadow(blurRadius: 8, color: Colors.black.withOpacity(0.06))`
+
+### Navigation structure
+- Bottom navigation: **3 tabs only** — Home, Notifications, Profile
+- Chat and Documents: **per-order tabs only** — NOT global
+- Order detail tabs: Overview | Chat (with unread badge) | Documents
+
+### Component rules
+- Payment CTA banner: always at top of order overview when payment_request is pending
+- Unread badge on Chat tab: count of unread messages from agent
+- Loading states: shimmer placeholders — never blank screens or spinners alone
+- Error states: illustrated error card + retry button — never silent failures
+- Empty states: icon/illustration + helpful instructional message
+- All status badges: coloured pill with text — see colour system above
+- All action buttons: minimum 48dp height, full width on mobile
+- All tappable cards: `InkWell` with `borderRadius` matching card radius
+
+### Interaction polish (investor demo grade)
+- Page transitions: smooth slide or fade — never abrupt cuts
+- List items: subtle fade-in on first load
+- Payment CTA: pulse animation on the pay button when deadline is within 24h
+- Bid won screen: confetti or particle animation on entry
+- Success states: scale-in checkmark animation
+- Form validation: inline real-time feedback — never wait until submit
+
+---
+
+## CURRENCY FORMATTING
+
+Always use the `CurrencyFormatter` utility. Never format currency inline:
+```dart
+CurrencyFormatter.formatGhs(amount)        // → "GHS 105,998"
+CurrencyFormatter.formatUsd(amount)        // → "$4,200"
+CurrencyFormatter.ghsToUsd(ghs, rate)      // → double
+CurrencyFormatter.usdToGhs(usd, rate)      // → double
+CurrencyFormatter.formatRange(min, max)    // → "GHS 58,520 – GHS 84,700"
+```
+
+Never hardcode exchange rates. Always fetch from Firestore:
+```dart
+final rate = ref.watch(exchangeRateProvider).value?.usdToGhs ?? 15.40;
+```
+
+---
+
+## SECURITY
+
+Never generate, modify, or suggest changes to:
+- `firebase_options.dart`
+- `google-services.json`
+- `GoogleService-Info.plist`
+- `.env` files
+- Any file containing API keys, secrets, or credentials
+
+These are configured manually outside of Cursor using the FlutterFire CLI.
+Assume `firebase_options.dart` already exists and is correctly configured.
+
+Initialize Firebase in `main.dart` using:
+```dart
+await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
+```
+
+---
+
+## TESTING RULES
+
+- Unit tests for all use cases (domain layer)
+- Unit tests for all repository implementations (with mock data sources)
+- Widget tests for critical screens (payment checkout, bid outcome)
+- Integration tests for auth flow
+- Use `mocktail` for mocking
+- Test files in `test/` mirroring `lib/` structure
+
+---
+
+## DO NOT
+
+- Do NOT call Firestore directly from presentation layer (screens/notifiers)
+- Do NOT import Firebase packages in domain layer
+- Do NOT hardcode Firestore collection names — use `FirestoreCollections` constants
+- Do NOT hardcode exchange rates or cost defaults
+- Do NOT use get_it or injectable — Riverpod only for DI
+- Do NOT use the Provider package — Riverpod only
+- Do NOT create global chat or document screens — these are per-order
+- Do NOT allow buyers to create payment requests
+- Do NOT allow edit/cancel when `firstPaymentMade = true`
+- Do NOT use `setState` in screens that have Riverpod providers
+- Do NOT put business logic in widgets
+- Do NOT use dark backgrounds — all backgrounds are white or off-white
+- Do NOT implement dark mode
+- Do NOT skip any UI detail specified in the designs — implement everything
+- Do NOT use Lorem Ipsum, placeholder text, or hardcoded test data in any screen
+- Do NOT use `print()` or debug prints in production code — use proper logging
+- Do NOT leave TODO comments in UI code — implement it or raise it explicitly
+- Do NOT use system fonts — always use DM Sans via `google_fonts`
