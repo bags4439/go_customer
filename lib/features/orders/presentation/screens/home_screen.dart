@@ -362,10 +362,6 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-
-        const ReferralPromoCard(),
-
         // Section label
         Text(
           'YOUR ORDERS',
@@ -399,6 +395,10 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
             ),
           ),
         ),
+        const SizedBox(height: 20),
+
+        const ReferralPromoCard(),
+
       ],
     );
   }
