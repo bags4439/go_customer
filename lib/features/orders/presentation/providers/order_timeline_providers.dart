@@ -6,7 +6,6 @@ import '../../../clearance/data/models/duty_clearance_model.dart';
 import '../../../payments/data/models/payment_request_model.dart';
 import '../../../repairs/data/models/repair_job_model.dart';
 import '../../../shipping/data/models/shipping_model.dart';
-import '../../data/models/car_preferences_model.dart';
 import '../../data/models/order_timeline_model.dart';
 
 /// Timeline rows from Firestore, ordered by stageNumber ascending.
@@ -94,16 +93,4 @@ final orderRepairJobProvider = StreamProvider.family<RepairJobModel?, String>((
         (s) =>
             s.docs.isEmpty ? null : RepairJobModel.fromFirestore(s.docs.first),
       );
-});
-
-final orderCarPreferencesProvider =
-    FutureProvider.family<CarPreferencesModel?, String>((ref, orderId) async {
-      final firestore = ref.watch(firestoreProvider);
-      final snap = await firestore
-          .collection(FirestoreCollections.carPreferences)
-          .where('orderId', isEqualTo: orderId)
-          .limit(1)
-          .get();
-      if (snap.docs.isEmpty) return null;
-      return CarPreferencesModel.fromFirestore(snap.docs.first);
     });

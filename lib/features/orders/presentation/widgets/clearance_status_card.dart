@@ -27,7 +27,6 @@ class ClearanceStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('clearance.graStatus: ${clearance.graStatus}');
     return GestureDetector(
       onTap: () => context.push('/order/$orderId/clearance'),
       behavior: HitTestBehavior.opaque,

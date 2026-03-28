@@ -77,7 +77,6 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
   @override
   Widget build(BuildContext context) {
     final timelineAsync = ref.watch(orderTimelineProvider(widget.orderId));
-    final prefsAsync = ref.watch(orderCarPreferencesProvider(widget.orderId));
     final pendingAsync =
         ref.watch(pendingPaymentRequestsProvider(widget.orderId));
     final shippingAsync = ref.watch(orderShippingProvider(widget.orderId));
@@ -86,7 +85,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
 
     return timelineAsync.when(
       data: (stages) {
-        final repairOptedIn = prefsAsync.valueOrNull?.repairOptedIn == true;
+        final repairOptedIn = widget.order.repairOptedIn;
         final visible = _visibleStages(stages, repairOptedIn);
 
         if (pendingAsync.isLoading ||
@@ -152,7 +151,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
       error: (_, __) => _TimelineError(
         onRetry: () {
           ref.invalidate(orderTimelineProvider(widget.orderId));
-          ref.invalidate(orderCarPreferencesProvider(widget.orderId));
+          ref.invalidate(orderProvider(widget.orderId));
           ref.invalidate(pendingPaymentRequestsProvider(widget.orderId));
           ref.invalidate(orderShippingProvider(widget.orderId));
           ref.invalidate(orderClearanceProvider(widget.orderId));

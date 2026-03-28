@@ -53,6 +53,14 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     _tabController.addListener(_onTabChanged);
   }
 
+  @override
+  void didUpdateWidget(OrderDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialTab != widget.initialTab) {
+      _tabController.animateTo(widget._initialIndex);
+    }
+  }
+
   void _onTabChanged() {
     if (_tabController.index == 1) {
       markChatAsRead(ref, widget.orderId);
