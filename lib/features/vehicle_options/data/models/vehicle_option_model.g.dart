@@ -44,6 +44,11 @@ _$VehicleOptionModelImpl _$$VehicleOptionModelImplFromJson(
   serviceFeeGhs: (json['serviceFeeGhs'] as num?)?.toDouble(),
   totalLandedGhs: (json['totalLandedGhs'] as num?)?.toDouble(),
   agentNote: json['agentNote'] as String?,
+  isBuyItNow: json['isBuyItNow'] as bool? ?? false,
+  buyItNowPriceUsd: (json['buyItNowPriceUsd'] as num?)?.toDouble(),
+  hasVehicleDamage: json['hasVehicleDamage'] as bool? ?? false,
+  fixedPlatformFeesUsd: (json['fixedPlatformFeesUsd'] as num?)?.toDouble(),
+  estimatedTotalGhs: (json['estimatedTotalGhs'] as num?)?.toDouble(),
   status: json['status'] == null
       ? VehicleOptionStatus.draft
       : _vehicleOptionStatusFromJson(json['status']),
@@ -90,6 +95,11 @@ Map<String, dynamic> _$$VehicleOptionModelImplToJson(
   'serviceFeeGhs': instance.serviceFeeGhs,
   'totalLandedGhs': instance.totalLandedGhs,
   'agentNote': instance.agentNote,
+  'isBuyItNow': instance.isBuyItNow,
+  'buyItNowPriceUsd': instance.buyItNowPriceUsd,
+  'hasVehicleDamage': instance.hasVehicleDamage,
+  'fixedPlatformFeesUsd': instance.fixedPlatformFeesUsd,
+  'estimatedTotalGhs': instance.estimatedTotalGhs,
   'status': _vehicleOptionStatusToJson(instance.status),
   'confirmedAt': _dateTimeToJson(instance.confirmedAt),
   'sentAt': _dateTimeToJson(instance.sentAt),

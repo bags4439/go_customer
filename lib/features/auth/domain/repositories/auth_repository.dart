@@ -11,7 +11,8 @@ abstract class AuthRepository {
     int? resendToken,
   });
 
-  Future<Either<Failure, String>> verifyOtp({
+  /// Legacy: verifies OTP and returns the authenticated user's uid.
+  Future<Either<Failure, String>> verifyOtpAndReturnUid({
     required String verificationId,
     required String smsCode,
   });
@@ -29,5 +30,38 @@ abstract class AuthRepository {
   Future<Either<Failure, Unit>> syncOneSignalIdentity(String userId);
 
   Future<void> signOut();
-}
 
+  /// Current Firebase Auth user id after phone sign-in; fails if not signed in.
+  Future<Either<Failure, String>> getAuthenticatedUserId();
+
+  /// Sends OTP to the given E.164 phone number.
+  /// Returns the verificationId on success.
+  Future<Either<Failure, String>> requestOtp(
+    String e164Phone,
+  );
+
+  /// Verifies the OTP against the verificationId.
+  /// Returns true if the user is new (no fullName set).
+  /// Returns false if the user is returning.
+  Future<Either<Failure, bool>> verifyOtp({
+    required String verificationId,
+    required String smsCode,
+  });
+
+  /// Saves the user's full name and generates a
+  /// unique referral code. Returns the generated code.
+  Future<Either<Failure, String>> completeProfile({
+    required String uid,
+    required String fullName,
+  });
+
+  /// Saves Ghana card details.
+  /// Both idNumber and photoPath are optional.
+  /// Uploads photo to Firebase Storage if photoPath
+  /// is provided.
+  Future<Either<Failure, Unit>> saveGhanaCard({
+    required String uid,
+    String? idNumber,
+    String? photoPath,
+  });
+}

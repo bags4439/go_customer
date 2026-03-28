@@ -11,6 +11,7 @@ import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../referral/presentation/widgets/referral_promo_card.dart';
 import '../providers/order_providers.dart';
 
 // ─────────────────────────────────────────────
@@ -19,19 +20,19 @@ import '../providers/order_providers.dart';
 class _C {
   static const primary = Color(0xFF378ADD);
   static const success = Color(0xFF1D9E75);
-  static const danger  = Color(0xFFE24B4A);
+  static const danger = Color(0xFFE24B4A);
   static const warning = Color(0xFFBA7517);
-  static const bgPrimary    = Color(0xFFFFFFFF);
-  static const bgSecondary  = Color(0xFFF5F4F0);
-  static const bgTertiary   = Color(0xFFF0EFE8);
-  static const border       = Color(0xFFE0DFD8);
-  static const textPrimary  = Color(0xFF1A1A18);
+  static const bgPrimary = Color(0xFFFFFFFF);
+  static const bgSecondary = Color(0xFFF5F4F0);
+  static const bgTertiary = Color(0xFFF0EFE8);
+  static const border = Color(0xFFE0DFD8);
+  static const textPrimary = Color(0xFF1A1A18);
   static const textSecondary = Color(0xFF666666);
-  static const textTertiary  = Color(0xFFAAAAAA);
-  static const infoBg  = Color(0xFFE6F1FB);
+  static const textTertiary = Color(0xFFAAAAAA);
+  static const infoBg = Color(0xFFE6F1FB);
   static const infoText = Color(0xFF185FA5);
   static const successBg = Color(0xFFEAF3DE);
-  static const dangerBg  = Color(0xFFFCEBEB);
+  static const dangerBg = Color(0xFFFCEBEB);
   static const warningBg = Color(0xFFFAEEDA);
 }
 
@@ -43,13 +44,12 @@ TextStyle _ts({
   FontWeight weight = FontWeight.w400,
   Color color = _C.textPrimary,
   double height = 1.4,
-}) =>
-    GoogleFonts.dmSans(
-      fontSize: size,
-      fontWeight: weight,
-      color: color,
-      height: height,
-    );
+}) => GoogleFonts.dmSans(
+  fontSize: size,
+  fontWeight: weight,
+  color: color,
+  height: height,
+);
 
 // ─────────────────────────────────────────────
 // HOME SCREEN
@@ -57,32 +57,23 @@ TextStyle _ts({
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  int _bottomIndex(String location) {
-    if (location.startsWith('/notifications')) return 1;
-    if (location.startsWith('/profile')) return 2;
-    return 0;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ordersAsync      = ref.watch(buyerOrdersProvider);
+    final ordersAsync = ref.watch(buyerOrdersProvider);
     final currentUserAsync = ref.watch(currentUserProvider);
-    final pendingPayments  = ref.watch(pendingPaymentCountProvider);
-    final location = GoRouter.of(context)
-        .routeInformationProvider
-        .value
-        .uri
-        .toString();
+    final pendingPayments = ref.watch(pendingPaymentCountProvider);
 
-    ordersAsync.whenOrNull(error: (error, stack) {
-      showFailureSnackBar(
-        context,
-        UnexpectedFailure(
-          message: 'Could not load your orders.',
-          cause: error,
-        ),
-      );
-    });
+    ordersAsync.whenOrNull(
+      error: (error, stack) {
+        showFailureSnackBar(
+          context,
+          UnexpectedFailure(
+            message: 'Could not load your orders.',
+            cause: error,
+          ),
+        );
+      },
+    );
 
     return Scaffold(
       backgroundColor: _C.bgPrimary,
@@ -92,19 +83,14 @@ class HomeScreen extends ConsumerWidget {
           child: orders.isEmpty
               ? const _EmptyHome()
               : _MultiOrderHome(
-            orders: orders,
-            pendingPayments: pendingPayments,
-            currentUserName: currentUserAsync.value?.fullName,
-          ),
+                  orders: orders,
+                  pendingPayments: pendingPayments,
+                  currentUserName: currentUserAsync.value?.fullName,
+                ),
         ),
         loading: () => const _HomeShimmer(),
-        error: (_, __) => _ErrorHome(
-          onRetry: () => ref.invalidate(buyerOrdersProvider),
-        ),
-      ),
-      bottomNavigationBar: _BottomNav(
-        currentIndex: _bottomIndex(location),
-        pendingPayments: pendingPayments,
+        error: (_, __) =>
+            _ErrorHome(onRetry: () => ref.invalidate(buyerOrdersProvider)),
       ),
     );
   }
@@ -120,10 +106,13 @@ class HomeScreen extends ConsumerWidget {
       ),
       title: userAsync.maybeWhen(
         data: (user) => Text(
-          user != null ? 'Hi ${user.fullName.split(' ').first} 👋' : 'Your orders',
+          user != null
+              ? 'Hi ${user.fullName.split(' ').first} 👋'
+              : 'Your orders',
           style: _ts(size: 17, weight: FontWeight.w600),
         ),
-        orElse: () => Text('Your orders', style: _ts(size: 17, weight: FontWeight.w600)),
+        orElse: () =>
+            Text('Your orders', style: _ts(size: 17, weight: FontWeight.w600)),
       ),
     );
   }
@@ -134,6 +123,7 @@ class HomeScreen extends ConsumerWidget {
 // ─────────────────────────────────────────────
 class _AnimatedBody extends StatefulWidget {
   final Widget child;
+
   const _AnimatedBody({required this.child});
 
   @override
@@ -153,7 +143,7 @@ class _AnimatedBodyState extends State<_AnimatedBody>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _fade  = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
     _slide = Tween<Offset>(
       begin: const Offset(0, 0.04),
       end: Offset.zero,
@@ -172,134 +162,6 @@ class _AnimatedBodyState extends State<_AnimatedBody>
     opacity: _fade,
     child: SlideTransition(position: _slide, child: widget.child),
   );
-}
-
-// ─────────────────────────────────────────────
-// BOTTOM NAVIGATION BAR
-// ─────────────────────────────────────────────
-class _BottomNav extends StatelessWidget {
-  final int currentIndex;
-  final int pendingPayments;
-
-  const _BottomNav({
-    required this.currentIndex,
-    required this.pendingPayments,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: _C.bgPrimary,
-        border: Border(top: BorderSide(color: _C.border, width: 0.5)),
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: 56,
-          child: Row(
-            children: [
-              _NavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Home',
-                isActive: currentIndex == 0,
-                onTap: () => GoRouter.of(context).go('/home'),
-              ),
-              _NavItem(
-                icon: Icons.notifications_outlined,
-                activeIcon: Icons.notifications,
-                label: 'Notifications',
-                isActive: currentIndex == 1,
-                badge: pendingPayments,
-                onTap: () => GoRouter.of(context).go('/notifications'),
-              ),
-              _NavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Profile',
-                isActive: currentIndex == 2,
-                onTap: () => GoRouter.of(context).go('/profile'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool isActive;
-  final int badge;
-  final VoidCallback onTap;
-
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-    this.badge = 0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(
-                    isActive ? activeIcon : icon,
-                    key: ValueKey(isActive),
-                    size: 22,
-                    color: isActive ? _C.primary : _C.textTertiary,
-                  ),
-                ),
-                if (badge > 0)
-                  Positioned(
-                    top: -4,
-                    right: -6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: _C.danger,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        badge > 99 ? '99+' : '$badge',
-                        style: _ts(size: 9, weight: FontWeight.w700,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: _ts(
-                size: 10,
-                weight: FontWeight.w500,
-                color: isActive ? _C.primary : _C.textTertiary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ─────────────────────────────────────────────
@@ -338,64 +200,83 @@ class _EmptyHomeState extends State<_EmptyHome>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SlideTransition(
-              position: _float,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: _C.bgSecondary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.directions_car_outlined,
-                  size: 40,
-                  color: _C.textTertiary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'No orders yet',
-              style: _ts(size: 18, weight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Start by telling us what car you want to import.',
-              style: _ts(size: 13, color: _C.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () => GoRouter.of(context).go('/preferences/new'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _C.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SlideTransition(
+                          position: _float,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: _C.bgSecondary,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Icon(
+                              Icons.directions_car_outlined,
+                              size: 40,
+                              color: _C.textTertiary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'No orders yet',
+                          style: _ts(size: 18, weight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Start by telling us what car you want to import.',
+                          style: _ts(size: 13, color: _C.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () =>
+                                GoRouter.of(context).push('/preferences/new'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _C.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Import my first car',
+                              style: _ts(
+                                size: 14,
+                                weight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Import my first car',
-                  style: _ts(size: 14, weight: FontWeight.w600,
-                      color: Colors.white),
-                ),
+                  SizedBox(height: 64,),
+                  const ReferralPromoCard(),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -421,19 +302,21 @@ class _MultiOrderHome extends ConsumerStatefulWidget {
 class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
   @override
   Widget build(BuildContext context) {
-    final active      = widget.orders.where((o) => !o.isCompleted).length;
-    final completed   = widget.orders.where((o) => o.isCompleted).length;
-    final needsAction = widget.orders.where((o) => o.needsPayment).length
-        + widget.pendingPayments;
+    final active = widget.orders.where((o) => !o.isCompleted).length;
+    final completed = widget.orders.where((o) => o.isCompleted).length;
+    final needsAction =
+        widget.orders.where((o) => o.needsPayment).length +
+        widget.pendingPayments;
 
     // Sort: payment due first, then by urgency
-    final sorted = [...widget.orders]..sort((a, b) {
-      if (a.needsPayment && !b.needsPayment) return -1;
-      if (!a.needsPayment && b.needsPayment) return 1;
-      if (!a.isCompleted && b.isCompleted) return -1;
-      if (a.isCompleted && !b.isCompleted) return 1;
-      return b.stageNumber.compareTo(a.stageNumber);
-    });
+    final sorted = [...widget.orders]
+      ..sort((a, b) {
+        if (a.needsPayment && !b.needsPayment) return -1;
+        if (!a.needsPayment && b.needsPayment) return 1;
+        if (!a.isCompleted && b.isCompleted) return -1;
+        if (a.isCompleted && !b.isCompleted) return 1;
+        return b.stageNumber.compareTo(a.stageNumber);
+      });
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -446,7 +329,7 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
         const SizedBox(height: 4),
         Text(
           '$active active ${active == 1 ? 'order' : 'orders'}'
-              '${needsAction > 0 ? ' · $needsAction need${needsAction == 1 ? 's' : ''} action' : ''}',
+          '${needsAction > 0 ? ' · $needsAction need${needsAction == 1 ? 's' : ''} action' : ''}',
           style: _ts(size: 13, color: _C.textSecondary),
         ),
         const SizedBox(height: 16),
@@ -481,19 +364,22 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
         ),
         const SizedBox(height: 20),
 
+        const ReferralPromoCard(),
+
         // Section label
         Text(
           'YOUR ORDERS',
-          style: _ts(size: 10, weight: FontWeight.w500,
-              color: _C.textTertiary),
+          style: _ts(size: 10, weight: FontWeight.w500, color: _C.textTertiary),
         ),
         const SizedBox(height: 8),
 
         // Order cards with stagger
-        ...sorted.asMap().entries.map((entry) => _StaggeredItem(
-          index: entry.key,
-          child: _OrderCard(order: entry.value),
-        )),
+        ...sorted.asMap().entries.map(
+          (entry) => _StaggeredItem(
+            index: entry.key,
+            child: _OrderCard(order: entry.value),
+          ),
+        ),
 
         const SizedBox(height: 8),
 
@@ -502,19 +388,14 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
           width: double.infinity,
           height: 48,
           child: OutlinedButton(
-            onPressed: () =>
-                GoRouter.of(context).go('/preferences/new'),
+            onPressed: () => GoRouter.of(context).go('/preferences/new'),
             style: OutlinedButton.styleFrom(
               foregroundColor: _C.primary,
               side: const BorderSide(color: _C.primary, width: 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
             ),
             child: Text(
               '+ Import another car',
-              style: _ts(size: 13, weight: FontWeight.w500,
-                  color: _C.primary),
+              style: _ts(size: 13, weight: FontWeight.w500, color: _C.primary),
             ),
           ),
         ),
@@ -549,7 +430,7 @@ class _StaggeredItemState extends State<_StaggeredItem>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
-    _fade  = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
     _slide = Tween<Offset>(
       begin: const Offset(0, 0.08),
       end: Offset.zero,
@@ -620,7 +501,7 @@ class _OrderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router       = GoRouter.of(context);
+    final router = GoRouter.of(context);
     final paymentAsync = ref.watch(activePaymentRequestProvider(order.id));
 
     Color accentColor;
@@ -689,10 +570,11 @@ class _OrderCard extends ConsumerWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '${order.make ?? 'Vehicle'} ${order.model ?? ''}'.trim(),
+                                        '${order.make ?? 'Vehicle'} ${order.model ?? ''}'
+                                            .trim(),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: _ts(
@@ -737,10 +619,7 @@ class _OrderCard extends ConsumerWidget {
                               loading: () => const SizedBox(height: 14),
                               error: (_, __) => Text(
                                 _statusDescription(order),
-                                style: _ts(
-                                  size: 12,
-                                  color: _C.textSecondary,
-                                ),
+                                style: _ts(size: 12, color: _C.textSecondary),
                               ),
                             ),
 
@@ -756,19 +635,16 @@ class _OrderCard extends ConsumerWidget {
                                       value: progress,
                                       minHeight: 4,
                                       backgroundColor: _C.border,
-                                      valueColor:
-                                      AlwaysStoppedAnimation<Color>(
-                                          accentColor),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        accentColor,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Step ${order.stageNumber} of 9',
-                                  style: _ts(
-                                    size: 10,
-                                    color: _C.textTertiary,
-                                  ),
+                                  style: _ts(size: 10, color: _C.textTertiary),
                                 ),
                               ],
                             ),
@@ -788,12 +664,44 @@ class _OrderCard extends ConsumerWidget {
 
   String _statusDescription(OrderView order) {
     if (order.needsPayment) return 'Payment required to continue';
-    if (order.isCompleted)  return 'Delivered · order complete';
+    if (order.isCompleted) return 'Delivered · order complete';
+    if (order.isCancelled) return 'This order was cancelled';
     switch (order.status) {
+      case FirestoreEnumValues.orderStatusOpen:
+        return 'Order created · we\'ll match you with an agent';
+      case FirestoreEnumValues.orderStatusAgentAssigned:
+        return 'Your agent is on it';
+      case FirestoreEnumValues.orderStatusSearching:
+        return 'Searching for your vehicle';
+      case FirestoreEnumValues.orderStatusBidPlaced:
+        return 'A bid is live on your chosen vehicle';
+      case FirestoreEnumValues.orderStatusBidWon:
+        return 'Vehicle secured · next steps in chat';
+      case FirestoreEnumValues.orderStatusBidLost:
+        return 'Could not secure vehicle · your agent will suggest next options';
+      case FirestoreEnumValues.orderStatusPaymentReceived:
+        return 'Payment received · moving to shipping';
       case FirestoreEnumValues.orderStatusShipping:
         return '🚢 Your car is in transit';
+      case FirestoreEnumValues.orderStatusArrived:
+        return 'Vehicle arrived · customs & clearance next';
+      case FirestoreEnumValues.orderStatusDutyPending:
+        return 'Import duty assessment in progress';
+      case FirestoreEnumValues.orderStatusDutyPaid:
+        return 'Duty paid · clearance in progress';
+      case FirestoreEnumValues.orderStatusClearanceInProgress:
+        return 'Port clearance in progress';
+      case FirestoreEnumValues.orderStatusClearanceComplete:
+        return 'Clearance complete';
+      case FirestoreEnumValues.orderStatusRepairPending:
+        return 'Repairs pending confirmation';
+      case FirestoreEnumValues.orderStatusRepairInProgress:
+        return 'Repairs in progress';
+      case FirestoreEnumValues.orderStatusRepairComplete:
+        return 'Repairs complete · delivery next';
+      case FirestoreEnumValues.orderStatusDormant:
       default:
-        return '';
+        return 'No recent activity · open chat if you need help';
     }
   }
 }
@@ -814,28 +722,108 @@ class _StatusBadge extends StatelessWidget {
 
     if (order.needsPayment) {
       label = 'Pay now';
-      bg    = _C.dangerBg;
-      text  = _C.danger;
+      bg = _C.dangerBg;
+      text = _C.danger;
     } else if (order.isCompleted) {
       label = 'Delivered';
-      bg    = _C.successBg;
-      text  = _C.success;
+      bg = _C.successBg;
+      text = _C.success;
     } else {
       switch (order.status) {
-        case FirestoreEnumValues.orderStatusShipping:
-          label = 'Shipping';
-          bg    = _C.infoBg;
-          text  = _C.infoText;
+        case FirestoreEnumValues.orderStatusOpen:
+          label = 'Submitted';
+          bg = _C.bgSecondary;
+          text = _C.textSecondary;
+          break;
+        case FirestoreEnumValues.orderStatusAgentAssigned:
+          label = 'Agent assigned';
+          bg = _C.infoBg;
+          text = _C.infoText;
           break;
         case FirestoreEnumValues.orderStatusSearching:
           label = 'Searching';
-          bg    = _C.warningBg;
-          text  = _C.warning;
+          bg = _C.warningBg;
+          text = _C.warning;
+          break;
+        case FirestoreEnumValues.orderStatusBidPlaced:
+          label = 'Bid placed';
+          bg = _C.warningBg;
+          text = _C.warning;
+          break;
+        case FirestoreEnumValues.orderStatusBidWon:
+          label = 'Won auction';
+          bg = _C.successBg;
+          text = _C.success;
+          break;
+        case FirestoreEnumValues.orderStatusBidLost:
+          label = 'Bid lost';
+          bg = _C.dangerBg;
+          text = _C.danger;
+          break;
+        case FirestoreEnumValues.orderStatusPaymentReceived:
+          label = 'Paid';
+          bg = _C.successBg;
+          text = _C.success;
+          break;
+        case FirestoreEnumValues.orderStatusShipping:
+          label = 'Shipping';
+          bg = _C.infoBg;
+          text = _C.infoText;
+          break;
+        case FirestoreEnumValues.orderStatusArrived:
+          label = 'Arrived';
+          bg = _C.successBg;
+          text = _C.success;
+          break;
+        case FirestoreEnumValues.orderStatusDutyPending:
+          label = 'Duty pending';
+          bg = _C.warningBg;
+          text = _C.warning;
+          break;
+        case FirestoreEnumValues.orderStatusDutyPaid:
+          label = 'Duty paid';
+          bg = _C.infoBg;
+          text = _C.infoText;
+          break;
+        case FirestoreEnumValues.orderStatusClearanceInProgress:
+          label = 'Clearance';
+          bg = _C.infoBg;
+          text = _C.infoText;
+          break;
+        case FirestoreEnumValues.orderStatusClearanceComplete:
+          label = 'Cleared';
+          bg = _C.successBg;
+          text = _C.success;
+          break;
+        case FirestoreEnumValues.orderStatusRepairPending:
+          label = 'Repairs';
+          bg = _C.warningBg;
+          text = _C.warning;
+          break;
+        case FirestoreEnumValues.orderStatusRepairInProgress:
+          label = 'In repair';
+          bg = _C.warningBg;
+          text = _C.warning;
+          break;
+        case FirestoreEnumValues.orderStatusRepairComplete:
+          label = 'Repairs done';
+          bg = _C.successBg;
+          text = _C.success;
+          break;
+        case FirestoreEnumValues.orderStatusCancelled:
+          label = 'Cancelled';
+          bg = _C.dangerBg;
+          text = _C.danger;
+          break;
+        case FirestoreEnumValues.orderStatusDormant:
+          label = 'On hold';
+          bg = _C.bgSecondary;
+          text = _C.textSecondary;
           break;
         default:
           label = 'In progress';
-          bg    = _C.bgSecondary;
-          text  = _C.textSecondary;
+          bg = _C.bgSecondary;
+          text = _C.textSecondary;
       }
     }
 
@@ -860,10 +848,7 @@ class _PaymentInlineCta extends StatelessWidget {
   final dynamic payment; // your PaymentRequestView type
   final String orderId;
 
-  const _PaymentInlineCta({
-    required this.payment,
-    required this.orderId,
-  });
+  const _PaymentInlineCta({required this.payment, required this.orderId});
 
   @override
   Widget build(BuildContext context) {
@@ -889,23 +874,19 @@ class _PaymentInlineCta extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  AppConstants.paymentRequestTypeLabels[payment.type]
-                      ?? payment.type,
-                  style: _ts(
-                    size: 11,
-                    color: Colors.white.withOpacity(0.85),
-                  ),
+                  AppConstants.paymentRequestTypeLabels[payment.type] ??
+                      payment.type,
+                  style: _ts(size: 11, color: Colors.white.withOpacity(0.85)),
                 ),
               ],
             ),
           ),
           GestureDetector(
-            onTap: () => GoRouter.of(context).go(
-              '/order/$orderId/payment-request/${payment.id}',
-            ),
+            onTap: () => GoRouter.of(
+              context,
+            ).go('/order/$orderId/payment-request/${payment.id}'),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(6),
@@ -977,11 +958,7 @@ class _ShimmerBox extends StatelessWidget {
   final double height;
   final double radius;
 
-  const _ShimmerBox({
-    this.width,
-    required this.height,
-    this.radius = 8,
-  });
+  const _ShimmerBox({this.width, required this.height, this.radius = 8});
 
   @override
   Widget build(BuildContext context) {
@@ -1045,9 +1022,6 @@ class _ErrorHome extends StatelessWidget {
                 onPressed: onRetry,
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: _C.border),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
                 ),
                 child: Text(
                   'Retry',

@@ -91,7 +91,7 @@ class RepairFirestoreDataSource {
     final snapshot = await _firestore
         .collection(FirestoreCollections.orderTimeline)
         .where('orderId', isEqualTo: orderId)
-        .where('stageKey', isEqualTo: 'clearance_repairs')
+        .where('stageKey', isEqualTo: 'repairs')
         .limit(1)
         .get();
     if (snapshot.docs.isEmpty) return;
@@ -111,7 +111,7 @@ class RepairFirestoreDataSource {
     for (final doc in timelineSnapshot.docs) {
       final data = doc.data();
       final stageKey = data['stageKey'] as String?;
-      if (stageKey == 'clearance_repairs') {
+      if (stageKey == 'repair') {
         batch.update(doc.reference, {
           'isComplete': true,
           'completedAt': now,

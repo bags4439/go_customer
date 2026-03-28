@@ -108,28 +108,64 @@ class ShippingModel with _$ShippingModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }
+
+  /// Maps domain [Shipping] -> data [ShippingModel].
+  factory ShippingModel.fromEntity(
+    Shipping shipping, {
+    String? id,
+    DateTime? createdAt,
+  }) {
+    return ShippingModel(
+      id: id ?? shipping.orderId,
+      orderId: shipping.orderId,
+      vesselName: shipping.vesselName,
+      shippingLine: shipping.shippingLine,
+      blNumber: shipping.blNumber,
+      containerNumber: shipping.containerNumber,
+      originPort: shipping.originPort,
+      destinationPort: shipping.destinationPort ?? 'Tema, Ghana',
+      trackingUrl: shipping.trackingUrl,
+      estimatedDeparture: shipping.estimatedDeparture,
+      actualDeparture: shipping.actualDeparture,
+      estimatedArrival: shipping.estimatedArrival,
+      actualArrival: shipping.actualArrival,
+      journeyProgressPct: shipping.journeyProgressPct,
+      status: ShippingStatus.fromString(shipping.status),
+      agentNotes: shipping.agentNotes,
+      updatedAt: shipping.updatedAt,
+      createdAt: createdAt,
+    );
+  }
 }
 
 /// Maps Firestore shipping doc → domain [Shipping] (doc id is often `orderId`).
 Shipping shippingFromDoc(DocumentSnapshot doc) {
   final m = ShippingModel.fromFirestore(doc);
-  final orderId = m.orderId.isNotEmpty ? m.orderId : m.id;
-  return Shipping(
-    orderId: orderId,
-    vesselName: m.vesselName,
-    shippingLine: m.shippingLine,
-    blNumber: m.blNumber,
-    containerNumber: m.containerNumber,
-    originPort: m.originPort,
-    destinationPort: m.destinationPort,
-    trackingUrl: m.trackingUrl,
-    estimatedDeparture: m.estimatedDeparture,
-    actualDeparture: m.actualDeparture,
-    estimatedArrival: m.estimatedArrival,
-    actualArrival: m.actualArrival,
-    journeyProgressPct: m.journeyProgressPct,
-    status: m.status.firestoreValue,
-    agentNotes: m.agentNotes,
-    updatedAt: m.updatedAt,
-  );
+  return m.toEntity(fallbackOrderId: doc.id);
+}
+
+extension ShippingModelX on ShippingModel {
+  /// Maps data [ShippingModel] -> domain [Shipping].
+  Shipping toEntity({String? fallbackOrderId}) {
+    final resolvedOrderId =
+        orderId.isNotEmpty ? orderId : (fallbackOrderId ?? id);
+    return Shipping(
+      orderId: resolvedOrderId,
+      vesselName: vesselName,
+      shippingLine: shippingLine,
+      blNumber: blNumber,
+      containerNumber: containerNumber,
+      originPort: originPort,
+      destinationPort: destinationPort,
+      trackingUrl: trackingUrl,
+      estimatedDeparture: estimatedDeparture,
+      actualDeparture: actualDeparture,
+      estimatedArrival: estimatedArrival,
+      actualArrival: actualArrival,
+      journeyProgressPct: journeyProgressPct,
+      status: status.firestoreValue,
+      agentNotes: agentNotes,
+      updatedAt: updatedAt,
+    );
+  }
 }

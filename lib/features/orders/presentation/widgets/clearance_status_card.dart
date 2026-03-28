@@ -27,55 +27,67 @@ class ClearanceStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(_kSurface),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _statusBlock(),
-          if (clearance.handledBy == 'agent') ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(_kInfoBg),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                OrderTimelineConstants.managedByAgent,
-                style: GoogleFonts.dmSans(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(_kPrimaryText),
+    print('clearance.graStatus: ${clearance.graStatus}');
+    return GestureDetector(
+      onTap: () => context.push('/order/$orderId/clearance'),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(_kSurface),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0x66378ADD), width: 0.8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _statusBlock(),
+            if (clearance.handledBy == 'agent') ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(_kInfoBg),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  OrderTimelineConstants.managedByAgent,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(_kPrimaryText),
+                  ),
                 ),
               ),
-            ),
-          ],
-          if (clearance.handledBy == 'agent') ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => context.push('/order/$orderId?tab=chat'),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-                minimumSize: const Size(48, 48),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                OrderTimelineConstants.questionsChat,
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(_kPrimary),
+            ],
+            if (clearance.handledBy == 'agent') ...[
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => context.push('/order/$orderId?tab=chat'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 8,
+                  ),
+                  minimumSize: const Size(48, 48),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  OrderTimelineConstants.questionsChat,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(_kPrimary),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

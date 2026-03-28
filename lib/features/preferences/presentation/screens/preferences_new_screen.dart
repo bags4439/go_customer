@@ -1,109 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../catalogue/domain/entities/car_model.dart';
+import '../../../catalogue/presentation/providers/car_catalogue_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/preference_form_provider.dart';
+import '../widgets/preferences_widgets.dart';
+
+int _displayStep(PreferenceFormState s) {
+  if (!s.skipConditionStep) return s.currentStep;
+  if (s.currentStep <= 2) return s.currentStep;
+  return 3;
+}
+
+int _totalSteps(PreferenceFormState s) => s.skipConditionStep ? 3 : 4;
 
 class PreferencesNewScreen extends ConsumerStatefulWidget {
   const PreferencesNewScreen({super.key});
 
   @override
-  ConsumerState<PreferencesNewScreen> createState() => _PreferencesNewScreenState();
+  ConsumerState<PreferencesNewScreen> createState() =>
+      _PreferencesNewScreenState();
 }
 
 class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
-  double _lastCost = 0;
-  Color _costFlash = Colors.transparent;
+  bool _submitting = false;
 
-  void _flashCost(double newCost) {
-    if (_lastCost == 0) {
-      _lastCost = newCost;
-      return;
-    }
-    final diff = newCost - _lastCost;
-    _lastCost = newCost;
-    setState(() {
-      _costFlash = diff >= 0 ? const Color(0xFFFFEBEB) : const Color(0xFFEAF7EE);
-    });
-    Future<void>.delayed(const Duration(milliseconds: 350), () {
-      if (mounted) {
-        setState(() => _costFlash = Colors.transparent);
-      }
-    });
+  Future<void> _onConfirm(
+    BuildContext context,
+    PreferenceFormState state,
+  ) async {
+    final router = GoRouter.of(context);
+    final uid = ref.read(authStateProvider).value;
+    if (uid == null) return;
+    setState(() => _submitting = true);
+    final result = await ref
+        .read(createOrderFromPreferencesUseCaseProvider)
+        .call(buyerId: uid, submission: toSubmission(state));
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    result.fold(
+      (failure) => showFailureSnackBar(context, failure),
+      (orderId) => router.go('/order/$orderId/agent-connection'),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(preferenceFormProvider);
     final notifier = ref.read(preferenceFormProvider.notifier);
-    final estimateAsync = ref.watch(liveCostEstimateProvider);
 
-    estimateAsync.whenData((value) => _flashCost(value.ghs));
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Car preferences')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+    return PopScope(
+      canPop: state.currentStep == 1,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) notifier.previousStep();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Car preferences',
+            style: GoogleFonts.dmSans(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(0.5),
+            child: Container(height: 0.5, color: AppColors.borderSolid),
+          ),
+        ),
+        body: SafeArea(
           child: Column(
             children: [
-              _ProgressBar(step: state.currentStep),
-              const SizedBox(height: 12),
-              Expanded(
-                child: switch (state.currentStep) {
-                  1 => _StepOne(state: state),
-                  2 => _StepTwo(
-                      state: state,
-                      costFlash: _costFlash,
-                    ),
-                  3 => _StepThree(state: state),
-                  4 => _StepFour(state: state),
-                  _ => _StepFive(state: state),
-                },
+              PreferencesStepProgressBar(
+                displayStep: _displayStep(state),
+                totalSteps: _totalSteps(state),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  if (state.currentStep > 1)
-                    Expanded(
-                      child: TextButton(
-                        onPressed: notifier.previousStep,
-                        child: const Text('← Back'),
-                      ),
-                    ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (state.currentStep < 5) {
-                          notifier.nextStep();
-                          return;
-                        }
-                        final router = GoRouter.of(context);
-                        final uid = ref.read(authStateProvider).value;
-                        if (uid == null) return;
-                        final result = await ref
-                            .read(createOrderFromPreferencesUseCaseProvider)
-                            .call(
-                              buyerId: uid,
-                              submission: toSubmission(state),
-                            );
-                        if (!mounted) return;
-                        result.fold(
-                          (failure) => showFailureSnackBar(context, failure),
-                          (orderId) =>
-                              router.go('/order/$orderId/agent-connection'),
-                        );
-                      },
-                      child: Text(
-                        state.currentStep == 5
-                            ? 'Confirm & find my agent →'
-                            : 'Next →',
-                      ),
-                    ),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) {
+                    return SlideTransition(
+                      position:
+                          Tween<Offset>(
+                            begin: const Offset(0.06, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
+                            ),
+                          ),
+                      child: FadeTransition(opacity: animation, child: child),
+                    );
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(state.currentStep),
+                    child: _buildStep(context, state, notifier),
                   ),
-                ],
+                ),
+              ),
+              PreferencesBottomNavBar(
+                state: state,
+                notifier: notifier,
+                isLoading: _submitting,
+                onConfirm: () => _onConfirm(context, state),
               ),
             ],
           ),
@@ -111,606 +122,819 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
       ),
     );
   }
-}
 
-class _ProgressBar extends StatelessWidget {
-  final int step;
-
-  const _ProgressBar({required this.step});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(5, (index) {
-        final active = index < step;
-        return Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            height: 4,
-            decoration: BoxDecoration(
-              color: active ? const Color(0xFF378ADD) : const Color(0xFFD5D5D5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
-      }),
-    );
+  Widget _buildStep(
+    BuildContext context,
+    PreferenceFormState state,
+    PreferenceFormNotifier notifier,
+  ) {
+    if (state.currentStep == 1) {
+      return _StepPurchaseOrigin(state: state, notifier: notifier);
+    }
+    if (state.currentStep == 2) {
+      return _StepCarSelection(state: state, notifier: notifier);
+    }
+    if (state.currentStep == 3 && !state.skipConditionStep) {
+      return _StepConditionMileage(state: state, notifier: notifier);
+    }
+    if (state.currentStep == 4) {
+      return _StepReview(state: state, notifier: notifier);
+    }
+    return const SizedBox.expand();
   }
 }
 
-class _StepOne extends ConsumerWidget {
+class _StepPurchaseOrigin extends StatelessWidget {
   final PreferenceFormState state;
+  final PreferenceFormNotifier notifier;
 
-  const _StepOne({required this.state});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final makeOptions = ref.watch(makeOptionsProvider);
-    final modelMap = ref.watch(modelOptionsProvider);
-    final models = modelMap[state.make] ?? const ['Other'];
-    final years = List.generate(15, (i) => 2010 + i);
-    return ListView(
-      children: [
-        const Text('What car do you want?', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 6),
-        const Text("Don't worry if you're unsure - your agent will help you refine this."),
-        const SizedBox(height: 16),
-        DropdownButtonFormField<String>(
-          initialValue: state.make,
-          decoration: const InputDecoration(labelText: 'Car make'),
-          items: makeOptions.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-          onChanged: (v) {
-            if (v != null) {
-              ref.read(preferenceFormProvider.notifier).updateMake(v, modelMap[v] ?? ['Other']);
-            }
-          },
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: state.model,
-          decoration: const InputDecoration(labelText: 'Model'),
-          items: models.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-          onChanged: (v) {
-            if (v != null) ref.read(preferenceFormProvider.notifier).updateModel(v);
-          },
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: DropdownButtonFormField<int>(
-                initialValue: state.yearFrom,
-                decoration: const InputDecoration(labelText: 'From year'),
-                items: years.map((e) => DropdownMenuItem(value: e, child: Text('$e'))).toList(),
-                onChanged: (v) {
-                  if (v != null) ref.read(preferenceFormProvider.notifier).updateYearFrom(v);
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: DropdownButtonFormField<int>(
-                initialValue: state.yearTo,
-                decoration: const InputDecoration(labelText: 'To year'),
-                items: years.map((e) => DropdownMenuItem(value: e, child: Text('$e'))).toList(),
-                onChanged: (v) {
-                  if (v != null) ref.read(preferenceFormProvider.notifier).updateYearTo(v);
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: state.isSingleYear ? const Color(0xFFE8F3DF) : const Color(0xFFE6F1FF),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            state.isSingleYear
-                ? 'Single year selected (${state.yearFrom}) — estimates will show exact amounts'
-                : 'Year range selected (${state.yearFrom}-${state.yearTo}) — estimates will show a range',
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StepTwo extends ConsumerWidget {
-  final PreferenceFormState state;
-  final Color costFlash;
-  const _StepTwo({required this.state, required this.costFlash});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final estimate = ref.watch(liveCostEstimateProvider);
-    final mileageStops = const {
-      MileageBand.m50k: '50k',
-      MileageBand.m70k: '70k',
-      MileageBand.m100k: '100k',
-      MileageBand.any: 'Any',
-    };
-    final mileageMessage = switch (state.mileageBand) {
-      MileageBand.m50k => 'Lowest mileage, higher price',
-      MileageBand.m70k => 'Good balance of price and availability',
-      MileageBand.m100k => 'Better price with moderate mileage',
-      MileageBand.any => 'Widest options, lowest average pricing',
-    };
-
-    return ListView(
-      children: [
-        estimate.when(
-          data: (e) => AnimatedContainer(
-            duration: const Duration(milliseconds: 260),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: costFlash == Colors.transparent ? const Color(0xFFF5F4F0) : costFlash,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'Estimated total landed cost: ~GHS ${e.ghs.toStringAsFixed(0)}\n'
-              '≈ \$${e.usd.toStringAsFixed(0)} at ${e.exchangeRate.toStringAsFixed(2)}',
-            ),
-          ),
-          loading: () => const LinearProgressIndicator(),
-          error: (_, __) => const Text('Unable to load estimate'),
-        ),
-        const SizedBox(height: 12),
-        _ConditionCard(
-          title: 'Ready to drive',
-          subtitle: 'Minor cosmetic damage',
-          badge: 'Most popular',
-          imageUrl: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea',
-          selected: state.condition == PreferenceCondition.readyToDrive,
-          diff: 'Base estimate',
-          onTap: () => ref
-              .read(preferenceFormProvider.notifier)
-              .updateCondition(PreferenceCondition.readyToDrive),
-        ),
-        _ConditionCard(
-          title: 'Needs moderate repair',
-          subtitle: 'Body damage',
-          badge: 'Lower price',
-          imageUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf',
-          selected: state.condition == PreferenceCondition.needsModerateRepair,
-          diff: 'Saves ~GHS 15,000',
-          onTap: () => ref
-              .read(preferenceFormProvider.notifier)
-              .updateCondition(PreferenceCondition.needsModerateRepair),
-        ),
-        _ConditionCard(
-          title: 'Full rebuild project',
-          subtitle: 'Major damage',
-          badge: 'Lowest price',
-          imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70',
-          selected: state.condition == PreferenceCondition.fullRebuildProject,
-          diff: 'Saves ~GHS 30,000',
-          onTap: () => ref
-              .read(preferenceFormProvider.notifier)
-              .updateCondition(PreferenceCondition.fullRebuildProject),
-        ),
-        const SizedBox(height: 12),
-        Text('Maximum mileage',
-            style: Theme.of(context).textTheme.titleMedium),
-        Slider(
-          divisions: 3,
-          min: 0,
-          max: 3,
-          value: state.mileageBand.index.toDouble(),
-          onChanged: (value) {
-            ref
-                .read(preferenceFormProvider.notifier)
-                .updateMileage(MileageBand.values[value.round()]);
-          },
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: mileageStops.values.map((e) => Text(e)).toList(),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE6F1FF),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(mileageMessage),
-        )
-      ],
-    );
-  }
-}
-
-class _ConditionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String badge;
-  final String imageUrl;
-  final bool selected;
-  final String diff;
-  final VoidCallback onTap;
-  const _ConditionCard({
-    required this.title,
-    required this.subtitle,
-    required this.badge,
-    required this.imageUrl,
-    required this.selected,
-    required this.diff,
-    required this.onTap,
-  });
+  const _StepPurchaseOrigin({required this.state, required this.notifier});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: selected ? const Color(0xFF378ADD) : const Color(0xFFD3D3D3),
-            width: selected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
-              child: Image.network(
-                imageUrl,
-                height: 110,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, _, __) => Container(
-                  height: 110,
-                  color: const Color(0xFFF0F0F0),
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.image_not_supported),
-                ),
-              ),
-            ),
-            ListTile(
-              title: Text(title),
-              subtitle: Text(subtitle),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAF7EE),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(badge, style: const TextStyle(fontSize: 12)),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(diff, style: const TextStyle(fontSize: 12)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StepThree extends ConsumerWidget {
-  final PreferenceFormState state;
-  const _StepThree({required this.state});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ListView(
-      children: [
-        const Text('Repair service', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        const Text('Would you like us to arrange repairs?'),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _RepairChoiceCard(
-                selected: state.repairOptedIn,
-                title: 'Yes please',
-                subtitle: 'Agent arranges repairs at a vetted garage',
-                onTap: () => ref.read(preferenceFormProvider.notifier).updateRepairOptedIn(true),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _RepairChoiceCard(
-                selected: !state.repairOptedIn,
-                title: 'No thanks',
-                subtitle: "I'll handle repairs myself",
-                onTap: () => ref.read(preferenceFormProvider.notifier).updateRepairOptedIn(false),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        const _InfoBox(
-          text:
-              'Agent sends quote before work starts. You approve before payment.',
-          color: Color(0xFFF5F4F0),
-        ),
-        const SizedBox(height: 10),
-        const _InfoBox(
-          text: 'Typical repair cost: GHS 1,500 - 3,500 depending on damage.',
-          color: Color(0xFFE6F1FF),
-        ),
-      ],
-    );
-  }
-}
-
-class _RepairChoiceCard extends StatelessWidget {
-  final bool selected;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _RepairChoiceCard({
-    required this.selected,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFE6F1FF) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? const Color(0xFF378ADD) : const Color(0xFFD3D3D3),
-            width: selected ? 2 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Text(subtitle, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoBox extends StatelessWidget {
-  final String text;
-  final Color color;
-  const _InfoBox({required this.text, required this.color});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(text),
-    );
-  }
-}
-
-class _StepFour extends ConsumerWidget {
-  final PreferenceFormState state;
-  const _StepFour({required this.state});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final estimate = ref.watch(liveCostEstimateProvider);
-    final defaults = ref.watch(costDefaultsProvider).valueOrNull ?? {};
-    final serviceFee = defaults['serviceFeeGhs'] ?? 1500;
-    return ListView(
-      children: [
-        const Text('Your cost breakdown', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        _TimelineRow(index: 1, label: 'Pay now (deposit + service fee)', color: const Color(0xFF378ADD)),
-        _TimelineRow(index: 2, label: 'After bid won (balance + shipping)', color: const Color(0xFFBA7517)),
-        _TimelineRow(index: 3, label: 'On arrival at Tema (import duty)', color: const Color(0xFF888888)),
-        _TimelineRow(index: 4, label: 'Only if needed (clearance + repairs)', color: const Color(0xFFAAAAAA), optional: true),
-        const SizedBox(height: 8),
-        _Expander(
-          title: '10% deposit',
-          subtitle: 'Agent requests',
-          expanded: state.expandedDeposit,
-          onTap: () => ref.read(preferenceFormProvider.notifier).toggleExpanded('deposit'),
-          child: estimate.when(
-            data: (e) => Text('Deposit is 10% of estimate: ~GHS ${(e.ghs * 0.10).toStringAsFixed(0)}'),
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-        ),
-        _Expander(
-          title: 'Service fee',
-          subtitle: 'Agent requests',
-          expanded: state.expandedServiceFee,
-          onTap: () => ref.read(preferenceFormProvider.notifier).toggleExpanded('service'),
-          child: Text('One-time service fee: GHS ${serviceFee.toStringAsFixed(0)}'),
-        ),
-        _Expander(
-          title: 'Vehicle balance + shipping',
-          subtitle: 'Deposit deducted here',
-          expanded: state.expandedBalanceShipping,
-          onTap: () => ref.read(preferenceFormProvider.notifier).toggleExpanded('balance'),
-          child: const Text('Remaining purchase and shipping due after bid win.'),
-        ),
-        _Expander(
-          title: 'Import duty',
-          subtitle: 'Set by GRA',
-          expanded: state.expandedImportDuty,
-          onTap: () => ref.read(preferenceFormProvider.notifier).toggleExpanded('duty'),
-          child: const Text('GRA duty + levies payable when vehicle arrives.'),
-        ),
-        _Expander(
-          title: 'Port clearance (Optional)',
-          subtitle: 'Only if agent clears for you',
-          expanded: state.expandedPortClearance,
-          onTap: () => ref.read(preferenceFormProvider.notifier).toggleExpanded('clearance'),
-          child: const Text('Clearance support fee applies only if you opt in.'),
-        ),
-        _Expander(
-          title: 'Repairs (Optional)',
-          subtitle: 'Only if opted in',
-          expanded: state.expandedRepairs,
-          onTap: () => ref.read(preferenceFormProvider.notifier).toggleExpanded('repairs'),
-          child: const Text('Repair cost depends on condition and final quote.'),
-        ),
-        const SizedBox(height: 10),
-        estimate.when(
-          data: (e) {
-            final deposit = e.ghs * 0.10;
-            final upfront = deposit + serviceFee;
-            return Column(
-              children: [
-                _InfoBox(
-                  text: 'Minimum you need upfront: ~GHS ${upfront.toStringAsFixed(0)}',
-                  color: const Color(0xFFFAEEDA),
-                ),
-                const SizedBox(height: 8),
-                _InfoBox(
-                  text: state.isSingleYear
-                      ? 'Total estimate: ~GHS ${e.ghs.toStringAsFixed(0)}'
-                      : 'Total estimate range depends on year variation.',
-                  color: const Color(0xFFF5F4F0),
-                ),
-              ],
-            );
-          },
-          loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
-        ),
-      ],
-    );
-  }
-}
-
-class _TimelineRow extends StatelessWidget {
-  final int index;
-  final String label;
-  final Color color;
-  final bool optional;
-  const _TimelineRow({
-    required this.index,
-    required this.label,
-    required this.color,
-    this.optional = false,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(radius: 12, backgroundColor: color.withValues(alpha: 0.2), child: Text('$index', style: const TextStyle(fontSize: 12))),
-      title: Text(label),
-      subtitle: optional ? const Text('Optional') : null,
-    );
-  }
-}
-
-class _Expander extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool expanded;
-  final VoidCallback onTap;
-  final Widget child;
-  const _Expander({
-    required this.title,
-    required this.subtitle,
-    required this.expanded,
-    required this.onTap,
-    required this.child,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Column(
+    return SingleChildScrollView(
+      child: PreferencesResponsiveColumn(
         children: [
-          ListTile(
-            onTap: onTap,
-            title: Text(title),
-            subtitle: Text(subtitle),
-            trailing: Icon(expanded ? Icons.expand_less : Icons.expand_more),
-          ),
-          if (expanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: child,
+          const SizedBox(height: 8),
+          Text(
+            'Where should we source your car from?',
+            style: GoogleFonts.dmSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'This helps your agent know where to look.',
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 24),
+          OriginCard(
+            origin: AppConstants.purchaseOriginAny,
+            icon: Icons.public_outlined,
+            label: AppConstants.purchaseOriginLabels['any']!,
+            subtitle: AppConstants.purchaseOriginSubtitles['any']!,
+            selected: state.purchaseOrigin == AppConstants.purchaseOriginAny,
+            onTap: () =>
+                notifier.updatePurchaseOrigin(AppConstants.purchaseOriginAny),
+          ),
+          const SizedBox(height: 10),
+          OriginCard(
+            origin: AppConstants.purchaseOriginUsCanada,
+            icon: Icons.directions_car_outlined,
+            label: AppConstants.purchaseOriginLabels['us_canada']!,
+            subtitle: AppConstants.purchaseOriginSubtitles['us_canada']!,
+            selected:
+                state.purchaseOrigin == AppConstants.purchaseOriginUsCanada,
+            onTap: () => notifier.updatePurchaseOrigin(
+              AppConstants.purchaseOriginUsCanada,
+            ),
+          ),
+          const SizedBox(height: 10),
+          OriginCard(
+            origin: AppConstants.purchaseOriginDubai,
+            icon: Icons.flight_outlined,
+            label: AppConstants.purchaseOriginLabels['dubai']!,
+            subtitle: AppConstants.purchaseOriginSubtitles['dubai']!,
+            selected: state.purchaseOrigin == AppConstants.purchaseOriginDubai,
+            onTap: () =>
+                notifier.updatePurchaseOrigin(AppConstants.purchaseOriginDubai),
+          ),
+          const SizedBox(height: 10),
+          OriginCard(
+            origin: AppConstants.purchaseOriginChina,
+            icon: Icons.electric_car_outlined,
+            label: AppConstants.purchaseOriginLabels['china']!,
+            subtitle: AppConstants.purchaseOriginSubtitles['china']!,
+            selected: state.purchaseOrigin == AppConstants.purchaseOriginChina,
+            onTap: () =>
+                notifier.updatePurchaseOrigin(AppConstants.purchaseOriginChina),
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 }
 
-class _StepFive extends ConsumerWidget {
+class _StepCarSelection extends ConsumerWidget {
   final PreferenceFormState state;
-  const _StepFive({required this.state});
+  final PreferenceFormNotifier notifier;
+
+  const _StepCarSelection({required this.state, required this.notifier});
+
+  static const List<int> _years = [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final estimate = ref.watch(liveCostEstimateProvider);
-    final serviceFee = (ref.watch(costDefaultsProvider).valueOrNull?['serviceFeeGhs']) ?? 1500;
-    return ListView(
-      children: [
-        const Text('Review your request', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 10),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
+    final yearsTo = _years.where((y) => y >= state.yearMin).toList();
+
+    return SingleChildScrollView(
+      child: PreferencesResponsiveColumn(
+        children: [
+          const SizedBox(height: 8),
+          Text(
+            'What car do you want?',
+            style: GoogleFonts.dmSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Don\'t worry if you\'re unsure — your agent will help.',
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'MAKE',
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+              color: AppColors.textTertiary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          CatalogueSelectorField(
+            label: state.make.isEmpty ? 'Select make' : state.make,
+            isPlaceholder: state.make.isEmpty,
+            onTap: () => showCarMakePickerSheet(
+              context: context,
+              onSelected: (make) {
+                notifier.updateMake(make.name, []);
+                notifier.updateMakeSlug(make.slug);
+                notifier.clearTrim();
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: state.make.isNotEmpty
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'MODEL',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      CatalogueSelectorField(
+                        label: state.model.isEmpty
+                            ? 'Select model'
+                            : state.model,
+                        isPlaceholder: state.model.isEmpty,
+                        onTap: () {
+                          final slug = state.makeSlug;
+                          if (slug == null || slug.isEmpty) return;
+                          showCarModelPickerSheet(
+                            context: context,
+                            makeSlug: slug,
+                            onSelected: (model) {
+                              notifier.updateModel(model.name);
+                              notifier.updateModelSlug(model.slug);
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+          _TrimSection(state: state, notifier: notifier),
+          if (!state.isNewVehicle) ...[
+            const SizedBox(height: 16),
+            Text(
+              'YEAR RANGE',
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+                color: AppColors.textTertiary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _kv('Make & model', '${state.make} ${state.model}'),
-                _kv('Year', state.isSingleYear ? '${state.yearFrom}' : '${state.yearFrom}-${state.yearTo}'),
-                _kv('Condition', state.condition.name),
-                _kv('Max mileage', '${toSubmission(state).maxMileage} mi'),
-                _kv('Repairs', state.repairOptedIn ? 'Agent handles' : 'Self managed'),
-                estimate.when(
-                  data: (e) => _kv('Est. total cost', '~GHS ${e.ghs.toStringAsFixed(0)}'),
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                Expanded(
+                  child: YearSelectorField(
+                    heading: 'From',
+                    value: state.yearMin,
+                    years: _years,
+                    onChanged: notifier.updateYearFrom,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: YearSelectorField(
+                    heading: 'To',
+                    value: state.yearMax,
+                    years: yearsTo,
+                    onChanged: notifier.updateYearTo,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          _EstimatePill(state: state),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrimSection extends ConsumerWidget {
+  final PreferenceFormState state;
+  final PreferenceFormNotifier notifier;
+
+  const _TrimSection({required this.state, required this.notifier});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final slug = state.makeSlug;
+    if (slug == null || slug.isEmpty || state.model.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final modelsAsync = ref.watch(carModelsProvider(slug));
+    final models = modelsAsync.valueOrNull ?? [];
+    CarModel? selectedModel;
+    for (final m in models) {
+      if (m.slug == state.modelSlug) {
+        selectedModel = m;
+        break;
+      }
+    }
+    final trims = selectedModel?.trims ?? [];
+    if (trims.isEmpty || state.isNewVehicle) {
+      return const SizedBox.shrink();
+    }
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 16),
+          Text(
+            'TRIM (OPTIONAL)',
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+              color: AppColors.textTertiary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                TrimChip(
+                  label: 'Any trim',
+                  selected: state.trim == null,
+                  onTap: () => notifier.updateTrim(null),
+                ),
+                ...trims.map(
+                  (t) => TrimChip(
+                    label: t,
+                    selected: state.trim == t,
+                    onTap: () => notifier.updateTrim(t),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        estimate.when(
-          data: (e) => _InfoBox(
-            text:
-                'Minimum upfront now: ~GHS ${(e.ghs * 0.10 + serviceFee).toStringAsFixed(0)}',
-            color: const Color(0xFFE6F1FF),
-          ),
-          loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
-        ),
-        const SizedBox(height: 10),
-        const _InfoBox(
-          text:
-              'Once you confirm, an agent is assigned. No payment until agent sends a request.',
-          color: Color(0xFFF5F4F0),
-        ),
-      ],
+        ],
+      ),
     );
   }
-
-  Widget _kv(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Expanded(child: Text(k)),
-            Text(v, style: const TextStyle(fontWeight: FontWeight.w700)),
-          ],
-        ),
-      );
 }
 
+class _EstimatePill extends ConsumerWidget {
+  final PreferenceFormState state;
+
+  const _EstimatePill({required this.state});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (state.isNewVehicle ||
+        state.makeSlug == null ||
+        state.modelSlug == null ||
+        state.makeSlug!.isEmpty ||
+        state.modelSlug!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final estimate = ref.watch(liveCostEstimateProvider).valueOrNull;
+    if (estimate == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.successMutedBackground,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.successMutedBorder, width: 0.5),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              size: 16,
+              color: AppColors.successMutedForeground,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Est. auction price: ~GHS ${estimate.ghs.toStringAsFixed(0)}',
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.successMutedForeground,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StepConditionMileage extends StatelessWidget {
+  final PreferenceFormState state;
+  final PreferenceFormNotifier notifier;
+
+  const _StepConditionMileage({required this.state, required this.notifier});
+
+  static const List<(int, String)> _mileageOptions = [
+    (50000, 'Up to 50,000 mi — lowest mileage'),
+    (70000, 'Up to 70,000 mi — good balance'),
+    (100000, 'Up to 100,000 mi — budget friendly'),
+    (200000, 'No preference'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: PreferencesResponsiveColumn(
+        children: [
+          const SizedBox(height: 8),
+          Text(
+            'Vehicle condition',
+            style: GoogleFonts.dmSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            state.isChina
+                ? 'What condition would you prefer?'
+                : 'What condition are you looking for?',
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (state.isUsOrDubai) ...[
+            ConditionOptionCard(
+              icon: Icons.check_circle_outline,
+              iconColor: AppColors.success,
+              title: 'Run & drive',
+              subtitle: 'Minor cosmetic damage only. Best value for money.',
+              badge: 'Most popular',
+              badgeBackground: AppColors.successMutedBackground,
+              badgeTextColor: AppColors.successMutedForeground,
+              selected: state.condition == PreferenceCondition.readyToDrive,
+              onTap: () =>
+                  notifier.updateCondition(PreferenceCondition.readyToDrive),
+            ),
+            const SizedBox(height: 10),
+            ConditionOptionCard(
+              icon: Icons.build_outlined,
+              iconColor: AppColors.warning,
+              title: 'Repairable',
+              subtitle: 'Body or mechanical damage. Lower purchase price.',
+              badge: 'Lower price',
+              badgeBackground: AppColors.amberBackground,
+              badgeTextColor: AppColors.amberText,
+              selected:
+                  state.condition == PreferenceCondition.needsModerateRepair,
+              onTap: () => notifier.updateCondition(
+                PreferenceCondition.needsModerateRepair,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ConditionOptionCard(
+              icon: Icons.warning_amber_outlined,
+              iconColor: AppColors.danger,
+              title: 'Full rebuild',
+              subtitle: 'Major damage. Significant repair investment required.',
+              badge: 'Lowest price',
+              badgeBackground: AppColors.dangerMutedBackground,
+              badgeTextColor: AppColors.dangerMutedText,
+              selected:
+                  state.condition == PreferenceCondition.fullRebuildProject,
+              onTap: () => notifier.updateCondition(
+                PreferenceCondition.fullRebuildProject,
+              ),
+            ),
+          ],
+          if (state.isChina && !state.isNewVehicle) ...[
+            ConditionOptionCard(
+              icon: Icons.thumb_up_outlined,
+              iconColor: AppColors.success,
+              title: 'Good condition',
+              subtitle: 'Low mileage, no significant damage.',
+              selected: state.condition == PreferenceCondition.goodCondition,
+              onTap: () =>
+                  notifier.updateCondition(PreferenceCondition.goodCondition),
+            ),
+            const SizedBox(height: 10),
+            ConditionOptionCard(
+              icon: Icons.thumbs_up_down_outlined,
+              iconColor: AppColors.warning,
+              title: 'Fair condition',
+              subtitle: 'Moderate use, acceptable wear.',
+              selected: state.condition == PreferenceCondition.fairCondition,
+              onTap: () =>
+                  notifier.updateCondition(PreferenceCondition.fairCondition),
+            ),
+          ],
+          if (!state.isNewVehicle) ...[
+            const SizedBox(height: 24),
+            Text(
+              'MAXIMUM MILEAGE',
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+                color: AppColors.textTertiary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            for (final e in _mileageOptions) ...[
+              SelectablePreferenceTile(
+                title: e.$2,
+                selected: state.maxMileage == e.$1,
+                onTap: () => notifier.updateMaxMileage(e.$1),
+              ),
+              const SizedBox(height: 8),
+            ],
+            const SizedBox(height: 16),
+            Text(
+              'REPAIR SERVICE',
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+                color: AppColors.textTertiary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: SelectablePreferenceTile(
+                    title: 'Yes, arrange repairs',
+                    selected: state.repairOptedIn,
+                    onTap: () => notifier.updateRepairOptedIn(true),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SelectablePreferenceTile(
+                    title: 'No, I\'ll handle it',
+                    selected: !state.repairOptedIn,
+                    onTap: () => notifier.updateRepairOptedIn(false),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Agent sends repair quote before any work starts.',
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepReview extends ConsumerWidget {
+  final PreferenceFormState state;
+  final PreferenceFormNotifier notifier;
+
+  const _StepReview({required this.state, required this.notifier});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final estimate = ref.watch(liveCostEstimateProvider).valueOrNull;
+
+    return SingleChildScrollView(
+      child: PreferencesResponsiveColumn(
+        children: [
+          const SizedBox(height: 8),
+          Text(
+            'Review your request',
+            style: GoogleFonts.dmSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Check everything looks right before we find your agent.',
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.borderSolid, width: 0.5),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                  color: Colors.black.withValues(alpha: 0.06),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${state.make} ${state.model}',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        state.isSingleYear
+                            ? '${state.yearMin}'
+                            : '${state.yearMin}–${state.yearMax}',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      if (state.trim != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Trim: ${state.trim}',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    OriginBadge(purchaseOrigin: state.purchaseOrigin),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => notifier.goToStep(2),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Edit',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (!state.isNewVehicle) ...[
+            ReviewKeyValueRow(
+              label: 'Condition',
+              value: preferenceConditionUiLabel(state.condition),
+              onEdit: () => notifier.goToStep(3),
+            ),
+            ReviewKeyValueRow(
+              label: 'Max mileage',
+              value: state.maxMileage == 200000
+                  ? 'No preference'
+                  : '${(state.maxMileage / 1000).round()}k mi',
+              onEdit: () => notifier.goToStep(3),
+            ),
+            ReviewKeyValueRow(
+              label: 'Repairs',
+              value: state.repairOptedIn ? 'Agent arranges' : 'Self managed',
+              onEdit: () => notifier.goToStep(3),
+            ),
+          ],
+          if (state.isNewVehicle)
+            ReviewKeyValueRow(
+              label: 'Vehicle',
+              value: 'Brand new',
+              onEdit: () => notifier.goToStep(1),
+            ),
+          const SizedBox(height: 20),
+          if (state.isNewVehicle)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: AppColors.secondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Your agent will provide a detailed quote based on your requirements.',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (estimate != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Rough cost estimate',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        '~GHS ${estimate.ghs.toStringAsFixed(0)}',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'This is an approximate estimate. Actual cost depends on the vehicle found.',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textTertiary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderSolid, width: 0.5),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'What happens next',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const NextStepRow(
+                  number: 1,
+                  text:
+                      'We match you with a dedicated agent (usually within 2 hours)',
+                ),
+                const NextStepRow(
+                  number: 2,
+                  text:
+                      'Your agent searches for your car and sends you options in chat',
+                ),
+                const NextStepRow(
+                  number: 3,
+                  text: 'No payment until your agent sends a payment request',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+}

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/route_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/breakdown_item.dart';
@@ -30,17 +29,17 @@ class PaymentRequestViewScreen extends ConsumerWidget {
     final orderRef = orderAsync.valueOrNull?.orderRef ?? orderId;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
         title: const Text(
           'Payment request',
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: Colors.black87, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
@@ -49,7 +48,7 @@ class PaymentRequestViewScreen extends ConsumerWidget {
             child: Center(
               child: Text(
                 orderRef,
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
               ),
             ),
           ),
@@ -58,14 +57,14 @@ class PaymentRequestViewScreen extends ConsumerWidget {
       body: requestAsync.when(
         data: (request) {
           if (request == null) {
-            return const Center(child: Text('Payment request not found', style: TextStyle(color: Colors.white)));
+            return const Center(child: Text('Payment request not found', style: TextStyle(color: Colors.black87)));
           }
           if (!request.isPending) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('This request is no longer pending', style: TextStyle(color: Colors.white)),
+                  const Text('This request is no longer pending', style: TextStyle(color: Colors.black87)),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => context.go('/order/$orderId'),
@@ -102,9 +101,8 @@ class PaymentRequestViewScreen extends ConsumerWidget {
                       '/order/$orderId/payment-request/$requestId/checkout',
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2C2C2E),
+                      backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text('Proceed to payment →'),
                   ),
@@ -112,21 +110,21 @@ class PaymentRequestViewScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () => context.go('/order/$orderId'),
-                  child: const Text('View order details', style: TextStyle(color: Colors.white)),
+                  child: const Text('View order details', style: TextStyle(color: Colors.black87)),
                 ),
                 const SizedBox(height: 24),
                 const Center(
                   child: Text(
                     'PAYMENT REQUEST',
-                    style: TextStyle(color: Colors.white38, fontSize: 12),
+                    style: TextStyle(color: Colors.black38, fontSize: 12),
                   ),
                 ),
               ],
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
-        error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.secondary)),
+        error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.black87))),
       ),
     );
   }
@@ -168,16 +166,16 @@ class _AgentHeader extends ConsumerWidget {
             children: [
               Text(
                 'Request from ${agentAsync.valueOrNull?.fullName ?? 'Agent'}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
+                style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 16),
               ),
               Text(
                 typeLabel,
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
               ),
             ],
           ),
         ),
-        Text(sentAt, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        Text(sentAt, style: const TextStyle(color: Colors.black54, fontSize: 12)),
       ],
     );
   }
@@ -201,13 +199,13 @@ class _AmountHero extends StatelessWidget {
       children: [
         const Text(
           'AMOUNT DUE',
-          style: TextStyle(color: Colors.white54, fontSize: 12),
+          style: TextStyle(color: Colors.black54, fontSize: 12),
         ),
         const SizedBox(height: 4),
         Text(
           CurrencyFormatter.formatGhs(request.totalGhs),
           style: const TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontSize: 32,
             fontWeight: FontWeight.w700,
           ),
@@ -215,7 +213,7 @@ class _AmountHero extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           '~${CurrencyFormatter.formatUsd(usdEquivalent)} at GHS ${rate.toStringAsFixed(2)}',
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
+          style: const TextStyle(color: Colors.black54, fontSize: 14),
         ),
         const SizedBox(height: 8),
         deadlineWidget,
@@ -239,8 +237,6 @@ class _DeadlinePillState extends State<_DeadlinePill> with SingleTickerProviderS
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    final within24h = widget.deadlineAt.difference(now).inHours < 24;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -302,25 +298,25 @@ class _BreakdownSection extends StatelessWidget {
       children: [
         const Text(
           'BREAKDOWN',
-          style: TextStyle(color: Colors.white54, fontSize: 12),
+          style: TextStyle(color: Colors.black54, fontSize: 12),
         ),
         const SizedBox(height: 12),
         ...request.breakdown.map((item) => _BreakdownRow(item: item)),
-        const Divider(color: Colors.white24, height: 24),
+        const Divider(color: Color(0xFFE0DFD8), height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Total due', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            const Text('Total due', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   CurrencyFormatter.formatGhs(request.totalGhs),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18),
+                  style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 18),
                 ),
                 Text(
                   '~${CurrencyFormatter.formatUsd(request.totalUsd)}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  style: const TextStyle(color: Colors.black54, fontSize: 12),
                 ),
               ],
             ),
@@ -339,7 +335,7 @@ class _BreakdownRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDeduction = item.isDeduction;
-    final color = isDeduction ? AppColors.success : Colors.white;
+    final color = isDeduction ? AppColors.success : Colors.black87;
     final ghsStr = isDeduction
         ? '−${CurrencyFormatter.formatGhs(item.amountGhs)}'
         : CurrencyFormatter.formatGhs(item.amountGhs);
@@ -378,13 +374,13 @@ class _DepositClarityNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.15),
+        color: AppColors.success.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
         border: const Border(left: BorderSide(color: AppColors.success, width: 4)),
       ),
       child: Text(
         'Your 10% deposit of ${CurrencyFormatter.formatGhs(depositDeductedGhs)} has been deducted from the vehicle purchase price. You are only paying the remaining balance.',
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: const TextStyle(color: Colors.black87, fontSize: 14),
       ),
     );
   }
@@ -396,13 +392,13 @@ class _RepairFeeNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.secondary.withOpacity(0.15),
+        color: AppColors.secondary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
         border: const Border(left: BorderSide(color: AppColors.secondary, width: 4)),
       ),
       child: const Text(
         'Garage name and approved quote reference are shown in the breakdown above.',
-        style: TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(color: Colors.black87, fontSize: 14),
       ),
     );
   }

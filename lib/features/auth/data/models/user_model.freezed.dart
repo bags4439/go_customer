@@ -35,6 +35,7 @@ mixin _$UserModel {
   DateTime? get ghanaidVerifiedAt => throw _privateConstructorUsedError;
   String get preferredCurrency => throw _privateConstructorUsedError;
   String get preferredLanguage => throw _privateConstructorUsedError;
+  String get referralCode => throw _privateConstructorUsedError;
   String? get pushToken => throw _privateConstructorUsedError;
   Map<String, dynamic>? get notificationPreferences =>
       throw _privateConstructorUsedError;
@@ -71,6 +72,7 @@ abstract class $UserModelCopyWith<$Res> {
     DateTime? ghanaidVerifiedAt,
     String preferredCurrency,
     String preferredLanguage,
+    String referralCode,
     String? pushToken,
     Map<String, dynamic>? notificationPreferences,
     DateTime? lastActiveAt,
@@ -107,6 +109,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? ghanaidVerifiedAt = freezed,
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
+    Object? referralCode = null,
     Object? pushToken = freezed,
     Object? notificationPreferences = freezed,
     Object? lastActiveAt = freezed,
@@ -167,6 +170,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.preferredLanguage
                 : preferredLanguage // ignore: cast_nullable_to_non_nullable
                       as String,
+            referralCode: null == referralCode
+                ? _value.referralCode
+                : referralCode // ignore: cast_nullable_to_non_nullable
+                      as String,
             pushToken: freezed == pushToken
                 ? _value.pushToken
                 : pushToken // ignore: cast_nullable_to_non_nullable
@@ -216,6 +223,7 @@ abstract class _$$UserModelImplCopyWith<$Res>
     DateTime? ghanaidVerifiedAt,
     String preferredCurrency,
     String preferredLanguage,
+    String referralCode,
     String? pushToken,
     Map<String, dynamic>? notificationPreferences,
     DateTime? lastActiveAt,
@@ -251,6 +259,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? ghanaidVerifiedAt = freezed,
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
+    Object? referralCode = null,
     Object? pushToken = freezed,
     Object? notificationPreferences = freezed,
     Object? lastActiveAt = freezed,
@@ -311,6 +320,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.preferredLanguage
             : preferredLanguage // ignore: cast_nullable_to_non_nullable
                   as String,
+        referralCode: null == referralCode
+            ? _value.referralCode
+            : referralCode // ignore: cast_nullable_to_non_nullable
+                  as String,
         pushToken: freezed == pushToken
             ? _value.pushToken
             : pushToken // ignore: cast_nullable_to_non_nullable
@@ -353,6 +366,7 @@ class _$UserModelImpl implements _UserModel {
     this.ghanaidVerifiedAt,
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
+    this.referralCode = '',
     this.pushToken,
     final Map<String, dynamic>? notificationPreferences,
     this.lastActiveAt,
@@ -396,6 +410,9 @@ class _$UserModelImpl implements _UserModel {
   @JsonKey()
   final String preferredLanguage;
   @override
+  @JsonKey()
+  final String referralCode;
+  @override
   final String? pushToken;
   final Map<String, dynamic>? _notificationPreferences;
   @override
@@ -417,7 +434,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaidUrl: $ghanaidUrl, ghanaidVerified: $ghanaidVerified, ghanaidVerifiedAt: $ghanaidVerifiedAt, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaidUrl: $ghanaidUrl, ghanaidVerified: $ghanaidVerified, ghanaidVerifiedAt: $ghanaidVerifiedAt, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -447,6 +464,8 @@ class _$UserModelImpl implements _UserModel {
                 other.preferredCurrency == preferredCurrency) &&
             (identical(other.preferredLanguage, preferredLanguage) ||
                 other.preferredLanguage == preferredLanguage) &&
+            (identical(other.referralCode, referralCode) ||
+                other.referralCode == referralCode) &&
             (identical(other.pushToken, pushToken) ||
                 other.pushToken == pushToken) &&
             const DeepCollectionEquality().equals(
@@ -463,7 +482,7 @@ class _$UserModelImpl implements _UserModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     id,
     fullName,
@@ -478,12 +497,13 @@ class _$UserModelImpl implements _UserModel {
     ghanaidVerifiedAt,
     preferredCurrency,
     preferredLanguage,
+    referralCode,
     pushToken,
     const DeepCollectionEquality().hash(_notificationPreferences),
     lastActiveAt,
     createdAt,
     updatedAt,
-  );
+  ]);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -514,6 +534,7 @@ abstract class _UserModel implements UserModel {
     final DateTime? ghanaidVerifiedAt,
     final String preferredCurrency,
     final String preferredLanguage,
+    final String referralCode,
     final String? pushToken,
     final Map<String, dynamic>? notificationPreferences,
     final DateTime? lastActiveAt,
@@ -550,6 +571,8 @@ abstract class _UserModel implements UserModel {
   String get preferredCurrency;
   @override
   String get preferredLanguage;
+  @override
+  String get referralCode;
   @override
   String? get pushToken;
   @override

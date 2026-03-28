@@ -30,6 +30,7 @@ class OrderTimelineConstants {
   static const String questionsChat = 'Questions? Chat with agent →';
   static const String managedByAgent = 'Managed by your agent';
   static const String viewQuoteInChat = 'View quote in chat →';
+  static const String viewQuote = 'View quote →';
   static const String morePhotos = '[n] more';
   static const String trackShipment = 'Track shipment →';
   static const String paymentRequired = 'PAYMENT REQUIRED';

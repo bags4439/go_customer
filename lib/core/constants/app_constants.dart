@@ -4,13 +4,13 @@ class AppConstants {
   /// Set this to your OneSignal App ID.
   ///
   /// Keeping it as a constant avoids scattering the value across the codebase.
-  static const String oneSignalAppId = 'CHANGE_ME_ONESIGNAL_APP_ID';
+  static const String oneSignalAppId = '9a05e7b1-ca1c-4de2-b521-a175c1d66e34';
 
   /// Paystack secret key (mobile). Required for payment flow. Configure manually.
-  static const String paystackSecretKey = 'CHANGE_ME_PAYSTACK_SECRET_KEY';
+  static const String paystackSecretKey = 'sk_test_3fb395ade7ccf7b5452cda34c14a97d6bcd7b896';
 
   /// Paystack callback URL (from dashboard). Required for mobile WebView to close after payment.
-  static const String paystackCallBackUrl = 'https://standard.paystack.co/callback';
+  static const String paystackCallBackUrl = 'https://europe-west1-velocitech-auto-go.cloudfunctions.net/paystackWebhook';
 
   // payment_requests.type — used for conditional UI (deposit note, repair note)
   static const String paymentRequestTypeVehicleBalanceAndShipping =
@@ -20,10 +20,32 @@ class AppConstants {
   /// Human-readable labels for payment_requests.type — never hardcode in UI.
   static const Map<String, String> paymentRequestTypeLabels = {
     'initial': 'Deposit & service fee',
-    'vehicle_balance_and_shipping': 'Vehicle balance + shipping',
+    'vehicle_balance': 'Vehicle balance',
+    'vehicle_balance_and_shipping': 'Vehicle balance + shipping (legacy)',
+    'shipping_fee': 'Shipping fee',
     'clearance_fee': 'Port clearance fee',
-    'repair_fee': 'Repair fee',
+    'repair_fee': 'Repair deposit',
+    'repair_balance': 'Repair balance',
     'delivery_fee': 'Delivery fee',
+  };
+
+  static const String purchaseOriginAny = 'any';
+  static const String purchaseOriginUsCanada = 'us_canada';
+  static const String purchaseOriginDubai = 'dubai';
+  static const String purchaseOriginChina = 'china';
+
+  static const Map<String, String> purchaseOriginLabels = {
+    'any': 'No preference',
+    'us_canada': 'US / Canada',
+    'dubai': 'Dubai / Middle East',
+    'china': 'China',
+  };
+
+  static const Map<String, String> purchaseOriginSubtitles = {
+    'any': 'Your agent finds the best source',
+    'us_canada': 'Used, salvage or clean title',
+    'dubai': 'Typically used, low mileage',
+    'china': 'New or used directly from China',
   };
 }
 
@@ -57,6 +79,11 @@ class FirestoreCollections {
   static const String exchangeRates = 'exchange_rates';
   static const String costDefaults = 'cost_defaults';
   static const String systemSettings = 'system_settings';
+  static const String referralCodes = 'referral_codes';
+  static const String carMakes = 'car_makes';
+
+  /// Subcollection under each `car_makes/{makeSlug}` document.
+  static const String carMakeModels = 'models';
 }
 
 class FirestoreEnumValues {
@@ -119,11 +146,17 @@ class FirestoreEnumValues {
   static const String vehicleConditionRunAndDrive = 'run_and_drive';
   static const String vehicleConditionRepairable = 'repairable';
   static const String vehicleConditionFullRebuild = 'full_rebuild';
+  static const String vehicleConditionNewVehicle = 'new_vehicle';
+  static const String vehicleConditionGoodCondition = 'good_condition';
+  static const String vehicleConditionFairCondition = 'fair_condition';
 
   static const List<String> vehicleConditionValues = [
     vehicleConditionRunAndDrive,
     vehicleConditionRepairable,
     vehicleConditionFullRebuild,
+    vehicleConditionNewVehicle,
+    vehicleConditionGoodCondition,
+    vehicleConditionFairCondition,
   ];
 
   // vehicle_options.source
@@ -264,15 +297,20 @@ class FirestoreEnumValues {
       'vehicle_balance_and_shipping';
   static const String paymentRequestTypeClearanceFee = 'clearance_fee';
   static const String paymentRequestTypeRepairFee = 'repair_fee';
+  static const String paymentRequestTypeVehicleBalance = 'vehicle_balance';
+  static const String paymentRequestTypeShippingFee = 'shipping_fee';
   static const String paymentRequestTypeRepairBalance = 'repair_balance';
   static const String paymentRequestTypeDeliveryFee = 'delivery_fee';
 
   /// Human-readable labels for payment_requests.type — never hardcode in UI.
   static const Map<String, String> paymentRequestTypeLabels = {
     paymentRequestTypeInitial: 'Deposit & service fee',
-    paymentRequestTypeVehicleBalanceAndShipping: 'Vehicle balance + shipping',
+    'vehicle_balance': 'Vehicle balance',
+    paymentRequestTypeVehicleBalanceAndShipping:
+        'Vehicle balance + shipping (legacy)',
+    'shipping_fee': 'Shipping fee',
     paymentRequestTypeClearanceFee: 'Port clearance fee',
-    paymentRequestTypeRepairFee: 'Repair fee',
+    paymentRequestTypeRepairFee: 'Repair deposit',
     paymentRequestTypeRepairBalance: 'Repair balance',
     paymentRequestTypeDeliveryFee: 'Delivery fee',
   };

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../payments/data/models/payment_request_model.dart';
 import '../../core/constants/order_edit_constants.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import '../providers/order_providers.dart';
@@ -186,7 +187,11 @@ class _OrderOverviewTab extends ConsumerWidget {
             paymentAsync.when(
               data: (p) {
                 if (p == null) return const SizedBox.shrink();
-                final typeLabel = AppConstants.paymentRequestTypeLabels[p.type] ?? p.type;
+                final typeLabel = AppConstants.paymentRequestTypeLabels[
+                  p.type is PaymentRequestType
+                    ? (p.type as PaymentRequestType).firestoreValue
+                    : p.type.toString()
+                ] ?? p.type.toString();
                 final deadlineStr = p.deadlineAt != null
                     ? _formatDeadline(p.deadlineAt!)
                     : null;
@@ -354,9 +359,6 @@ class _AnimatedEditCancelSectionState extends State<_AnimatedEditCancelSection>
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF378ADD)),
                         foregroundColor: const Color(0xFF378ADD),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
                       ),
                       child: const Text(OrderEditConstants.editButtonLabel),
                     ),
@@ -372,9 +374,6 @@ class _AnimatedEditCancelSectionState extends State<_AnimatedEditCancelSection>
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFFE24B4A)),
                         foregroundColor: const Color(0xFFE24B4A),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
                       ),
                       child: const Text(OrderEditConstants.cancelButtonLabel),
                     ),

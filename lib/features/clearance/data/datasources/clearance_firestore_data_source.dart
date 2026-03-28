@@ -108,7 +108,7 @@ class ClearanceFirestoreDataSource {
     final snapshot = await _firestore
         .collection(FirestoreCollections.orderTimeline)
         .where('orderId', isEqualTo: orderId)
-        .where('stageKey', isEqualTo: 'clearance_repairs')
+        .where('stageKey', isEqualTo: 'repair')
         .limit(1)
         .get();
     if (snapshot.docs.isEmpty) return;

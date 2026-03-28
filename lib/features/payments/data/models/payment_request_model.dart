@@ -8,7 +8,9 @@ part 'payment_request_model.g.dart';
 
 enum PaymentRequestType {
   initial,
-  vehicleBalanceAndShipping,
+  vehicleBalance,
+  vehicleBalanceAndShipping, // deprecated — legacy records only
+  shippingFee,
   clearanceFee,
   repairFee,
   repairBalance,
@@ -17,8 +19,10 @@ enum PaymentRequestType {
   static PaymentRequestType fromString(String v) {
     const map = <String, PaymentRequestType>{
       'initial': PaymentRequestType.initial,
+      'vehicle_balance': PaymentRequestType.vehicleBalance,
       'vehicle_balance_and_shipping':
           PaymentRequestType.vehicleBalanceAndShipping,
+      'shipping_fee': PaymentRequestType.shippingFee,
       'clearance_fee': PaymentRequestType.clearanceFee,
       'repair_fee': PaymentRequestType.repairFee,
       'repair_balance': PaymentRequestType.repairBalance,
@@ -30,8 +34,10 @@ enum PaymentRequestType {
   String get firestoreValue {
     const map = <PaymentRequestType, String>{
       PaymentRequestType.initial: 'initial',
+      PaymentRequestType.vehicleBalance: 'vehicle_balance',
       PaymentRequestType.vehicleBalanceAndShipping:
           'vehicle_balance_and_shipping',
+      PaymentRequestType.shippingFee: 'shipping_fee',
       PaymentRequestType.clearanceFee: 'clearance_fee',
       PaymentRequestType.repairFee: 'repair_fee',
       PaymentRequestType.repairBalance: 'repair_balance',
@@ -43,12 +49,13 @@ enum PaymentRequestType {
   String get label {
     const map = <PaymentRequestType, String>{
       PaymentRequestType.initial: 'Deposit & service fee',
+      PaymentRequestType.vehicleBalance: 'Vehicle balance',
       PaymentRequestType.vehicleBalanceAndShipping:
-          'Vehicle balance + shipping',
+          'Vehicle balance + shipping (legacy)',
+      PaymentRequestType.shippingFee: 'Shipping fee',
       PaymentRequestType.clearanceFee: 'Port clearance fee',
-      PaymentRequestType.repairFee:
-          'Repair deposit — parts & coordination',
-      PaymentRequestType.repairBalance: 'Repair balance — workmanship',
+      PaymentRequestType.repairFee: 'Repair deposit',
+      PaymentRequestType.repairBalance: 'Repair balance',
       PaymentRequestType.deliveryFee: 'Delivery fee',
     };
     return map[this] ?? '';
@@ -124,7 +131,7 @@ class PaymentRequestModel with _$PaymentRequestModel {
     String? timelineStageKey,
     String? invoiceImageUrl,
     DateTime? deadlineAt,
-    @Default('pending') String status, // pending|paid|expired|cancelled
+    @Default('pending') String status,
     DateTime? sentAt,
     DateTime? paidAt,
     DateTime? expiredAt,

@@ -12,6 +12,7 @@ import '../../domain/repositories/repair_repository.dart';
 enum RepairScreenState {
   notAvailable,
   choice,
+  awaitingQuote,
   quoteSent,
   quoteDeclined,
   inProgress,
@@ -48,7 +49,8 @@ final repairScreenStateProvider =
 
   if (duty?.graStatus != 'cleared') return RepairScreenState.notAvailable;
   if (job == null) return RepairScreenState.choice;
-  if (repairOptedIn == false && job.isNotStarted) return RepairScreenState.noRepair;
+  if (job.isNotStarted && repairOptedIn == false) return RepairScreenState.noRepair;
+  if (job.isNotStarted && repairOptedIn == true) return RepairScreenState.awaitingQuote;
   if (job.isQuoteSent) return RepairScreenState.quoteSent;
   if (job.isQuoteDeclined) return RepairScreenState.quoteDeclined;
   if (job.isQuoteApproved || job.isInProgress) return RepairScreenState.inProgress;

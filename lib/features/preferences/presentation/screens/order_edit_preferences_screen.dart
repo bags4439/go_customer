@@ -3,13 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalogue/domain/entities/car_model.dart';
+import '../../../catalogue/presentation/providers/car_catalogue_providers.dart';
 import '../../../orders/core/constants/order_edit_constants.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../providers/order_edit_form_provider.dart';
 import '../providers/preference_form_provider.dart';
+import '../widgets/preferences_widgets.dart';
 
 const _kBorderColor = 0xFFE0DFD8;
 const _kSurface = 0xFFF5F4F0;
@@ -51,7 +57,8 @@ class _OrderEditPreferencesScreenState
     );
     _bannerSlide = Tween<Offset>(begin: const Offset(0, -0.2), end: Offset.zero)
         .animate(
-            CurvedAnimation(parent: _bannerController, curve: Curves.easeOut));
+          CurvedAnimation(parent: _bannerController, curve: Curves.easeOut),
+        );
     _bannerController.forward();
   }
 
@@ -75,16 +82,16 @@ class _OrderEditPreferencesScreenState
           );
         }
         if (order.firstPaymentMade) {
-          return _AccessDeniedScreen(
-            orderId: widget.orderId,
-          );
+          return _AccessDeniedScreen(orderId: widget.orderId);
         }
         if (order.isCancelled || order.isCompleted) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) context.go('/order/${widget.orderId}');
           });
           return Scaffold(
-            appBar: AppBar(title: const Text(OrderEditConstants.editPreferencesTitle)),
+            appBar: AppBar(
+              title: const Text(OrderEditConstants.editPreferencesTitle),
+            ),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -119,10 +126,7 @@ class _OrderEditPreferencesScreenState
       elevation: 0,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(
-          color: const Color(_kBorderColor),
-          height: 0.5,
-        ),
+        child: Container(color: const Color(_kBorderColor), height: 0.5),
       ),
     );
   }
@@ -148,10 +152,7 @@ class _AccessDeniedScreen extends StatelessWidget {
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            color: const Color(_kBorderColor),
-            height: 0.5,
-          ),
+          child: Container(color: const Color(_kBorderColor), height: 0.5),
         ),
       ),
       body: Center(
@@ -166,7 +167,11 @@ class _AccessDeniedScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.lock_outline, size: 48, color: Color(_kTextTertiary)),
+                const Icon(
+                  Icons.lock_outline,
+                  size: 48,
+                  color: Color(_kTextTertiary),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   OrderEditConstants.notAvailable,
@@ -238,10 +243,7 @@ class _EditFormContent extends ConsumerWidget {
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            color: const Color(_kBorderColor),
-            height: 0.5,
-          ),
+          child: Container(color: const Color(_kBorderColor), height: 0.5),
         ),
       ),
       body: formState.originalValues == null && formState.error != null
@@ -251,99 +253,125 @@ class _EditFormContent extends ConsumerWidget {
                   ref.read(editFormNotifierProvider(orderId).notifier).load(),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  FadeTransition(
-                    opacity: bannerOpacity,
-                    child: SlideTransition(
-                      position: bannerSlide,
-                      child: _AgentBanner(
-                        message: OrderEditConstants.changesSentToAgent
-                            .replaceAll('[agentFirstName]', agentName),
-                      ),
+              padding: EdgeInsets.zero,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: ResponsiveLayout.preferencesFormMaxWidth(context),
+                  ),
+                  child: Padding(
+                    padding: ResponsiveLayout.contentPadding(
+                      context,
+                    ).add(const EdgeInsets.symmetric(vertical: 16)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        FadeTransition(
+                          opacity: bannerOpacity,
+                          child: SlideTransition(
+                            position: bannerSlide,
+                            child: _AgentBanner(
+                              message: OrderEditConstants.changesSentToAgent
+                                  .replaceAll('[agentFirstName]', agentName),
+                            ),
+                          ),
+                        ),
+                        if (vehicleOptionsSent.valueOrNull == true) ...[
+                          const SizedBox(height: 12),
+                          _VehicleOptionsBanner(
+                            message: OrderEditConstants
+                                .vehicleOptionsWarningEdit
+                                .replaceAll('[agentFirstName]', agentName),
+                          ),
+                        ],
+                        if (hasChanges) ...[
+                          const SizedBox(height: 12),
+                          AnimatedOpacity(
+                            opacity: hasChanges ? 1 : 0,
+                            duration: const Duration(milliseconds: 200),
+                            child: SlideTransition(
+                              position:
+                                  Tween<Offset>(
+                                    begin: const Offset(0, -0.1),
+                                    end: Offset.zero,
+                                  ).animate(
+                                    AlwaysStoppedAnimation(
+                                      hasChanges ? 1.0 : 0.0,
+                                    ),
+                                  ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Color(_kPrimary),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    OrderEditConstants.unsavedChanges,
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 12,
+                                      color: const Color(_kPrimaryText),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (formState.originalValues == null) ...[
+                          const SizedBox(height: 24),
+                          _SectionShimmer(),
+                          const SizedBox(height: 12),
+                          _SectionShimmer(),
+                          const SizedBox(height: 12),
+                          _SectionShimmer(),
+                        ] else ...[
+                          const SizedBox(height: 16),
+                          _MakeModelYearSection(orderId: orderId),
+                          const SizedBox(height: 12),
+                          _ConditionSection(orderId: orderId),
+                          if (!ref
+                              .watch(editFormNotifierProvider(orderId))
+                              .isBrandNewVehicle) ...[
+                            const SizedBox(height: 12),
+                            _MileageSection(orderId: orderId),
+                            const SizedBox(height: 12),
+                            _RepairSection(orderId: orderId),
+                          ],
+                          const SizedBox(height: 8),
+                          _SaveButton(
+                            orderId: orderId,
+                            hasChanges: hasChanges,
+                            isSaving: formState.isSaving,
+                            agentName: agentName,
+                            userId: authState.value ?? '',
+                          ),
+                          const SizedBox(height: 10),
+                          _DiscardButton(
+                            orderId: orderId,
+                            hasChanges: hasChanges,
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  if (vehicleOptionsSent.valueOrNull == true) ...[
-                    const SizedBox(height: 12),
-                    _VehicleOptionsBanner(
-                      message: OrderEditConstants.vehicleOptionsWarningEdit
-                          .replaceAll('[agentFirstName]', agentName),
-                    ),
-                  ],
-                  if (hasChanges) ...[
-                    const SizedBox(height: 12),
-                    AnimatedOpacity(
-                      opacity: hasChanges ? 1 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, -0.1),
-                          end: Offset.zero,
-                        ).animate(AlwaysStoppedAnimation(hasChanges ? 1.0 : 0.0)),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: Color(_kPrimary),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              OrderEditConstants.unsavedChanges,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 12,
-                                color: const Color(_kPrimaryText),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (formState.originalValues == null) ...[
-                    const SizedBox(height: 24),
-                    _SectionShimmer(),
-                    const SizedBox(height: 12),
-                    _SectionShimmer(),
-                    const SizedBox(height: 12),
-                    _SectionShimmer(),
-                  ] else ...[
-                    const SizedBox(height: 16),
-                    _MakeModelYearSection(orderId: orderId),
-                    const SizedBox(height: 12),
-                    _ConditionSection(orderId: orderId),
-                    const SizedBox(height: 12),
-                    _MileageSection(orderId: orderId),
-                    const SizedBox(height: 12),
-                    _RepairSection(orderId: orderId),
-                    const SizedBox(height: 8),
-                    _SaveButton(
-                      orderId: orderId,
-                      hasChanges: hasChanges,
-                      isSaving: formState.isSaving,
-                      agentName: agentName,
-                      userId: authState.value ?? '',
-                    ),
-                    const SizedBox(height: 10),
-                    _DiscardButton(
-                      orderId: orderId,
-                      hasChanges: hasChanges,
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
     );
   }
-
 }
 
-void _onBack(BuildContext context, WidgetRef ref, String orderId, bool hasChanges) {
+void _onBack(
+  BuildContext context,
+  WidgetRef ref,
+  String orderId,
+  bool hasChanges,
+) {
   if (hasChanges) {
     showDialog<bool>(
       context: context,
@@ -394,7 +422,10 @@ class _AgentBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: GoogleFonts.dmSans(fontSize: 12, color: const Color(_kPrimaryText)),
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: const Color(_kPrimaryText),
+              ),
             ),
           ),
         ],
@@ -414,18 +445,26 @@ class _VehicleOptionsBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(_kAmberBg),
-        border: const Border(left: BorderSide(color: Color(_kAmberBorder), width: 3)),
+        border: const Border(
+          left: BorderSide(color: Color(_kAmberBorder), width: 3),
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded,
-              size: 16, color: Color(_kAmberBorder)),
+          const Icon(
+            Icons.warning_amber_rounded,
+            size: 16,
+            color: Color(_kAmberBorder),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
-              style: GoogleFonts.dmSans(fontSize: 12, color: const Color(_kAmberText)),
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: const Color(_kAmberText),
+              ),
             ),
           ),
         ],
@@ -477,6 +516,25 @@ class _ChangedBadge extends StatelessWidget {
   }
 }
 
+const _editYearRange = [
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+];
+
 class _MakeModelYearSection extends ConsumerWidget {
   final String orderId;
 
@@ -489,89 +547,203 @@ class _MakeModelYearSection extends ConsumerWidget {
     final o = state.originalValues;
     final makeChanged = o != null && state.make != o.make;
     final modelChanged = o != null && state.model != o.model;
-    final yearChanged = o != null &&
-        (state.yearMin != o.yearMin || state.yearMax != o.yearMax);
-    final models = ref.watch(modelOptionsProvider)[state.make] ?? const ['Other'];
+    final yearChanged =
+        o != null && (state.yearMin != o.yearMin || state.yearMax != o.yearMax);
+    final originChanged = o != null && state.purchaseOrigin != o.purchaseOrigin;
+    final trimChanged = o != null && state.trim != o.trim;
+    final slugChanged =
+        o != null &&
+        (state.makeSlug != o.makeSlug || state.modelSlug != o.modelSlug);
+    final yearsTo = _editYearRange.where((y) => y >= state.yearMin).toList();
 
     return _SectionCard(
       sectionLabel: OrderEditConstants.carMake,
-      changed: makeChanged,
+      changed:
+          makeChanged ||
+          modelChanged ||
+          yearChanged ||
+          originChanged ||
+          trimChanged ||
+          slugChanged,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _DropdownRow(
-            label: OrderEditConstants.carMake,
-            value: state.make,
-            options: ref.watch(makeOptionsProvider),
-            changed: makeChanged,
-            onChanged: (v) {
-              if (v != null) notifier.updateMake(v, models);
-            },
-          ),
-          const SizedBox(height: 12),
-          _DropdownRow(
-            label: OrderEditConstants.model,
-            value: state.model,
-            options: models,
-            changed: modelChanged,
-            onChanged: (v) {
-              if (v != null) notifier.updateModel(v);
-            },
-          ),
-          const SizedBox(height: 12),
           Row(
             children: [
               Text(
-                OrderEditConstants.fromYear,
+                'MAKE',
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: const Color(_kTextSecondary),
+                  letterSpacing: 0.5,
+                  color: AppColors.textTertiary,
                 ),
               ),
-              const Spacer(),
-              _ChangedBadge(show: yearChanged),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Expanded(
-                child: _Dropdown<int>(
-                  value: state.yearMin,
-                  items: List.generate(15, (i) => 2010 + i),
-                  onChanged: (v) {
-                    if (v != null) notifier.updateYearMin(v);
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _Dropdown<int>(
-                  value: state.yearMax,
-                  items: List.generate(15, (i) => 2010 + i),
-                  onChanged: (v) {
-                    if (v != null) notifier.updateYearMax(v);
-                  },
-                ),
-              ),
+              const SizedBox(width: 8),
+              _ChangedBadge(show: makeChanged),
             ],
           ),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: state.isSingleYear
-                  ? const Color(0xFFE8F3DF)
-                  : const Color(0xFFE6F1FF),
-              borderRadius: BorderRadius.circular(8),
+          CatalogueSelectorField(
+            label: state.make.isEmpty ? 'Select make' : state.make,
+            isPlaceholder: state.make.isEmpty,
+            onTap: () => showCarMakePickerSheet(
+              context: context,
+              onSelected: (make) {
+                notifier.updateMake(make.name, []);
+                notifier.updateMakeSlug(make.slug);
+                notifier.clearTrim();
+              },
             ),
-            child: Text(
-              state.isSingleYear
-                  ? OrderEditConstants.singleYearNote
-                  : OrderEditConstants.yearRangeNote,
-              style: GoogleFonts.dmSans(fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Text(
+                'MODEL',
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                  color: AppColors.textTertiary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _ChangedBadge(show: modelChanged),
+            ],
+          ),
+          const SizedBox(height: 8),
+          CatalogueSelectorField(
+            label: state.model.isEmpty ? 'Select model' : state.model,
+            isPlaceholder: state.model.isEmpty,
+            onTap: () {
+              final slug = state.makeSlug;
+              if (slug == null || slug.isEmpty) return;
+              showCarModelPickerSheet(
+                context: context,
+                makeSlug: slug,
+                onSelected: (model) {
+                  notifier.updateModel(model.name);
+                  notifier.updateModelSlug(model.slug);
+                },
+              );
+            },
+          ),
+          _EditTrimChipsRow(orderId: orderId),
+          if (!state.isBrandNewVehicle) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Text(
+                  'YEAR RANGE',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                const Spacer(),
+                _ChangedBadge(show: yearChanged),
+              ],
             ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: YearSelectorField(
+                    heading: 'From',
+                    value: state.yearMin,
+                    years: _editYearRange,
+                    onChanged: notifier.updateYearMin,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: YearSelectorField(
+                    heading: 'To',
+                    value: state.yearMax,
+                    years: yearsTo,
+                    onChanged: notifier.updateYearMax,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: state.isSingleYear
+                    ? AppColors.successMutedBackground
+                    : AppColors.infoBackground,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                state.isSingleYear
+                    ? OrderEditConstants.singleYearNote
+                    : OrderEditConstants.yearRangeNote,
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Text(
+                'SOURCE',
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                  color: AppColors.textTertiary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _ChangedBadge(show: originChanged),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OriginPill(
+                label: AppConstants.purchaseOriginLabels['any']!,
+                selected:
+                    state.purchaseOrigin == AppConstants.purchaseOriginAny,
+                onTap: () => notifier.updatePurchaseOrigin(
+                  AppConstants.purchaseOriginAny,
+                ),
+              ),
+              OriginPill(
+                label: AppConstants.purchaseOriginLabels['us_canada']!,
+                selected:
+                    state.purchaseOrigin == AppConstants.purchaseOriginUsCanada,
+                onTap: () => notifier.updatePurchaseOrigin(
+                  AppConstants.purchaseOriginUsCanada,
+                ),
+              ),
+              OriginPill(
+                label: AppConstants.purchaseOriginLabels['dubai']!,
+                selected:
+                    state.purchaseOrigin == AppConstants.purchaseOriginDubai,
+                onTap: () => notifier.updatePurchaseOrigin(
+                  AppConstants.purchaseOriginDubai,
+                ),
+              ),
+              OriginPill(
+                label: AppConstants.purchaseOriginLabels['china']!,
+                selected:
+                    state.purchaseOrigin == AppConstants.purchaseOriginChina,
+                onTap: () => notifier.updatePurchaseOrigin(
+                  AppConstants.purchaseOriginChina,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -579,82 +751,66 @@ class _MakeModelYearSection extends ConsumerWidget {
   }
 }
 
-class _DropdownRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final List<String> options;
-  final bool changed;
-  final ValueChanged<String?> onChanged;
+class _EditTrimChipsRow extends ConsumerWidget {
+  final String orderId;
 
-  const _DropdownRow({
-    required this.label,
-    required this.value,
-    required this.options,
-    required this.changed,
-    required this.onChanged,
-  });
+  const _EditTrimChipsRow({required this.orderId});
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(editFormNotifierProvider(orderId));
+    final notifier = ref.read(editFormNotifierProvider(orderId).notifier);
+    final slug = state.makeSlug;
+    if (slug == null || slug.isEmpty || state.model.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final modelsAsync = ref.watch(carModelsProvider(slug));
+    final models = modelsAsync.valueOrNull ?? [];
+    CarModel? selectedModel;
+    for (final m in models) {
+      if (m.slug == state.modelSlug) {
+        selectedModel = m;
+        break;
+      }
+    }
+    final trims = selectedModel?.trims ?? [];
+    if (trims.isEmpty || state.isBrandNewVehicle) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const SizedBox(height: 16),
         Text(
-          label.toUpperCase(),
+          'TRIM (OPTIONAL)',
           style: GoogleFonts.dmSans(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: const Color(_kTextSecondary),
+            letterSpacing: 0.5,
+            color: AppColors.textTertiary,
           ),
         ),
-        const SizedBox(width: 8),
-        _ChangedBadge(show: changed),
-        const Spacer(),
-        Expanded(
-          flex: 2,
-          child: _Dropdown<String>(
-            value: value,
-            items: options,
-            onChanged: onChanged,
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              TrimChip(
+                label: 'Any trim',
+                selected: state.trim == null,
+                onTap: () => notifier.updateTrim(null),
+              ),
+              ...trims.map(
+                (t) => TrimChip(
+                  label: t,
+                  selected: state.trim == t,
+                  onTap: () => notifier.updateTrim(t),
+                ),
+              ),
+            ],
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Dropdown<T> extends StatelessWidget {
-  final T value;
-  final List<T> items;
-  final ValueChanged<T?> onChanged;
-
-  const _Dropdown({
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(_kBorderColor), width: 0.5),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          isExpanded: true,
-          items: items
-              .map((e) => DropdownMenuItem<T>(
-                    value: e,
-                    child: Text('$e'),
-                  ))
-              .toList(),
-          onChanged: (v) => onChanged(v),
-        ),
-      ),
     );
   }
 }
@@ -669,127 +825,114 @@ class _ConditionSection extends ConsumerWidget {
     final state = ref.watch(editFormNotifierProvider(orderId));
     final notifier = ref.read(editFormNotifierProvider(orderId).notifier);
     final o = state.originalValues;
-    final conditionStr = _conditionToFirestore(state.condition);
+    final conditionStr = preferenceConditionToFirestoreString(state.condition);
     final conditionChanged = o != null && conditionStr != o.condition;
+
+    if (state.isBrandNewVehicle) {
+      return _SectionCard(
+        sectionLabel: OrderEditConstants.condition,
+        changed: conditionChanged,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderSolid, width: 0.5),
+          ),
+          child: Text(
+            'Brand new vehicle — condition options do not apply.',
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+        ),
+      );
+    }
 
     return _SectionCard(
       sectionLabel: OrderEditConstants.condition,
       changed: conditionChanged,
       child: Column(
         children: [
-          _ConditionCard(
-            title: OrderEditConstants.readyToDrive,
-            subtitle: OrderEditConstants.readyToDriveSub,
-            selected: state.condition == PreferenceCondition.readyToDrive,
-            onTap: () => notifier.updateCondition(PreferenceCondition.readyToDrive),
-          ),
-          const SizedBox(height: 8),
-          _ConditionCard(
-            title: OrderEditConstants.needsModerateRepair,
-            subtitle: OrderEditConstants.needsModerateRepairSub,
-            selected:
-                state.condition == PreferenceCondition.needsModerateRepair,
-            onTap: () =>
-                notifier.updateCondition(PreferenceCondition.needsModerateRepair),
-          ),
-          const SizedBox(height: 8),
-          _ConditionCard(
-            title: OrderEditConstants.fullRebuild,
-            subtitle: OrderEditConstants.fullRebuildSub,
-            selected:
-                state.condition == PreferenceCondition.fullRebuildProject,
-            onTap: () =>
-                notifier.updateCondition(PreferenceCondition.fullRebuildProject),
-          ),
+          if (state.isUsOrDubai) ...[
+            ConditionOptionCard(
+              icon: Icons.check_circle_outline,
+              iconColor: AppColors.success,
+              title: OrderEditConstants.readyToDrive,
+              subtitle: OrderEditConstants.readyToDriveSub,
+              badge: 'Most popular',
+              badgeBackground: AppColors.successMutedBackground,
+              badgeTextColor: AppColors.successMutedForeground,
+              selected: state.condition == PreferenceCondition.readyToDrive,
+              onTap: () =>
+                  notifier.updateCondition(PreferenceCondition.readyToDrive),
+            ),
+            const SizedBox(height: 10),
+            ConditionOptionCard(
+              icon: Icons.build_outlined,
+              iconColor: AppColors.warning,
+              title: OrderEditConstants.needsModerateRepair,
+              subtitle: OrderEditConstants.needsModerateRepairSub,
+              badge: 'Lower price',
+              badgeBackground: AppColors.amberBackground,
+              badgeTextColor: AppColors.amberText,
+              selected:
+                  state.condition == PreferenceCondition.needsModerateRepair,
+              onTap: () => notifier.updateCondition(
+                PreferenceCondition.needsModerateRepair,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ConditionOptionCard(
+              icon: Icons.warning_amber_outlined,
+              iconColor: AppColors.danger,
+              title: OrderEditConstants.fullRebuild,
+              subtitle: OrderEditConstants.fullRebuildSub,
+              badge: 'Lowest price',
+              badgeBackground: AppColors.dangerMutedBackground,
+              badgeTextColor: AppColors.dangerMutedText,
+              selected:
+                  state.condition == PreferenceCondition.fullRebuildProject,
+              onTap: () => notifier.updateCondition(
+                PreferenceCondition.fullRebuildProject,
+              ),
+            ),
+          ],
+          if (state.isChina && !state.isBrandNewVehicle) ...[
+            ConditionOptionCard(
+              icon: Icons.thumb_up_outlined,
+              iconColor: AppColors.success,
+              title: 'Good condition',
+              subtitle: 'Low mileage, no significant damage.',
+              selected: state.condition == PreferenceCondition.goodCondition,
+              onTap: () =>
+                  notifier.updateCondition(PreferenceCondition.goodCondition),
+            ),
+            const SizedBox(height: 10),
+            ConditionOptionCard(
+              icon: Icons.thumbs_up_down_outlined,
+              iconColor: AppColors.warning,
+              title: 'Fair condition',
+              subtitle: 'Moderate use, acceptable wear.',
+              selected: state.condition == PreferenceCondition.fairCondition,
+              onTap: () =>
+                  notifier.updateCondition(PreferenceCondition.fairCondition),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-String _conditionToFirestore(PreferenceCondition c) {
-  switch (c) {
-    case PreferenceCondition.readyToDrive:
-      return 'run_and_drive';
-    case PreferenceCondition.needsModerateRepair:
-      return 'repairable';
-    case PreferenceCondition.fullRebuildProject:
-      return 'full_rebuild';
-  }
-}
-
-class _ConditionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _ConditionCard({
-    required this.title,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xFFEBF4FD) : Colors.white,
-        border: Border.all(
-          color: selected ? const Color(_kPrimary) : const Color(_kBorderColor),
-          width: selected ? 2 : 1,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.dmSans(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          color: const Color(_kTextSecondary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (selected)
-                  const Icon(Icons.check_circle, color: Color(_kPrimary), size: 24),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-const _mileageOptions = [
-  (50000, 'Up to 50,000 mi'),
-  (70000, 'Up to 70,000 mi'),
-  (100000, 'Up to 100,000 mi'),
+const _mileageOptionsEdit = [
+  (50000, 'Up to 50,000 mi — lowest mileage'),
+  (70000, 'Up to 70,000 mi — good balance'),
+  (100000, 'Up to 100,000 mi — budget friendly'),
   (200000, 'No preference'),
 ];
 
@@ -810,61 +953,18 @@ class _MileageSection extends ConsumerWidget {
       changed: changed,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: _mileageOptions
-            .map((e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _SelectableTile(
-                    title: e.$2,
-                    selected: state.maxMileage == e.$1,
-                    onTap: () => notifier.updateMaxMileage(e.$1),
-                  ),
-                ))
+        children: _mileageOptionsEdit
+            .map(
+              (e) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SelectablePreferenceTile(
+                  title: e.$2,
+                  selected: state.maxMileage == e.$1,
+                  onTap: () => notifier.updateMaxMileage(e.$1),
+                ),
+              ),
+            )
             .toList(),
-      ),
-    );
-  }
-}
-
-class _SelectableTile extends StatelessWidget {
-  final String title;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _SelectableTile({
-    required this.title,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xFFEBF4FD) : Colors.white,
-        border: Border.all(
-          color: selected ? const Color(_kPrimary) : const Color(_kBorderColor),
-          width: selected ? 2 : 1,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            child: Row(
-              children: [
-                Expanded(child: Text(title, style: GoogleFonts.dmSans(fontSize: 13))),
-                if (selected)
-                  const Icon(Icons.check_circle, color: Color(_kPrimary), size: 22),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -885,21 +985,44 @@ class _RepairSection extends ConsumerWidget {
     return _SectionCard(
       sectionLabel: OrderEditConstants.repairPreference,
       changed: changed,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: _SelectableTile(
-              title: OrderEditConstants.repairYes,
-              selected: state.repairOptedIn,
-              onTap: () => notifier.updateRepairOptedIn(true),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: SelectablePreferenceTile(
+                  title: OrderEditConstants.repairYes,
+                  selected: state.repairOptedIn,
+                  onTap: () => notifier.updateRepairOptedIn(true),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: SelectablePreferenceTile(
+                  title: OrderEditConstants.repairNo,
+                  selected: !state.repairOptedIn,
+                  onTap: () => notifier.updateRepairOptedIn(false),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _SelectableTile(
-              title: OrderEditConstants.repairNo,
-              selected: !state.repairOptedIn,
-              onTap: () => notifier.updateRepairOptedIn(false),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Agent sends repair quote before any work starts.',
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -924,8 +1047,9 @@ class _SectionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(_kSurface),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -937,7 +1061,8 @@ class _SectionCard extends StatelessWidget {
                 style: GoogleFonts.dmSans(
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
-                  color: const Color(_kTextTertiary),
+                  letterSpacing: 0.4,
+                  color: AppColors.textTertiary,
                 ),
               ),
               const SizedBox(width: 8),
@@ -970,7 +1095,8 @@ class _SaveButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderGuardAsync = ref.watch(orderProvider(orderId));
-    final firstPaymentMade = orderGuardAsync.valueOrNull?.firstPaymentMade ?? false;
+    final firstPaymentMade =
+        orderGuardAsync.valueOrNull?.firstPaymentMade ?? false;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -980,36 +1106,44 @@ class _SaveButton extends ConsumerWidget {
             ? () async {
                 if (firstPaymentMade) {
                   showErrorSnackBar(
-                      context, OrderEditConstants.orderNoLongerCancellable);
+                    context,
+                    OrderEditConstants.orderNoLongerCancellable,
+                  );
                   if (context.mounted) context.pop();
                   return;
                 }
-                final notifier =
-                    ref.read(editFormNotifierProvider(orderId).notifier);
+                final notifier = ref.read(
+                  editFormNotifierProvider(orderId).notifier,
+                );
                 final ok = await notifier.save(userId);
                 if (!context.mounted) return;
                 if (ok) {
                   ref.invalidate(orderProvider(orderId));
                   showSuccessSnackBar(
                     context,
-                    OrderEditConstants.preferencesSavedSnackbar
-                        .replaceAll('[agentFirstName]', agentName),
+                    OrderEditConstants.preferencesSavedSnackbar.replaceAll(
+                      '[agentFirstName]',
+                      agentName,
+                    ),
                   );
                   context.pop();
                 } else {
                   showErrorSnackBar(
-                      context, OrderEditConstants.couldNotSaveSnackbar);
+                    context,
+                    OrderEditConstants.couldNotSaveSnackbar,
+                  );
                 }
               }
             : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: hasChanges ? const Color(_kPrimary) : const Color(_kDisabledBg),
-          foregroundColor: hasChanges ? Colors.white : const Color(_kTextTertiary),
+          backgroundColor: hasChanges
+              ? const Color(_kPrimary)
+              : const Color(_kDisabledBg),
+          foregroundColor: hasChanges
+              ? Colors.white
+              : const Color(_kTextTertiary),
           disabledBackgroundColor: const Color(_kDisabledBg),
           disabledForegroundColor: const Color(_kTextTertiary),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
         ),
         child: isSaving
             ? const SizedBox(
@@ -1023,7 +1157,9 @@ class _SaveButton extends ConsumerWidget {
             : Text(
                 hasChanges
                     ? OrderEditConstants.saveAndNotify.replaceAll(
-                        '[agentFirstName]', agentName)
+                        '[agentFirstName]',
+                        agentName,
+                      )
                     : OrderEditConstants.noChangesToSave,
                 style: GoogleFonts.dmSans(
                   fontSize: 14,
@@ -1039,10 +1175,7 @@ class _DiscardButton extends ConsumerWidget {
   final String orderId;
   final bool hasChanges;
 
-  const _DiscardButton({
-    required this.orderId,
-    required this.hasChanges,
-  });
+  const _DiscardButton({required this.orderId, required this.hasChanges});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1082,9 +1215,6 @@ class _DiscardButton extends ConsumerWidget {
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Color(_kBorderColor)),
           foregroundColor: const Color(_kTextSecondary),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
         ),
         child: Text(
           OrderEditConstants.discardChanges,

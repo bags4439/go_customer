@@ -14,9 +14,10 @@ const _kSuccess = 0xFF1D9E75;
 
 /// Repair step when repair_jobs exists (no pending repair payment).
 class RepairStatusCard extends StatefulWidget {
-  final RepairJobModel repairJob;
+  final RepairJobModel? repairJob;
+  final String orderId;
 
-  const RepairStatusCard({super.key, required this.repairJob});
+  const RepairStatusCard({super.key, required this.orderId, this.repairJob});
 
   @override
   State<RepairStatusCard> createState() => _RepairStatusCardState();
@@ -41,18 +42,56 @@ class _RepairStatusCardState extends State<RepairStatusCard>
     super.dispose();
   }
 
-  RepairJobModel get j => widget.repairJob;
+  RepairJobModel get j => widget.repairJob!;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(_kSurface),
-        borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      onTap: () => context.push('/order/${widget.orderId}/repair'),
+      child: Container(
+        margin: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(_kSurface),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: widget.repairJob == null
+            ? _buildNullState(context)
+            : _buildBody(context),
       ),
-      child: _buildBody(context),
+    );
+  }
+
+  Widget _buildNullState(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(Icons.build_outlined, size: 16, color: Color(_kPrimary)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Arrange repairs',
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Tap to confirm your repair preference',
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  color: const Color(_kTextSecondary),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.chevron_right, size: 16, color: Color(_kPrimary)),
+      ],
     );
   }
 
@@ -65,18 +104,20 @@ class _RepairStatusCardState extends State<RepairStatusCard>
       padding: const EdgeInsets.only(top: 8),
       child: Row(
         children: [
-          ...show.map((u) => Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: CachedNetworkImage(
-                    imageUrl: u,
-                    width: 52,
-                    height: 52,
-                    fit: BoxFit.cover,
-                  ),
+          ...show.map(
+            (u) => Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: CachedNetworkImage(
+                  imageUrl: u,
+                  width: 52,
+                  height: 52,
+                  fit: BoxFit.cover,
                 ),
-              )),
+              ),
+            ),
+          ),
           if (more > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
@@ -86,7 +127,10 @@ class _RepairStatusCardState extends State<RepairStatusCard>
               ),
               child: Text(
                 OrderTimelineConstants.morePhotos.replaceAll('[n]', '$more'),
-                style: GoogleFonts.dmSans(fontSize: 10, color: const Color(_kTextSecondary)),
+                style: GoogleFonts.dmSans(
+                  fontSize: 10,
+                  color: const Color(_kTextSecondary),
+                ),
               ),
             ),
         ],
@@ -98,22 +142,26 @@ class _RepairStatusCardState extends State<RepairStatusCard>
     switch (j.status) {
       case RepairStatus.notStarted:
         return _textBlock(
-            OrderTimelineConstants.repairQuotePending,
-            OrderTimelineConstants.repairQuotePendingSub);
+          OrderTimelineConstants.repairQuotePending,
+          OrderTimelineConstants.repairQuotePendingSub,
+        );
       case RepairStatus.quoteSent:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _textBlock(OrderTimelineConstants.repairQuoteSent,
-                OrderTimelineConstants.repairQuoteSentSub),
+            _textBlock(
+              OrderTimelineConstants.repairQuoteSent,
+              OrderTimelineConstants.repairQuoteSentSub,
+            ),
             TextButton(
               onPressed: () {
-                final id = j.orderId;
-                context.push('/order/$id?tab=chat');
+                // final id = j.orderId;
+                // context.push('/order/$id?tab=chat');
+                context.push('/order/${widget.orderId}/repair');
               },
               style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
               child: Text(
-                OrderTimelineConstants.viewQuoteInChat,
+                OrderTimelineConstants.viewQuote,
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -124,24 +172,32 @@ class _RepairStatusCardState extends State<RepairStatusCard>
           ],
         );
       case RepairStatus.quoteApproved:
-        return _textBlock(OrderTimelineConstants.repairQuoteApproved,
-            OrderTimelineConstants.repairQuoteApprovedSub);
+        return _textBlock(
+          OrderTimelineConstants.repairQuoteApproved,
+          OrderTimelineConstants.repairQuoteApprovedSub,
+        );
       case RepairStatus.quoteDeclined:
-        return _textBlock(OrderTimelineConstants.repairQuoteDeclined,
-            OrderTimelineConstants.repairQuoteDeclinedSub);
+        return _textBlock(
+          OrderTimelineConstants.repairQuoteDeclined,
+          OrderTimelineConstants.repairQuoteDeclinedSub,
+        );
       case RepairStatus.inProgress:
         return FadeTransition(
-          opacity: Tween<double>(begin: 0.75, end: 1).animate(
-            CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
-          ),
+          opacity: Tween<double>(
+            begin: 0.75,
+            end: 1,
+          ).animate(CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.build_outlined,
-                      size: 16, color: Color(_kPrimary)),
+                  const Icon(
+                    Icons.build_outlined,
+                    size: 16,
+                    color: Color(_kPrimary),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -189,8 +245,11 @@ class _RepairStatusCardState extends State<RepairStatusCard>
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.check_circle_outline,
-                    size: 16, color: Color(_kSuccess)),
+                const Icon(
+                  Icons.check_circle_outline,
+                  size: 16,
+                  color: Color(_kSuccess),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

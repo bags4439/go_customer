@@ -34,6 +34,52 @@ class PaymentFirestoreDataSource {
     });
   }
 
+  Future<Payment?> getActivePayment({
+    required String orderId,
+    required String buyerId,
+    required String paymentRequestId,
+  }) async {
+    final snap = await _firestore
+        .collection(FirestoreCollections.payments)
+        .where('orderId', isEqualTo: orderId)
+        .where('buyerId', isEqualTo: buyerId)
+        .where('paymentRequestId', isEqualTo: paymentRequestId)
+        .where('status', whereIn: const ['pending', 'processing'])
+        .limit(1)
+        .get();
+    if (snap.docs.isEmpty) return null;
+    return _paymentFromDoc(snap.docs.first);
+  }
+
+  Future<Payment> updatePendingPayment({
+    required String paymentId,
+    required String type,
+    String? description,
+    required double amountGhs,
+    required double amountUsd,
+    required double exchangeRate,
+    required String method,
+    required String providerRef,
+  }) async {
+    final ref = _firestore.collection(FirestoreCollections.payments).doc(paymentId);
+    final update = <String, dynamic>{
+      'type': type,
+      'amountGhs': amountGhs,
+      'amountUsd': amountUsd,
+      'exchangeRate': exchangeRate,
+      'method': method,
+      'providerRef': providerRef,
+      'status': 'pending',
+      'initiatedAt': FieldValue.serverTimestamp(),
+    };
+    if (description != null) {
+      update['description'] = description;
+    }
+    await ref.update(update);
+    final snap = await ref.get();
+    return _paymentFromDoc(snap);
+  }
+
   /// Create payment document; Cloud Function updates after Paystack webhook.
   Future<Payment> createPayment({
     required String orderId,

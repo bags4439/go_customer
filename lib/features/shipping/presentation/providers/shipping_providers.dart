@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
+import '../../../orders/presentation/providers/order_timeline_providers.dart';
 import '../../data/datasources/shipping_firestore_data_source.dart';
 import '../../domain/entities/shipping.dart';
 
@@ -48,9 +49,9 @@ final journeyProgressProvider = Provider.family<double, String>((ref, orderId) {
 
 final shippingScreenStateProvider =
     Provider.family<ShippingScreenState, String>((ref, orderId) {
-  final shipping = ref.watch(shippingProvider(orderId)).valueOrNull;
+  final shipping = ref.watch(orderShippingProvider(orderId)).valueOrNull;
   if (shipping == null) return ShippingScreenState.notArranged;
-  switch (shipping.status) {
+  switch (shipping.status.firestoreValue) {
     case 'pending':
     case 'booked':
       return ShippingScreenState.booked;

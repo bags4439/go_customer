@@ -152,9 +152,6 @@ class _OrderCancelledContent extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(_kPrimary),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
               child: Text(
                 OrderEditConstants.startNewOrder,
@@ -174,9 +171,6 @@ class _OrderCancelledContent extends ConsumerWidget {
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(_kBorderColor)),
                 foregroundColor: const Color(_kTextSecondary),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
               child: Text(
                 OrderEditConstants.backToHome,

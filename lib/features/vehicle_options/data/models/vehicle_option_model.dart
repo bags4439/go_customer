@@ -1,5 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -44,8 +46,39 @@ DateTime? _dateTimeFromJson(Object? v) {
 
 Object? _dateTimeToJson(DateTime? d) => d?.toIso8601String();
 
+/// Firestore may store [photoUrlsJson] as a List or as a JSON-encoded String.
+List<String>? _photoUrlsFromFirestoreData(Object? raw) {
+  if (raw == null) return null;
+  if (raw is List) {
+    return raw.map((e) => e.toString()).toList();
+  }
+  if (raw is String) {
+    final s = raw.trim();
+    if (s.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(s);
+      if (decoded is List) {
+        return decoded.map((e) => e.toString()).toList();
+      }
+      return null;
+    } catch (_) {
+      return [s];
+    }
+  }
+  return null;
+}
+
+int? _intFromFirestore(Object? v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  return int.tryParse(v.toString());
+}
+
 @freezed
 class VehicleOptionModel with _$VehicleOptionModel {
+  const VehicleOptionModel._();
+
   const factory VehicleOptionModel({
     required String id,
     required String orderId,
@@ -84,6 +117,11 @@ class VehicleOptionModel with _$VehicleOptionModel {
     double? serviceFeeGhs,
     double? totalLandedGhs,
     String? agentNote,
+    @Default(false) bool isBuyItNow,
+    double? buyItNowPriceUsd,
+    @Default(false) bool hasVehicleDamage,
+    double? fixedPlatformFeesUsd,
+    double? estimatedTotalGhs,
     @JsonKey(
       fromJson: _vehicleOptionStatusFromJson,
       toJson: _vehicleOptionStatusToJson,
@@ -106,26 +144,23 @@ class VehicleOptionModel with _$VehicleOptionModel {
     if (data == null) {
       return VehicleOptionModel(id: doc.id, orderId: '', agentId: '');
     }
-    final rawPhotos = data['photoUrlsJson'];
     return VehicleOptionModel(
       id: doc.id,
       orderId: data['orderId'] as String? ?? '',
       agentId: data['agentId'] as String? ?? '',
-      lotNumber: data['lotNumber'] as String?,
+      lotNumber: data['lotNumber']?.toString(),
       source: data['source'] as String?,
       yearMakeModel: data['yearMakeModel'] as String?,
-      year: data['year'] as int?,
+      year: _intFromFirestore(data['year']),
       make: data['make'] as String?,
       model: data['model'] as String?,
       trim: data['trim'] as String?,
-      mileage: data['mileage'] as int?,
+      mileage: _intFromFirestore(data['mileage']),
       condition: data['condition'] as String?,
       conditionLabel: data['conditionLabel'] as String?,
       damageDescription: data['damageDescription'] as String?,
       photoUrl: data['photoUrl'] as String?,
-      photoUrlsJson: rawPhotos != null
-          ? List<String>.from((rawPhotos as List).map((e) => e.toString()))
-          : null,
+      photoUrlsJson: _photoUrlsFromFirestoreData(data['photoUrlsJson']),
       auctionDate:
           (data['auctionDate'] as Timestamp?)?.toDate(),
       auctionLocation: data['auctionLocation'] as String?,
@@ -154,6 +189,14 @@ class VehicleOptionModel with _$VehicleOptionModel {
       totalLandedGhs:
           (data['totalLandedGhs'] as num?)?.toDouble(),
       agentNote: data['agentNote'] as String?,
+      isBuyItNow: data['isBuyItNow'] as bool? ?? false,
+      buyItNowPriceUsd:
+          (data['buyItNowPriceUsd'] as num?)?.toDouble(),
+      hasVehicleDamage: data['hasVehicleDamage'] as bool? ?? false,
+      fixedPlatformFeesUsd:
+          (data['fixedPlatformFeesUsd'] as num?)?.toDouble(),
+      estimatedTotalGhs:
+          (data['estimatedTotalGhs'] as num?)?.toDouble(),
       status: VehicleOptionStatus.fromString(
         data['status'] as String? ?? 'draft',
       ),
@@ -162,9 +205,8 @@ class VehicleOptionModel with _$VehicleOptionModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }
-}
 
-extension VehicleOptionModelEntityX on VehicleOptionModel {
+  /// Maps this Firestore model to the domain [VehicleOptionEntity].
   VehicleOptionEntity toVehicleOptionEntity() {
     return VehicleOptionEntity(
       id: id,
@@ -203,6 +245,11 @@ extension VehicleOptionModelEntityX on VehicleOptionModel {
       totalLandedGhs: totalLandedGhs,
       agentNote: agentNote,
       status: status.name,
+      isBuyItNow: isBuyItNow,
+      buyItNowPriceUsd: buyItNowPriceUsd,
+      hasVehicleDamage: hasVehicleDamage,
+      fixedPlatformFeesUsd: fixedPlatformFeesUsd,
+      estimatedTotalGhs: estimatedTotalGhs,
     );
   }
 

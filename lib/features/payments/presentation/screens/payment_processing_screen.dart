@@ -25,14 +25,14 @@ class PaymentProcessingScreen extends ConsumerWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF1C1C1E),
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
           elevation: 0,
           leading: const SizedBox.shrink(),
           title: const Text(
             'Processing',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+            style: TextStyle(color: Colors.black87, fontSize: 18),
           ),
           centerTitle: true,
         ),
@@ -53,7 +53,7 @@ class PaymentProcessingScreen extends ConsumerWidget {
                         '/order/$orderId/payment-request/$requestId/confirmed?paymentId=$paymentId',
                       );
                     });
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                    return const Center(child: CircularProgressIndicator(color: AppColors.secondary));
                   }
                   return _ProcessingBody(maskedPhone: 'XX XXX XXXX');
                 },
@@ -79,17 +79,17 @@ class _ProcessingBody extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 48),
-          const Icon(Icons.phone_android, size: 80, color: Colors.white54),
+          const Icon(Icons.phone_android, size: 80, color: Colors.black45),
           const SizedBox(height: 24),
           const Text(
             'Check your phone',
-            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
+            style: TextStyle(color: Colors.black87, fontSize: 22, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
             'A MoMo prompt has been sent to $maskedPhone',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 16),
+            style: const TextStyle(color: Colors.black54, fontSize: 16),
           ),
           const SizedBox(height: 48),
           _StepItem(label: 'Payment request sent to network', done: true),
@@ -132,7 +132,7 @@ class _StepItem extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: const BoxDecoration(
-                color: Colors.white24,
+                color: Color(0xFFE0DFD8),
                 shape: BoxShape.circle,
               ),
             ),
@@ -140,7 +140,7 @@ class _StepItem extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: done ? AppColors.success : (active ? Colors.white : Colors.white54),
+              color: done ? AppColors.success : (active ? Colors.black87 : Colors.black54),
               fontWeight: active ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -163,18 +163,18 @@ class _TimeoutBody extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.schedule, size: 64, color: Colors.white54),
+            const Icon(Icons.schedule, size: 64, color: Colors.black45),
             const SizedBox(height: 16),
             const Text(
               'Taking longer than expected',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             const Text(
               'Your payment may still be processing. You can try again or check your order for updates.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: Colors.black54, fontSize: 14),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

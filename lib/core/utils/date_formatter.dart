@@ -27,6 +27,9 @@ class DateFormatter {
     return DateFormat('d MMM yyyy').format(d);
   }
 
+  /// Short date for vehicle cards (e.g. "28 Mar 2026").
+  static String format(DateTime? d) => formatDate(d);
+
   static String formatDateTime(DateTime? d) {
     if (d == null) return '—';
     return DateFormat('d MMM yyyy, h:mm a').format(d);

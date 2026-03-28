@@ -299,6 +299,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                               child: ChatMessageBubble(
                                 message: msg,
                                 isMe: isMe,
+                                orderId: orderId,
                                 reactions: messageReactions,
                                 replyToBody: replyToBody,
                                 onVideoTap: msg.messageType == 'video' && msg.mediaUrl != null
@@ -315,6 +316,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                           child: ChatMessageBubble.pending(
                             pending: pending,
                             isMe: isMe,
+                            orderId: orderId,
                             onVideoTap: () {},
                           ),
                         );

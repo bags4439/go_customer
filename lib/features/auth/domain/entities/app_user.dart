@@ -13,6 +13,7 @@ class AppUser {
   final String preferredCurrency;
   final String preferredLanguage;
   final Map<String, bool> notificationPreferences;
+  final String referralCode;
 
   const AppUser({
     required this.id,
@@ -28,6 +29,7 @@ class AppUser {
     this.ghanaidVerifiedAt,
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
+    this.referralCode = '',
     Map<String, bool>? notificationPreferences,
   }) : notificationPreferences = notificationPreferences ??
             const {

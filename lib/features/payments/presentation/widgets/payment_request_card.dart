@@ -42,15 +42,20 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
   @override
   void initState() {
     super.initState();
+    print(
+      'payment type: ${widget.paymentRequest.type.firestoreValue}, label: ${widget.paymentRequest.type.label}',
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() => _opacity = 1);
     });
   }
 
   String get _typeLabel =>
-      FirestoreEnumValues.paymentRequestTypeLabels[
-              widget.paymentRequest.type.firestoreValue] ??
-          widget.paymentRequest.type.label;
+      FirestoreEnumValues.paymentRequestTypeLabels[widget
+          .paymentRequest
+          .type
+          .firestoreValue] ??
+      widget.paymentRequest.type.label;
 
   PaymentRequestModel get pr => widget.paymentRequest;
 
@@ -83,7 +88,10 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
     } else {
       text = Text(
         DateFormatter.formatDateTime(deadline),
-        style: GoogleFonts.dmSans(fontSize: 11, color: const Color(_kTextTertiary)),
+        style: GoogleFonts.dmSans(
+          fontSize: 11,
+          color: const Color(_kTextTertiary),
+        ),
       );
     }
     return Padding(
@@ -160,234 +168,250 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    OrderTimelineConstants.paymentRequestLabel,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(_kTextTertiary),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            OrderTimelineConstants.paymentRequestLabel,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(_kTextTertiary),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(_kAmberBg),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            OrderTimelineConstants.awaitingPayment,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(_kAmberText),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(_kAmberBg),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    OrderTimelineConstants.awaitingPayment,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(_kAmberText),
+                    const SizedBox(height: 6),
+                    Text(
+                      _typeLabel,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              _typeLabel,
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 2),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Text(
-                CurrencyFormatter.formatGhs(pr.totalGhs),
-                key: ValueKey(pr.totalGhs),
-                style: GoogleFonts.dmSans(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(_kPrimary),
-                ),
-              ),
-            ),
-            if (hasBreakdown) ...[
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () =>
-                    setState(() => _breakdownExpanded = !_breakdownExpanded),
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Text(
-                        _breakdownExpanded
-                            ? OrderTimelineConstants.hideBreakdown
-                            : OrderTimelineConstants.seeBreakdown,
+                    const SizedBox(height: 2),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        CurrencyFormatter.formatGhs(pr.totalGhs),
+                        key: ValueKey(pr.totalGhs),
                         style: GoogleFonts.dmSans(
-                          fontSize: 12,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
                           color: const Color(_kPrimary),
                         ),
                       ),
-                      Icon(
-                        _breakdownExpanded
-                            ? Icons.expand_less
-                            : Icons.expand_more,
-                        size: 18,
-                        color: const Color(_kPrimary),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOut,
-                child: _breakdownExpanded
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Divider(height: 16),
-                          ...pr.breakdownJson.map((b) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        b.label,
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 12,
-                                          color: const Color(_kTextSecondary),
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      CurrencyFormatter.formatGhs(b.amountGhs),
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: b.isDeduction
-                                            ? const Color(_kSuccess)
-                                            : Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )),
-                          const Divider(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                    if (hasBreakdown) ...[
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () => setState(
+                          () => _breakdownExpanded = !_breakdownExpanded,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
                             children: [
                               Text(
-                                'Total',
+                                _breakdownExpanded
+                                    ? OrderTimelineConstants.hideBreakdown
+                                    : OrderTimelineConstants.seeBreakdown,
                                 style: GoogleFonts.dmSans(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                  color: const Color(_kPrimary),
                                 ),
                               ),
-                              Text(
-                                CurrencyFormatter.formatGhs(pr.totalGhs),
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              Icon(
+                                _breakdownExpanded
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                size: 18,
+                                color: const Color(_kPrimary),
                               ),
                             ],
                           ),
-                        ],
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
-            if (pr.invoiceImageUrl != null &&
-                pr.invoiceImageUrl!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () => _openInvoice(context, pr.invoiceImageUrl!),
-                child: Row(
-                  children: [
-                    const Icon(Icons.receipt_outlined,
-                        size: 14, color: Color(_kTextTertiary)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        OrderTimelineConstants.invoiceAttached,
-                        style: GoogleFonts.dmSans(
-                            fontSize: 11, color: const Color(_kTextSecondary)),
-                      ),
-                    ),
-                    Text(
-                      OrderTimelineConstants.viewInvoice,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(_kPrimary),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            _deadlineRow(pr.deadlineAt),
-            if (_showUsdNote && pr.exchangeRate != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                '${OrderTimelineConstants.atRateNote}${pr.exchangeRate!.toStringAsFixed(2)}',
-                style: GoogleFonts.dmSans(
-                  fontSize: 10,
-                  color: const Color(_kTextTertiary),
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _payLoading
-                    ? null
-                    : () async {
-                        setState(() => _payLoading = true);
-                        if (!context.mounted) return;
-                        context.push(
-                          '/order/${widget.orderId}/payment-request/${pr.id}',
-                        );
-                        if (mounted) setState(() => _payLoading = false);
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(_kPrimary),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: _payLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
                         ),
-                      )
-                    : Text(
-                        OrderTimelineConstants.payNowButton
-                            .replaceAll('[label]', _typeLabel)
-                            .replaceAll(
-                              '[amount]',
-                              CurrencyFormatter.formatGhs(pr.totalGhs),
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        child: _breakdownExpanded
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Divider(height: 16),
+                                  ...pr.breakdownJson.map(
+                                    (b) => Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              b.label,
+                                              style: GoogleFonts.dmSans(
+                                                fontSize: 12,
+                                                color: const Color(
+                                                  _kTextSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Text(
+                                            CurrencyFormatter.formatGhs(
+                                              b.amountGhs,
+                                            ),
+                                            style: GoogleFonts.dmSans(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: b.isDeduction
+                                                  ? const Color(_kSuccess)
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(height: 16),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total',
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        CurrencyFormatter.formatGhs(
+                                          pr.totalGhs,
+                                        ),
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                    if (pr.invoiceImageUrl != null &&
+                        pr.invoiceImageUrl!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () => _openInvoice(context, pr.invoiceImageUrl!),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.receipt_outlined,
+                              size: 14,
+                              color: Color(_kTextTertiary),
                             ),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                OrderTimelineConstants.invoiceAttached,
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 11,
+                                  color: const Color(_kTextSecondary),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              OrderTimelineConstants.viewInvoice,
+                              style: GoogleFonts.dmSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(_kPrimary),
+                              ),
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
                       ),
-              ),
-            ),
+                    ],
+                    _deadlineRow(pr.deadlineAt),
+                    if (_showUsdNote && pr.exchangeRate != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        '${OrderTimelineConstants.atRateNote}${pr.exchangeRate!.toStringAsFixed(2)}',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 10,
+                          color: const Color(_kTextTertiary),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _payLoading
+                            ? null
+                            : () async {
+                                setState(() => _payLoading = true);
+                                if (!context.mounted) return;
+                                context.push(
+                                  '/order/${widget.orderId}/payment-request/${pr.id}',
+                                );
+                                if (mounted)
+                                  setState(() => _payLoading = false);
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(_kPrimary),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: _payLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                OrderTimelineConstants.payNowButton
+                                    .replaceAll('[label]', _typeLabel)
+                                    .replaceAll(
+                                      '[amount]',
+                                      CurrencyFormatter.formatGhs(pr.totalGhs),
+                                    ),
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -8,6 +8,12 @@ class AppTheme {
   static const double radiusLg = 12;
   static const double radiusXl = 16;
 
+  /// Standard pill (stadium) for filled / elevated / outlined / text buttons.
+  static const OutlinedBorder buttonPillShape = StadiumBorder();
+
+  /// Minimum tap height (WCAG-friendly); width grows with label.
+  static const Size buttonMinimumSize = Size(64, 48);
+
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.secondary,
@@ -62,20 +68,43 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.secondary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusMd),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          elevation: 0,
+          shape: buttonPillShape,
+          minimumSize: buttonMinimumSize,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.secondary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: buttonPillShape,
+          minimumSize: buttonMinimumSize,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.border),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusMd),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          shape: buttonPillShape,
+          minimumSize: buttonMinimumSize,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.secondary,
+          shape: buttonPillShape,
+          minimumSize: buttonMinimumSize,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          minimumSize: buttonMinimumSize,
+          tapTargetSize: MaterialTapTargetSize.padded,
         ),
       ),
       dividerTheme: const DividerThemeData(color: AppColors.border),

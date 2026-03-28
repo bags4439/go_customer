@@ -154,16 +154,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         const SizedBox(height: 12),
                         orderSummaryAsync.when(
                           data: (summary) => _OrderSummaryRow(
-                            animation: _sectionControllers[0]?.value ?? 0,
+                            animation: _sectionAnimations[0]!,
                             activeCount: summary.activeCount,
                             completedCount: summary.completedCount,
                             agentFirstName: summary.agentFirstName,
                           ),
                           loading: () => _OrderSummaryShimmer(
-                            animation: _sectionAnimations[0]?.value ?? 0,
+                            animation: _sectionAnimations[0]!,
                           ),
                           error: (_, __) => _OrderSummaryRow(
-                            animation: _sectionControllers[0]?.value ?? 0,
+                            animation: _sectionAnimations[0]!,
                             activeCount: 0,
                             completedCount: 0,
                             agentFirstName: ProfileConstants.noAgentYet,
@@ -178,7 +178,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ],
                         _AnimatedSection(
                           index: 1,
-                          animation: _sectionAnimations[1]?.value ?? 0,
+                          animation: _sectionAnimations[1]!,
                           title: ProfileConstants.sectionPersonalDetails,
                           hasUnsaved: _hasPersonalUnsaved(ref),
                           child: _PersonalDetailsSection(
@@ -190,28 +190,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                         _AnimatedSection(
                           index: 2,
-                          animation: _sectionAnimations[2]?.value ?? 0,
+                          animation: _sectionAnimations[2]!,
                           title: ProfileConstants.sectionNotifications,
                           hasUnsaved: false,
                           child: _NotificationsSection(user: user),
                         ),
                         _AnimatedSection(
                           index: 3,
-                          animation: _sectionAnimations[3]?.value ?? 0,
+                          animation: _sectionAnimations[3]!,
                           title: ProfileConstants.sectionLanguageCurrency,
                           hasUnsaved: false,
                           child: _LanguageCurrencySection(user: user),
                         ),
                         _AnimatedSection(
                           index: 4,
-                          animation: _sectionAnimations[4]?.value ?? 0,
+                          animation: _sectionAnimations[4]!,
                           title: ProfileConstants.sectionSupport,
                           hasUnsaved: false,
                           child: const _SupportSection(),
                         ),
                         _AnimatedSection(
                           index: 5,
-                          animation: _sectionAnimations[5]?.value ?? 0,
+                          animation: _sectionAnimations[5]!,
                           title: ProfileConstants.sectionSession,
                           hasUnsaved: false,
                           child: _SessionSection(
@@ -580,15 +580,22 @@ class _OrderSummaryRow extends StatelessWidget {
     required this.agentFirstName,
   });
 
-  final double animation;
+  final Animation<double> animation;
   final int activeCount;
   final int completedCount;
   final String agentFirstName;
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: animation.clamp(0.0, 1.0),
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final t = animation.value.clamp(0.0, 1.0);
+        return Opacity(
+          opacity: t,
+          child: child,
+        );
+      },
       child: Row(
         children: [
           Expanded(
@@ -670,12 +677,19 @@ class _SummaryBox extends StatelessWidget {
 class _OrderSummaryShimmer extends StatelessWidget {
   const _OrderSummaryShimmer({required this.animation});
 
-  final double animation;
+  final Animation<double> animation;
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: animation.clamp(0.0, 1.0),
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final t = animation.value.clamp(0.0, 1.0);
+        return Opacity(
+          opacity: t,
+          child: child,
+        );
+      },
       child: Row(
         children: List.generate(
           3,
@@ -793,57 +807,64 @@ class _AnimatedSection extends StatelessWidget {
   });
 
   final int index;
-  final double animation;
+  final Animation<double> animation;
   final String title;
   final bool hasUnsaved;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: animation.clamp(0.0, 1.0),
-      child: Transform.translate(
-        offset: Offset(0, 20 * (1 - animation)),
-        child: Container(
-          margin: const EdgeInsets.only(top: 14),
-          decoration: BoxDecoration(
-            color: _kSurface,
-            borderRadius: BorderRadius.circular(12),
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final t = animation.value.clamp(0.0, 1.0);
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - t)),
+            child: child,
           ),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
-                child: Row(
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: _kTextTertiary,
-                        letterSpacing: 0.5,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(top: 14),
+        decoration: BoxDecoration(
+          color: _kSurface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
+              child: Row(
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: _kTextTertiary,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  if (hasUnsaved) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: _kPrimary,
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    if (hasUnsaved) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: _kPrimary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-              child,
-            ],
-          ),
+            ),
+            child,
+          ],
         ),
       ),
     );
@@ -1908,9 +1929,6 @@ class _LogOutButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: _kDanger,
           side: const BorderSide(color: _kDanger, width: 1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
         ),
         child: Text(
           ProfileConstants.logOut,

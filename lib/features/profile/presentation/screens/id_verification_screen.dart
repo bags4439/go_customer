@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,9 +42,13 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(CupertinoIcons.back),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          padding: EdgeInsets.zero,
+          alignment: Alignment.centerRight,
           onPressed: () => context.pop(),
         ),
+        leadingWidth: 44,
         title: Text(
           ProfileConstants.idVerificationTitle,
           style: GoogleFonts.dmSans(
@@ -317,9 +322,6 @@ class _UploadArea extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kPrimary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
               child: Text(
                 ProfileConstants.uploadDocument,
@@ -455,9 +457,6 @@ class _SuccessView extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kPrimary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
               child: Text(
                 ProfileConstants.backToProfile,

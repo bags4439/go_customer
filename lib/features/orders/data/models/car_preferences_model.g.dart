@@ -21,6 +21,9 @@ _$CarPreferencesModelImpl _$$CarPreferencesModelImplFromJson(
   maxMileage: (json['maxMileage'] as num?)?.toInt(),
   repairOptedIn: json['repairOptedIn'] as bool?,
   clearanceOptedIn: json['clearanceOptedIn'] as bool?,
+  trim: json['trim'] as String?,
+  purchaseOrigin: json['purchaseOrigin'] as String? ?? 'any',
+  isNewVehicle: json['isNewVehicle'] as bool? ?? false,
   editedBy: json['editedBy'] as String?,
   editedAt: json['editedAt'] == null
       ? null
@@ -46,6 +49,9 @@ Map<String, dynamic> _$$CarPreferencesModelImplToJson(
   'maxMileage': instance.maxMileage,
   'repairOptedIn': instance.repairOptedIn,
   'clearanceOptedIn': instance.clearanceOptedIn,
+  'trim': instance.trim,
+  'purchaseOrigin': instance.purchaseOrigin,
+  'isNewVehicle': instance.isNewVehicle,
   'editedBy': instance.editedBy,
   'editedAt': instance.editedAt?.toIso8601String(),
   'editReason': instance.editReason,

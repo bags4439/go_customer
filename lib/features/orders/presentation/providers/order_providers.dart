@@ -105,6 +105,8 @@ final orderProvider = StreamProvider.family<OrderView?, String>((ref, orderId) {
     if (createdRaw is Timestamp) createdAt = createdRaw.toDate();
     if (updatedRaw is Timestamp) updatedAt = updatedRaw.toDate();
 
+    print('orderProvider status: $status');
+
     String? make;
     String? model;
     final prefQuery = await firestore

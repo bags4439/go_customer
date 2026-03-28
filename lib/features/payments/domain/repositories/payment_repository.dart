@@ -4,7 +4,7 @@ import '../entities/payment.dart';
 
 abstract class PaymentRepository {
   Stream<Payment?> watchPayment(String paymentId);
-  Future<Either<Failure, Payment>> createPayment({
+  Future<Either<Failure, Payment>> upsertPendingPayment({
     required String orderId,
     required String buyerId,
     required String paymentRequestId,

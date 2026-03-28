@@ -19,10 +19,6 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
-    final location = GoRouter.of(context).routeInformationProvider.value.uri.toString();
-    int currentIndex = 0;
-    if (location.startsWith('/notifications')) currentIndex = 1;
-    if (location.startsWith('/profile')) currentIndex = 2;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
@@ -70,10 +66,6 @@ class NotificationsScreen extends ConsumerWidget {
         ),
       ),
       body: const _NotificationsBody(),
-      bottomNavigationBar: _NotificationsBottomNav(
-        currentIndex: currentIndex,
-        unreadCount: unreadCount,
-      ),
     );
   }
 
@@ -133,51 +125,6 @@ class _MarkAllReadButton extends ConsumerWidget {
                 ),
               ),
       ),
-    );
-  }
-}
-
-class _NotificationsBottomNav extends StatelessWidget {
-  final int currentIndex;
-  final int unreadCount;
-
-  const _NotificationsBottomNav({
-    required this.currentIndex,
-    required this.unreadCount,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            context.go('/home');
-            break;
-          case 1:
-            context.go('/notifications');
-            break;
-          case 2:
-            context.go('/profile');
-            break;
-        }
-      },
-      items: [
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(
-          icon: unreadCount > 0
-              ? Badge(
-                  label: Text('$unreadCount'),
-                  child: const Icon(Icons.notifications),
-                )
-              : const Icon(Icons.notifications),
-          label: 'Notifications',
-        ),
-        const BottomNavigationBarItem(
-            icon: Icon(Icons.person), label: 'Profile'),
-      ],
     );
   }
 }

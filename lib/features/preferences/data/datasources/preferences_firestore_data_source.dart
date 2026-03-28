@@ -101,6 +101,9 @@ class PreferencesFirestoreDataSource {
       'maxMileage': submission.maxMileage,
       'repairOptedIn': submission.repairOptedIn,
       'clearanceOptedIn': null,
+      'trim': submission.trim,
+      'purchaseOrigin': submission.purchaseOrigin,
+      'isNewVehicle': submission.isNewVehicle,
       'createdAt': now,
     });
 

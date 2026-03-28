@@ -36,6 +36,11 @@ class VehicleOptionEntity {
   final double? totalLandedGhs;
   final String? agentNote;
   final String? status;
+  final bool isBuyItNow;
+  final double? buyItNowPriceUsd;
+  final bool hasVehicleDamage;
+  final double? fixedPlatformFeesUsd;
+  final double? estimatedTotalGhs;
 
   const VehicleOptionEntity({
     required this.id,
@@ -74,5 +79,10 @@ class VehicleOptionEntity {
     this.totalLandedGhs,
     this.agentNote,
     this.status,
+    this.isBuyItNow = false,
+    this.buyItNowPriceUsd,
+    this.hasVehicleDamage = false,
+    this.fixedPlatformFeesUsd,
+    this.estimatedTotalGhs,
   });
 }

@@ -34,6 +34,9 @@ mixin _$CarPreferencesModel {
   int? get maxMileage => throw _privateConstructorUsedError;
   bool? get repairOptedIn => throw _privateConstructorUsedError;
   bool? get clearanceOptedIn => throw _privateConstructorUsedError;
+  String? get trim => throw _privateConstructorUsedError;
+  String get purchaseOrigin => throw _privateConstructorUsedError;
+  bool get isNewVehicle => throw _privateConstructorUsedError;
   String? get editedBy => throw _privateConstructorUsedError;
   DateTime? get editedAt => throw _privateConstructorUsedError;
   String? get editReason => throw _privateConstructorUsedError;
@@ -73,6 +76,9 @@ abstract class $CarPreferencesModelCopyWith<$Res> {
     int? maxMileage,
     bool? repairOptedIn,
     bool? clearanceOptedIn,
+    String? trim,
+    String purchaseOrigin,
+    bool isNewVehicle,
     String? editedBy,
     DateTime? editedAt,
     String? editReason,
@@ -107,6 +113,9 @@ class _$CarPreferencesModelCopyWithImpl<$Res, $Val extends CarPreferencesModel>
     Object? maxMileage = freezed,
     Object? repairOptedIn = freezed,
     Object? clearanceOptedIn = freezed,
+    Object? trim = freezed,
+    Object? purchaseOrigin = null,
+    Object? isNewVehicle = null,
     Object? editedBy = freezed,
     Object? editedAt = freezed,
     Object? editReason = freezed,
@@ -162,6 +171,18 @@ class _$CarPreferencesModelCopyWithImpl<$Res, $Val extends CarPreferencesModel>
                 ? _value.clearanceOptedIn
                 : clearanceOptedIn // ignore: cast_nullable_to_non_nullable
                       as bool?,
+            trim: freezed == trim
+                ? _value.trim
+                : trim // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            purchaseOrigin: null == purchaseOrigin
+                ? _value.purchaseOrigin
+                : purchaseOrigin // ignore: cast_nullable_to_non_nullable
+                      as String,
+            isNewVehicle: null == isNewVehicle
+                ? _value.isNewVehicle
+                : isNewVehicle // ignore: cast_nullable_to_non_nullable
+                      as bool,
             editedBy: freezed == editedBy
                 ? _value.editedBy
                 : editedBy // ignore: cast_nullable_to_non_nullable
@@ -210,6 +231,9 @@ abstract class _$$CarPreferencesModelImplCopyWith<$Res>
     int? maxMileage,
     bool? repairOptedIn,
     bool? clearanceOptedIn,
+    String? trim,
+    String purchaseOrigin,
+    bool isNewVehicle,
     String? editedBy,
     DateTime? editedAt,
     String? editReason,
@@ -243,6 +267,9 @@ class __$$CarPreferencesModelImplCopyWithImpl<$Res>
     Object? maxMileage = freezed,
     Object? repairOptedIn = freezed,
     Object? clearanceOptedIn = freezed,
+    Object? trim = freezed,
+    Object? purchaseOrigin = null,
+    Object? isNewVehicle = null,
     Object? editedBy = freezed,
     Object? editedAt = freezed,
     Object? editReason = freezed,
@@ -298,6 +325,18 @@ class __$$CarPreferencesModelImplCopyWithImpl<$Res>
             ? _value.clearanceOptedIn
             : clearanceOptedIn // ignore: cast_nullable_to_non_nullable
                   as bool?,
+        trim: freezed == trim
+            ? _value.trim
+            : trim // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        purchaseOrigin: null == purchaseOrigin
+            ? _value.purchaseOrigin
+            : purchaseOrigin // ignore: cast_nullable_to_non_nullable
+                  as String,
+        isNewVehicle: null == isNewVehicle
+            ? _value.isNewVehicle
+            : isNewVehicle // ignore: cast_nullable_to_non_nullable
+                  as bool,
         editedBy: freezed == editedBy
             ? _value.editedBy
             : editedBy // ignore: cast_nullable_to_non_nullable
@@ -339,6 +378,9 @@ class _$CarPreferencesModelImpl implements _CarPreferencesModel {
     this.maxMileage,
     this.repairOptedIn,
     this.clearanceOptedIn,
+    this.trim,
+    this.purchaseOrigin = 'any',
+    this.isNewVehicle = false,
     this.editedBy,
     this.editedAt,
     this.editReason,
@@ -375,6 +417,14 @@ class _$CarPreferencesModelImpl implements _CarPreferencesModel {
   @override
   final bool? clearanceOptedIn;
   @override
+  final String? trim;
+  @override
+  @JsonKey()
+  final String purchaseOrigin;
+  @override
+  @JsonKey()
+  final bool isNewVehicle;
+  @override
   final String? editedBy;
   @override
   final DateTime? editedAt;
@@ -385,7 +435,7 @@ class _$CarPreferencesModelImpl implements _CarPreferencesModel {
 
   @override
   String toString() {
-    return 'CarPreferencesModel(id: $id, orderId: $orderId, make: $make, model: $model, yearMin: $yearMin, yearMax: $yearMax, isSingleYear: $isSingleYear, condition: $condition, conditionLabel: $conditionLabel, maxMileage: $maxMileage, repairOptedIn: $repairOptedIn, clearanceOptedIn: $clearanceOptedIn, editedBy: $editedBy, editedAt: $editedAt, editReason: $editReason, createdAt: $createdAt)';
+    return 'CarPreferencesModel(id: $id, orderId: $orderId, make: $make, model: $model, yearMin: $yearMin, yearMax: $yearMax, isSingleYear: $isSingleYear, condition: $condition, conditionLabel: $conditionLabel, maxMileage: $maxMileage, repairOptedIn: $repairOptedIn, clearanceOptedIn: $clearanceOptedIn, trim: $trim, purchaseOrigin: $purchaseOrigin, isNewVehicle: $isNewVehicle, editedBy: $editedBy, editedAt: $editedAt, editReason: $editReason, createdAt: $createdAt)';
   }
 
   @override
@@ -411,6 +461,11 @@ class _$CarPreferencesModelImpl implements _CarPreferencesModel {
                 other.repairOptedIn == repairOptedIn) &&
             (identical(other.clearanceOptedIn, clearanceOptedIn) ||
                 other.clearanceOptedIn == clearanceOptedIn) &&
+            (identical(other.trim, trim) || other.trim == trim) &&
+            (identical(other.purchaseOrigin, purchaseOrigin) ||
+                other.purchaseOrigin == purchaseOrigin) &&
+            (identical(other.isNewVehicle, isNewVehicle) ||
+                other.isNewVehicle == isNewVehicle) &&
             (identical(other.editedBy, editedBy) ||
                 other.editedBy == editedBy) &&
             (identical(other.editedAt, editedAt) ||
@@ -423,7 +478,7 @@ class _$CarPreferencesModelImpl implements _CarPreferencesModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     id,
     orderId,
@@ -437,11 +492,14 @@ class _$CarPreferencesModelImpl implements _CarPreferencesModel {
     maxMileage,
     repairOptedIn,
     clearanceOptedIn,
+    trim,
+    purchaseOrigin,
+    isNewVehicle,
     editedBy,
     editedAt,
     editReason,
     createdAt,
-  );
+  ]);
 
   /// Create a copy of CarPreferencesModel
   /// with the given fields replaced by the non-null parameter values.
@@ -478,6 +536,9 @@ abstract class _CarPreferencesModel implements CarPreferencesModel {
     final int? maxMileage,
     final bool? repairOptedIn,
     final bool? clearanceOptedIn,
+    final String? trim,
+    final String purchaseOrigin,
+    final bool isNewVehicle,
     final String? editedBy,
     final DateTime? editedAt,
     final String? editReason,
@@ -512,6 +573,12 @@ abstract class _CarPreferencesModel implements CarPreferencesModel {
   bool? get repairOptedIn;
   @override
   bool? get clearanceOptedIn;
+  @override
+  String? get trim;
+  @override
+  String get purchaseOrigin;
+  @override
+  bool get isNewVehicle;
   @override
   String? get editedBy;
   @override

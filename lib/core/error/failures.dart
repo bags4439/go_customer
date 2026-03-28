@@ -13,6 +13,10 @@ class AuthFailure extends Failure {
   const AuthFailure({required super.message, super.cause});
 }
 
+class FirebaseAuthFailure extends Failure {
+  const FirebaseAuthFailure({required super.message, super.cause});
+}
+
 class StorageFailure extends Failure {
   const StorageFailure({required super.message, super.cause});
 }

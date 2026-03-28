@@ -380,9 +380,6 @@ class _CancelContent extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(_kDanger),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
                       ),
                       child: cancelState == CancelOrderStatus.cancelling
                           ? const SizedBox(
@@ -410,9 +407,6 @@ class _CancelContent extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(_kBorderColor)),
                         foregroundColor: const Color(_kTextSecondary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
                       ),
                       child: Text(
                         OrderEditConstants.noKeepOrderButton,

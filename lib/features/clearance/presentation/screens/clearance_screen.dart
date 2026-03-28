@@ -26,6 +26,8 @@ class ClearanceScreen extends ConsumerWidget {
     final shippingAsync = ref.watch(shippingProvider(orderId));
     final dutyAsync = ref.watch(dutyClearanceProvider(orderId));
 
+    print('clearance: ${screenState.name}');
+
     final isLoading = shippingAsync.isLoading || dutyAsync.isLoading;
     final hasError = shippingAsync.hasError || dutyAsync.hasError;
 
@@ -1179,9 +1181,6 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                      ),
                     ),
                     child: Text(
                       ClearanceConstants.state3AskAgentButton(agentName),

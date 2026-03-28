@@ -50,17 +50,17 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
         final canProceed = !isMomo || _isValidMomo(momoNumber);
 
         return Scaffold(
-          backgroundColor: const Color(0xFF1C1C1E),
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.white,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
               onPressed: () => context.pop(),
             ),
             title: Text(
               '$typeLabel · ${CurrencyFormatter.formatGhs(request.totalGhs)}',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+              style: const TextStyle(color: Colors.black87, fontSize: 16),
             ),
             centerTitle: true,
           ),
@@ -71,7 +71,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               children: [
                 const Text(
                   'Mobile Money',
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                  style: TextStyle(color: Colors.black54, fontSize: 12),
                 ),
                 const SizedBox(height: 8),
                 _MethodCard(
@@ -100,7 +100,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                 const SizedBox(height: 24),
                 const Text(
                   'Other',
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                  style: TextStyle(color: Colors.black54, fontSize: 12),
                 ),
                 const SizedBox(height: 8),
                 _MethodCard(
@@ -122,36 +122,39 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                   const SizedBox(height: 24),
                   TextField(
                     keyboardType: TextInputType.phone,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.black87),
                     decoration: InputDecoration(
                       labelText: 'MoMo number',
                       hintText: '$_momoPrefix XX XXX XXXX',
                       prefixText: '$_momoPrefix ',
-                      prefixStyle: const TextStyle(color: Colors.white),
+                      prefixStyle: const TextStyle(color: Colors.black87),
                       border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white38)),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFE0DFD8)),
+                      ),
                     ),
                     onChanged: (v) => ref.read(momoNumberProvider.notifier).state = v.replaceAll(RegExp(r'\D'), ''),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'You will receive a MoMo prompt to enter your PIN',
-                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                    style: TextStyle(color: Colors.black54, fontSize: 12),
                   ),
                 ],
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
+                    color: const Color(0xFFF5F4F0),
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0DFD8), width: 0.5),
                   ),
                   child: Column(
                     children: [
                       _SummaryRow('Amount', CurrencyFormatter.formatGhs(request.totalGhs)),
                       const SizedBox(height: 8),
                       _SummaryRow('Processing fee', CurrencyFormatter.formatGhs(processingFee)),
-                      const Divider(color: Colors.white24),
+                      const Divider(color: Color(0xFFE0DFD8)),
                       _SummaryRow('Total', CurrencyFormatter.formatGhs(total), bold: true),
                     ],
                   ),
@@ -161,13 +164,12 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                   height: 52,
                   child: ElevatedButton(
                     onPressed: canProceed
-                        ? () => _onConfirmAndPay(context, ref, request, total)
+                        ? () => _onConfirmAndPay(ref, request, total)
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: Text('Confirm & pay ${CurrencyFormatter.formatGhs(total)} →'),
                   ),
@@ -193,49 +195,64 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
     return RegExp(r'^[0-9]{9}$').hasMatch(digits);
   }
 
-  Future<void> _onConfirmAndPay(BuildContext context, WidgetRef ref, PaymentRequest request, double totalGhs) async {
+  Future<void> _onConfirmAndPay(WidgetRef ref, PaymentRequest request, double totalGhs) async {
     final method = ref.read(selectedPaymentMethodProvider);
     if (method == null) return;
     final buyerId = ref.read(authStateProvider).value;
     if (buyerId == null) return;
+    final paymentRepo = ref.read(paymentRepositoryProvider);
 
     final providerRef = generatePaystackReference(widget.orderId, widget.requestId);
-    final paymentOrFailure = await ref.read(paymentRepositoryProvider).createPayment(
-          orderId: widget.orderId,
-          buyerId: buyerId,
-          paymentRequestId: widget.requestId,
-          type: request.type,
-          description: request.description,
-          amountGhs: totalGhs,
-          amountUsd: request.totalUsd,
-          exchangeRate: request.exchangeRate,
-          method: _methodToString(method),
-          providerRef: providerRef,
-        );
-
-    paymentOrFailure.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message)));
-      },
-      (payment) async {
-        ref.read(activePaymentProvider(widget.orderId).notifier).state = payment;
-        ref.read(paymentTimeoutProvider.notifier).start(payment.id);
-
-        final email = ref.read(currentUserProvider).value?.email ?? 'buyer@autoimport.gh';
-        final launched = await initiatePaystackCharge(
-          context: context,
-          reference: providerRef,
-          amountGhs: totalGhs,
-          customerEmail: email,
-        );
-
-        if (context.mounted) {
-          context.push(
-            '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${payment.id}',
-          );
-        }
-      },
+    final paymentOrFailure = await paymentRepo.upsertPendingPayment(
+      orderId: widget.orderId,
+      buyerId: buyerId,
+      paymentRequestId: widget.requestId,
+      type: request.type,
+      description: request.description,
+      amountGhs: totalGhs,
+      amountUsd: request.totalUsd,
+      exchangeRate: request.exchangeRate,
+      method: _methodToString(method),
+      providerRef: providerRef,
     );
+
+    final payment = paymentOrFailure.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(failure.message)));
+        }
+        return null;
+      },
+      (p) => p,
+    );
+
+    if (payment == null) return;
+
+    ref.read(activePaymentProvider(widget.orderId).notifier).state = payment;
+    ref.read(paymentTimeoutProvider.notifier).start(payment.id);
+
+    if (!mounted) return;
+    final email = ref.read(currentUserProvider).value?.email ?? 'buyer@autoimport.gh';
+    final launched = await initiatePaystackCharge(
+      context: context,
+      reference: payment.providerRef ?? generatePaystackReference(widget.orderId, widget.requestId),
+      amountGhs: totalGhs,
+      customerEmail: email,
+    );
+
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open Paystack checkout.')),
+      );
+      return;
+    }
+
+    if (mounted) {
+      context.push(
+        '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${payment.id}',
+      );
+    }
   }
 
   String _methodToString(PaymentMethod m) {
@@ -280,7 +297,7 @@ class _MethodCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? AppColors.secondary : Colors.white24,
+              color: isSelected ? AppColors.secondary : const Color(0xFFE0DFD8),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -289,7 +306,7 @@ class _MethodCard extends StatelessWidget {
             children: [
               Icon(
                 method == PaymentMethod.card ? Icons.credit_card : Icons.phone_android,
-                color: Colors.white70,
+                color: Colors.black54,
                 size: 28,
               ),
               const SizedBox(width: 12),
@@ -297,8 +314,8 @@ class _MethodCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                    Text(subtitle, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                    Text(label, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
+                    Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 12)),
                   ],
                 ),
               ),
@@ -326,14 +343,14 @@ class _SummaryRow extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white70,
+            color: Colors.black54,
             fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/features/shipping/data/models/shipping_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
@@ -8,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/providers/order_timeline_providers.dart';
 import '../../domain/entities/shipping.dart';
 import '../providers/shipping_providers.dart';
 
@@ -21,23 +23,23 @@ class ShippingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final shippingAsync = ref.watch(shippingProvider(orderId));
+    final shippingAsync = ref.watch(orderShippingProvider(orderId));
     final orderAsync = ref.watch(orderProvider(orderId));
     final orderRef = orderAsync.valueOrNull?.orderRef ?? orderId;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
         title: Text(
           'Shipping tracker',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.white,
+                color: Colors.black87,
                 fontWeight: FontWeight.w600,
               ),
         ),
@@ -48,7 +50,7 @@ class ShippingScreen extends ConsumerWidget {
             child: Center(
               child: Text(
                 orderRef,
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
               ),
             ),
           ),
@@ -60,15 +62,17 @@ class ShippingScreen extends ConsumerWidget {
             return _State3NotArranged(orderId: orderId);
           }
           final state = ref.watch(shippingScreenStateProvider(orderId));
+
+          print('shipping screen: ${shipping.id}, ${shipping.status}, state: $state');
           switch (state) {
             case ShippingScreenState.notArranged:
               return _State3NotArranged(orderId: orderId);
             case ShippingScreenState.booked:
-              return _State0Booked(orderId: orderId, shipping: shipping);
+              return _State0Booked(orderId: orderId, shipping: shipping.toEntity());
             case ShippingScreenState.inTransit:
-              return _State1InTransit(orderId: orderId, shipping: shipping);
+              return _State1InTransit(orderId: orderId, shipping: shipping.toEntity());
             case ShippingScreenState.arrived:
-              return _State2Arrived(orderId: orderId, shipping: shipping);
+              return _State2Arrived(orderId: orderId, shipping: shipping.toEntity());
           }
         },
         loading: () => const _LoadingState(),
@@ -88,8 +92,8 @@ class _LoadingState extends StatelessWidget {
       child: Column(
         children: [
           Shimmer.fromColors(
-            baseColor: Colors.grey.shade800,
-            highlightColor: Colors.grey.shade600,
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
             child: Container(
               height: 120,
               decoration: BoxDecoration(
@@ -100,8 +104,8 @@ class _LoadingState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Shimmer.fromColors(
-            baseColor: Colors.grey.shade800,
-            highlightColor: Colors.grey.shade600,
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
             child: Container(
               height: 140,
               decoration: BoxDecoration(
@@ -112,8 +116,8 @@ class _LoadingState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Shimmer.fromColors(
-            baseColor: Colors.grey.shade800,
-            highlightColor: Colors.grey.shade600,
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
             child: Container(
               height: 200,
               decoration: BoxDecoration(
@@ -142,18 +146,18 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.white54),
+            const Icon(Icons.error_outline, size: 48, color: Colors.black45),
             const SizedBox(height: 16),
             const Text(
               'Could not load shipping details. Tap to retry.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(color: Colors.black87, fontSize: 16),
             ),
             const SizedBox(height: 24),
             TextButton.icon(
               onPressed: () => context.go('/order/$orderId'),
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text('Retry', style: TextStyle(color: Colors.white)),
+              icon: const Icon(Icons.refresh, color: Colors.black87),
+              label: const Text('Retry', style: TextStyle(color: Colors.black87)),
             ),
           ],
         ),
@@ -181,7 +185,7 @@ class _State3NotArranged extends StatelessWidget {
               'Shipping not yet arranged',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+                    color: Colors.black87,
                     fontWeight: FontWeight.w600,
                   ),
             ),
@@ -189,12 +193,12 @@ class _State3NotArranged extends StatelessWidget {
             const Text(
               'Your agent will update this screen once your vehicle has been booked for shipping.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 32),
             TextButton(
               onPressed: () => context.go('/order/$orderId'),
-              child: const Text('Back to order', style: TextStyle(color: Colors.white70)),
+              child: const Text('Back to order', style: TextStyle(color: Colors.black54)),
             ),
           ],
         ),
@@ -278,7 +282,7 @@ class _State1InTransit extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('ROUTE', style: TextStyle(color: Colors.white54, fontSize: 11)),
+          const Text('ROUTE', style: TextStyle(color: Colors.black54, fontSize: 11)),
           const SizedBox(height: 8),
           _RouteVisual(shipping: shipping, progress: progress, isArrived: false),
           const SizedBox(height: 20),
@@ -330,13 +334,13 @@ class _State2Arrived extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text('Arrived ${_dateFormat.format(actualArrival)}', style: const TextStyle(color: Colors.white, fontSize: 14)),
                   if (scheduleText.isNotEmpty)
-                    Text(scheduleText, style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 12)),
+                    Text(scheduleText, style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
                 ],
               ],
             ),
           ),
           const SizedBox(height: 20),
-          const Text('ROUTE — COMPLETED', style: TextStyle(color: Colors.white54, fontSize: 11)),
+          const Text('ROUTE — COMPLETED', style: TextStyle(color: Colors.black54, fontSize: 11)),
           const SizedBox(height: 8),
           _RouteVisual(shipping: shipping, progress: 100, isArrived: true),
           const SizedBox(height: 20),
@@ -364,7 +368,6 @@ class _State2Arrived extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFBA7517),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     child: const Text('Proceed to duty & clearance →'),
                   ),
@@ -434,7 +437,7 @@ class _RouteVisualState extends State<_RouteVisual> with SingleTickerProviderSta
                 ),
                 const SizedBox(height: 4),
                 Text(leftPort, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
-                Text('Departed ${departed != null ? _dateFormat.format(departed) : "—"}', style: const TextStyle(color: Colors.white54, fontSize: 10)),
+                Text('Departed ${departed != null ? _dateFormat.format(departed) : "—"}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
               ],
             ),
             Expanded(
@@ -514,7 +517,7 @@ class _RouteVisualState extends State<_RouteVisual> with SingleTickerProviderSta
                   widget.isArrived && actualArrival != null
                       ? 'Arrived ${_dateFormat.format(actualArrival)} ✓'
                       : 'ETA ${eta != null ? _dateFormat.format(eta) : "—"}',
-                  style: const TextStyle(color: Colors.white54, fontSize: 10),
+                  style: const TextStyle(color: Colors.black54, fontSize: 10),
                 ),
               ],
             ),
@@ -538,8 +541,8 @@ class _VesselDetailsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2E),
-        border: Border.all(color: Colors.white24),
+        color: const Color(0xFFF5F4F0),
+        border: Border.all(color: const Color(0xFFE0DFD8)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -548,7 +551,7 @@ class _VesselDetailsCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Vessel details', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white)),
+              Text('Vessel details', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.black87)),
               if (hasTracking)
                 TextButton(
                   onPressed: () => launchUrl(Uri.parse(shipping.trackingUrl!), mode: LaunchMode.externalApplication),
@@ -582,8 +585,8 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+          Text(label, style: const TextStyle(color: Colors.black54, fontSize: 12)),
+          Text(value, style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -611,7 +614,7 @@ class _ShippingTimeline extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Shipping stages', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white)),
+        Text('Shipping stages', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.black87)),
         const SizedBox(height: 12),
         _TimelineStage(
           label: 'Booked',
@@ -719,7 +722,7 @@ class _TimelineStageState extends State<_TimelineStage> with SingleTickerProvide
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade300,
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -734,17 +737,17 @@ class _TimelineStageState extends State<_TimelineStage> with SingleTickerProvide
                 Text(
                   widget.label,
                   style: TextStyle(
-                    color: widget.isActive ? Colors.white : Colors.white70,
+                    color: widget.isActive ? Colors.black87 : Colors.black54,
                     fontSize: 14,
                     fontWeight: widget.isActive ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
                 if (widget.detail != null) ...[
                   const SizedBox(height: 2),
-                  Text(widget.detail!, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                  Text(widget.detail!, style: const TextStyle(color: Colors.black54, fontSize: 12)),
                 ],
                 if (widget.date != null)
-                  Text(widget.date!, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+                  Text(widget.date!, style: const TextStyle(color: Colors.black54, fontSize: 10)),
               ],
             ),
           ),

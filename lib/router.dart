@@ -5,12 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/constants/route_constants.dart';
+import 'core/widgets/buyer_dashboard_shell.dart';
 import 'features/auth/presentation/screens/account_created_screen.dart';
 import 'features/auth/presentation/screens/id_upload_screen.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
-import 'features/auth/presentation/screens/otp_verification_screen.dart';
-import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/bids/presentation/screens/bid_status_screen.dart';
 import 'features/clearance/presentation/screens/clearance_screen.dart';
@@ -42,12 +41,12 @@ final router = GoRouter(
   initialLocation: '/splash',
   refreshListenable: GoRouterRefreshStream(FirebaseAuth.instance.authStateChanges()),
   redirect: (context, state) {
+
     final user = FirebaseAuth.instance.currentUser;
     final location = state.matchedLocation;
     final guestOnlyPaths = <String>{
       '/splash',
       '/onboarding',
-      '/login',
       '/register',
       '/otp',
     };
@@ -81,22 +80,12 @@ final router = GoRouter(
     GoRoute(
       name: RouteConstants.register,
       path: '/register',
-      builder: (context, state) => const RegisterScreen(),
+      redirect: (_, __) => '/login',
     ),
     GoRoute(
       name: RouteConstants.otpVerification,
       path: '/otp',
-      builder: (context, state) {
-        final map = (state.extra as Map?) ?? const {};
-        final registerFlow = (map['register'] as bool?) ?? false;
-        final phoneChange = (map['phoneChange'] as bool?) ?? false;
-        final newPhone = map['newPhone'] as String?;
-        return OtpVerificationScreen(
-          registerFlow: registerFlow,
-          phoneChange: phoneChange,
-          newPhone: newPhone,
-        );
-      },
+      redirect: (_, __) => '/login',
     ),
     GoRoute(
       name: RouteConstants.idUpload,
@@ -108,10 +97,39 @@ final router = GoRouter(
       path: '/account-created',
       builder: (context, state) => const AccountCreatedScreen(),
     ),
-    GoRoute(
-      name: RouteConstants.home,
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return BuyerDashboardShell(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              name: RouteConstants.home,
+              path: '/home',
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              name: RouteConstants.notifications,
+              path: '/notifications',
+              builder: (context, state) => const NotificationsScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              name: RouteConstants.profile,
+              path: '/profile',
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
+        ),
+      ],
     ),
     GoRoute(
       name: RouteConstants.orderDetail,
@@ -264,18 +282,9 @@ final router = GoRouter(
       ),
     ),
     GoRoute(
-      name: RouteConstants.notifications,
-      path: '/notifications',
-      builder: (context, state) => const NotificationsScreen(),
-    ),
-    GoRoute(
-      name: RouteConstants.profile,
-      path: '/profile',
-      builder: (context, state) => const ProfileScreen(),
-    ),
-    GoRoute(
       name: RouteConstants.idVerification,
       path: '/profile/id-verification',
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const IdVerificationScreen(),
     ),
   ],
@@ -285,18 +294,7 @@ final router = GoRouter(
       child: Text(state.error?.toString() ?? 'Route not found'),
     ),
   ),
-  observers: [
-    _RouterLoggingObserver(),
-  ],
 );
-
-class _RouterLoggingObserver extends NavigatorObserver {
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    debugPrint('push: ${route.settings.name} ${route.settings.arguments}');
-    super.didPush(route, previousRoute);
-  }
-}
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {

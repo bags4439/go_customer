@@ -268,8 +268,7 @@ mixin _$PaymentRequestModel {
   String? get timelineStageKey => throw _privateConstructorUsedError;
   String? get invoiceImageUrl => throw _privateConstructorUsedError;
   DateTime? get deadlineAt => throw _privateConstructorUsedError;
-  String get status =>
-      throw _privateConstructorUsedError; // pending|paid|expired|cancelled
+  String get status => throw _privateConstructorUsedError;
   DateTime? get sentAt => throw _privateConstructorUsedError;
   DateTime? get paidAt => throw _privateConstructorUsedError;
   DateTime? get expiredAt => throw _privateConstructorUsedError;
@@ -668,7 +667,6 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
   @override
   @JsonKey()
   final String status;
-  // pending|paid|expired|cancelled
   @override
   final DateTime? sentAt;
   @override
@@ -831,7 +829,7 @@ abstract class _PaymentRequestModel implements PaymentRequestModel {
   @override
   DateTime? get deadlineAt;
   @override
-  String get status; // pending|paid|expired|cancelled
+  String get status;
   @override
   DateTime? get sentAt;
   @override

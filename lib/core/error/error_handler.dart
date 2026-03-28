@@ -13,6 +13,7 @@ Future<void> reportFailure(Failure failure, [StackTrace? stackTrace]) async {
 
 String failureToUserMessage(Failure failure) {
   if (failure is ValidationFailure) return failure.message;
+  if (failure is FirebaseAuthFailure) return failure.message;
   if (failure is AuthFailure) {
     return 'We could not verify your details. Please check and try again.';
   }

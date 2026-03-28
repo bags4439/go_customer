@@ -23,6 +23,7 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['ghanaidVerifiedAt'] as String),
       preferredCurrency: json['preferredCurrency'] as String? ?? 'GHS',
       preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
+      referralCode: json['referralCode'] as String? ?? '',
       pushToken: json['pushToken'] as String?,
       notificationPreferences:
           json['notificationPreferences'] as Map<String, dynamic>?,
@@ -52,6 +53,7 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'ghanaidVerifiedAt': instance.ghanaidVerifiedAt?.toIso8601String(),
       'preferredCurrency': instance.preferredCurrency,
       'preferredLanguage': instance.preferredLanguage,
+      'referralCode': instance.referralCode,
       'pushToken': instance.pushToken,
       'notificationPreferences': instance.notificationPreferences,
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),

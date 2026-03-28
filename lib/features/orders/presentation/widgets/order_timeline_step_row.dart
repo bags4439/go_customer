@@ -324,7 +324,7 @@ class _SubActionArea extends StatelessWidget {
       case 'shipping':
         final ship = shipping;
         if (ship != null) {
-          return ShippingStatusCard(shipping: ship);
+          return ShippingStatusCard(shipping: ship, orderId: orderId);
         }
         break;
       case 'clearance':
@@ -338,9 +338,7 @@ class _SubActionArea extends StatelessWidget {
         return _chooseClearance(context);
       case 'repair':
         final job = repairJob;
-        if (job != null) {
-          return RepairStatusCard(repairJob: job);
-        }
+        return RepairStatusCard(orderId: orderId, repairJob: job);
         break;
       case 'delivery':
         if (order.status == FirestoreEnumValues.orderStatusDelivered) {

@@ -13,7 +13,7 @@ import '../../domain/usecases/register_user_use_case.dart';
 import '../../domain/usecases/start_phone_verification_use_case.dart';
 import '../../domain/usecases/sync_onesignal_use_case.dart';
 import '../../domain/usecases/upload_id_document_use_case.dart';
-import '../../domain/usecases/verify_otp_use_case.dart';
+import '../../domain/usecases/verify_phone_otp_uid_use_case.dart';
 
 final authDataSourceProvider = Provider<AuthFirebaseDataSource>((ref) {
   return AuthFirebaseDataSource(
@@ -24,7 +24,11 @@ final authDataSourceProvider = Provider<AuthFirebaseDataSource>((ref) {
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepositoryImpl(ref.watch(authDataSourceProvider));
+  return AuthRepositoryImpl(
+    ref.watch(authDataSourceProvider),
+    ref.watch(firebaseAuthProvider),
+    ref.watch(firestoreProvider),
+  );
 });
 
 final startPhoneVerificationUseCaseProvider =
@@ -32,8 +36,8 @@ final startPhoneVerificationUseCaseProvider =
   return StartPhoneVerificationUseCase(ref.watch(authRepositoryProvider));
 });
 
-final verifyOtpUseCaseProvider = Provider<VerifyOtpUseCase>((ref) {
-  return VerifyOtpUseCase(ref.watch(authRepositoryProvider));
+final verifyOtpUseCaseProvider = Provider<VerifyPhoneOtpUidUseCase>((ref) {
+  return VerifyPhoneOtpUidUseCase(ref.watch(authRepositoryProvider));
 });
 
 final registerUserUseCaseProvider = Provider<RegisterUserUseCase>((ref) {

@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../domain/repositories/preferences_repository.dart';
 import '../../data/repositories/preferences_repository_impl.dart';
+import '../../domain/repositories/preferences_repository.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import 'preference_form_provider.dart';
+
+const _undefined = Object();
 
 /// Snapshot of form values for comparison (originalValues).
 class EditFormValues {
@@ -16,6 +18,11 @@ class EditFormValues {
   final String conditionLabel;
   final int maxMileage;
   final bool repairOptedIn;
+  final String purchaseOrigin;
+  final String? trim;
+  final String? makeSlug;
+  final String? modelSlug;
+  final bool isNewVehicle;
 
   const EditFormValues({
     required this.make,
@@ -26,6 +33,11 @@ class EditFormValues {
     required this.conditionLabel,
     required this.maxMileage,
     required this.repairOptedIn,
+    required this.purchaseOrigin,
+    this.trim,
+    this.makeSlug,
+    this.modelSlug,
+    required this.isNewVehicle,
   });
 }
 
@@ -38,6 +50,11 @@ class EditFormState {
   final PreferenceCondition condition;
   final int maxMileage;
   final bool repairOptedIn;
+  final String purchaseOrigin;
+  final String? trim;
+  final String? makeSlug;
+  final String? modelSlug;
+  final bool isNewVehicle;
   final EditFormValues? originalValues;
   final bool isSaving;
   final String? error;
@@ -51,12 +68,27 @@ class EditFormState {
     this.condition = PreferenceCondition.readyToDrive,
     this.maxMileage = 70000,
     this.repairOptedIn = true,
+    this.purchaseOrigin = AppConstants.purchaseOriginAny,
+    this.trim,
+    this.makeSlug,
+    this.modelSlug,
+    this.isNewVehicle = false,
     this.originalValues,
     this.isSaving = false,
     this.error,
   });
 
   bool get isSingleYear => yearMin == yearMax;
+
+  bool get isChina => purchaseOrigin == AppConstants.purchaseOriginChina;
+
+  bool get isUsOrDubai =>
+      purchaseOrigin == AppConstants.purchaseOriginUsCanada ||
+      purchaseOrigin == AppConstants.purchaseOriginDubai ||
+      purchaseOrigin == AppConstants.purchaseOriginAny;
+
+  bool get isBrandNewVehicle =>
+      isNewVehicle || condition == PreferenceCondition.newVehicle;
 }
 
 EditFormValues _formValuesFromState({
@@ -68,53 +100,30 @@ EditFormValues _formValuesFromState({
   required String conditionLabel,
   required int maxMileage,
   required bool repairOptedIn,
-}) =>
-    EditFormValues(
-      make: make,
-      model: model,
-      yearMin: yearMin,
-      yearMax: yearMax,
-      condition: condition,
-      conditionLabel: conditionLabel,
-      maxMileage: maxMileage,
-      repairOptedIn: repairOptedIn,
-    );
+  required String purchaseOrigin,
+  String? trim,
+  String? makeSlug,
+  String? modelSlug,
+  required bool isNewVehicle,
+}) => EditFormValues(
+  make: make,
+  model: model,
+  yearMin: yearMin,
+  yearMax: yearMax,
+  condition: condition,
+  conditionLabel: conditionLabel,
+  maxMileage: maxMileage,
+  repairOptedIn: repairOptedIn,
+  purchaseOrigin: purchaseOrigin,
+  trim: trim,
+  makeSlug: makeSlug,
+  modelSlug: modelSlug,
+  isNewVehicle: isNewVehicle,
+);
 
-String _conditionToFirestore(PreferenceCondition c) {
-  switch (c) {
-    case PreferenceCondition.readyToDrive:
-      return FirestoreEnumValues.vehicleConditionRunAndDrive;
-    case PreferenceCondition.needsModerateRepair:
-      return FirestoreEnumValues.vehicleConditionRepairable;
-    case PreferenceCondition.fullRebuildProject:
-      return FirestoreEnumValues.vehicleConditionFullRebuild;
-  }
-}
-
-String _conditionLabel(PreferenceCondition c) {
-  switch (c) {
-    case PreferenceCondition.readyToDrive:
-      return 'Ready to drive';
-    case PreferenceCondition.needsModerateRepair:
-      return 'Needs moderate repair';
-    case PreferenceCondition.fullRebuildProject:
-      return 'Full rebuild project';
-  }
-}
-
-PreferenceCondition _conditionFromFirestore(String v) {
-  switch (v) {
-    case FirestoreEnumValues.vehicleConditionRepairable:
-      return PreferenceCondition.needsModerateRepair;
-    case FirestoreEnumValues.vehicleConditionFullRebuild:
-      return PreferenceCondition.fullRebuildProject;
-    default:
-      return PreferenceCondition.readyToDrive;
-  }
-}
-
-final orderEditPreferencesRepositoryProvider =
-    Provider<PreferencesRepository>((ref) {
+final orderEditPreferencesRepositoryProvider = Provider<PreferencesRepository>((
+  ref,
+) {
   return PreferencesRepositoryImpl(
     ref.watch(preferencesDataSourceProvider),
     ref.watch(functionsProvider),
@@ -122,8 +131,7 @@ final orderEditPreferencesRepositoryProvider =
 });
 
 class EditFormNotifier extends StateNotifier<EditFormState> {
-  EditFormNotifier(this._orderId, this._ref)
-      : super(const EditFormState()) {
+  EditFormNotifier(this._orderId, this._ref) : super(const EditFormState()) {
     _load();
   }
 
@@ -145,12 +153,19 @@ class EditFormNotifier extends StateNotifier<EditFormState> {
         final yearMax = (data['yearMax'] as int?) ?? 2019;
         final conditionStr =
             (data['condition'] as String?) ??
-                FirestoreEnumValues.vehicleConditionRunAndDrive;
+            FirestoreEnumValues.vehicleConditionRunAndDrive;
         final conditionLabel =
             (data['conditionLabel'] as String?) ?? 'Ready to drive';
         final maxMileage = (data['maxMileage'] as int?) ?? 70000;
         final repairOptedIn = (data['repairOptedIn'] as bool?) ?? true;
-        final condition = _conditionFromFirestore(conditionStr);
+        final purchaseOrigin =
+            (data['purchaseOrigin'] as String?) ??
+            AppConstants.purchaseOriginAny;
+        final trim = data['trim'] as String?;
+        final makeSlug = data['makeSlug'] as String?;
+        final modelSlug = data['modelSlug'] as String?;
+        final isNewVehicle = (data['isNewVehicle'] as bool?) ?? false;
+        final condition = PreferenceCondition.fromString(conditionStr);
         final prefId = data['id'] as String?;
         state = EditFormState(
           preferenceId: prefId,
@@ -161,6 +176,11 @@ class EditFormNotifier extends StateNotifier<EditFormState> {
           condition: condition,
           maxMileage: maxMileage,
           repairOptedIn: repairOptedIn,
+          purchaseOrigin: purchaseOrigin,
+          trim: trim,
+          makeSlug: makeSlug,
+          modelSlug: modelSlug,
+          isNewVehicle: isNewVehicle,
           originalValues: _formValuesFromState(
             make: make,
             model: model,
@@ -170,6 +190,11 @@ class EditFormNotifier extends StateNotifier<EditFormState> {
             conditionLabel: conditionLabel,
             maxMileage: maxMileage,
             repairOptedIn: repairOptedIn,
+            purchaseOrigin: purchaseOrigin,
+            trim: trim,
+            makeSlug: makeSlug,
+            modelSlug: modelSlug,
+            isNewVehicle: isNewVehicle,
           ),
         );
       },
@@ -188,10 +213,15 @@ class EditFormNotifier extends StateNotifier<EditFormState> {
       'yearMin': state.yearMin,
       'yearMax': state.yearMax,
       'isSingleYear': state.isSingleYear,
-      'condition': _conditionToFirestore(state.condition),
-      'conditionLabel': _conditionLabel(state.condition),
+      'condition': preferenceConditionToFirestoreString(state.condition),
+      'conditionLabel': preferenceConditionUiLabel(state.condition),
       'maxMileage': state.maxMileage,
       'repairOptedIn': state.repairOptedIn,
+      'trim': state.trim,
+      'purchaseOrigin': state.purchaseOrigin,
+      'isNewVehicle': state.isNewVehicle,
+      'makeSlug': state.makeSlug,
+      'modelSlug': state.modelSlug,
     };
     final originalMap = <String, dynamic>{
       'make': o.make,
@@ -203,6 +233,11 @@ class EditFormNotifier extends StateNotifier<EditFormState> {
       'conditionLabel': o.conditionLabel,
       'maxMileage': o.maxMileage,
       'repairOptedIn': o.repairOptedIn,
+      'trim': o.trim,
+      'purchaseOrigin': o.purchaseOrigin,
+      'isNewVehicle': o.isNewVehicle,
+      'makeSlug': o.makeSlug,
+      'modelSlug': o.modelSlug,
     };
     final result = await repo.updateCarPreferencesAndNotify(
       orderId: _orderId,
@@ -212,20 +247,67 @@ class EditFormNotifier extends StateNotifier<EditFormState> {
       editedByUserId: userId,
     );
     state = state.copyWith(isSaving: false);
-    return result.fold(
-      (f) {
-        state = state.copyWith(error: f.message);
-        return false;
-      },
-      (_) => true,
+    return result.fold((f) {
+      state = state.copyWith(error: f.message);
+      return false;
+    }, (_) => true);
+  }
+
+  void updatePurchaseOrigin(String origin) {
+    final isChina = origin == AppConstants.purchaseOriginChina;
+    String? newCondition;
+    int? newMileage;
+
+    if (origin == AppConstants.purchaseOriginUsCanada ||
+        origin == AppConstants.purchaseOriginAny) {
+      newCondition = FirestoreEnumValues.vehicleConditionRunAndDrive;
+      newMileage = 100000;
+    } else if (origin == AppConstants.purchaseOriginDubai) {
+      newCondition = FirestoreEnumValues.vehicleConditionRunAndDrive;
+      newMileage = 70000;
+    } else if (isChina) {
+      newCondition = FirestoreEnumValues.vehicleConditionNewVehicle;
+      newMileage = 0;
+    }
+
+    state = state.copyWith(
+      purchaseOrigin: origin,
+      isNewVehicle: isChina,
+      condition: newCondition != null
+          ? PreferenceCondition.fromString(newCondition)
+          : state.condition,
+      maxMileage: newMileage ?? state.maxMileage,
     );
   }
 
-  void updateMake(String make, List<String> models) {
-    state = state.copyWith(make: make, model: models.isNotEmpty ? models.first : state.model);
+  void updateTrim(String? value) {
+    state = state.copyWith(trim: value);
   }
 
-  void updateModel(String model) => state = state.copyWith(model: model);
+  void clearTrim() {
+    state = state.copyWith(trim: null);
+  }
+
+  void updateMakeSlug(String slug) {
+    state = state.copyWith(makeSlug: slug, modelSlug: null);
+  }
+
+  void updateModelSlug(String slug) {
+    state = state.copyWith(modelSlug: slug);
+  }
+
+  void updateMake(String make, List<String> models) {
+    state = state.copyWith(
+      make: make,
+      model: models.isNotEmpty ? models.first : state.model,
+      trim: null,
+      modelSlug: null,
+    );
+  }
+
+  void updateModel(String model) {
+    state = state.copyWith(model: model, trim: null, modelSlug: null);
+  }
 
   void updateYearMin(int v) {
     final yearMax = state.yearMax < v ? v : state.yearMax;
@@ -237,8 +319,12 @@ class EditFormNotifier extends StateNotifier<EditFormState> {
     state = state.copyWith(yearMax: newMax);
   }
 
-  void updateCondition(PreferenceCondition c) =>
-      state = state.copyWith(condition: c);
+  void updateCondition(PreferenceCondition c) {
+    state = state.copyWith(
+      condition: c,
+      isNewVehicle: c == PreferenceCondition.newVehicle,
+    );
+  }
 
   void updateMaxMileage(int v) => state = state.copyWith(maxMileage: v);
 
@@ -255,35 +341,48 @@ extension _EditFormStateX on EditFormState {
     PreferenceCondition? condition,
     int? maxMileage,
     bool? repairOptedIn,
+    String? purchaseOrigin,
+    Object? trim = _undefined,
+    Object? makeSlug = _undefined,
+    Object? modelSlug = _undefined,
+    bool? isNewVehicle,
     EditFormValues? originalValues,
     bool? isSaving,
     String? error,
-  }) =>
-      EditFormState(
-        preferenceId: preferenceId ?? this.preferenceId,
-        make: make ?? this.make,
-        model: model ?? this.model,
-        yearMin: yearMin ?? this.yearMin,
-        yearMax: yearMax ?? this.yearMax,
-        condition: condition ?? this.condition,
-        maxMileage: maxMileage ?? this.maxMileage,
-        repairOptedIn: repairOptedIn ?? this.repairOptedIn,
-        originalValues: originalValues ?? this.originalValues,
-        isSaving: isSaving ?? this.isSaving,
-        error: error,
-      );
+  }) => EditFormState(
+    preferenceId: preferenceId ?? this.preferenceId,
+    make: make ?? this.make,
+    model: model ?? this.model,
+    yearMin: yearMin ?? this.yearMin,
+    yearMax: yearMax ?? this.yearMax,
+    condition: condition ?? this.condition,
+    maxMileage: maxMileage ?? this.maxMileage,
+    repairOptedIn: repairOptedIn ?? this.repairOptedIn,
+    purchaseOrigin: purchaseOrigin ?? this.purchaseOrigin,
+    trim: identical(trim, _undefined) ? this.trim : trim as String?,
+    makeSlug: identical(makeSlug, _undefined)
+        ? this.makeSlug
+        : makeSlug as String?,
+    modelSlug: identical(modelSlug, _undefined)
+        ? this.modelSlug
+        : modelSlug as String?,
+    isNewVehicle: isNewVehicle ?? this.isNewVehicle,
+    originalValues: originalValues ?? this.originalValues,
+    isSaving: isSaving ?? this.isSaving,
+    error: error,
+  );
 }
 
 final editFormNotifierProvider =
     StateNotifierProvider.family<EditFormNotifier, EditFormState, String>(
-  (ref, orderId) => EditFormNotifier(orderId, ref),
-);
+      (ref, orderId) => EditFormNotifier(orderId, ref),
+    );
 
 bool _hasChanges(EditFormState state) {
   final o = state.originalValues;
   if (o == null) return false;
-  final cStr = _conditionToFirestore(state.condition);
-  final cLabel = _conditionLabel(state.condition);
+  final cStr = preferenceConditionToFirestoreString(state.condition);
+  final cLabel = preferenceConditionUiLabel(state.condition);
   return state.make != o.make ||
       state.model != o.model ||
       state.yearMin != o.yearMin ||
@@ -291,7 +390,12 @@ bool _hasChanges(EditFormState state) {
       cStr != o.condition ||
       cLabel != o.conditionLabel ||
       state.maxMileage != o.maxMileage ||
-      state.repairOptedIn != o.repairOptedIn;
+      state.repairOptedIn != o.repairOptedIn ||
+      state.purchaseOrigin != o.purchaseOrigin ||
+      state.trim != o.trim ||
+      state.makeSlug != o.makeSlug ||
+      state.modelSlug != o.modelSlug ||
+      state.isNewVehicle != o.isNewVehicle;
 }
 
 final hasChangesProvider = Provider.family<bool, String>((ref, orderId) {

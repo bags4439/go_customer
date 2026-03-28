@@ -13,11 +13,10 @@ class ShippingFirestoreDataSource {
   Stream<Shipping?> watchShipping(String orderId) {
     return _firestore
         .collection(FirestoreCollections.shipping)
-        .doc(orderId)
+        .where('orderId', isEqualTo: orderId)
+        .orderBy('createdAt', descending: true)
+        .limit(1)
         .snapshots()
-        .map((doc) {
-      if (!doc.exists) return null;
-      return shippingFromDoc(doc);
-    });
+        .map((s) => s.docs.isEmpty ? null : shippingFromDoc(s.docs.first));
   }
 }

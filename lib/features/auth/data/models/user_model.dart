@@ -22,6 +22,7 @@ class UserModel with _$UserModel {
     DateTime? ghanaidVerifiedAt,
     @Default('GHS') String preferredCurrency,
     @Default('en') String preferredLanguage,
+    @Default('') String referralCode,
     String? pushToken,
     Map<String, dynamic>? notificationPreferences,
     DateTime? lastActiveAt,
@@ -54,6 +55,7 @@ class UserModel with _$UserModel {
           data['preferredCurrency'] as String? ?? 'GHS',
       preferredLanguage:
           data['preferredLanguage'] as String? ?? 'en',
+      referralCode: data['referralCode'] as String? ?? '',
       pushToken: data['pushToken'] as String?,
       notificationPreferences:
           data['notificationPreferences'] as Map<String, dynamic>?,
@@ -113,6 +115,7 @@ extension UserModelX on UserModel {
       ghanaidVerifiedAt: ghanaidVerifiedAt,
       preferredCurrency: preferredCurrency,
       preferredLanguage: preferredLanguage,
+      referralCode: referralCode,
       notificationPreferences: {
         'agentMessages': agentMessages,
         'orderUpdates': orderUpdates,

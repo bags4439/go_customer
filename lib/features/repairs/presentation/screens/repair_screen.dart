@@ -27,9 +27,15 @@ class RepairScreen extends ConsumerWidget {
     final screenState = ref.watch(repairScreenStateProvider(orderId));
     final jobAsync = ref.watch(repairJobProvider(orderId));
     final dutyAsync = ref.watch(dutyClearanceProvider(orderId));
-    final repairOptedInAsync = ref.watch(carPreferencesRepairOptedInProvider(orderId));
+    final repairOptedInAsync = ref.watch(
+      carPreferencesRepairOptedInProvider(orderId),
+    );
 
-    final isLoading = jobAsync.isLoading || dutyAsync.isLoading || (screenState == RepairScreenState.choice && repairOptedInAsync.isLoading);
+    final isLoading =
+        jobAsync.isLoading ||
+        dutyAsync.isLoading ||
+        (screenState == RepairScreenState.choice &&
+            repairOptedInAsync.isLoading);
     final hasError = jobAsync.hasError || dutyAsync.hasError;
 
     return Scaffold(
@@ -54,17 +60,19 @@ class RepairScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
-              child: ref.watch(orderProvider(orderId)).when(
-                data: (order) => Text(
-                  order?.orderRef ?? orderId,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    color: AppColors.primary.withValues(alpha: 0.7),
+              child: ref
+                  .watch(orderProvider(orderId))
+                  .when(
+                    data: (order) => Text(
+                      order?.orderRef ?? orderId,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        color: AppColors.primary.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
                   ),
-                ),
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
             ),
           ),
         ],
@@ -79,18 +87,18 @@ class RepairScreen extends ConsumerWidget {
               },
             )
           : isLoading
-              ? const _RepairLoadingBody()
-              : AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _RepairBody(
-                    key: ValueKey(screenState),
-                    orderId: orderId,
-                    screenState: screenState,
-                    job: jobAsync.valueOrNull,
-                    dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
-                    repairOptedIn: repairOptedInAsync.valueOrNull,
-                  ),
-                ),
+          ? const _RepairLoadingBody()
+          : AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _RepairBody(
+                key: ValueKey(screenState),
+                orderId: orderId,
+                screenState: screenState,
+                job: jobAsync.valueOrNull,
+                dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
+                repairOptedIn: repairOptedInAsync.valueOrNull,
+              ),
+            ),
     );
   }
 }
@@ -226,6 +234,8 @@ class _RepairBody extends StatelessWidget {
           dutyClearedAt: dutyClearedAt,
           repairOptedIn: repairOptedIn,
         );
+      case RepairScreenState.awaitingQuote:
+        return _StateAwaitingQuote(orderId: orderId);
       case RepairScreenState.quoteSent:
         return _State2QuoteReceived(orderId: orderId, job: job!);
       case RepairScreenState.quoteDeclined:
@@ -270,7 +280,9 @@ class _State0NotAvailable extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSans(
                 fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.75),
               ),
             ),
             const SizedBox(height: 32),
@@ -336,7 +348,9 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
   }
 
   Future<void> _onConfirm() async {
-    final choice = ref.read(repairChoiceProvider(widget.orderId).notifier).state;
+    final choice = ref
+        .read(repairChoiceProvider(widget.orderId).notifier)
+        .state;
     if (choice == null) return;
     final repo = ref.read(repairRepositoryProvider);
     setState(() => _isSubmitting = true);
@@ -348,8 +362,8 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
     setState(() => _isSubmitting = false);
     result.fold(
       (_) => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(RepairConstants.writeErrorMessage)),
-          ),
+        SnackBar(content: Text(RepairConstants.writeErrorMessage)),
+      ),
       (_) {},
     );
   }
@@ -360,7 +374,8 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
   Widget build(BuildContext context) {
     final choice = ref.watch(repairChoiceProvider(widget.orderId));
     final agentName =
-        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ?? 'Your agent';
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
     final estimateAsync = ref.watch(repairEstimateProvider(widget.orderId));
     final estimate = estimateAsync.valueOrNull;
     final estimateStr = estimate != null
@@ -420,7 +435,9 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
                   '${RepairConstants.infoNote} ${RepairConstants.infoNoteSuffix(agentName)}',
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
                 ),
               ],
@@ -612,7 +629,9 @@ class _RepairOptionCard extends ConsumerWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: isYes ? const Color(0xFFE6F1FB) : AppColors.surface,
+                      color: isYes
+                          ? const Color(0xFFE6F1FB)
+                          : AppColors.surface,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -633,7 +652,9 @@ class _RepairOptionCard extends ConsumerWidget {
                           style: GoogleFonts.dmSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: isSelected ? AppColors.secondary : AppColors.primary,
+                            color: isSelected
+                                ? AppColors.secondary
+                                : AppColors.primary,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -663,10 +684,9 @@ class _RepairOptionCard extends ConsumerWidget {
                                   : RepairConstants.optionNoPriceLabel,
                               style: GoogleFonts.dmSans(
                                 fontSize: 10,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.75),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.75),
                               ),
                             ),
                           ],
@@ -681,9 +701,13 @@ class _RepairOptionCard extends ConsumerWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? AppColors.secondary : Colors.transparent,
+                      color: isSelected
+                          ? AppColors.secondary
+                          : Colors.transparent,
                       border: Border.all(
-                        color: isSelected ? AppColors.secondary : AppColors.border,
+                        color: isSelected
+                            ? AppColors.secondary
+                            : AppColors.border,
                         width: 1.5,
                       ),
                     ),
@@ -704,8 +728,9 @@ class _RepairOptionCard extends ConsumerWidget {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius:
-                                BorderRadius.circular(AppTheme.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusMd,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -773,8 +798,8 @@ class _RepairConfirmButton extends StatelessWidget {
     final label = choice == true
         ? RepairConstants.confirmYesButton
         : choice == false
-            ? RepairConstants.confirmNoButton
-            : RepairConstants.confirmButtonSelectOption;
+        ? RepairConstants.confirmNoButton
+        : RepairConstants.confirmButtonSelectOption;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -783,7 +808,9 @@ class _RepairConfirmButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: enabled ? onConfirm : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: enabled ? AppColors.secondary : const Color(0xFFE0DFD8),
+          backgroundColor: enabled
+              ? AppColors.secondary
+              : const Color(0xFFE0DFD8),
           foregroundColor: enabled ? Colors.white : const Color(0xFFAAAAAA),
           disabledBackgroundColor: const Color(0xFFE0DFD8),
           disabledForegroundColor: const Color(0xFFAAAAAA),
@@ -810,7 +837,8 @@ class _State2QuoteReceived extends ConsumerStatefulWidget {
   const _State2QuoteReceived({required this.orderId, required this.job});
 
   @override
-  ConsumerState<_State2QuoteReceived> createState() => _State2QuoteReceivedState();
+  ConsumerState<_State2QuoteReceived> createState() =>
+      _State2QuoteReceivedState();
 }
 
 class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
@@ -820,11 +848,11 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
   @override
   Widget build(BuildContext context) {
     final agentName =
-        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ?? 'Your agent';
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
     final garageAsync = ref.watch(garageDetailsProvider(widget.job.garageId));
     final garage = garageAsync.valueOrNull;
-    final garageName =
-        widget.job.garageNameCustom ?? garage?.name ?? '—';
+    final garageName = widget.job.garageNameCustom ?? garage?.name ?? '—';
     final garageLocation = widget.job.garageLocation ?? garage?.location ?? '—';
 
     return SingleChildScrollView(
@@ -846,7 +874,9 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
             RepairConstants.state2Subtitle,
             style: GoogleFonts.dmSans(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.75),
             ),
           ),
           const SizedBox(height: 20),
@@ -886,17 +916,19 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                             garageLocation,
                             style: GoogleFonts.dmSans(
                               fontSize: 11,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.75),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.75),
                             ),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFAEEDA),
                         borderRadius: BorderRadius.circular(20),
@@ -914,16 +946,22 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                 const SizedBox(height: 16),
                 if (widget.job.workDescription != null &&
                     widget.job.workDescription!.isNotEmpty)
-                  _QuoteLineRow(
-                    label: RepairConstants.repairWorkLabel,
-                    value: widget.job.workDescription!,
+                  Column(
+                    children: [
+                      Text(
+                        widget.job.workDescription!,
+                        style: GoogleFonts.dmSans(fontSize: 13),
+                      ),
+                      SizedBox(height: 8,)
+                    ],
                   ),
                 if (widget.job.platformServiceFeeGhs != null) ...[
                   const SizedBox(height: 8),
                   _QuoteLineRow(
                     label: RepairConstants.platformServiceFeeLabel,
                     value: CurrencyFormatter.formatGhs(
-                        widget.job.platformServiceFeeGhs!),
+                      widget.job.platformServiceFeeGhs!,
+                    ),
                   ),
                 ],
                 const Divider(height: 24),
@@ -940,7 +978,8 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                     Text(
                       widget.job.totalQuotedGhs != null
                           ? CurrencyFormatter.formatGhs(
-                              widget.job.totalQuotedGhs!)
+                              widget.job.totalQuotedGhs!,
+                            )
                           : '—',
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
@@ -965,10 +1004,12 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                             setState(() => _accepting = false);
                             result.fold(
                               (_) => ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            RepairConstants.writeErrorMessage)),
+                                SnackBar(
+                                  content: Text(
+                                    RepairConstants.writeErrorMessage,
                                   ),
+                                ),
+                              ),
                               (_) {},
                             );
                           },
@@ -1003,10 +1044,12 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                             setState(() => _declining = false);
                             result.fold(
                               (_) => ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            RepairConstants.writeErrorMessage)),
+                                SnackBar(
+                                  content: Text(
+                                    RepairConstants.writeErrorMessage,
                                   ),
+                                ),
+                              ),
                               (_) {},
                             );
                           },
@@ -1033,14 +1076,20 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _GarageInfoRow(
-                    label: RepairConstants.garageLabel, value: garageName),
+                  label: RepairConstants.garageLabel,
+                  value: garageName,
+                ),
                 _GarageInfoRow(
-                    label: RepairConstants.locationLabel, value: garageLocation),
+                  label: RepairConstants.locationLabel,
+                  value: garageLocation,
+                ),
                 if (garage?.isVetted == true) ...[
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.success.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -1071,8 +1120,7 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                 ],
                 const SizedBox(height: 8),
                 InkWell(
-                  onTap: () =>
-                      context.go('/order/${widget.orderId}?tab=chat'),
+                  onTap: () => context.go('/order/${widget.orderId}?tab=chat'),
                   child: Text(
                     RepairConstants.askSecondQuote(agentName),
                     style: GoogleFonts.dmSans(
@@ -1102,9 +1150,11 @@ class _QuoteLineRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: GoogleFonts.dmSans(fontSize: 12)),
-        Text(value, style: GoogleFonts.dmSans(fontSize: 12)),
+        SizedBox(width: 16),
+        Flexible(child: Text(value, style: GoogleFonts.dmSans(fontSize: 12))),
       ],
     );
   }
@@ -1129,10 +1179,9 @@ class _GarageInfoRow extends StatelessWidget {
               label,
               style: GoogleFonts.dmSans(
                 fontSize: 11,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.75),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.75),
               ),
             ),
           ),
@@ -1180,10 +1229,9 @@ class _State2BQuoteDeclined extends ConsumerWidget {
                   RepairConstants.state2BBody(agentName),
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.75),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
                 ),
               ],
@@ -1242,7 +1290,8 @@ class _PulsingDotsState extends State<_PulsingDots>
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(3, (i) {
             final delay = i * 0.2;
-            final t = ((_controller.value - delay).clamp(0.0, 1.0) * 2 - 1).abs();
+            final t = ((_controller.value - delay).clamp(0.0, 1.0) * 2 - 1)
+                .abs();
             final opacity = 0.3 + 0.7 * (1 - t);
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -1298,11 +1347,11 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
   @override
   Widget build(BuildContext context) {
     final agentName =
-        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ?? 'Your agent';
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
     final garageAsync = ref.watch(garageDetailsProvider(widget.job.garageId));
     final garage = garageAsync.valueOrNull;
-    final garageName =
-        widget.job.garageNameCustom ?? garage?.name ?? '—';
+    final garageName = widget.job.garageNameCustom ?? garage?.name ?? '—';
     const activeColor = Color(0xFF185FA5);
     final estCompletion = widget.job.estimatedCompletion;
     final now = DateTime.now();
@@ -1342,8 +1391,8 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
                       Text(
                         estCompletion != null
                             ? (daysLeft != null && daysLeft >= 0
-                                ? '${RepairConstants.state3EstCompletionPrefix} ${_dateFormat.format(estCompletion)} · $daysLeft ${RepairConstants.state3DaysLeft}'
-                                : RepairConstants.state3FinishingUp)
+                                  ? '${RepairConstants.state3EstCompletionPrefix} ${_dateFormat.format(estCompletion)} · $daysLeft ${RepairConstants.state3DaysLeft}'
+                                  : RepairConstants.state3FinishingUp)
                             : '—',
                         style: GoogleFonts.dmSans(
                           fontSize: 12,
@@ -1378,34 +1427,38 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
                   style: GoogleFonts.dmSans(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.75),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
                 ),
                 const SizedBox(height: 12),
                 _GarageInfoRow(
-                    label: RepairConstants.garageLabel, value: garageName),
+                  label: RepairConstants.garageLabel,
+                  value: garageName,
+                ),
                 _GarageInfoRow(
-                    label: RepairConstants.locationLabel,
-                    value: widget.job.garageLocation ?? '—'),
+                  label: RepairConstants.locationLabel,
+                  value: widget.job.garageLocation ?? '—',
+                ),
                 _GarageInfoRow(
-                    label: RepairConstants.startedLabel,
-                    value: widget.job.startDate != null
-                        ? _dateFormat.format(widget.job.startDate!)
-                        : '—'),
+                  label: RepairConstants.startedLabel,
+                  value: widget.job.startDate != null
+                      ? _dateFormat.format(widget.job.startDate!)
+                      : '—',
+                ),
                 _GarageInfoRow(
-                    label: RepairConstants.estCompletionShortLabel,
-                    value: estCompletion != null
-                        ? _dateFormat.format(estCompletion)
-                        : '—'),
+                  label: RepairConstants.estCompletionShortLabel,
+                  value: estCompletion != null
+                      ? _dateFormat.format(estCompletion)
+                      : '—',
+                ),
                 _GarageInfoRow(
-                    label: RepairConstants.approvedQuoteLabel,
-                    value: widget.job.totalQuotedGhs != null
-                        ? CurrencyFormatter.formatGhs(
-                            widget.job.totalQuotedGhs!)
-                        : '—'),
+                  label: RepairConstants.approvedQuoteLabel,
+                  value: widget.job.totalQuotedGhs != null
+                      ? CurrencyFormatter.formatGhs(widget.job.totalQuotedGhs!)
+                      : '—',
+                ),
               ],
             ),
           ),
@@ -1462,10 +1515,9 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
               RepairConstants.state3PhotoNote,
               style: GoogleFonts.dmSans(
                 fontSize: 12,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.75),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.75),
               ),
             ),
           ),
@@ -1514,12 +1566,13 @@ class _State4CompleteState extends ConsumerState<_State4Complete> {
   @override
   Widget build(BuildContext context) {
     final agentName =
-        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ?? 'Your agent';
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
     final order = ref.watch(orderProvider(widget.orderId)).valueOrNull;
-    final makeModel = [order?.make, order?.model]
-        .whereType<String>()
-        .where((s) => s.isNotEmpty)
-        .join(' ');
+    final makeModel = [
+      order?.make,
+      order?.model,
+    ].whereType<String>().where((s) => s.isNotEmpty).join(' ');
     final displayMakeModel = makeModel.isEmpty ? 'vehicle' : makeModel;
     final allPhotos = [
       ...widget.job.beforePhotoUrls.map((u) => _PhotoItem(u, true)),
@@ -1553,10 +1606,7 @@ class _State4CompleteState extends ConsumerState<_State4Complete> {
           ],
           if (_sectionVisible[3]) ...[
             const SizedBox(height: 12),
-            _State4DeliveryCard(
-              orderId: widget.orderId,
-              agentName: agentName,
-            ),
+            _State4DeliveryCard(orderId: widget.orderId, agentName: agentName),
           ],
           const SizedBox(height: 32),
         ],
@@ -1568,6 +1618,7 @@ class _State4CompleteState extends ConsumerState<_State4Complete> {
 class _PhotoItem {
   final String url;
   final bool isBefore;
+
   _PhotoItem(this.url, this.isBefore);
 }
 
@@ -1575,8 +1626,7 @@ class _State4Hero extends StatefulWidget {
   final DateTime? actualCompletion;
   final String makeModel;
 
-  const _State4Hero(
-      {required this.actualCompletion, required this.makeModel});
+  const _State4Hero({required this.actualCompletion, required this.makeModel});
 
   @override
   State<_State4Hero> createState() => _State4HeroState();
@@ -1674,17 +1724,19 @@ class _State4PhotosRow extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.camera_alt_outlined,
-                size: 32, color: Colors.grey.shade500),
+            Icon(
+              Icons.camera_alt_outlined,
+              size: 32,
+              color: Colors.grey.shade500,
+            ),
             const SizedBox(width: 12),
             Text(
               RepairConstants.state4PhotosPlaceholder,
               style: GoogleFonts.dmSans(
                 fontSize: 12,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.75),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.75),
               ),
             ),
           ],
@@ -1719,15 +1771,18 @@ class _State4PhotosRow extends StatelessWidget {
                           child: Container(color: AppColors.surface),
                         ),
                         errorWidget: (_, __, ___) => const Icon(
-                            Icons.broken_image_outlined,
-                            color: AppColors.danger),
+                          Icons.broken_image_outlined,
+                          color: AppColors.danger,
+                        ),
                       ),
                       Positioned(
                         left: 4,
                         bottom: 4,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: item.isBefore
                                 ? AppColors.surface
@@ -1758,8 +1813,12 @@ class _State4PhotosRow extends StatelessWidget {
     );
   }
 
-  void _openPhotoViewer(BuildContext context, List<_PhotoItem> photos,
-      int initialIndex, String jobId) {
+  void _openPhotoViewer(
+    BuildContext context,
+    List<_PhotoItem> photos,
+    int initialIndex,
+    String jobId,
+  ) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         fullscreenDialog: true,
@@ -1822,12 +1881,13 @@ class _RepairPhotoViewerState extends State<_RepairPhotoViewer> {
                     imageUrl: item.url,
                     fit: BoxFit.contain,
                     placeholder: (_, __) => const Center(
-                        child:
-                            CircularProgressIndicator(color: Colors.white)),
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
                     errorWidget: (_, __, ___) => const Icon(
-                        Icons.broken_image_outlined,
-                        color: Colors.white,
-                        size: 48),
+                      Icons.broken_image_outlined,
+                      color: Colors.white,
+                      size: 48,
+                    ),
                   ),
                 ),
               );
@@ -1884,10 +1944,9 @@ class _State4WorkCard extends StatelessWidget {
             style: GoogleFonts.dmSans(
               fontSize: 10,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.75),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.75),
             ),
           ),
           const SizedBox(height: 12),
@@ -1895,8 +1954,9 @@ class _State4WorkCard extends StatelessWidget {
             _DoneRow(label: job.workDescription!),
           if (job.platformServiceFeeGhs != null)
             _DoneRow(
-                label:
-                    '${RepairConstants.platformServiceFeeLabel} ${CurrencyFormatter.formatGhs(job.platformServiceFeeGhs!)}'),
+              label:
+                  '${RepairConstants.platformServiceFeeLabel} ${CurrencyFormatter.formatGhs(job.platformServiceFeeGhs!)}',
+            ),
           const Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1904,14 +1964,18 @@ class _State4WorkCard extends StatelessWidget {
               Text(
                 RepairConstants.totalPaidLabel,
                 style: GoogleFonts.dmSans(
-                    fontSize: 13, fontWeight: FontWeight.w600),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               Text(
                 totalPaid != null
                     ? CurrencyFormatter.formatGhs(totalPaid)
                     : '—',
                 style: GoogleFonts.dmSans(
-                    fontSize: 13, fontWeight: FontWeight.w600),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -1934,15 +1998,19 @@ class _DoneRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: Text(label,
-                  style: GoogleFonts.dmSans(fontSize: 12),
-                  overflow: TextOverflow.ellipsis)),
+            child: Text(
+              label,
+              style: GoogleFonts.dmSans(fontSize: 12),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           Text(
             RepairConstants.doneLabel,
             style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.success),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.success,
+            ),
           ),
         ],
       ),
@@ -1954,8 +2022,7 @@ class _State4DeliveryCard extends StatelessWidget {
   final String orderId;
   final String agentName;
 
-  const _State4DeliveryCard(
-      {required this.orderId, required this.agentName});
+  const _State4DeliveryCard({required this.orderId, required this.agentName});
 
   @override
   Widget build(BuildContext context) {
@@ -1995,14 +2062,13 @@ class _State4DeliveryCard extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                ),
               ),
               child: Text(
                 RepairConstants.confirmDeliveryButton,
                 style: GoogleFonts.dmSans(
-                    fontSize: 13, fontWeight: FontWeight.w500),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -2060,10 +2126,9 @@ class _State5NoRepair extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.75),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
                 ),
                 const Divider(height: 24),
@@ -2072,10 +2137,9 @@ class _State5NoRepair extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.75),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
                 ),
               ],
@@ -2102,10 +2166,9 @@ class _State5NoRepair extends ConsumerWidget {
                 RepairConstants.state5SwitchLink,
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.75),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.75),
                   decoration: TextDecoration.underline,
                 ),
               ),
@@ -2130,7 +2193,9 @@ class _State5NoRepair extends ConsumerWidget {
               Text(
                 RepairConstants.switchSheetTitle,
                 style: GoogleFonts.dmSans(
-                    fontSize: 18, fontWeight: FontWeight.w600),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -2157,10 +2222,12 @@ class _State5NoRepair extends ConsumerWidget {
                         if (ctx.mounted) {
                           result.fold(
                             (_) => ScaffoldMessenger.of(ctx).showSnackBar(
-                                  SnackBar(
-                                      content: Text(
-                                          RepairConstants.writeErrorMessage)),
+                              SnackBar(
+                                content: Text(
+                                  RepairConstants.writeErrorMessage,
                                 ),
+                              ),
+                            ),
                             (_) {},
                           );
                         }
@@ -2209,14 +2276,12 @@ class _RepairTimelineStage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (isDone)
-              const Icon(Icons.check_circle,
-                  color: AppColors.success, size: 20)
+              const Icon(Icons.check_circle, color: AppColors.success, size: 20)
             else if (isActive && pulseAnimation != null)
               AnimatedBuilder(
                 animation: pulseAnimation!,
                 builder: (context, child) {
-                  final t =
-                      Curves.easeInOut.transform(pulseAnimation!.value);
+                  final t = Curves.easeInOut.transform(pulseAnimation!.value);
                   final scale = 1.0 + 0.4 * t;
                   return Transform.scale(
                     scale: scale,
@@ -2237,20 +2302,18 @@ class _RepairTimelineStage extends StatelessWidget {
                 height: 20,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.2),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
                 child: Center(
                   child: Text(
                     '${index + 1}',
                     style: GoogleFonts.dmSans(
                       fontSize: 10,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -2268,11 +2331,10 @@ class _RepairTimelineStage extends StatelessWidget {
                       color: isActive
                           ? activeColor
                           : isDone
-                              ? null
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.6),
+                          ? null
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   if (date != null) ...[
@@ -2281,10 +2343,9 @@ class _RepairTimelineStage extends StatelessWidget {
                       _dateFormat.format(date!),
                       style: GoogleFonts.dmSans(
                         fontSize: 10,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -2293,6 +2354,84 @@ class _RepairTimelineStage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StateAwaitingQuote extends ConsumerWidget {
+  final String orderId;
+
+  const _StateAwaitingQuote({required this.orderId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final agentName =
+        ref.watch(agentFirstNameProvider(orderId)).valueOrNull ?? 'Your agent';
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE6F1FB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFB5D4F4)),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.build_outlined,
+                  size: 40,
+                  color: Color(0xFF185FA5),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Waiting for garage quote',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF185FA5),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$agentName has been notified and will send '
+                  'you a garage quote shortly. You will be '
+                  'notified when it arrives.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: const Color(0xFF185FA5),
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => context.go('/order/$orderId?tab=chat'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF378ADD),
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                'Chat with $agentName →',
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

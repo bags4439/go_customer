@@ -16,7 +16,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
   }
 
   @override
-  Future<Either<Failure, Payment>> createPayment({
+  Future<Either<Failure, Payment>> upsertPendingPayment({
     required String orderId,
     required String buyerId,
     required String paymentRequestId,
@@ -29,18 +29,34 @@ class PaymentRepositoryImpl implements PaymentRepository {
     required String providerRef,
   }) async {
     try {
-      final payment = await _dataSource.createPayment(
+      final existing = await _dataSource.getActivePayment(
         orderId: orderId,
         buyerId: buyerId,
         paymentRequestId: paymentRequestId,
-        type: type,
-        description: description,
-        amountGhs: amountGhs,
-        amountUsd: amountUsd,
-        exchangeRate: exchangeRate,
-        method: method,
-        providerRef: providerRef,
       );
+      final payment = existing != null
+          ? await _dataSource.updatePendingPayment(
+              paymentId: existing.id,
+              type: type,
+              description: description,
+              amountGhs: amountGhs,
+              amountUsd: amountUsd,
+              exchangeRate: exchangeRate,
+              method: method,
+              providerRef: providerRef,
+            )
+          : await _dataSource.createPayment(
+              orderId: orderId,
+              buyerId: buyerId,
+              paymentRequestId: paymentRequestId,
+              type: type,
+              description: description,
+              amountGhs: amountGhs,
+              amountUsd: amountUsd,
+              exchangeRate: exchangeRate,
+              method: method,
+              providerRef: providerRef,
+            );
       return Right(payment);
     } catch (e, st) {
       return Left(PaymentFailure(message: e.toString(), cause: st));

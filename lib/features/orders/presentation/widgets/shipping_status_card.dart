@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,19 +17,39 @@ const _kSuccess = 0xFF1D9E75;
 /// Shipping step status when a shipping document exists (no pending payment).
 class ShippingStatusCard extends StatelessWidget {
   final ShippingModel shipping;
+  final String orderId;
 
-  const ShippingStatusCard({super.key, required this.shipping});
+  const ShippingStatusCard({
+    super.key,
+    required this.shipping,
+    required this.orderId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final shouldOpenShippingScreen =
+        shipping.status == ShippingStatus.departed ||
+        shipping.status == ShippingStatus.inTransit;
+
+    return GestureDetector(
+      onTap: shouldOpenShippingScreen
+          ? () => context.push('/order/$orderId/shipping')
+          : null,
+      child: Container(
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(_kSurface),
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: shouldOpenShippingScreen
+              ? const Color(0x66378ADD)
+              : Colors.transparent,
+          width: 0.8,
+        ),
       ),
       child: _buildByStatus(context),
+      ),
     );
   }
 
@@ -151,6 +172,26 @@ class ShippingStatusCard extends StatelessWidget {
                 ),
               ),
             ],
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'Open full shipping tracker',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(_kPrimary),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 14,
+                  color: Color(_kPrimary),
+                ),
+              ],
+            ),
           ],
         );
       case ShippingStatus.arrived:

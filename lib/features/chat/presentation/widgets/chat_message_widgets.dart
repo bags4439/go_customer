@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
+import 'vehicle_option_chat_card.dart';
 
 /// Status for sent messages: pending (clock), sent (done), read (done_all blue).
 String _messageStatusKey(ChatMessage msg) {
@@ -39,7 +41,10 @@ Widget _timestampAndStatusRow(DateTime sentAt, String statusKey, bool isMe) {
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.end,
     children: [
-      Text(time, style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.8))),
+      Text(
+        time,
+        style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.8)),
+      ),
       const SizedBox(width: 3),
       _statusIcon(statusKey, isMe),
     ],
@@ -53,11 +58,13 @@ class ChatMessageBubble extends StatelessWidget {
   final String? replyToBody;
   final PendingMessage? pending;
   final VoidCallback? onVideoTap;
+  final String orderId;
 
   const ChatMessageBubble({
     super.key,
     this.message,
     required this.isMe,
+    required this.orderId,
     this.reactions = const [],
     this.replyToBody,
     this.pending,
@@ -67,10 +74,12 @@ class ChatMessageBubble extends StatelessWidget {
   factory ChatMessageBubble.pending({
     required PendingMessage pending,
     required bool isMe,
+    required String orderId,
     VoidCallback? onVideoTap,
   }) {
     return ChatMessageBubble(
       isMe: isMe,
+      orderId: orderId,
       pending: pending,
       onVideoTap: onVideoTap,
     );
@@ -90,22 +99,31 @@ class ChatMessageBubble extends StatelessWidget {
     final Widget child;
     switch (msg.messageType) {
       case 'voice_note':
-        child = _VoiceNoteBubble(message: msg, isMe: isMe, statusKey: statusKey);
+        child = _VoiceNoteBubble(
+          message: msg,
+          isMe: isMe,
+          statusKey: statusKey,
+        );
         break;
       case 'image':
         child = _ImageBubble(message: msg, isMe: isMe, statusKey: statusKey);
         break;
       case 'video':
-        child = _VideoBubble(message: msg, isMe: isMe, statusKey: statusKey, onTap: onVideoTap);
+        child = _VideoBubble(
+          message: msg,
+          isMe: isMe,
+          statusKey: statusKey,
+          onTap: onVideoTap,
+        );
         break;
       case 'file':
         child = _FileBubble(message: msg, isMe: isMe, statusKey: statusKey);
         break;
       case 'vehicle_card':
-        child = _VehicleCard(message: msg);
+        child = _VehicleCard(message: msg, orderId: orderId);
         break;
       case 'payment_request':
-        child = _PaymentRequestCard(message: msg);
+        child = _PaymentRequestCard(message: msg, orderId: orderId);
         break;
       case 'payment_confirmed':
         child = _PaymentConfirmedCard(message: msg);
@@ -132,8 +150,9 @@ class ChatMessageBubble extends StatelessWidget {
     }
     if (reactions.isEmpty) return child;
     return Column(
-      crossAxisAlignment:
-          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: isMe
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         child,
@@ -203,11 +222,7 @@ class _PendingBubble extends StatelessWidget {
         child,
         const Padding(
           padding: EdgeInsets.only(top: 2, right: 4),
-          child: Icon(
-            Icons.access_time,
-            size: 12,
-            color: Colors.white,
-          ),
+          child: Icon(Icons.access_time, size: 12, color: Colors.white),
         ),
       ],
     );
@@ -231,8 +246,7 @@ class _TextBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg = isMe ? const Color(0xFF378ADD) : Colors.white;
     final fg = isMe ? Colors.white : Colors.black87;
-    final align =
-        isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final align = isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start;
     final radius = isMe
         ? const BorderRadius.only(
             topLeft: Radius.circular(16),
@@ -290,10 +304,7 @@ class _TextBubble extends StatelessWidget {
                   ),
                 ),
               ],
-              Text(
-                message.body ?? '',
-                style: TextStyle(color: fg),
-              ),
+              Text(message.body ?? '', style: TextStyle(color: fg)),
               if (isMe) ...[
                 const SizedBox(height: 4),
                 _timestampAndStatusRow(message.sentAt, statusKey, isMe),
@@ -327,8 +338,9 @@ class _VoiceNoteBubble extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(16),
-        border:
-            isMe ? null : Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+        border: isMe
+            ? null
+            : Border.all(color: Colors.grey.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -480,10 +492,8 @@ class _VideoBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showProgress =
-        uploadProgress != null && uploadProgress! < 1.0;
+    final showProgress = uploadProgress != null && uploadProgress! < 1.0;
     final thumbUrl = message?.thumbnailUrl;
-    final hasVideoUrl = message?.mediaUrl != null && message!.mediaUrl!.isNotEmpty;
 
     Widget thumbnail;
     if (localPath != null && File(localPath!).existsSync()) {
@@ -499,7 +509,9 @@ class _VideoBubble extends StatelessWidget {
         ),
         errorWidget: (context, url, error) => const ColoredBox(
           color: Colors.grey,
-          child: Center(child: Icon(Icons.play_arrow, color: Colors.white54, size: 48)),
+          child: Center(
+            child: Icon(Icons.play_arrow, color: Colors.white54, size: 48),
+          ),
         ),
       );
     } else if (message?.mediaUrl != null && message!.mediaUrl!.isNotEmpty) {
@@ -513,13 +525,17 @@ class _VideoBubble extends StatelessWidget {
         ),
         errorWidget: (context, url, error) => const ColoredBox(
           color: Colors.grey,
-          child: Center(child: Icon(Icons.play_arrow, color: Colors.white54, size: 48)),
+          child: Center(
+            child: Icon(Icons.play_arrow, color: Colors.white54, size: 48),
+          ),
         ),
       );
     } else {
       thumbnail = const ColoredBox(
         color: Colors.grey,
-        child: Center(child: Icon(Icons.play_arrow, color: Colors.white54, size: 48)),
+        child: Center(
+          child: Icon(Icons.play_arrow, color: Colors.white54, size: 48),
+        ),
       );
     }
 
@@ -544,7 +560,11 @@ class _VideoBubble extends StatelessWidget {
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.play_arrow, color: Color(0xFF378ADD), size: 32),
+                child: const Icon(
+                  Icons.play_arrow,
+                  color: Color(0xFF378ADD),
+                  size: 32,
+                ),
               ),
             ),
           ),
@@ -555,17 +575,17 @@ class _VideoBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black45,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     _durationLabel(message?.mediaDurationSecs),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),
                 if (isMe && message != null) ...[
@@ -659,73 +679,28 @@ class _FileBubble extends StatelessWidget {
 
 class _VehicleCard extends StatelessWidget {
   final ChatMessage message;
+  final String orderId;
 
-  const _VehicleCard({required this.message});
+  const _VehicleCard({required this.message, required this.orderId});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (message.mediaUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  message.mediaUrl!,
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            const SizedBox(height: 8),
-            Text(
-              message.body ?? 'Vehicle option',
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Est. total: ~GHS 117,500',
-              style: const TextStyle(
-                color: Color(0xFF1D9E75),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // navigation handled by parent
-                    },
-                    child: const Text('I want this one'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    child: const Text('See details'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    final vehicleOptionId = message.vehicleOptionId;
+    if (vehicleOptionId == null || vehicleOptionId.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return VehicleOptionChatCard(
+      orderId: orderId,
+      vehicleOptionId: vehicleOptionId,
     );
   }
 }
 
 class _PaymentRequestCard extends StatelessWidget {
   final ChatMessage message;
+  final String orderId;
 
-  const _PaymentRequestCard({required this.message});
+  const _PaymentRequestCard({required this.message, required this.orderId});
 
   @override
   Widget build(BuildContext context) {
@@ -744,12 +719,15 @@ class _PaymentRequestCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               message.body ?? '',
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: message.paymentRequestId != null
+                  ? () => context.push(
+                '/order/$orderId/payment-request/${message.paymentRequestId}',
+              )
+                  : null,
               child: const Text('Pay now →'),
             ),
           ],
@@ -776,9 +754,7 @@ class _PaymentConfirmedCard extends StatelessWidget {
           children: [
             const Text(
               'Payment confirmed',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(message.body ?? ''),
@@ -876,10 +852,7 @@ class _ShippingUpdateCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(message.body ?? ''),
             const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {},
-              child: const Text('Track shipment →'),
-            ),
+            TextButton(onPressed: () {}, child: const Text('Track shipment →')),
           ],
         ),
       ),
@@ -902,12 +875,8 @@ class _SystemPill extends StatelessWidget {
           color: const Color(0xFFF5F4F0),
           borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        child: Text(text, style: Theme.of(context).textTheme.bodySmall),
       ),
     );
   }
 }
-

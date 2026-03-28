@@ -9,42 +9,40 @@ part 'car_preferences_model.g.dart';
 enum VehicleCondition {
   runAndDrive,
   repairable,
-  fullRebuild;
+  fullRebuild,
+  newVehicle,
+  goodCondition,
+  fairCondition;
 
   static VehicleCondition fromString(String value) {
-    switch (value) {
-      case 'run_and_drive':
-        return VehicleCondition.runAndDrive;
-      case 'repairable':
-        return VehicleCondition.repairable;
-      case 'full_rebuild':
-        return VehicleCondition.fullRebuild;
-      default:
-        return VehicleCondition.runAndDrive;
-    }
+    return switch (value) {
+      'run_and_drive' => VehicleCondition.runAndDrive,
+      'repairable' => VehicleCondition.repairable,
+      'full_rebuild' => VehicleCondition.fullRebuild,
+      'new_vehicle' => VehicleCondition.newVehicle,
+      'good_condition' => VehicleCondition.goodCondition,
+      'fair_condition' => VehicleCondition.fairCondition,
+      _ => VehicleCondition.runAndDrive,
+    };
   }
 
-  String get firestoreValue {
-    switch (this) {
-      case VehicleCondition.runAndDrive:
-        return 'run_and_drive';
-      case VehicleCondition.repairable:
-        return 'repairable';
-      case VehicleCondition.fullRebuild:
-        return 'full_rebuild';
-    }
-  }
+  String get firestoreValue => switch (this) {
+        VehicleCondition.runAndDrive => 'run_and_drive',
+        VehicleCondition.repairable => 'repairable',
+        VehicleCondition.fullRebuild => 'full_rebuild',
+        VehicleCondition.newVehicle => 'new_vehicle',
+        VehicleCondition.goodCondition => 'good_condition',
+        VehicleCondition.fairCondition => 'fair_condition',
+      };
 
-  String get label {
-    switch (this) {
-      case VehicleCondition.runAndDrive:
-        return 'Run & drive';
-      case VehicleCondition.repairable:
-        return 'Needs moderate repair';
-      case VehicleCondition.fullRebuild:
-        return 'Full rebuild project';
-    }
-  }
+  String get label => switch (this) {
+        VehicleCondition.runAndDrive => 'Run & drive',
+        VehicleCondition.repairable => 'Needs moderate repair',
+        VehicleCondition.fullRebuild => 'Full rebuild project',
+        VehicleCondition.newVehicle => 'Brand new',
+        VehicleCondition.goodCondition => 'Good condition',
+        VehicleCondition.fairCondition => 'Fair condition',
+      };
 }
 
 VehicleCondition? _vehicleConditionFromJson(Object? json) {
@@ -73,6 +71,9 @@ class CarPreferencesModel with _$CarPreferencesModel {
     int? maxMileage,
     bool? repairOptedIn,
     bool? clearanceOptedIn,
+    String? trim,
+    @Default('any') String purchaseOrigin,
+    @Default(false) bool isNewVehicle,
     String? editedBy,
     DateTime? editedAt,
     String? editReason,
@@ -103,6 +104,9 @@ class CarPreferencesModel with _$CarPreferencesModel {
       maxMileage: data['maxMileage'] as int?,
       repairOptedIn: data['repairOptedIn'] as bool?,
       clearanceOptedIn: data['clearanceOptedIn'] as bool?,
+      trim: data['trim'] as String?,
+      purchaseOrigin: data['purchaseOrigin'] as String? ?? 'any',
+      isNewVehicle: data['isNewVehicle'] as bool? ?? false,
       editedBy: data['editedBy'] as String?,
       editedAt: (data['editedAt'] as Timestamp?)?.toDate(),
       editReason: data['editReason'] as String?,

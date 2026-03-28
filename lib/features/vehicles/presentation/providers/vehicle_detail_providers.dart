@@ -4,11 +4,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../../shared/providers/firebase_providers.dart';
-import '../../core/constants/vehicle_detail_constants.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../vehicle_options/data/models/vehicle_option_model.dart';
 import '../../data/datasources/vehicle_firestore_data_source.dart';
 import '../../data/repositories/vehicle_repository_impl.dart';
-import '../../domain/entities/max_bid_entity.dart';
 import '../../domain/entities/vehicle_option_entity.dart';
 import '../../domain/repositories/vehicle_repository.dart';
 
@@ -19,7 +17,6 @@ final vehicleFirestoreDataSourceProvider = Provider<VehicleFirestoreDataSource>(
 final vehicleRepositoryProvider = Provider<VehicleRepository>((ref) {
   return VehicleRepositoryImpl(
     ref.watch(vehicleFirestoreDataSourceProvider),
-    ref.watch(functionsProvider),
   );
 });
 
@@ -28,195 +25,72 @@ final vehicleOptionProvider =
   return ref.watch(vehicleRepositoryProvider).getVehicleOption(vehicleOptionId);
 });
 
-final existingMaxBidProvider =
-    FutureProvider.family<MaxBidEntity?, String>((ref, vehicleOptionId) async {
-  final userId = ref.watch(authStateProvider).valueOrNull;
-  if (userId == null) return null;
-  return ref.watch(vehicleRepositoryProvider).getExistingMaxBid(
-        vehicleOptionId: vehicleOptionId,
-        buyerId: userId,
-      );
+/// Real-time vehicle option (e.g. chat vehicle card).
+final vehicleOptionStreamProvider =
+    StreamProvider.family<VehicleOptionEntity?, String>((ref, vehicleOptionId) {
+  final firestore = ref.watch(firestoreProvider);
+  return firestore
+      .collection(FirestoreCollections.vehicleOptions)
+      .doc(vehicleOptionId)
+      .snapshots()
+      .map((snap) => snap.exists
+          ? VehicleOptionModel.fromFirestore(snap).toEntity()
+          : null);
 });
 
-enum BidImpactLevel { none, low, good, strong }
-
-class MaxBidInputState {
-  final String rawInput;
-  final double? parsedUsd;
-  final bool isValid;
-  final BidImpactLevel impactLevel;
-
-  const MaxBidInputState({
-    this.rawInput = '',
-    this.parsedUsd,
-    this.isValid = false,
-    this.impactLevel = BidImpactLevel.none,
-  });
-}
-
-class MaxBidInputNotifier extends StateNotifier<MaxBidInputState> {
-  MaxBidInputNotifier(this._vehicleOptionId, this._ref, double? initialUsd)
-      : super(MaxBidInputState(
-          rawInput: initialUsd != null && initialUsd > 0
-              ? initialUsd.toStringAsFixed(0)
-              : '4200',
-          parsedUsd: initialUsd ?? 4200.0,
-          isValid: true,
-          impactLevel: BidImpactLevel.none,
-        ));
-
-  final String _vehicleOptionId;
-  final Ref _ref;
-
-  void setRawInput(String value) {
-    final parsed = double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), ''));
-    final usd = parsed != null && parsed > 0 ? parsed : null;
-    final impact = _impactLevel(usd);
-    state = MaxBidInputState(
-      rawInput: value,
-      parsedUsd: usd,
-      isValid: usd != null && usd > 0,
-      impactLevel: impact,
-    );
-  }
-
-  void setPreset(double usd) {
-    state = MaxBidInputState(
-      rawInput: usd.toStringAsFixed(0),
-      parsedUsd: usd,
-      isValid: true,
-      impactLevel: _impactLevel(usd),
-    );
-  }
-
-  BidImpactLevel _impactLevel(double? bidUsd) {
-    final option = _ref.read(vehicleOptionProvider(_vehicleOptionId)).valueOrNull;
-    final auctionPrice = option?.auctionPriceUsd;
-    if (auctionPrice == null || bidUsd == null || bidUsd <= 0) return BidImpactLevel.none;
-    if (bidUsd < auctionPrice * 0.9) return BidImpactLevel.low;
-    if (bidUsd <= auctionPrice * 1.2) return BidImpactLevel.good;
-    return BidImpactLevel.strong;
-  }
-}
-
-final maxBidInputNotifierProvider =
-    StateNotifierProvider.family<MaxBidInputNotifier, MaxBidInputState, String>(
-  (ref, vehicleOptionId) {
-    final existing = ref.watch(existingMaxBidProvider(vehicleOptionId)).valueOrNull;
-    return MaxBidInputNotifier(vehicleOptionId, ref, existing?.maxBidUsd);
-  },
-);
-
-class CostLineItem {
-  final String label;
-  final String? usdText;
-  final String? ghsText;
-  final bool isDeduction;
-  final bool isTotal;
-
-  const CostLineItem({
-    required this.label,
-    this.usdText,
-    this.ghsText,
-    this.isDeduction = false,
-    this.isTotal = false,
-  });
-}
-
-class LiveCost {
+/// Read-only cost breakdown (no max bid — auction/BIN list price only).
+class ReadOnlyVehicleCost {
+  final bool isBuyItNow;
+  final double? listPriceUsd;
+  final double premiumUsd;
+  final double fixedFeesUsd;
   final double totalUsd;
-  final double totalGhs;
-  final String ghsConversionText;
-  final List<CostLineItem> allLineItems;
+  final double? rate;
 
-  const LiveCost({
+  const ReadOnlyVehicleCost({
+    required this.isBuyItNow,
+    required this.listPriceUsd,
+    required this.premiumUsd,
+    required this.fixedFeesUsd,
     required this.totalUsd,
-    required this.totalGhs,
-    required this.ghsConversionText,
-    required this.allLineItems,
+    required this.rate,
   });
+
+  bool get isRateAvailable => rate != null && rate! > 0;
+
+  String? ghsText(double usdAmount) {
+    final r = rate;
+    if (r == null || r <= 0) return null;
+    return CurrencyFormatter.formatGhs(usdAmount * r);
+  }
+
+  static ReadOnlyVehicleCost? fromOption(VehicleOptionEntity? option, double? rate) {
+    if (option == null) return null;
+    final pct = (option.buyersPremiumPct ?? 0) / 100.0;
+    final fixed = option.fixedPlatformFeesUsd ?? 0.0;
+    final bin = option.isBuyItNow;
+    final double? listUsd = bin
+        ? (option.buyItNowPriceUsd ?? option.auctionPriceUsd)
+        : option.auctionPriceUsd;
+    if (listUsd == null) return null;
+    final premium = listUsd * pct;
+    final total = listUsd + premium + fixed;
+    return ReadOnlyVehicleCost(
+      isBuyItNow: bin,
+      listPriceUsd: listUsd,
+      premiumUsd: premium,
+      fixedFeesUsd: fixed,
+      totalUsd: total,
+      rate: rate,
+    );
+  }
 }
 
-final liveCostProvider = Provider.family<LiveCost?, String>((ref, vehicleOptionId) {
-  final option = ref.watch(vehicleOptionProvider(vehicleOptionId)).valueOrNull;
-  final rateAsync = ref.watch(exchangeRateProvider);
-  final inputState = ref.watch(maxBidInputNotifierProvider(vehicleOptionId));
-  final rate = rateAsync.valueOrNull?.usdToGhs;
-  if (option == null) return null;
-  final useBidUsd = inputState.parsedUsd ?? option.auctionPriceUsd ?? 0.0;
-  final premiumPct = (option.buyersPremiumPct ?? 0) / 100;
-  final premiumUsd = useBidUsd * premiumPct;
-  final towing = option.towingStorageUsd ?? 0;
-  final shipping = option.shippingUsd ?? 0;
-  final marine = option.marineInsuranceUsd ?? 0;
-  final depositUsd = (useBidUsd + premiumUsd) * 0.10;
-  final dutyGhs = option.dutyGhs ?? 0;
-  final repairGhs = option.repairEstimateGhs ?? 0;
-  final serviceGhs = option.serviceFeeGhs ?? 0;
-  final totalUsd = useBidUsd + premiumUsd + towing + shipping + marine;
-  final r = (rate ?? 0.0).toDouble();
-  final depositGhs = r > 0 ? depositUsd * r : 0;
-  final totalGhs = (totalUsd * r) + dutyGhs + repairGhs + serviceGhs;
-  final lineItems = <CostLineItem>[
-    CostLineItem(
-      label: VehicleDetailConstants.auctionPriceEst,
-      usdText: CurrencyFormatter.formatUsd(useBidUsd),
-      ghsText: r > 0 ? CurrencyFormatter.formatGhs(useBidUsd * r) : null,
-    ),
-    CostLineItem(
-      label: '${VehicleDetailConstants.buyersPremium} (${(premiumPct * 100).toStringAsFixed(0)}%)',
-      usdText: CurrencyFormatter.formatUsd(premiumUsd),
-      ghsText: r > 0 ? CurrencyFormatter.formatGhs(premiumUsd * r) : null,
-    ),
-    CostLineItem(
-      label: VehicleDetailConstants.usTowingStorage,
-      usdText: CurrencyFormatter.formatUsd(towing),
-      ghsText: r > 0 ? CurrencyFormatter.formatGhs(towing * r) : null,
-    ),
-    CostLineItem(
-      label: VehicleDetailConstants.lessDepositPaid,
-      usdText: '−${CurrencyFormatter.formatUsd(depositUsd.toDouble())}',
-      ghsText: '−${CurrencyFormatter.formatGhs(depositGhs.toDouble())}',
-      isDeduction: true,
-    ),
-    CostLineItem(
-      label: VehicleDetailConstants.oceanFreight,
-      usdText: CurrencyFormatter.formatUsd(shipping),
-      ghsText: r > 0 ? CurrencyFormatter.formatGhs(shipping * r) : null,
-    ),
-    CostLineItem(
-      label: VehicleDetailConstants.marineInsurance,
-      usdText: CurrencyFormatter.formatUsd(marine),
-      ghsText: r > 0 ? CurrencyFormatter.formatGhs(marine * r) : null,
-    ),
-    CostLineItem(
-      label: VehicleDetailConstants.importDuty,
-      usdText: '—',
-      ghsText: CurrencyFormatter.formatGhs(dutyGhs),
-    ),
-  ];
-  if (repairGhs > 0) {
-    lineItems.add(CostLineItem(
-      label: VehicleDetailConstants.repairsEst,
-      usdText: '—',
-      ghsText: CurrencyFormatter.formatGhs(repairGhs),
-    ));
-  }
-  lineItems.add(CostLineItem(
-    label: VehicleDetailConstants.totalLandedCost,
-    usdText: CurrencyFormatter.formatUsd(totalUsd),
-    ghsText: CurrencyFormatter.formatGhs(totalGhs),
-    isTotal: true,
-  ));
-  final ghsConversionText = inputState.parsedUsd != null && inputState.parsedUsd! > 0 && r > 0
-      ? '= ${CurrencyFormatter.formatGhs(inputState.parsedUsd! * r)} at today\'s rate'
-      : '';
-  return LiveCost(
-    totalUsd: totalUsd,
-    totalGhs: totalGhs,
-    ghsConversionText: ghsConversionText,
-    allLineItems: lineItems,
-  );
+final readOnlyVehicleCostProvider =
+    Provider.family<ReadOnlyVehicleCost?, String>((ref, vehicleOptionId) {
+  final option = ref.watch(vehicleOptionStreamProvider(vehicleOptionId)).valueOrNull;
+  final rate = ref.watch(exchangeRateProvider).valueOrNull?.usdToGhs;
+  return ReadOnlyVehicleCost.fromOption(option, rate);
 });
 
 /// Agent info for vehicle detail (name, initials) from vehicle's agentId.
@@ -246,7 +120,7 @@ class AgentForVehicleView {
 
 final agentForVehicleProvider =
     FutureProvider.family<AgentForVehicleView?, String>((ref, vehicleOptionId) async {
-  final option = await ref.watch(vehicleOptionProvider(vehicleOptionId).future);
+  final option = ref.watch(vehicleOptionStreamProvider(vehicleOptionId)).valueOrNull;
   final agentId = option?.agentId;
   if (agentId == null || agentId.isEmpty) return null;
   final firestore = ref.watch(firestoreProvider);
