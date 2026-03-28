@@ -30,9 +30,8 @@ mixin _$UserModel {
   String? get location => throw _privateConstructorUsedError;
   bool get isFirstTimeBuyer => throw _privateConstructorUsedError;
   bool get isVerified => throw _privateConstructorUsedError;
-  String? get ghanaidUrl => throw _privateConstructorUsedError;
-  bool get ghanaidVerified => throw _privateConstructorUsedError;
-  DateTime? get ghanaidVerifiedAt => throw _privateConstructorUsedError;
+  String? get ghanaCardPhotoUrl => throw _privateConstructorUsedError;
+  String? get ghanaCardNumber => throw _privateConstructorUsedError;
   String get preferredCurrency => throw _privateConstructorUsedError;
   String get preferredLanguage => throw _privateConstructorUsedError;
   String get referralCode => throw _privateConstructorUsedError;
@@ -67,9 +66,8 @@ abstract class $UserModelCopyWith<$Res> {
     String? location,
     bool isFirstTimeBuyer,
     bool isVerified,
-    String? ghanaidUrl,
-    bool ghanaidVerified,
-    DateTime? ghanaidVerifiedAt,
+    String? ghanaCardPhotoUrl,
+    String? ghanaCardNumber,
     String preferredCurrency,
     String preferredLanguage,
     String referralCode,
@@ -104,9 +102,8 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? location = freezed,
     Object? isFirstTimeBuyer = null,
     Object? isVerified = null,
-    Object? ghanaidUrl = freezed,
-    Object? ghanaidVerified = null,
-    Object? ghanaidVerifiedAt = freezed,
+    Object? ghanaCardPhotoUrl = freezed,
+    Object? ghanaCardNumber = freezed,
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
     Object? referralCode = null,
@@ -150,18 +147,14 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.isVerified
                 : isVerified // ignore: cast_nullable_to_non_nullable
                       as bool,
-            ghanaidUrl: freezed == ghanaidUrl
-                ? _value.ghanaidUrl
-                : ghanaidUrl // ignore: cast_nullable_to_non_nullable
+            ghanaCardPhotoUrl: freezed == ghanaCardPhotoUrl
+                ? _value.ghanaCardPhotoUrl
+                : ghanaCardPhotoUrl // ignore: cast_nullable_to_non_nullable
                       as String?,
-            ghanaidVerified: null == ghanaidVerified
-                ? _value.ghanaidVerified
-                : ghanaidVerified // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            ghanaidVerifiedAt: freezed == ghanaidVerifiedAt
-                ? _value.ghanaidVerifiedAt
-                : ghanaidVerifiedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
+            ghanaCardNumber: freezed == ghanaCardNumber
+                ? _value.ghanaCardNumber
+                : ghanaCardNumber // ignore: cast_nullable_to_non_nullable
+                      as String?,
             preferredCurrency: null == preferredCurrency
                 ? _value.preferredCurrency
                 : preferredCurrency // ignore: cast_nullable_to_non_nullable
@@ -218,9 +211,8 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String? location,
     bool isFirstTimeBuyer,
     bool isVerified,
-    String? ghanaidUrl,
-    bool ghanaidVerified,
-    DateTime? ghanaidVerifiedAt,
+    String? ghanaCardPhotoUrl,
+    String? ghanaCardNumber,
     String preferredCurrency,
     String preferredLanguage,
     String referralCode,
@@ -254,9 +246,8 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? location = freezed,
     Object? isFirstTimeBuyer = null,
     Object? isVerified = null,
-    Object? ghanaidUrl = freezed,
-    Object? ghanaidVerified = null,
-    Object? ghanaidVerifiedAt = freezed,
+    Object? ghanaCardPhotoUrl = freezed,
+    Object? ghanaCardNumber = freezed,
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
     Object? referralCode = null,
@@ -300,18 +291,14 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.isVerified
             : isVerified // ignore: cast_nullable_to_non_nullable
                   as bool,
-        ghanaidUrl: freezed == ghanaidUrl
-            ? _value.ghanaidUrl
-            : ghanaidUrl // ignore: cast_nullable_to_non_nullable
+        ghanaCardPhotoUrl: freezed == ghanaCardPhotoUrl
+            ? _value.ghanaCardPhotoUrl
+            : ghanaCardPhotoUrl // ignore: cast_nullable_to_non_nullable
                   as String?,
-        ghanaidVerified: null == ghanaidVerified
-            ? _value.ghanaidVerified
-            : ghanaidVerified // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        ghanaidVerifiedAt: freezed == ghanaidVerifiedAt
-            ? _value.ghanaidVerifiedAt
-            : ghanaidVerifiedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
+        ghanaCardNumber: freezed == ghanaCardNumber
+            ? _value.ghanaCardNumber
+            : ghanaCardNumber // ignore: cast_nullable_to_non_nullable
+                  as String?,
         preferredCurrency: null == preferredCurrency
             ? _value.preferredCurrency
             : preferredCurrency // ignore: cast_nullable_to_non_nullable
@@ -361,9 +348,8 @@ class _$UserModelImpl implements _UserModel {
     this.location,
     this.isFirstTimeBuyer = false,
     this.isVerified = false,
-    this.ghanaidUrl,
-    this.ghanaidVerified = false,
-    this.ghanaidVerifiedAt,
+    this.ghanaCardPhotoUrl,
+    this.ghanaCardNumber,
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
     this.referralCode = '',
@@ -397,12 +383,9 @@ class _$UserModelImpl implements _UserModel {
   @JsonKey()
   final bool isVerified;
   @override
-  final String? ghanaidUrl;
+  final String? ghanaCardPhotoUrl;
   @override
-  @JsonKey()
-  final bool ghanaidVerified;
-  @override
-  final DateTime? ghanaidVerifiedAt;
+  final String? ghanaCardNumber;
   @override
   @JsonKey()
   final String preferredCurrency;
@@ -434,7 +417,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaidUrl: $ghanaidUrl, ghanaidVerified: $ghanaidVerified, ghanaidVerifiedAt: $ghanaidVerifiedAt, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -454,12 +437,10 @@ class _$UserModelImpl implements _UserModel {
                 other.isFirstTimeBuyer == isFirstTimeBuyer) &&
             (identical(other.isVerified, isVerified) ||
                 other.isVerified == isVerified) &&
-            (identical(other.ghanaidUrl, ghanaidUrl) ||
-                other.ghanaidUrl == ghanaidUrl) &&
-            (identical(other.ghanaidVerified, ghanaidVerified) ||
-                other.ghanaidVerified == ghanaidVerified) &&
-            (identical(other.ghanaidVerifiedAt, ghanaidVerifiedAt) ||
-                other.ghanaidVerifiedAt == ghanaidVerifiedAt) &&
+            (identical(other.ghanaCardPhotoUrl, ghanaCardPhotoUrl) ||
+                other.ghanaCardPhotoUrl == ghanaCardPhotoUrl) &&
+            (identical(other.ghanaCardNumber, ghanaCardNumber) ||
+                other.ghanaCardNumber == ghanaCardNumber) &&
             (identical(other.preferredCurrency, preferredCurrency) ||
                 other.preferredCurrency == preferredCurrency) &&
             (identical(other.preferredLanguage, preferredLanguage) ||
@@ -482,7 +463,7 @@ class _$UserModelImpl implements _UserModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hash(
     runtimeType,
     id,
     fullName,
@@ -492,9 +473,8 @@ class _$UserModelImpl implements _UserModel {
     location,
     isFirstTimeBuyer,
     isVerified,
-    ghanaidUrl,
-    ghanaidVerified,
-    ghanaidVerifiedAt,
+    ghanaCardPhotoUrl,
+    ghanaCardNumber,
     preferredCurrency,
     preferredLanguage,
     referralCode,
@@ -503,7 +483,7 @@ class _$UserModelImpl implements _UserModel {
     lastActiveAt,
     createdAt,
     updatedAt,
-  ]);
+  );
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -529,9 +509,8 @@ abstract class _UserModel implements UserModel {
     final String? location,
     final bool isFirstTimeBuyer,
     final bool isVerified,
-    final String? ghanaidUrl,
-    final bool ghanaidVerified,
-    final DateTime? ghanaidVerifiedAt,
+    final String? ghanaCardPhotoUrl,
+    final String? ghanaCardNumber,
     final String preferredCurrency,
     final String preferredLanguage,
     final String referralCode,
@@ -562,11 +541,9 @@ abstract class _UserModel implements UserModel {
   @override
   bool get isVerified;
   @override
-  String? get ghanaidUrl;
+  String? get ghanaCardPhotoUrl;
   @override
-  bool get ghanaidVerified;
-  @override
-  DateTime? get ghanaidVerifiedAt;
+  String? get ghanaCardNumber;
   @override
   String get preferredCurrency;
   @override

@@ -36,8 +36,7 @@ class ProfileConstants {
   static const String notifPaymentRequestsSubtitle =
       'When your agent sends a payment request';
   static const String notifPromotions = 'Promotions & news';
-  static const String notifPromotionsSubtitle =
-      'Platform updates and offers';
+  static const String notifPromotionsSubtitle = 'Platform updates and offers';
 
   static const String languageLabel = 'Language';
   static const String displayCurrencyLabel = 'Display currency';
@@ -72,7 +71,8 @@ class ProfileConstants {
   static const String documentsReady = 'Documents ready';
   static const String ofSeven = 'of 7';
 
-  static const String idUploadTitle = 'Upload your Ghana card or passport to complete verification. This is required before the duty & clearance stage.';
+  static const String idUploadTitle =
+      'Upload your Ghana card or passport to complete verification. This is required before the duty & clearance stage.';
   static const String idUnderReviewMessage =
       "Document received — under review. We'll notify you once verified.";
   static const String tapToUpload = 'Tap to upload your ID document';
@@ -87,7 +87,8 @@ class ProfileConstants {
   static const String backToProfile = 'Back to profile';
   static const String previewNotAvailable = 'Preview not available';
 
-  static const String errorLoadProfile = 'Could not load your profile. Tap to retry.';
+  static const String errorLoadProfile =
+      'Could not load your profile. Tap to retry.';
   static const String errorSaveField = 'Could not save. Please try again.';
   static const String errorUpdatePreference =
       'Could not update preference. Try again.';

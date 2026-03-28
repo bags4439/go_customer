@@ -13,9 +13,11 @@ class UserSessionFirestoreDataSource {
         .collection(FirestoreCollections.userSessions)
         .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => UserSessionModel.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => UserSessionModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   Future<void> updateSessionExpiry(String sessionId, DateTime expiresAt) async {
@@ -23,9 +25,9 @@ class UserSessionFirestoreDataSource {
         .collection(FirestoreCollections.userSessions)
         .doc(sessionId)
         .update({
-      'expiresAt': Timestamp.fromDate(expiresAt),
-      'lastUsedAt': FieldValue.serverTimestamp(),
-    });
+          'expiresAt': Timestamp.fromDate(expiresAt),
+          'lastUsedAt': FieldValue.serverTimestamp(),
+        });
   }
 
   Future<void> deleteSession(String sessionId) async {

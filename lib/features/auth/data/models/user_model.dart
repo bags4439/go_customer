@@ -17,9 +17,8 @@ class UserModel with _$UserModel {
     String? location,
     @Default(false) bool isFirstTimeBuyer,
     @Default(false) bool isVerified,
-    String? ghanaidUrl,
-    @Default(false) bool ghanaidVerified,
-    DateTime? ghanaidVerifiedAt,
+    String? ghanaCardPhotoUrl,
+    String? ghanaCardNumber,
     @Default('GHS') String preferredCurrency,
     @Default('en') String preferredLanguage,
     @Default('') String referralCode,
@@ -47,20 +46,16 @@ class UserModel with _$UserModel {
       location: data['location'] as String?,
       isFirstTimeBuyer: data['isFirstTimeBuyer'] as bool? ?? false,
       isVerified: data['isVerified'] as bool? ?? false,
-      ghanaidUrl: data['ghanaidUrl'] as String?,
-      ghanaidVerified: data['ghanaidVerified'] as bool? ?? false,
-      ghanaidVerifiedAt:
-          (data['ghanaidVerifiedAt'] as Timestamp?)?.toDate(),
-      preferredCurrency:
-          data['preferredCurrency'] as String? ?? 'GHS',
-      preferredLanguage:
-          data['preferredLanguage'] as String? ?? 'en',
+      ghanaCardPhotoUrl:
+          data['ghanaCardPhotoUrl'] as String? ?? data['ghanaidUrl'] as String?,
+      ghanaCardNumber: data['ghanaCardNumber'] as String?,
+      preferredCurrency: data['preferredCurrency'] as String? ?? 'GHS',
+      preferredLanguage: data['preferredLanguage'] as String? ?? 'en',
       referralCode: data['referralCode'] as String? ?? '',
       pushToken: data['pushToken'] as String?,
       notificationPreferences:
           data['notificationPreferences'] as Map<String, dynamic>?,
-      lastActiveAt:
-          (data['lastActiveAt'] as Timestamp?)?.toDate(),
+      lastActiveAt: (data['lastActiveAt'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
@@ -110,9 +105,8 @@ extension UserModelX on UserModel {
       location: location ?? '',
       isFirstTimeBuyer: isFirstTimeBuyer,
       isVerified: isVerified,
-      ghanaidUrl: ghanaidUrl,
-      ghanaidVerified: ghanaidVerified,
-      ghanaidVerifiedAt: ghanaidVerifiedAt,
+      ghanaCardPhotoUrl: ghanaCardPhotoUrl,
+      ghanaCardNumber: ghanaCardNumber,
       preferredCurrency: preferredCurrency,
       preferredLanguage: preferredLanguage,
       referralCode: referralCode,

@@ -15,11 +15,7 @@ class AuthFirebaseDataSource {
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
 
-  const AuthFirebaseDataSource(
-    this._auth,
-    this._firestore,
-    this._storage,
-  );
+  const AuthFirebaseDataSource(this._auth, this._firestore, this._storage);
 
   Stream<String?> authStateChanges() {
     return _auth.authStateChanges().map((user) => user?.uid);
@@ -99,27 +95,27 @@ class AuthFirebaseDataSource {
         .collection(FirestoreCollections.users)
         .doc(params.userId)
         .set({
-      'id': params.userId,
-      'fullName': params.fullName,
-      'phone': params.phone,
-      'email': params.email,
-      'role': FirestoreEnumValues.roleBuyer,
-      'location': params.location,
-      'isFirstTimeBuyer': params.isFirstTimeBuyer,
-      'isVerified': false,
-      'ghanaidUrl': null,
-      'ghanaidVerified': false,
-      'preferredCurrency': 'GHS',
-      'preferredLanguage': 'en',
-      'notificationPreferences': {
-        'agentMessages': true,
-        'orderUpdates': true,
-        'paymentRequests': true,
-        'promotionsAndNews': false,
-      },
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+          'id': params.userId,
+          'fullName': params.fullName,
+          'phone': params.phone,
+          'email': params.email,
+          'role': FirestoreEnumValues.roleBuyer,
+          'location': params.location,
+          'isFirstTimeBuyer': params.isFirstTimeBuyer,
+          'isVerified': false,
+          'ghanaCardPhotoUrl': null,
+          'ghanaCardNumber': null,
+          'preferredCurrency': 'GHS',
+          'preferredLanguage': 'en',
+          'notificationPreferences': {
+            'agentMessages': true,
+            'orderUpdates': true,
+            'paymentRequests': true,
+            'promotionsAndNews': false,
+          },
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
   }
 
   Future<AppUser?> getCurrentUser() async {
@@ -147,8 +143,7 @@ class AuthFirebaseDataSource {
     final url = await ref.getDownloadURL();
 
     await _firestore.collection(FirestoreCollections.users).doc(userId).update({
-      'ghanaidUrl': url,
-      'ghanaidVerified': false,
+      'ghanaCardPhotoUrl': url,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -174,4 +169,3 @@ class AuthFirebaseDataSource {
     });
   }
 }
-

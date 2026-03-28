@@ -18,6 +18,8 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../core/constants/profile_constants.dart';
 import '../../domain/entities/user_session_entity.dart';
 import '../providers/profile_providers.dart';
+import '../widgets/ghana_card_profile_row.dart';
+import '../widgets/id_verification_banner.dart';
 
 const Color _kPrimary = Color(0xFF378ADD);
 const Color _kSuccess = Color(0xFF1D9E75);
@@ -70,10 +72,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         duration: const Duration(milliseconds: 200),
       );
       _sectionControllers[i] = c;
-      _sectionAnimations[i] = CurvedAnimation(
-        parent: c,
-        curve: Curves.easeOut,
-      );
+      _sectionAnimations[i] = CurvedAnimation(parent: c, curve: Curves.easeOut);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _headerController.forward();
@@ -169,12 +168,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             agentFirstName: ProfileConstants.noAgentYet,
                           ),
                         ),
-                        if (!user.ghanaidVerified) ...[
+                        if (!user.hasGhanaCard) ...[
                           const SizedBox(height: 12),
-                          _IdVerificationBanner(
-                            user: user,
-                            pulse: _pulseController,
-                          ),
+                          IdVerificationBanner(pulse: _pulseController),
                         ],
                         _AnimatedSection(
                           index: 1,
@@ -220,10 +216,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           ),
                         ),
                         const SizedBox(height: 20),
-                        _LogOutButton(onPressed: () => _showLogOutConfirm(context)),
+                        _LogOutButton(
+                          onPressed: () => _showLogOutConfirm(context),
+                        ),
                         const SizedBox(height: 12),
                         _DeleteAccountLink(
-                            onPressed: () => _showDeleteAccountSheet(context)),
+                          onPressed: () => _showDeleteAccountSheet(context),
+                        ),
                         ...[
                           const SizedBox(height: 16),
                           Center(
@@ -284,8 +283,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   bool _hasPersonalUnsaved(WidgetRef r) {
     final edit = r.watch(profileEditProvider);
     const personal = ['fullName', 'location', 'phone'];
-    return edit.expandedField != null &&
-        personal.contains(edit.expandedField);
+    return edit.expandedField != null && personal.contains(edit.expandedField);
   }
 
   Future<void> _saveFullName(String value) async {
@@ -296,8 +294,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         .updateFullName(user.id, value);
     if (!mounted) return;
     result.fold(
-      (_) => showErrorSnackBar(context, ProfileConstants.errorSaveField,
-          actionLabel: ProfileConstants.retry, onAction: () => _saveFullName(value)),
+      (_) => showErrorSnackBar(
+        context,
+        ProfileConstants.errorSaveField,
+        actionLabel: ProfileConstants.retry,
+        onAction: () => _saveFullName(value),
+      ),
       (_) {
         ref.read(profileEditProvider.notifier).collapse();
       },
@@ -312,8 +314,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         .updateLocation(user.id, value);
     if (!mounted) return;
     result.fold(
-      (_) => showErrorSnackBar(context, ProfileConstants.errorSaveField,
-          actionLabel: ProfileConstants.retry, onAction: () => _saveLocation(value)),
+      (_) => showErrorSnackBar(
+        context,
+        ProfileConstants.errorSaveField,
+        actionLabel: ProfileConstants.retry,
+        onAction: () => _saveLocation(value),
+      ),
       (_) {
         ref.read(profileEditProvider.notifier).collapse();
       },
@@ -351,7 +357,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             },
             child: Text(
               ProfileConstants.logOutConfirmAction,
-              style: GoogleFonts.dmSans(color: _kDanger, fontWeight: FontWeight.w500),
+              style: GoogleFonts.dmSans(
+                color: _kDanger,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -380,9 +389,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       context.go('/login');
     } catch (_) {
       if (!mounted) return;
-      showErrorSnackBar(context, ProfileConstants.errorLogOut,
-            actionLabel: ProfileConstants.retry,
-            onAction: () => _doLogOut(context));
+      showErrorSnackBar(
+        context,
+        ProfileConstants.errorLogOut,
+        actionLabel: ProfileConstants.retry,
+        onAction: () => _doLogOut(context),
+      );
     }
   }
 
@@ -434,10 +446,7 @@ class _AnimatedHeaderCard extends StatelessWidget {
         position: Tween<Offset>(
           begin: const Offset(0, 0.15),
           end: Offset.zero,
-        ).animate(CurvedAnimation(
-          parent: controller,
-          curve: Curves.easeOut,
-        )),
+        ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -480,7 +489,9 @@ class _AnimatedHeaderCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: _kBlueTint,
                           borderRadius: BorderRadius.circular(20),
@@ -559,11 +570,7 @@ class _AvatarCircle extends StatelessWidget {
                   color: _kSuccess,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.check,
-                  size: 10,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.check, size: 10, color: Colors.white),
               ),
             ),
         ],
@@ -591,10 +598,7 @@ class _OrderSummaryRow extends StatelessWidget {
       animation: animation,
       builder: (context, child) {
         final t = animation.value.clamp(0.0, 1.0);
-        return Opacity(
-          opacity: t,
-          child: child,
-        );
+        return Opacity(opacity: t, child: child);
       },
       child: Row(
         children: [
@@ -663,10 +667,7 @@ class _SummaryBox extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 10,
-              color: Colors.black54,
-            ),
+            style: GoogleFonts.dmSans(fontSize: 10, color: Colors.black54),
           ),
         ],
       ),
@@ -685,10 +686,7 @@ class _OrderSummaryShimmer extends StatelessWidget {
       animation: animation,
       builder: (context, child) {
         final t = animation.value.clamp(0.0, 1.0);
-        return Opacity(
-          opacity: t,
-          child: child,
-        );
+        return Opacity(opacity: t, child: child);
       },
       child: Row(
         children: List.generate(
@@ -701,94 +699,6 @@ class _OrderSummaryShimmer extends StatelessWidget {
                 color: _kSurface,
                 borderRadius: BorderRadius.circular(10),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _IdVerificationBanner extends StatelessWidget {
-  const _IdVerificationBanner({
-    required this.user,
-    required this.pulse,
-  });
-
-  final AppUser user;
-  final AnimationController pulse;
-
-  @override
-  Widget build(BuildContext context) {
-    final underReview = user.ghanaidUrl != null && user.ghanaidUrl!.isNotEmpty;
-    return AnimatedBuilder(
-      animation: pulse,
-      builder: (context, child) {
-        final opacity = 0.85 + 0.15 * (1 - (pulse.value - 0.5).abs() * 2);
-        return Opacity(
-          opacity: opacity.clamp(0.85, 1.0),
-          child: child,
-        );
-      },
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: underReview
-              ? null
-              : () => context.pushNamed(RouteConstants.idVerification),
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: _kAmberBg,
-              borderRadius: BorderRadius.circular(8),
-              border: const Border(
-                left: BorderSide(color: _kWarning, width: 3),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  size: 20,
-                  color: _kWarning,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        underReview
-                            ? ProfileConstants.idBannerTitleUnderReview
-                            : ProfileConstants.idBannerTitlePending,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: _kDarkBrown,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        underReview
-                            ? ProfileConstants.idBannerSubtitleUnderReview
-                            : ProfileConstants.idBannerSubtitlePending,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          color: _kWarning,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (!underReview)
-                  const Icon(
-                    Icons.chevron_right,
-                    color: _kWarning,
-                    size: 24,
-                  ),
-              ],
             ),
           ),
         ),
@@ -895,19 +805,27 @@ class _PersonalDetailsSection extends ConsumerWidget {
           value: user.fullName,
           expanded: edit.expandedField == 'fullName',
           draftValue: edit.draftValue,
-          errorMessage: edit.expandedField == 'fullName' ? edit.errorMessage : null,
-          onTap: () => ref.read(profileEditProvider.notifier).expandField('fullName', user.fullName),
-          onDraftChanged: (v) => ref.read(profileEditProvider.notifier).updateDraft(v),
+          errorMessage: edit.expandedField == 'fullName'
+              ? edit.errorMessage
+              : null,
+          onTap: () => ref
+              .read(profileEditProvider.notifier)
+              .expandField('fullName', user.fullName),
+          onDraftChanged: (v) =>
+              ref.read(profileEditProvider.notifier).updateDraft(v),
           onSave: () {
             final v = (edit.draftValue ?? user.fullName).trim();
             if (v.length < 2) {
-              ref.read(profileEditProvider.notifier).setError('At least 2 characters');
+              ref
+                  .read(profileEditProvider.notifier)
+                  .setError('At least 2 characters');
               return;
             }
             onSaveFullName(v);
           },
           onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
-          validator: (v) => v.trim().length < 2 ? 'At least 2 characters' : null,
+          validator: (v) =>
+              v.trim().length < 2 ? 'At least 2 characters' : null,
         ),
         _DividerIndent(),
         _EditRow(
@@ -917,7 +835,8 @@ class _PersonalDetailsSection extends ConsumerWidget {
           draftValue: edit.draftValue,
           isPhone: true,
           onTap: onPhoneTap,
-          onDraftChanged: (v) => ref.read(profileEditProvider.notifier).updateDraft(v),
+          onDraftChanged: (v) =>
+              ref.read(profileEditProvider.notifier).updateDraft(v),
           onSave: () {},
           onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
           subtitle: ProfileConstants.phoneChangeNote,
@@ -928,9 +847,14 @@ class _PersonalDetailsSection extends ConsumerWidget {
           value: user.location,
           expanded: edit.expandedField == 'location',
           draftValue: edit.draftValue,
-          errorMessage: edit.expandedField == 'location' ? edit.errorMessage : null,
-          onTap: () => ref.read(profileEditProvider.notifier).expandField('location', user.location),
-          onDraftChanged: (v) => ref.read(profileEditProvider.notifier).updateDraft(v),
+          errorMessage: edit.expandedField == 'location'
+              ? edit.errorMessage
+              : null,
+          onTap: () => ref
+              .read(profileEditProvider.notifier)
+              .expandField('location', user.location),
+          onDraftChanged: (v) =>
+              ref.read(profileEditProvider.notifier).updateDraft(v),
           onSave: () {
             final v = (edit.draftValue ?? user.location).trim();
             if (v.isEmpty) {
@@ -942,12 +866,11 @@ class _PersonalDetailsSection extends ConsumerWidget {
           onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
           validator: (v) => v.trim().isEmpty ? 'Required' : null,
         ),
+        _DividerIndent(),
+        GhanaCardProfileRow(user: user),
         if (user.email != null && user.email!.isNotEmpty) ...[
           _DividerIndent(),
-          _ReadOnlyRow(
-            label: ProfileConstants.emailLabel,
-            value: user.email!,
-          ),
+          _ReadOnlyRow(label: ProfileConstants.emailLabel, value: user.email!),
         ],
       ],
     );
@@ -1045,8 +968,9 @@ class _EditRow extends StatelessWidget {
                     children: [
                       TextFormField(
                         initialValue: draftValue ?? value,
-                        keyboardType:
-                            isPhone ? TextInputType.phone : TextInputType.text,
+                        keyboardType: isPhone
+                            ? TextInputType.phone
+                            : TextInputType.text,
                         decoration: InputDecoration(
                           hintText: isPhone ? '+233 XX XXX XXXX' : null,
                           isDense: true,
@@ -1115,10 +1039,7 @@ class _EditRow extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
               child: Text(
                 errorMessage!,
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
-                  color: _kDanger,
-                ),
+                style: GoogleFonts.dmSans(fontSize: 11, color: _kDanger),
               ),
             ),
           ),
@@ -1270,14 +1191,15 @@ class _ToggleRowState extends ConsumerState<_ToggleRow> {
         .updateNotificationPreference(widget.userId, widget.prefKey, v);
     if (!mounted) return;
     setState(() => _saving = false);
-    result.fold(
-      (_) {
-        setState(() => _localValue = widget.value);
-        showErrorSnackBar(context, ProfileConstants.errorUpdatePreference,
-            actionLabel: ProfileConstants.retry, onAction: () => _onToggle(v));
-      },
-      (_) {},
-    );
+    result.fold((_) {
+      setState(() => _localValue = widget.value);
+      showErrorSnackBar(
+        context,
+        ProfileConstants.errorUpdatePreference,
+        actionLabel: ProfileConstants.retry,
+        onAction: () => _onToggle(v),
+      );
+    }, (_) {});
   }
 
   @override
@@ -1348,10 +1270,7 @@ class _LanguageCurrencySection extends ConsumerWidget {
       children: [
         _LanguageRow(currentLanguage: user.preferredLanguage),
         _DividerIndent(),
-        _CurrencyRow(
-          currentCurrency: user.preferredCurrency,
-          userId: user.id,
-        ),
+        _CurrencyRow(currentCurrency: user.preferredCurrency, userId: user.id),
       ],
     );
   }
@@ -1423,10 +1342,7 @@ class _LanguageRow extends StatelessWidget {
 }
 
 class _CurrencyRow extends ConsumerWidget {
-  const _CurrencyRow({
-    required this.currentCurrency,
-    required this.userId,
-  });
+  const _CurrencyRow({required this.currentCurrency, required this.userId});
 
   final String currentCurrency;
   final String userId;
@@ -1455,8 +1371,10 @@ class _CurrencyRow extends ConsumerWidget {
                   .updatePreferredCurrency(userId, v);
               result.fold(
                 (_) => showErrorSnackBar(
-                    context, ProfileConstants.errorSaveField,
-                    actionLabel: ProfileConstants.retry),
+                  context,
+                  ProfileConstants.errorSaveField,
+                  actionLabel: ProfileConstants.retry,
+                ),
                 (_) {
                   ref.invalidate(currentUserProfileProvider);
                   ref.invalidate(exchangeRateProvider);
@@ -1471,10 +1389,7 @@ class _CurrencyRow extends ConsumerWidget {
 }
 
 class _SegmentedCurrency extends StatelessWidget {
-  const _SegmentedCurrency({
-    required this.value,
-    required this.onChanged,
-  });
+  const _SegmentedCurrency({required this.value, required this.onChanged});
 
   final String value;
   final void Function(String) onChanged;
@@ -1642,10 +1557,7 @@ class _SupportRow extends StatelessWidget {
 }
 
 class _SessionSection extends ConsumerWidget {
-  const _SessionSection({
-    required this.sessions,
-    required this.userId,
-  });
+  const _SessionSection({required this.sessions, required this.userId});
 
   final List<UserSessionEntity> sessions;
   final String userId;
@@ -1714,8 +1626,9 @@ class _StayLoggedInRowState extends ConsumerState<_StayLoggedInRow> {
     if (widget.sessionId == null) return;
     setState(() => _saving = true);
     final now = DateTime.now();
-    final expiresAt =
-        v ? now.add(const Duration(days: 30)) : now.add(const Duration(hours: 24));
+    final expiresAt = v
+        ? now.add(const Duration(days: 30))
+        : now.add(const Duration(hours: 24));
     final result = await ref
         .read(profileRepositoryProvider)
         .updateSessionExpiry(widget.sessionId!, expiresAt);
@@ -1836,10 +1749,7 @@ class _ActiveSessionsRow extends StatelessWidget {
 }
 
 class _SessionsBottomSheet extends StatelessWidget {
-  const _SessionsBottomSheet({
-    required this.sessions,
-    required this.onSignOut,
-  });
+  const _SessionsBottomSheet({required this.sessions, required this.onSignOut});
 
   final List<UserSessionEntity> sessions;
   final void Function(String) onSignOut;
@@ -1899,10 +1809,7 @@ class _SessionsBottomSheet extends StatelessWidget {
                     },
                     child: Text(
                       'Sign out of this session',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        color: _kDanger,
-                      ),
+                      style: GoogleFonts.dmSans(fontSize: 12, color: _kDanger),
                     ),
                   ),
                 ],
@@ -1932,10 +1839,7 @@ class _LogOutButton extends StatelessWidget {
         ),
         child: Text(
           ProfileConstants.logOut,
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -2044,10 +1948,7 @@ class _DeleteAccountBottomSheetState
                 Expanded(
                   child: Text(
                     ProfileConstants.deleteConfirmWarning,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      color: _kDarkBrown,
-                    ),
+                    style: GoogleFonts.dmSans(fontSize: 12, color: _kDarkBrown),
                   ),
                 ),
               ],
@@ -2060,7 +1961,8 @@ class _DeleteAccountBottomSheetState
               labelText: ProfileConstants.deleteTypeToConfirm,
               border: const OutlineInputBorder(),
             ),
-            onChanged: (_) => setState(() => _canConfirm = _controller.text == 'DELETE'),
+            onChanged: (_) =>
+                setState(() => _canConfirm = _controller.text == 'DELETE'),
           ),
           const SizedBox(height: 20),
           Row(
@@ -2148,17 +2050,14 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
         .call(phoneNumber: phone);
     if (!mounted) return;
     setState(() => _busy = false);
-    result.fold(
-      (f) => showFailureSnackBar(context, f),
-      (session) {
-        ref.read(otpVerificationSessionProvider.notifier).state = session;
-        Navigator.pop(context);
-        context.pushNamed(
-          RouteConstants.otpVerification,
-          extra: {'register': false, 'phoneChange': true, 'newPhone': phone},
-        );
-      },
-    );
+    result.fold((f) => showFailureSnackBar(context, f), (session) {
+      ref.read(otpVerificationSessionProvider.notifier).state = session;
+      Navigator.pop(context);
+      context.pushNamed(
+        RouteConstants.otpVerification,
+        extra: {'register': false, 'phoneChange': true, 'newPhone': phone},
+      );
+    });
   }
 
   @override
@@ -2246,10 +2145,7 @@ class _ProfileShimmer extends StatelessWidget {
 }
 
 class _ProfileError extends StatelessWidget {
-  const _ProfileError({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ProfileError({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;

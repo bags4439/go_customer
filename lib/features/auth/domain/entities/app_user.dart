@@ -7,9 +7,8 @@ class AppUser {
   final String location;
   final bool isFirstTimeBuyer;
   final bool isVerified;
-  final String? ghanaidUrl;
-  final bool ghanaidVerified;
-  final DateTime? ghanaidVerifiedAt;
+  final String? ghanaCardPhotoUrl;
+  final String? ghanaCardNumber;
   final String preferredCurrency;
   final String preferredLanguage;
   final Map<String, bool> notificationPreferences;
@@ -24,20 +23,26 @@ class AppUser {
     required this.location,
     required this.isFirstTimeBuyer,
     required this.isVerified,
-    required this.ghanaidUrl,
-    required this.ghanaidVerified,
-    this.ghanaidVerifiedAt,
+    this.ghanaCardPhotoUrl,
+    this.ghanaCardNumber,
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
     this.referralCode = '',
     Map<String, bool>? notificationPreferences,
-  }) : notificationPreferences = notificationPreferences ??
-            const {
-              'agentMessages': true,
-              'orderUpdates': true,
-              'paymentRequests': true,
-              'promotionsAndNews': false,
-            };
+  }) : notificationPreferences =
+           notificationPreferences ??
+           const {
+             'agentMessages': true,
+             'orderUpdates': true,
+             'paymentRequests': true,
+             'promotionsAndNews': false,
+           };
+
+  /// True if the user has provided either their
+  /// Ghana card photo or card number.
+  bool get hasGhanaCard =>
+      (ghanaCardPhotoUrl != null && ghanaCardPhotoUrl!.isNotEmpty) ||
+      (ghanaCardNumber != null && ghanaCardNumber!.isNotEmpty);
 }
 
 class RegisterUserParams {
@@ -69,4 +74,3 @@ class PhoneVerificationSession {
     required this.expiresAt,
   });
 }
-

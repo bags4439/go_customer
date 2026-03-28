@@ -27,7 +27,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> updateFullName(String userId, String value) async {
+  Future<Either<Failure, Unit>> updateFullName(
+    String userId,
+    String value,
+  ) async {
     try {
       await _profileDataSource.updateFullName(userId, value);
       return right(unit);
@@ -38,7 +41,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, Unit>> updateLocation(
-      String userId, String value) async {
+    String userId,
+    String value,
+  ) async {
     try {
       await _profileDataSource.updateLocation(userId, value);
       return right(unit);
@@ -73,7 +78,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, Unit>> updatePreferredCurrency(
-      String userId, String value) async {
+    String userId,
+    String value,
+  ) async {
     try {
       await _profileDataSource.updatePreferredCurrency(userId, value);
       return right(unit);
@@ -84,7 +91,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, Unit>> updatePreferredLanguage(
-      String userId, String value) async {
+    String userId,
+    String value,
+  ) async {
     try {
       await _profileDataSource.updatePreferredLanguage(userId, value);
       return right(unit);
@@ -95,7 +104,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, Unit>> updateGhanaIdAfterUpload(
-      String userId, String storagePath) async {
+    String userId,
+    String storagePath,
+  ) async {
     try {
       await _profileDataSource.updateGhanaIdAfterUpload(userId, storagePath);
       return right(unit);
@@ -134,7 +145,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, Unit>> updateSessionExpiry(
-      String sessionId, DateTime expiresAt) async {
+    String sessionId,
+    DateTime expiresAt,
+  ) async {
     try {
       await _sessionDataSource.updateSessionExpiry(sessionId, expiresAt);
       return right(unit);
@@ -156,11 +169,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, Unit>> deleteUserAccount(String userId) async {
     try {
-      await _functions.httpsCallable('deleteUserAccount').call({'userId': userId});
+      await _functions.httpsCallable('deleteUserAccount').call({
+        'userId': userId,
+      });
       return right(unit);
     } catch (e) {
       return left(
-          UnexpectedFailure(message: 'Could not delete account.', cause: e));
+        UnexpectedFailure(message: 'Could not delete account.', cause: e),
+      );
     }
   }
 }

@@ -18,9 +18,9 @@ class ProfileFirestoreDataSource {
         .doc(userId)
         .snapshots()
         .map((doc) {
-      if (!doc.exists || doc.data() == null) return null;
-      return UserModel.fromFirestore(doc);
-    });
+          if (!doc.exists || doc.data() == null) return null;
+          return UserModel.fromFirestore(doc);
+        });
   }
 
   Future<void> updateFullName(String userId, String value) async {
@@ -69,10 +69,12 @@ class ProfileFirestoreDataSource {
     });
   }
 
-  Future<void> updateGhanaIdAfterUpload(String userId, String storagePath) async {
+  Future<void> updateGhanaIdAfterUpload(
+    String userId,
+    String storagePath,
+  ) async {
     await _firestore.collection(FirestoreCollections.users).doc(userId).update({
-      'ghanaidUrl': storagePath,
-      'ghanaidVerified': false,
+      'ghanaCardPhotoUrl': storagePath,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
