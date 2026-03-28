@@ -393,7 +393,10 @@ class _SubActionArea extends StatelessWidget {
   Widget _chatFallback(BuildContext context, String stageKey) {
     String? sub;
     if (stageKey == 'searching') {
-      sub = OrderTimelineConstants.searchingSub;
+      sub = OrderTimelineConstants.searchingSubForOrder(
+        purchaseOrigin: order.purchaseOrigin,
+        isNewVehicle: order.isNewVehicle,
+      );
     } else if (stageKey == 'delivery') {
       sub = OrderTimelineConstants.deliverySub;
     }

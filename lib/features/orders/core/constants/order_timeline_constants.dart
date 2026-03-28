@@ -23,8 +23,38 @@ class OrderTimelineConstants {
   static const String reviewScreenTitle = 'Rate your experience';
   static const String deliveredTitle = '🎉 Your vehicle has been delivered!';
   static const String deliveredThanks = 'Thank you for choosing AutoImport GH.';
+
+  /// Generic searching subtitle when origin is unknown or not yet wired.
   static const String searchingSub =
-      "Your agent is searching Copart & IAA for your vehicle. You'll be notified when a bid is placed.";
+      "Your agent is searching for your vehicle. "
+      "You'll be notified when options are found.";
+
+  /// Searching subtitle for the chat fallback, by purchase origin and vehicle type.
+  static String searchingSubForOrder({
+    required String purchaseOrigin,
+    required bool isNewVehicle,
+  }) {
+    if (isNewVehicle) {
+      return 'Your agent is contacting suppliers in China '
+          'for your vehicle. '
+          "You'll be notified when quotes arrive.";
+    }
+    return switch (purchaseOrigin) {
+      'us_canada' =>
+        "Your agent is searching Copart & IAA for your vehicle. "
+            "You'll be notified when a bid is placed.",
+      'dubai' =>
+        "Your agent is sourcing options from Dubai dealers. "
+            "You'll be notified when options arrive.",
+      'china' =>
+        'Your agent is contacting dealers in China. '
+            "You'll be notified when options arrive.",
+      _ =>
+        'Your agent is searching for your vehicle. '
+            "You'll be notified when options are found.",
+    };
+  }
+
   static const String deliverySub = 'Your agent is arranging delivery.';
   static const String payDepositCta = 'Pay deposit →';
   static const String questionsChat = 'Questions? Chat with agent →';
@@ -47,7 +77,8 @@ class OrderTimelineConstants {
   static const String clearanceInProgressTitle = 'Clearance in progress';
   static const String clearanceInProgressSub =
       'Your agent is preparing your clearance documents.';
-  static const String clearanceSubmittedTitle = 'Documents submitted to GRA/ICUMS';
+  static const String clearanceSubmittedTitle =
+      'Documents submitted to GRA/ICUMS';
   static const String clearanceSubmittedSub =
       'Assessment is in progress. This usually takes 1–2 days.';
   static const String clearanceAssessedTitle = 'Duty assessed';

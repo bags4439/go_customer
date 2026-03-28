@@ -4,10 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../payments/data/models/payment_request_model.dart';
-import '../../core/constants/order_edit_constants.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import '../providers/order_providers.dart';
+import '../widgets/order_detail_car_card.dart';
+import '../widgets/segmented_tab_bar.dart';
+import '../widgets/order_detail_edit_cancel.dart';
+import '../widgets/order_detail_payment_card.dart';
 import '../widgets/order_timeline_widget.dart';
 import '../../../chat/presentation/providers/chat_providers.dart';
 import '../../../chat/presentation/screens/order_chat_tab.dart';
@@ -77,11 +81,19 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
   @override
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderProvider(widget.orderId));
-    final unreadAsync = ref.watch(unreadFromAgentCountProvider(widget.orderId));
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: BackButton(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -92,84 +104,74 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
         ),
         title: orderAsync.maybeWhen(
           data: (order) {
-            if (order == null) return Text('Order ${widget.orderId}');
-            final title =
-                '${order.orderRef} · ${order.make ?? ''} ${order.model ?? ''}';
-            return Text(title.trim());
+            if (order == null) {
+              return Text(
+                'Order',
+                style: GoogleFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              );
+            }
+            final vehicleTitle = '${order.make ?? ''} ${order.model ?? ''}'
+                .trim();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  vehicleTitle.isEmpty ? 'Vehicle' : vehicleTitle,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  order.orderRef,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ],
+            );
           },
-          orElse: () => Text('Order ${widget.orderId}'),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            const Tab(text: 'Overview'),
-            Tab(
-              child: unreadAsync.when(
-                data: (count) {
-                  if (count <= 0) {
-                    return const Text('Chat');
-                  }
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Chat'),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE24B4A),
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(10)),
-                        ),
-                        child: Text(
-                          count > 99 ? '99+' : '$count',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                loading: () => const Text('Chat'),
-                error: (_, __) => const Text('Chat'),
-              ),
+          orElse: () => Text(
+            'Order',
+            style: GoogleFonts.dmSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
-            const Tab(text: 'Documents'),
-          ],
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _OrderOverviewTab(orderId: widget.orderId),
-          OrderChatTab(orderId: widget.orderId),
-          OrderDocumentsTab(orderId: widget.orderId),
+          SegmentedTabBar(controller: _tabController, orderId: widget.orderId),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _OrderOverviewTab(orderId: widget.orderId),
+                OrderChatTab(orderId: widget.orderId),
+                OrderDocumentsTab(orderId: widget.orderId),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
-}
-
-String _formatGhs(double value) {
-  return 'GHS ${value.toStringAsFixed(0).replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (m) => '${m[1]},',
-      )}';
-}
-
-String? _formatDeadline(DateTime deadlineAt) {
-  final now = DateTime.now();
-  final diff = deadlineAt.difference(now);
-  final days = diff.inDays;
-  if (days <= 0) return 'Pay today · avoid storage charges';
-  if (days == 1) return 'Pay within 1 day · avoid storage charges';
-  return 'Pay within $days days · avoid storage charges';
 }
 
 class _OrderOverviewTab extends ConsumerWidget {
@@ -186,237 +188,104 @@ class _OrderOverviewTab extends ConsumerWidget {
     return orderAsync.when(
       data: (order) {
         if (order == null) {
-          return const Center(child: Text('Order not found'));
+          return Center(
+            child: Text(
+              'Order not found',
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          );
         }
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
-            // Payment CTA
             paymentAsync.when(
               data: (p) {
                 if (p == null) return const SizedBox.shrink();
-                final typeLabel = AppConstants.paymentRequestTypeLabels[
-                  p.type is PaymentRequestType
-                    ? (p.type as PaymentRequestType).firestoreValue
-                    : p.type.toString()
-                ] ?? p.type.toString();
+                final typeLabel =
+                    AppConstants.paymentRequestTypeLabels[p.type
+                            is PaymentRequestType
+                        ? (p.type as PaymentRequestType).firestoreValue
+                        : p.type.toString()] ??
+                    p.type.toString();
                 final deadlineStr = p.deadlineAt != null
-                    ? _formatDeadline(p.deadlineAt!)
+                    ? formatOrderDetailDeadline(p.deadlineAt!)
                     : null;
-                return Card(
-                  color: const Color(0xFF378ADD),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'PAYMENT REQUIRED',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          _formatGhs(p.totalGhs),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          typeLabel,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                        if (deadlineStr != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            deadlineStr,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () => router
-                                .go('/order/${order.id}/payment-request/${p.id}'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF378ADD),
-                            ),
-                            child: const Text('Pay now →'),
-                          ),
-                        ),
-                      ],
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    OrderDetailPaymentCard(
+                      payment: p,
+                      typeLabel: typeLabel,
+                      deadlineText: deadlineStr,
+                      onPayPressed: () => router.go(
+                        '/order/${order.id}/payment-request/${p.id}',
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                  ],
                 );
               },
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),
             ),
-            const SizedBox(height: 12),
-            // Car summary
-            Card(
-              child: ListTile(
-                leading: Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F4F0),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.directions_car_filled),
-                ),
-                title: Text(
-                  '${order.make ?? 'Vehicle'} ${order.model ?? ''}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(order.orderRef),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              OrderTimelineConstants.journeyTitle,
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            OrderTimelineWidget(orderId: orderId, order: order),
-            if (ref.watch(canEditOrderProvider(order.id))) ...[
-              const SizedBox(height: 16),
-              _AnimatedEditCancelSection(orderId: order.id),
-            ],
-          ],
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Unable to load order')),
-    );
-  }
-}
-
-class _AnimatedEditCancelSection extends StatefulWidget {
-  final String orderId;
-
-  const _AnimatedEditCancelSection({required this.orderId});
-
-  @override
-  State<_AnimatedEditCancelSection> createState() =>
-      _AnimatedEditCancelSectionState();
-}
-
-class _AnimatedEditCancelSectionState extends State<_AnimatedEditCancelSection>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _opacity;
-  late Animation<Offset> _slide;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
-    _opacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _slide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: SlideTransition(
-        position: _slide,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+            OrderDetailCarCard(order: order),
+            const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 44,
-                    child: OutlinedButton(
-                      onPressed: () => context
-                          .push('/order/${widget.orderId}/preferences/edit'),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF378ADD)),
-                        foregroundColor: const Color(0xFF378ADD),
-                      ),
-                      child: const Text(OrderEditConstants.editButtonLabel),
-                    ),
+                Text(
+                  OrderTimelineConstants.journeyTitle,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: SizedBox(
-                    height: 44,
-                    child: OutlinedButton(
-                      onPressed: () =>
-                          context.push('/order/${widget.orderId}/cancel'),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE24B4A)),
-                        foregroundColor: const Color(0xFFE24B4A),
-                      ),
-                      child: const Text(OrderEditConstants.cancelButtonLabel),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.selectionTint,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Step ${order.stageNumber} of 9',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.infoText,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFAEEDA),
-                border: const Border(
-                    left: BorderSide(color: Color(0xFFBA7517), width: 3)),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Color(0xFFBA7517)),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      OrderEditConstants.afterFirstPaymentNote,
-                      style: TextStyle(fontSize: 11, color: Color(0xFF633806)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 14),
+            OrderTimelineWidget(orderId: orderId, order: order),
+            if (ref.watch(canEditOrderProvider(order.id))) ...[
+              const SizedBox(height: 20),
+              OrderDetailEditCancelSection(orderId: order.id),
+            ],
+            const SizedBox(height: 32),
           ],
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppColors.secondary),
+      ),
+      error: (_, __) => Center(
+        child: Text(
+          'Unable to load order',
+          style: GoogleFonts.dmSans(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
         ),
       ),
     );
   }
 }
-
-
