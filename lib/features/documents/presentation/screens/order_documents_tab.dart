@@ -5,14 +5,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../orders/presentation/providers/order_providers.dart';
 import '../../core/constants/document_constants.dart';
 import '../../domain/entities/document_entity.dart';
 import '../models/document_list_item.dart';
 import '../models/document_progress.dart';
 import '../providers/documents_providers.dart';
-import '../widgets/dashed_border_painter.dart';
 import 'rejected_document_bottom_sheet.dart';
+
+const Color _kPrimary = Color(0xFF378ADD);
+const Color _kSuccess = Color(0xFF1D9E75);
+const Color _kDanger = Color(0xFFE24B4A);
+const Color _kWarning = Color(0xFFBA7517);
+const Color _kSurface = Color(0xFFF5F4F0);
+const Color _kBorder = Color(0xFFE0DFD8);
+const Color _kTextPrimary = Color(0xFF1A1A18);
+const Color _kTextSecondary = Color(0xFF666666);
+const Color _kTextTertiary = Color(0xFFAAAAAA);
+const Color _kSuccessBg = Color(0xFFEAF3DE);
+const Color _kSuccessText = Color(0xFF27500A);
+const Color _kAmberBg = Color(0xFFFAEEDA);
+const Color _kAmberText = Color(0xFF633806);
+const Color _kInfoBg = Color(0xFFEBF4FD);
+const Color _kInfoText = Color(0xFF185FA5);
 
 class OrderDocumentsTab extends ConsumerStatefulWidget {
   final String orderId;
@@ -40,6 +55,7 @@ class _OrderDocumentsTabState extends ConsumerState<OrderDocumentsTab>
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(orderProvider(widget.orderId));
     final docsAsync = ref.watch(orderDocumentsProvider(widget.orderId));
     final progress = ref.watch(documentProgressProvider(widget.orderId));
 
@@ -47,7 +63,10 @@ class _OrderDocumentsTabState extends ConsumerState<OrderDocumentsTab>
       data: (docs) {
         final sections = ref.watch(documentsBySectionProvider(widget.orderId));
         final hasAnySection = sections.isNotEmpty;
-        final totalItems = sections.values.fold<int>(0, (s, list) => s + list.length);
+        final totalItems = sections.values.fold<int>(
+          0,
+          (s, list) => s + list.length,
+        );
 
         if (!hasAnySection && docs.isEmpty) {
           return _EmptyState();
@@ -92,12 +111,12 @@ class _OrderDocumentsTabState extends ConsumerState<OrderDocumentsTab>
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           children: [
             _ProgressSection(
-              orderId: widget.orderId,
               progress: progress,
               animatedProgress: _animatedProgress,
               displayedCount: _displayedCount,
               onProgressAnimated: (v) => setState(() => _animatedProgress = v),
-              onAnimationEnd: (count) => setState(() => _displayedCount = count),
+              onAnimationEnd: (count) =>
+                  setState(() => _displayedCount = count),
             ),
             const SizedBox(height: 16),
             ...sections.entries.expand((entry) {
@@ -106,7 +125,7 @@ class _OrderDocumentsTabState extends ConsumerState<OrderDocumentsTab>
               final sectionLabel = _sectionLabel(sectionKey);
               return [
                 Padding(
-                  padding: const EdgeInsets.only(top: 12, bottom: 6),
+                  padding: const EdgeInsets.only(top: 20, bottom: 8),
                   child: _AnimatedSectionHeader(
                     label: sectionLabel,
                     delayMs: _entranceController != null ? 60 : 0,
@@ -117,9 +136,10 @@ class _OrderDocumentsTabState extends ConsumerState<OrderDocumentsTab>
                 ...items.asMap().entries.map((itemEntry) {
                   final index = itemEntry.key;
                   final item = itemEntry.value;
-                  final isNew = item is RealDocumentItem && newIds.contains(item.document.id);
+                  final isNew =
+                      item is RealDocumentItem &&
+                      newIds.contains(item.document.id);
                   return _DocumentListItemWidget(
-                    orderId: widget.orderId,
                     item: item,
                     entranceIndex: index,
                     entranceController: _entranceController,
@@ -182,7 +202,6 @@ class _OrderDocumentsTabState extends ConsumerState<OrderDocumentsTab>
 }
 
 class _ProgressSection extends StatelessWidget {
-  final String orderId;
   final DocumentProgress progress;
   final double animatedProgress;
   final int displayedCount;
@@ -190,7 +209,6 @@ class _ProgressSection extends StatelessWidget {
   final ValueChanged<int>? onAnimationEnd;
 
   const _ProgressSection({
-    required this.orderId,
     required this.progress,
     required this.animatedProgress,
     required this.displayedCount,
@@ -200,7 +218,6 @@ class _ProgressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isComplete = progress.readyCount >= 7;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: animatedProgress, end: progress.fraction),
       duration: const Duration(milliseconds: 600),
@@ -210,74 +227,97 @@ class _ProgressSection extends StatelessWidget {
         onAnimationEnd?.call(progress.readyCount);
       },
       builder: (context, value, _) {
+        final v = value.clamp(0.0, 1.0);
+        final allReady = displayedCount >= progress.totalExpected;
+        final pillComplete = v >= 1.0 - 1e-6 || progress.fraction >= 1.0;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F4F0),
-            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _kBorder, width: 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    DocumentConstants.progressTitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.onSurface,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DocumentConstants.documentsProgressHeading,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: _kTextPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${progress.readyCount} of ${progress.totalExpected} ${DocumentConstants.documentsProgressReadySuffix}',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: _kTextSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    '$displayedCount ${DocumentConstants.progressOf}',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.onSurface,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: pillComplete ? _kSuccessBg : _kInfoBg,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      pillComplete
+                          ? DocumentConstants.progressPillComplete
+                          : '${(v * 100).round()}%',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: pillComplete ? _kSuccessText : _kInfoText,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: SizedBox(
-                  height: 5,
-                  child: Stack(
-                    children: [
-                      Container(color: const Color(0xFFE0DFD8)),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final w = constraints.maxWidth * value.clamp(0.0, 1.0);
-                          return SizedBox(
-                            width: w,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeInOut,
-                              decoration: BoxDecoration(
-                                color: isComplete ? const Color(0xFF1D9E75) : AppColors.secondary,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: v,
+                  minHeight: 6,
+                  backgroundColor: _kBorder,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    pillComplete ? _kSuccess : _kPrimary,
                   ),
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
-                displayedCount >= 7
+                allReady
                     ? DocumentConstants.progressAllReady
-                    : '${7 - displayedCount} ${DocumentConstants.progressSubNote}',
+                    : '${(progress.totalExpected - displayedCount).clamp(0, progress.totalExpected)} ${DocumentConstants.progressSubNote}',
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
-                  color: displayedCount >= 7
-                      ? const Color(0xFF1D9E75)
-                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w400,
+                  color: allReady ? _kSuccess : _kTextTertiary,
                 ),
               ),
             ],
@@ -308,8 +348,9 @@ class _AnimatedSectionHeader extends StatelessWidget {
         label,
         style: GoogleFonts.dmSans(
           fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFFAAAAAA),
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.8,
+          color: _kTextTertiary,
         ),
       );
     }
@@ -326,8 +367,9 @@ class _AnimatedSectionHeader extends StatelessWidget {
             label,
             style: GoogleFonts.dmSans(
               fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFFAAAAAA),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+              color: _kTextTertiary,
             ),
           ),
         );
@@ -337,7 +379,6 @@ class _AnimatedSectionHeader extends StatelessWidget {
 }
 
 class _DocumentListItemWidget extends StatelessWidget {
-  final String orderId;
   final DocumentListItem item;
   final int entranceIndex;
   final AnimationController? entranceController;
@@ -346,7 +387,6 @@ class _DocumentListItemWidget extends StatelessWidget {
   final VoidCallback onTap;
 
   const _DocumentListItemWidget({
-    required this.orderId,
     required this.item,
     required this.entranceIndex,
     required this.entranceController,
@@ -358,7 +398,10 @@ class _DocumentListItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (item is PlaceholderDocumentItem) {
-      return _PlaceholderItem(item: item as PlaceholderDocumentItem);
+      return _PlaceholderItem(
+        item: item as PlaceholderDocumentItem,
+        onTap: onTap,
+      );
     }
     final realContent = _RealDocumentItemWidget(
       document: (item as RealDocumentItem).document,
@@ -369,12 +412,12 @@ class _DocumentListItemWidget extends StatelessWidget {
     );
     if (isNewFromStream) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 7),
+        padding: const EdgeInsets.only(bottom: 8),
         child: _NewDocumentSlideIn(child: realContent),
       );
     }
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.only(bottom: 8),
       child: realContent,
     );
   }
@@ -397,18 +440,20 @@ class _RealDocumentItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = _RealDocumentContent(
-      document: document,
-      onTap: onTap,
-    );
+    Widget content = _RealDocumentContent(document: document, onTap: onTap);
     if (entranceController != null && totalItemCount > 0) {
       content = AnimatedBuilder(
         animation: entranceController!,
         builder: (context, _) {
           final totalDuration = totalItemCount * 40 + 260;
-          final start = (entranceIndex * 40) / 1000.0 / (totalDuration / 1000.0);
-          final end = (entranceIndex * 40 + 200) / 1000.0 / (totalDuration / 1000.0);
-          final t = ((entranceController!.value - start) / (end - start)).clamp(0.0, 1.0);
+          final start =
+              (entranceIndex * 40) / 1000.0 / (totalDuration / 1000.0);
+          final end =
+              (entranceIndex * 40 + 200) / 1000.0 / (totalDuration / 1000.0);
+          final t = ((entranceController!.value - start) / (end - start)).clamp(
+            0.0,
+            1.0,
+          );
           final curved = Curves.easeOut.transform(t);
           return Opacity(
             opacity: curved,
@@ -446,12 +491,14 @@ class _NewDocumentSlideInState extends State<_NewDocumentSlideIn>
       duration: const Duration(milliseconds: 250),
       vsync: this,
     );
-    _opacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _slide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _opacity = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
   }
 
@@ -468,10 +515,7 @@ class _NewDocumentSlideInState extends State<_NewDocumentSlideIn>
       builder: (context, _) {
         return FadeTransition(
           opacity: _opacity,
-          child: SlideTransition(
-            position: _slide,
-            child: widget.child,
-          ),
+          child: SlideTransition(position: _slide, child: widget.child),
         );
       },
     );
@@ -482,10 +526,7 @@ class _RealDocumentContent extends StatelessWidget {
   final DocumentEntity document;
   final VoidCallback onTap;
 
-  const _RealDocumentContent({
-    required this.document,
-    required this.onTap,
-  });
+  const _RealDocumentContent({required this.document, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -493,50 +534,35 @@ class _RealDocumentContent extends StatelessWidget {
     final uploaderText = document.uploadedByRole == 'buyer'
         ? DocumentConstants.uploadedByYou
         : document.uploadedByRole == 'agent'
-            ? DocumentConstants.uploadedByAgent
-            : DocumentConstants.addedAutomatically;
+        ? DocumentConstants.uploadedByAgent
+        : DocumentConstants.addedAutomatically;
     final dateStr = document.uploadedAt != null
         ? DateFormat('d MMM yyyy').format(document.uploadedAt!)
         : '';
-    final statusLabel = document.status == 'verified'
-        ? DocumentConstants.statusVerified
-        : document.status == 'pending'
-            ? DocumentConstants.statusPending
-            : DocumentConstants.statusRejected;
-    final statusBg = document.status == 'verified'
-        ? const Color(0xFFEAF3DE)
-        : document.status == 'pending'
-            ? const Color(0xFFFAEEDA)
-            : const Color(0xFFFCEBEB);
-    final statusFg = document.status == 'verified'
-        ? const Color(0xFF27500A)
-        : document.status == 'pending'
-            ? const Color(0xFF633806)
-            : const Color(0xFFA32D2D);
 
     return Container(
       decoration: BoxDecoration(
         border: isRejected
-            ? const Border(left: BorderSide(color: Color(0xFFE24B4A), width: 3))
-            : null,
-        borderRadius: BorderRadius.circular(8),
+            ? const Border(left: BorderSide(color: _kDanger, width: 3))
+            : Border.all(color: _kBorder, width: 0.5),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           splashColor: const Color(0xFFE6F1FB),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            padding: const EdgeInsets.all(14),
             child: Row(
               children: [
                 _DocTypeIcon(docType: document.docType),
@@ -548,9 +574,9 @@ class _RealDocumentContent extends StatelessWidget {
                       Text(
                         document.label,
                         style: GoogleFonts.dmSans(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: _kTextPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -559,8 +585,9 @@ class _RealDocumentContent extends StatelessWidget {
                       Text(
                         '$uploaderText · $dateStr',
                         style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: _kTextSecondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -568,30 +595,13 @@ class _RealDocumentContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!isRejected)
-                  Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                  )
-                else
-                  const SizedBox(width: 24),
-                const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: statusBg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    statusLabel,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: statusFg,
-                    ),
-                  ),
-                ),
+                if (!isRejected) ...[
+                  _DocStatusBadge(status: document.status),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, size: 16, color: _kTextTertiary),
+                ] else ...[
+                  _DocStatusBadge(status: document.status),
+                ],
               ],
             ),
           ),
@@ -601,157 +611,254 @@ class _RealDocumentContent extends StatelessWidget {
   }
 }
 
-class _PlaceholderItem extends StatelessWidget {
-  final PlaceholderDocumentItem item;
+class _DocStatusBadge extends StatelessWidget {
+  final String status;
 
-  const _PlaceholderItem({required this.item});
+  const _DocStatusBadge({required this.status});
 
   @override
   Widget build(BuildContext context) {
-    final label = DocumentConstants.docTypeLabels[item.docType] ?? item.docType;
-    final subText = item.isGhanaId
-        ? DocumentConstants.uploadRequired
-        : item.availableAfterLabel;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
-      child: Opacity(
-        opacity: 0.75,
-        child: CustomPaint(
-          painter: DashedBorderPainter(borderRadius: BorderRadius.circular(8)),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9F8F5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F4F0),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _docTypeAbbrev(item.docType),
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFAAAAAA),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subText,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      if (item.isGhanaId) ...[
-                        const SizedBox(height: 6),
-                        TextButton(
-                          onPressed: () => context.push('/profile/id-verification'),
-                          child: Text(DocumentConstants.uploadNow),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+    final (String label, Color bg, Color text) = switch (status) {
+      'verified' => (
+        DocumentConstants.statusVerified,
+        _kSuccessBg,
+        _kSuccessText,
+      ),
+      'pending' => (DocumentConstants.statusBadgePending, _kInfoBg, _kInfoText),
+      'rejected' => (
+        DocumentConstants.statusRejected,
+        const Color(0xFFFCEBEB),
+        _kDanger,
+      ),
+      _ => (DocumentConstants.statusBadgeNotStarted, _kSurface, _kTextTertiary),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.dmSans(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          color: text,
         ),
       ),
     );
   }
-}
-
-String _docTypeAbbrev(String docType) {
-  const m = {
-    'ghana_id': 'ID',
-    'vehicle_title': 'TIT',
-    'bill_of_lading': 'BOL',
-    'commercial_invoice': 'INV',
-    'packing_list': 'PKL',
-    'payment_receipt': 'REC',
-    'gra_declaration': 'GRA',
-    'duty_receipt': 'DUT',
-    'insurance_certificate': 'INS',
-    'repair_quote': 'QUO',
-    'repair_receipt': 'REP',
-    'delivery_note': 'DEL',
-    'other': 'DOC',
-  };
-  return m[docType] ?? 'DOC';
 }
 
 class _DocTypeIcon extends StatelessWidget {
   final String docType;
+  final bool isProvided;
 
-  const _DocTypeIcon({required this.docType});
+  const _DocTypeIcon({required this.docType, this.isProvided = false});
 
   @override
   Widget build(BuildContext context) {
-    final (bg, fg) = _colors(docType);
-    final abbrev = _docTypeAbbrev(docType);
+    final (IconData icon, Color color) = switch (docType) {
+      'ghana_id' => (Icons.badge_outlined, isProvided ? _kSuccess : _kWarning),
+      'vehicle_title' => (Icons.directions_car_outlined, _kPrimary),
+      'payment_receipt' => (Icons.receipt_outlined, _kSuccess),
+      'bill_of_lading' => (Icons.directions_boat_outlined, _kPrimary),
+      'commercial_invoice' => (Icons.description_outlined, _kPrimary),
+      'packing_list' => (Icons.list_alt_outlined, _kTextSecondary),
+      'gra_declaration' => (Icons.account_balance_outlined, _kPrimary),
+      'duty_receipt' => (Icons.receipt_long_outlined, _kSuccess),
+      'insurance_certificate' => (Icons.security_outlined, _kPrimary),
+      'repair_quote' => (Icons.build_outlined, _kWarning),
+      'repair_receipt' => (Icons.build_circle_outlined, _kSuccess),
+      'delivery_note' => (Icons.local_shipping_outlined, _kSuccess),
+      _ => (Icons.insert_drive_file_outlined, _kTextTertiary),
+    };
+
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
       ),
-      alignment: Alignment.center,
-      child: Text(
-        abbrev,
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: fg,
+      child: Icon(icon, size: 20, color: color),
+    );
+  }
+}
+
+Widget _documentsTabPlaceholderChrome({
+  required VoidCallback onTap,
+  required Widget child,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: _kBorder, width: 0.5),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: const Color(0xFFE6F1FB),
+        child: Padding(padding: const EdgeInsets.all(14), child: child),
+      ),
+    ),
+  );
+}
+
+class _PlaceholderItem extends StatelessWidget {
+  final PlaceholderDocumentItem item;
+  final VoidCallback onTap;
+
+  const _PlaceholderItem({required this.item, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    if (item.isGhanaId && item.isGhanaIdProvided) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: _documentsTabPlaceholderChrome(
+          onTap: onTap,
+          child: Row(
+            children: [
+              _DocTypeIcon(docType: 'ghana_id', isProvided: true),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      DocumentConstants.ghanaCardProvided,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: _kTextPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      DocumentConstants.ghanaCardProvidedSub,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: _kTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 16, color: _kTextTertiary),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (item.isGhanaId && !item.isGhanaIdProvided) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: _documentsTabPlaceholderChrome(
+          onTap: onTap,
+          child: Row(
+            children: [
+              _DocTypeIcon(docType: 'ghana_id', isProvided: false),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      DocumentConstants.ghanaCardMissing,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: _kTextPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      DocumentConstants.ghanaCardMissingSub,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: _kWarning,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: _kAmberBg,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  DocumentConstants.addNow,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: _kAmberText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final label = DocumentConstants.docTypeLabels[item.docType] ?? item.docType;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: _documentsTabPlaceholderChrome(
+        onTap: onTap,
+        child: Row(
+          children: [
+            _DocTypeIcon(docType: item.docType),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: _kTextTertiary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.availableAfterLabel,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: _kTextTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.lock_outline, size: 16, color: _kBorder),
+          ],
         ),
       ),
     );
-  }
-
-  (Color, Color) _colors(String docType) {
-    switch (docType) {
-      case 'ghana_id':
-        return (const Color(0xFFE6F1FB), const Color(0xFF185FA5));
-      case 'vehicle_title':
-      case 'payment_receipt':
-        return (const Color(0xFFEAF3DE), const Color(0xFF27500A));
-      case 'bill_of_lading':
-      case 'commercial_invoice':
-      case 'packing_list':
-      case 'repair_quote':
-      case 'repair_receipt':
-        return (const Color(0xFFFAEEDA), const Color(0xFF633806));
-      case 'gra_declaration':
-      case 'duty_receipt':
-        return (const Color(0xFFFCEBEB), const Color(0xFFA32D2D));
-      case 'insurance_certificate':
-        return (const Color(0xFFEEEDFE), const Color(0xFF3C3489));
-      case 'delivery_note':
-        return (const Color(0xFFE1F5EE), const Color(0xFF085041));
-      default:
-        return (const Color(0xFFF5F4F0), const Color(0xFFAAAAAA));
-    }
   }
 }
 
@@ -764,18 +871,28 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.folder_open,
-              size: 48,
-              color: const Color(0xFFE0DFD8),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: _kSurface,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.folder_open_outlined,
+                size: 40,
+                color: _kTextTertiary,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               DocumentConstants.noDocumentsYet,
+              textAlign: TextAlign.center,
               style: GoogleFonts.dmSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: _kTextPrimary,
               ),
             ),
             const SizedBox(height: 8),
@@ -784,7 +901,9 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSans(
                 fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w400,
+                height: 1.5,
+                color: _kTextSecondary,
               ),
             ),
           ],
@@ -807,17 +926,41 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Color(0xFFE24B4A)),
-            const SizedBox(height: 16),
-            Text(
-              DocumentConstants.errorLoadDocuments,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(fontSize: 14),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: _kSurface,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.wifi_off_outlined,
+                size: 32,
+                color: _kTextTertiary,
+              ),
             ),
             const SizedBox(height: 16),
+            Text(
+              DocumentConstants.couldNotLoadDocumentsTitle,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: _kTextPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
             TextButton(
               onPressed: onRetry,
-              child: Text(DocumentConstants.retry),
+              child: Text(
+                DocumentConstants.retry,
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: _kPrimary,
+                ),
+              ),
             ),
           ],
         ),
@@ -838,10 +981,11 @@ class _ShimmerDocuments extends StatelessWidget {
           baseColor: const Color(0xFFE0E0E0),
           highlightColor: const Color(0xFFF5F5F5),
           child: Container(
-            height: 60,
+            height: 72,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _kBorder, width: 0.5),
             ),
           ),
         ),
@@ -858,39 +1002,40 @@ class _ShimmerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Shimmer.fromColors(
         baseColor: const Color(0xFFE0E0E0),
         highlightColor: const Color(0xFFF5F5F5),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _kBorder, width: 0.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 12,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    height: 11,
-                    width: 120,
-                    color: Colors.white,
-                  ),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(height: 14, color: Colors.white),
+                    const SizedBox(height: 6),
+                    Container(height: 12, width: 120, color: Colors.white),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

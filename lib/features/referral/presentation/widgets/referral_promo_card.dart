@@ -28,10 +28,7 @@ class ReferralPromoCard extends ConsumerWidget {
     return settingsAsync.when(
       data: (settings) {
         final code = profileAsync.valueOrNull?.referralCode ?? '';
-        return _ReferralPromoCardBody(
-          settings: settings,
-          referralCode: code,
-        );
+        return _ReferralPromoCardBody(settings: settings, referralCode: code);
       },
       loading: () => const _ReferralPromoCardSkeleton(),
       error: (_, __) => _ReferralPromoCardBody(
@@ -364,7 +361,9 @@ class _ReferralPromoCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: AppColors.referralCardGradientMid.withValues(alpha: 0.45),
-      highlightColor: AppColors.referralCardGradientStart.withValues(alpha: 0.65),
+      highlightColor: AppColors.referralCardGradientStart.withValues(
+        alpha: 0.65,
+      ),
       child: Container(
         height: 260,
         margin: const EdgeInsets.only(bottom: 16),

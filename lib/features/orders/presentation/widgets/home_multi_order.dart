@@ -121,7 +121,7 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
         const SizedBox(height: 8),
         const SizedBox(height: 4),
         GestureDetector(
-          onTap: () => GoRouter.of(context).go('/preferences/new'),
+          onTap: () => GoRouter.of(context).push('/preferences/new'),
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),

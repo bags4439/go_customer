@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../domain/entities/agent_detail_view.dart';
@@ -92,7 +91,11 @@ class AgentConnectionAssignedView extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AgentConnectionAgentAvatar(agent: agent, radius: 28),
+                  AgentConnectionAgentAvatar(
+                    agent: agent,
+                    radius: 28,
+                    heroTag: 'agent_avatar_${agent.agentId}_connection',
+                  ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(

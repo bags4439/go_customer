@@ -10,18 +10,34 @@ class DocumentConstants {
 
   static const String progressTitle = 'Documents ready';
   static const String progressOf = 'of 7';
-  static const String progressSubNote = 'documents will be added automatically as your order progresses.';
+  static const String progressSubNote =
+      'documents will be added automatically as your order progresses.';
   static const String progressAllReady = 'All documents are ready.';
 
   static const String statusVerified = 'Verified';
   static const String statusPending = 'Pending review';
   static const String statusRejected = 'Rejected';
+  static const String statusBadgePending = 'Pending';
+  static const String statusBadgeNotStarted = 'Not started';
+  static const String progressPillComplete = 'Complete ✓';
 
   static const String uploadedByYou = 'Uploaded by you';
   static const String uploadedByAgent = 'Uploaded by agent';
   static const String addedAutomatically = 'Added automatically';
   static const String uploadRequired = 'Upload required';
   static const String uploadNow = 'Upload now';
+  static const String ghanaCardProvided = 'Ghana Card provided';
+  static const String ghanaCardProvidedSub = 'Tap to view or update';
+  static const String ghanaCardMissing = 'Ghana Card not added';
+  static const String ghanaCardMissingSub = 'Tap to add your Ghana Card';
+  static const String ghanaCardOnFileShort = 'Provided';
+  static const String addNow = 'Add now';
+  static const String documentsProgressHeading = 'Documents';
+  static const String documentsProgressReadySuffix = 'ready';
+  static const String couldNotLoadDocumentsTitle = 'Could not load documents';
+  static const String afterVehicleConfirmed = 'After vehicle is confirmed';
+  static const String afterOrderPlaced = 'After order is placed';
+  static const String availableAsOrderProgresses = 'As your order progresses';
   static const String reUpload = 'Re-upload';
   static const String availableAfter = 'Available after';
 
@@ -60,16 +76,19 @@ class DocumentConstants {
   static const String rejectionReason = 'Rejection reason';
   static const String documentRejected = 'Document rejected';
   static const String whatToDoNext = 'What to do next';
-  static const String contactAgentHelp = 'Contact your agent — they can help you re-upload the correct document.';
+  static const String contactAgentHelp =
+      'Contact your agent — they can help you re-upload the correct document.';
   static const String askAgent = 'Ask';
   static const String viewDocumentDetails = 'View document details';
   static const String contactAgentForHelp = 'Contact your agent for help →';
 
   static const String previewNotAvailable = 'Preview not available';
   static const String noDocumentsYet = 'No documents yet';
-  static const String noDocumentsBody = 'Documents will appear here as your order progresses.';
+  static const String noDocumentsBody =
+      'Documents will appear here as your order progresses.';
 
-  static const String errorLoadDocuments = 'Could not load documents. Tap to retry.';
+  static const String errorLoadDocuments =
+      'Could not load documents. Tap to retry.';
 
   static const Map<String, String> docTypeLabels = {
     'ghana_id': 'Ghana ID',

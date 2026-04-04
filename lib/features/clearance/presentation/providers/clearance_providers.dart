@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
+import '../../../../shared/providers/system_settings_provider.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../shipping/presentation/providers/shipping_providers.dart';
 import '../../data/datasources/clearance_firestore_data_source.dart';
@@ -17,48 +18,58 @@ enum ClearanceScreenState {
 }
 
 /// User selection on the choice screen (State 1).
-enum ClearanceOption {
-  agentHandles,
-  selfClearance,
-}
+enum ClearanceOption { agentHandles, selfClearance }
 
-final clearanceDataSourceProvider = Provider<ClearanceFirestoreDataSource>((ref) {
+final clearanceDataSourceProvider = Provider<ClearanceFirestoreDataSource>((
+  ref,
+) {
   return ClearanceFirestoreDataSource(ref.watch(firestoreProvider));
 });
 
-final dutyClearanceRepositoryProvider = Provider<DutyClearanceRepository>((ref) {
+final dutyClearanceRepositoryProvider = Provider<DutyClearanceRepository>((
+  ref,
+) {
   return DutyClearanceRepositoryImpl(
     ref.watch(clearanceDataSourceProvider),
     ref.watch(functionsProvider),
   );
 });
 
-final dutyClearanceProvider =
-    StreamProvider.family<DutyClearance?, String>((ref, orderId) {
+final dutyClearanceProvider = StreamProvider.family<DutyClearance?, String>((
+  ref,
+  orderId,
+) {
   return ref.watch(dutyClearanceRepositoryProvider).watchDutyClearance(orderId);
 });
 
 final clearanceScreenStateProvider =
     Provider.family<ClearanceScreenState, String>((ref, orderId) {
-  final shipping = ref.watch(shippingProvider(orderId)).valueOrNull;
-  final duty = ref.watch(dutyClearanceProvider(orderId)).valueOrNull;
+      final shipping = ref.watch(shippingProvider(orderId)).valueOrNull;
+      final duty = ref.watch(dutyClearanceProvider(orderId)).valueOrNull;
 
-  if (shipping?.status != 'arrived') return ClearanceScreenState.notAvailable;
-  if (duty == null) return ClearanceScreenState.choicePending;
-  if (duty.handledBy == 'agent') return ClearanceScreenState.agentManaged;
-  return ClearanceScreenState.selfCleared;
-});
+      if (shipping?.status != 'arrived') {
+        return ClearanceScreenState.notAvailable;
+      }
+      if (duty == null) return ClearanceScreenState.choicePending;
+      if (duty.handledBy == 'agent') return ClearanceScreenState.agentManaged;
+      return ClearanceScreenState.selfCleared;
+    });
 
-final clearanceServiceFeeProvider = FutureProvider<double>((ref) {
-  return ref.watch(clearanceDataSourceProvider).getClearanceServiceFeeGhs();
+final clearanceServiceFeeProvider = FutureProvider<double>((ref) async {
+  final settings = await ref.watch(systemSettingsProvider.future);
+  return ref
+      .read(clearanceDataSourceProvider)
+      .getClearanceServiceFeeGhs(settings);
 });
 
 final selectedClearanceOptionProvider =
     StateProvider.family<ClearanceOption?, String>((ref, orderId) => null);
 
 /// First name of the agent assigned to this order (for copy like "Ask Kofi").
-final agentFirstNameProvider =
-    FutureProvider.family<String, String>((ref, orderId) async {
+final agentFirstNameProvider = FutureProvider.family<String, String>((
+  ref,
+  orderId,
+) async {
   final order = await ref.watch(orderProvider(orderId).future);
   final agentId = order?.agentId;
   if (agentId == null || agentId.isEmpty) return 'Your agent';

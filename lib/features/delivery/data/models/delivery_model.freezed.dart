@@ -25,6 +25,10 @@ mixin _$DeliveryModel {
   String get orderId => throw _privateConstructorUsedError;
   String? get deliveryAddress => throw _privateConstructorUsedError;
   String? get deliveryCity => throw _privateConstructorUsedError;
+  double? get latitude => throw _privateConstructorUsedError;
+  double? get longitude => throw _privateConstructorUsedError;
+  String? get locationLabel => throw _privateConstructorUsedError;
+  String? get locationSource => throw _privateConstructorUsedError;
   String? get recipientName => throw _privateConstructorUsedError;
   String? get recipientPhone => throw _privateConstructorUsedError;
   DateTime? get scheduledDate => throw _privateConstructorUsedError;
@@ -61,6 +65,10 @@ abstract class $DeliveryModelCopyWith<$Res> {
     String orderId,
     String? deliveryAddress,
     String? deliveryCity,
+    double? latitude,
+    double? longitude,
+    String? locationLabel,
+    String? locationSource,
     String? recipientName,
     String? recipientPhone,
     DateTime? scheduledDate,
@@ -96,6 +104,10 @@ class _$DeliveryModelCopyWithImpl<$Res, $Val extends DeliveryModel>
     Object? orderId = null,
     Object? deliveryAddress = freezed,
     Object? deliveryCity = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
+    Object? locationLabel = freezed,
+    Object? locationSource = freezed,
     Object? recipientName = freezed,
     Object? recipientPhone = freezed,
     Object? scheduledDate = freezed,
@@ -127,6 +139,22 @@ class _$DeliveryModelCopyWithImpl<$Res, $Val extends DeliveryModel>
             deliveryCity: freezed == deliveryCity
                 ? _value.deliveryCity
                 : deliveryCity // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            latitude: freezed == latitude
+                ? _value.latitude
+                : latitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            longitude: freezed == longitude
+                ? _value.longitude
+                : longitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            locationLabel: freezed == locationLabel
+                ? _value.locationLabel
+                : locationLabel // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            locationSource: freezed == locationSource
+                ? _value.locationSource
+                : locationSource // ignore: cast_nullable_to_non_nullable
                       as String?,
             recipientName: freezed == recipientName
                 ? _value.recipientName
@@ -200,6 +228,10 @@ abstract class _$$DeliveryModelImplCopyWith<$Res>
     String orderId,
     String? deliveryAddress,
     String? deliveryCity,
+    double? latitude,
+    double? longitude,
+    String? locationLabel,
+    String? locationSource,
     String? recipientName,
     String? recipientPhone,
     DateTime? scheduledDate,
@@ -234,6 +266,10 @@ class __$$DeliveryModelImplCopyWithImpl<$Res>
     Object? orderId = null,
     Object? deliveryAddress = freezed,
     Object? deliveryCity = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
+    Object? locationLabel = freezed,
+    Object? locationSource = freezed,
     Object? recipientName = freezed,
     Object? recipientPhone = freezed,
     Object? scheduledDate = freezed,
@@ -265,6 +301,22 @@ class __$$DeliveryModelImplCopyWithImpl<$Res>
         deliveryCity: freezed == deliveryCity
             ? _value.deliveryCity
             : deliveryCity // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        latitude: freezed == latitude
+            ? _value.latitude
+            : latitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        longitude: freezed == longitude
+            ? _value.longitude
+            : longitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        locationLabel: freezed == locationLabel
+            ? _value.locationLabel
+            : locationLabel // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        locationSource: freezed == locationSource
+            ? _value.locationSource
+            : locationSource // ignore: cast_nullable_to_non_nullable
                   as String?,
         recipientName: freezed == recipientName
             ? _value.recipientName
@@ -331,6 +383,10 @@ class _$DeliveryModelImpl implements _DeliveryModel {
     required this.orderId,
     this.deliveryAddress,
     this.deliveryCity,
+    this.latitude,
+    this.longitude,
+    this.locationLabel,
+    this.locationSource,
     this.recipientName,
     this.recipientPhone,
     this.scheduledDate,
@@ -357,6 +413,14 @@ class _$DeliveryModelImpl implements _DeliveryModel {
   final String? deliveryAddress;
   @override
   final String? deliveryCity;
+  @override
+  final double? latitude;
+  @override
+  final double? longitude;
+  @override
+  final String? locationLabel;
+  @override
+  final String? locationSource;
   @override
   final String? recipientName;
   @override
@@ -389,7 +453,7 @@ class _$DeliveryModelImpl implements _DeliveryModel {
 
   @override
   String toString() {
-    return 'DeliveryModel(id: $id, orderId: $orderId, deliveryAddress: $deliveryAddress, deliveryCity: $deliveryCity, recipientName: $recipientName, recipientPhone: $recipientPhone, scheduledDate: $scheduledDate, actualDeliveryDate: $actualDeliveryDate, deliveredBy: $deliveredBy, proofOfDeliveryUrl: $proofOfDeliveryUrl, buyerConfirmed: $buyerConfirmed, buyerConfirmedAt: $buyerConfirmedAt, status: $status, paymentConfirmed: $paymentConfirmed, paymentConfirmedAt: $paymentConfirmedAt, notes: $notes, createdAt: $createdAt)';
+    return 'DeliveryModel(id: $id, orderId: $orderId, deliveryAddress: $deliveryAddress, deliveryCity: $deliveryCity, latitude: $latitude, longitude: $longitude, locationLabel: $locationLabel, locationSource: $locationSource, recipientName: $recipientName, recipientPhone: $recipientPhone, scheduledDate: $scheduledDate, actualDeliveryDate: $actualDeliveryDate, deliveredBy: $deliveredBy, proofOfDeliveryUrl: $proofOfDeliveryUrl, buyerConfirmed: $buyerConfirmed, buyerConfirmedAt: $buyerConfirmedAt, status: $status, paymentConfirmed: $paymentConfirmed, paymentConfirmedAt: $paymentConfirmedAt, notes: $notes, createdAt: $createdAt)';
   }
 
   @override
@@ -403,6 +467,14 @@ class _$DeliveryModelImpl implements _DeliveryModel {
                 other.deliveryAddress == deliveryAddress) &&
             (identical(other.deliveryCity, deliveryCity) ||
                 other.deliveryCity == deliveryCity) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude) &&
+            (identical(other.locationLabel, locationLabel) ||
+                other.locationLabel == locationLabel) &&
+            (identical(other.locationSource, locationSource) ||
+                other.locationSource == locationSource) &&
             (identical(other.recipientName, recipientName) ||
                 other.recipientName == recipientName) &&
             (identical(other.recipientPhone, recipientPhone) ||
@@ -431,12 +503,16 @@ class _$DeliveryModelImpl implements _DeliveryModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     id,
     orderId,
     deliveryAddress,
     deliveryCity,
+    latitude,
+    longitude,
+    locationLabel,
+    locationSource,
     recipientName,
     recipientPhone,
     scheduledDate,
@@ -450,7 +526,7 @@ class _$DeliveryModelImpl implements _DeliveryModel {
     paymentConfirmedAt,
     notes,
     createdAt,
-  );
+  ]);
 
   /// Create a copy of DeliveryModel
   /// with the given fields replaced by the non-null parameter values.
@@ -472,6 +548,10 @@ abstract class _DeliveryModel implements DeliveryModel {
     required final String orderId,
     final String? deliveryAddress,
     final String? deliveryCity,
+    final double? latitude,
+    final double? longitude,
+    final String? locationLabel,
+    final String? locationSource,
     final String? recipientName,
     final String? recipientPhone,
     final DateTime? scheduledDate,
@@ -498,6 +578,14 @@ abstract class _DeliveryModel implements DeliveryModel {
   String? get deliveryAddress;
   @override
   String? get deliveryCity;
+  @override
+  double? get latitude;
+  @override
+  double? get longitude;
+  @override
+  String? get locationLabel;
+  @override
+  String? get locationSource;
   @override
   String? get recipientName;
   @override

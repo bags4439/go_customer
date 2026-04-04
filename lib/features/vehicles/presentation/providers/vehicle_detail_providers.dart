@@ -10,33 +10,40 @@ import '../../data/repositories/vehicle_repository_impl.dart';
 import '../../domain/entities/vehicle_option_entity.dart';
 import '../../domain/repositories/vehicle_repository.dart';
 
-final vehicleFirestoreDataSourceProvider = Provider<VehicleFirestoreDataSource>((ref) {
-  return VehicleFirestoreDataSource(ref.watch(firestoreProvider));
-});
+final vehicleFirestoreDataSourceProvider = Provider<VehicleFirestoreDataSource>(
+  (ref) {
+    return VehicleFirestoreDataSource(ref.watch(firestoreProvider));
+  },
+);
 
 final vehicleRepositoryProvider = Provider<VehicleRepository>((ref) {
-  return VehicleRepositoryImpl(
-    ref.watch(vehicleFirestoreDataSourceProvider),
-  );
+  return VehicleRepositoryImpl(ref.watch(vehicleFirestoreDataSourceProvider));
 });
 
 final vehicleOptionProvider =
-    FutureProvider.family<VehicleOptionEntity?, String>((ref, vehicleOptionId) async {
-  return ref.watch(vehicleRepositoryProvider).getVehicleOption(vehicleOptionId);
-});
+    FutureProvider.family<VehicleOptionEntity?, String>((
+      ref,
+      vehicleOptionId,
+    ) async {
+      return ref
+          .watch(vehicleRepositoryProvider)
+          .getVehicleOption(vehicleOptionId);
+    });
 
 /// Real-time vehicle option (e.g. chat vehicle card).
 final vehicleOptionStreamProvider =
     StreamProvider.family<VehicleOptionEntity?, String>((ref, vehicleOptionId) {
-  final firestore = ref.watch(firestoreProvider);
-  return firestore
-      .collection(FirestoreCollections.vehicleOptions)
-      .doc(vehicleOptionId)
-      .snapshots()
-      .map((snap) => snap.exists
-          ? VehicleOptionModel.fromFirestore(snap).toEntity()
-          : null);
-});
+      final firestore = ref.watch(firestoreProvider);
+      return firestore
+          .collection(FirestoreCollections.vehicleOptions)
+          .doc(vehicleOptionId)
+          .snapshots()
+          .map(
+            (snap) => snap.exists
+                ? VehicleOptionModel.fromFirestore(snap).toEntity()
+                : null,
+          );
+    });
 
 /// Read-only cost breakdown (no max bid — auction/BIN list price only).
 class ReadOnlyVehicleCost {
@@ -64,7 +71,10 @@ class ReadOnlyVehicleCost {
     return CurrencyFormatter.formatGhs(usdAmount * r);
   }
 
-  static ReadOnlyVehicleCost? fromOption(VehicleOptionEntity? option, double? rate) {
+  static ReadOnlyVehicleCost? fromOption(
+    VehicleOptionEntity? option,
+    double? rate,
+  ) {
     if (option == null) return null;
     final pct = (option.buyersPremiumPct ?? 0) / 100.0;
     final fixed = option.fixedPlatformFeesUsd ?? 0.0;
@@ -88,10 +98,12 @@ class ReadOnlyVehicleCost {
 
 final readOnlyVehicleCostProvider =
     Provider.family<ReadOnlyVehicleCost?, String>((ref, vehicleOptionId) {
-  final option = ref.watch(vehicleOptionStreamProvider(vehicleOptionId)).valueOrNull;
-  final rate = ref.watch(exchangeRateProvider).valueOrNull?.usdToGhs;
-  return ReadOnlyVehicleCost.fromOption(option, rate);
-});
+      final option = ref
+          .watch(vehicleOptionStreamProvider(vehicleOptionId))
+          .valueOrNull;
+      final rate = ref.watch(exchangeRateProvider).valueOrNull?.usdToGhs;
+      return ReadOnlyVehicleCost.fromOption(option, rate);
+    });
 
 /// Agent info for vehicle detail (name, initials) from vehicle's agentId.
 class AgentForVehicleView {
@@ -114,23 +126,40 @@ class AgentForVehicleView {
     final parts = fullName.trim().split(RegExp(r'\s+'));
     if (parts.isEmpty) return 'AG';
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'.toUpperCase();
+    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
+        .toUpperCase();
   }
 }
 
 final agentForVehicleProvider =
-    FutureProvider.family<AgentForVehicleView?, String>((ref, vehicleOptionId) async {
-  final option = ref.watch(vehicleOptionStreamProvider(vehicleOptionId)).valueOrNull;
-  final agentId = option?.agentId;
-  if (agentId == null || agentId.isEmpty) return null;
-  final firestore = ref.watch(firestoreProvider);
-  final agentDoc = await firestore.collection(FirestoreCollections.agents).doc(agentId).get();
-  if (!agentDoc.exists) return null;
-  final userId = agentDoc.data()?['userId'] as String?;
-  if (userId == null || userId.isEmpty) {
-    return const AgentForVehicleView(agentId: '', fullName: 'Your agent');
-  }
-  final userDoc = await firestore.collection(FirestoreCollections.users).doc(userId).get();
-  final fullName = userDoc.data()?['fullName'] as String? ?? 'Your agent';
-  return AgentForVehicleView(agentId: agentId, fullName: fullName);
-});
+    FutureProvider.family<AgentForVehicleView?, String>((
+      ref,
+      vehicleOptionId,
+    ) async {
+      final option = ref
+          .watch(vehicleOptionStreamProvider(vehicleOptionId))
+          .valueOrNull;
+      final agentId = option?.agentId;
+      if (agentId == null || agentId.isEmpty) return null;
+      final firestore = ref.watch(firestoreProvider);
+      final agentDoc = await firestore
+          .collection(FirestoreCollections.agents)
+          .doc(agentId)
+          .get();
+      if (!agentDoc.exists) return null;
+      final userId = agentDoc.data()?['userId'] as String?;
+      if (userId == null || userId.isEmpty) {
+        return const AgentForVehicleView(agentId: '', fullName: 'Your agent');
+      }
+      final userDoc = await firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .get();
+      final fullName = userDoc.data()?['fullName'] as String? ?? 'Your agent';
+      final photoUrl = agentDoc.data()?['photoUrl'] as String?;
+      return AgentForVehicleView(
+        agentId: agentId,
+        fullName: fullName,
+        photoUrl: photoUrl,
+      );
+    });

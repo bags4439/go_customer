@@ -14,9 +14,12 @@ final class PlaceholderDocumentItem extends DocumentListItem {
   final String docType;
   final String availableAfterLabel;
   final bool isGhanaId;
+  final bool isGhanaIdProvided;
+
   const PlaceholderDocumentItem({
     required this.docType,
     required this.availableAfterLabel,
     this.isGhanaId = false,
+    this.isGhanaIdProvided = false,
   });
 }

@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -16,9 +17,11 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  OneSignal.initialize(AppConstants.oneSignalAppId);
-  await OneSignal.Notifications.requestPermission(true);
-  setupNotificationHandlers(router);
+  if (!kIsWeb) {
+    OneSignal.initialize(AppConstants.oneSignalAppId);
+    await OneSignal.Notifications.requestPermission(true);
+    setupNotificationHandlers(router);
+  }
 
   runApp(const ProviderScope(child: CustomerApp()));
 }

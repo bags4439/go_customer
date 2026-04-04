@@ -136,6 +136,8 @@ class _NotificationsBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncState = ref.watch(notificationsNotifierProvider);
     final userId = ref.watch(authStateProvider).valueOrNull;
+    // Watch filter so list [ValueKey] stays in sync and rebuilds with tabs.
+    final filter = ref.watch(notificationFilterProvider);
 
     if (userId == null || userId.isEmpty) {
       return Center(
@@ -153,11 +155,8 @@ class _NotificationsBody extends ConsumerWidget {
           children: [
             const _FilterTabs(),
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                switchInCurve: Curves.easeInOut,
-                switchOutCurve: Curves.easeInOut,
-                child: _NotificationsList(key: ValueKey(ref.read(notificationFilterProvider))),
+              child: _NotificationsAnimatedBody(
+                child: _NotificationsList(key: ValueKey(filter)),
               ),
             ),
           ],
@@ -234,6 +233,127 @@ class _FilterTabs extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Same motion as [home_screen.dart] `_AnimatedBody`: light fade + slide-in.
+class _NotificationsAnimatedBody extends StatefulWidget {
+  const _NotificationsAnimatedBody({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_NotificationsAnimatedBody> createState() =>
+      _NotificationsAnimatedBodyState();
+}
+
+class _NotificationsAnimatedBodyState extends State<_NotificationsAnimatedBody>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.04),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _runEntrance());
+  }
+
+  void _runEntrance() {
+    if (!mounted) return;
+    if (TickerMode.of(context)) {
+      _ctrl.forward();
+    } else {
+      _ctrl.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(position: _slide, child: widget.child),
+    );
+  }
+}
+
+/// Same motion as [home_screen.dart] `_StaggeredItem`: staggered fade + slide.
+class _NotificationsStaggeredRow extends StatefulWidget {
+  const _NotificationsStaggeredRow({
+    required this.index,
+    required this.child,
+  });
+
+  /// List row index (for delay); capped internally for long lists.
+  final int index;
+  final Widget child;
+
+  @override
+  State<_NotificationsStaggeredRow> createState() =>
+      _NotificationsStaggeredRowState();
+}
+
+class _NotificationsStaggeredRowState extends State<_NotificationsStaggeredRow>
+    with SingleTickerProviderStateMixin {
+  static const int _kMaxStaggerIndex = 15;
+
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+
+    final capped = widget.index.clamp(0, _kMaxStaggerIndex);
+    final delayMs = widget.index <= _kMaxStaggerIndex ? capped * 60 : 0;
+
+    Future.delayed(Duration(milliseconds: delayMs), () {
+      if (!mounted) return;
+      if (TickerMode.of(context)) {
+        _ctrl.forward();
+      } else {
+        _ctrl.value = 1.0;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }
@@ -320,8 +440,6 @@ class _NotificationsList extends ConsumerStatefulWidget {
 class _NotificationsListState extends ConsumerState<_NotificationsList>
     with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
-  AnimationController? _entranceController;
-  int? _entranceEntryCount;
   AnimationController? _markAllReadController;
   List<String>? _markAllReadIds;
 
@@ -335,7 +453,6 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
-    _entranceController?.dispose();
     _markAllReadController?.dispose();
     super.dispose();
   }
@@ -359,23 +476,6 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
     final state = asyncState.valueOrNull;
     final hasMore = state?.hasMore ?? false;
     final isLoadingMore = state?.isLoadingMore ?? false;
-
-    final entryCount =
-        items.whereType<NotificationListItemEntry>().length;
-
-    if (items.isNotEmpty && _entranceController == null && entryCount > 0) {
-      _entranceEntryCount ??= entryCount;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || _entranceController != null) return;
-        final count = _entranceEntryCount!;
-        _entranceController = AnimationController(
-          vsync: this,
-          duration: Duration(milliseconds: count * 40 + 200),
-        );
-        _entranceController!.forward();
-        setState(() {});
-      });
-    }
 
     if (markAllReadIds != null &&
         markAllReadIds.isNotEmpty &&
@@ -413,7 +513,6 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
       return _EmptyState(filter: filter);
     }
 
-    int entryIndex = 0;
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -473,20 +572,22 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
 
         final item = items[index];
         if (item is NotificationListItemSection) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 6),
-            child: Text(
-              item.label,
-              style: GoogleFonts.dmSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFFAAAAAA),
+          return _NotificationsStaggeredRow(
+            index: index,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 6),
+              child: Text(
+                item.label,
+                style: GoogleFonts.dmSans(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFFAAAAAA),
+                ),
               ),
             ),
           );
         }
         final entry = item as NotificationListItemEntry;
-        final currentEntryIndex = entryIndex++;
         final markAllReadStaggerIndex = _markAllReadIds?.indexOf(entry.notification.id) ?? -1;
         final markAllReadTotal = _markAllReadIds?.length ?? 0;
         final card = _NotificationItemCard(
@@ -499,37 +600,13 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
           markAllReadStaggerIndex: markAllReadStaggerIndex >= 0 ? markAllReadStaggerIndex : null,
           markAllReadTotalCount: markAllReadTotal > 0 ? markAllReadTotal : null,
         );
-        Widget child = Padding(
-          padding: const EdgeInsets.only(bottom: 7),
-          child: card,
-        );
-        if (_entranceController != null && _entranceEntryCount != null) {
-          final totalDuration = _entranceEntryCount! * 40 + 200;
-          child = AnimatedBuilder(
-            animation: _entranceController!,
-            builder: (context, _) {
-              final value = _entranceController!.value;
-              final localT = (value * totalDuration - currentEntryIndex * 40) / 200;
-              final curved = Curves.easeOut.transform(localT.clamp(0.0, 1.0));
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 7),
-                child: Opacity(
-                  opacity: curved,
-                  child: Transform.translate(
-                    offset: Offset(0, 20 * (1 - curved)),
-                    child: card,
-                  ),
-                ),
-              );
-            },
-          );
-        } else {
-          child = Padding(
+        return _NotificationsStaggeredRow(
+          index: index,
+          child: Padding(
             padding: const EdgeInsets.only(bottom: 7),
             child: card,
-          );
-        }
-        return child;
+          ),
+        );
       },
     );
   }

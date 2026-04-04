@@ -191,6 +191,10 @@ class PreferenceFormState {
 class PreferenceFormNotifier extends StateNotifier<PreferenceFormState> {
   PreferenceFormNotifier() : super(const PreferenceFormState());
 
+  /// Clears draft state when opening a fresh "new preferences" flow
+  /// (e.g. import another car).
+  void reset() => state = const PreferenceFormState();
+
   void updatePurchaseOrigin(String origin) {
     final isChina = origin == AppConstants.purchaseOriginChina;
     String? newCondition;

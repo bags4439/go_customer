@@ -31,6 +31,15 @@ class PreferencesNewScreen extends ConsumerStatefulWidget {
 class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
   bool _submitting = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(preferenceFormProvider.notifier).reset();
+    });
+  }
+
   Future<void> _onConfirm(
     BuildContext context,
     PreferenceFormState state,
@@ -63,7 +72,18 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+            onPressed: () {
+              if (state.currentStep == 1) {
+                context.pop();
+              } else {
+                notifier.previousStep();
+              }
+            },
+          ),
           backgroundColor: AppColors.background,
+          foregroundColor: AppColors.textPrimary,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           title: Text(

@@ -62,16 +62,36 @@ final notificationsNotifierProvider =
 
 class NotificationsNotifier extends Notifier<AsyncValue<NotificationsState>> {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _subscription;
+  String? _subscribedUserId;
+  bool _disposeHooked = false;
 
   @override
   AsyncValue<NotificationsState> build() {
     final userId = ref.watch(authStateProvider).valueOrNull;
     if (userId == null || userId.isEmpty) {
       _subscription?.cancel();
+      _subscription = null;
+      _subscribedUserId = null;
       return const AsyncValue.data(NotificationsState());
     }
+
+    if (!_disposeHooked) {
+      _disposeHooked = true;
+      ref.onDispose(() {
+        _subscription?.cancel();
+        _subscription = null;
+        _subscribedUserId = null;
+      });
+    }
+
+    // Rebuilds (e.g. auth stream tick) must not reset to loading or the list
+    // disappears until the next snapshot; keep the same subscription + state.
+    if (_subscribedUserId == userId && _subscription != null) {
+      return state;
+    }
+
     _subscription?.cancel();
-    ref.onDispose(() => _subscription?.cancel());
+    _subscribedUserId = userId;
     _subscribe(userId);
     return const AsyncValue.loading();
   }

@@ -7,11 +7,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
+import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../providers/order_providers.dart';
 
 part '../widgets/home_theme.dart';
@@ -31,8 +33,11 @@ String? _firstNameFromUser(AsyncValue<dynamic> userAsync) {
       final dynamic u = user;
       final name = u.fullName;
       if (name is! String || name.trim().isEmpty) return null;
-      final parts =
-          name.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).toList();
+      final parts = name
+          .trim()
+          .split(RegExp(r'\s+'))
+          .where((s) => s.isNotEmpty)
+          .toList();
       if (parts.isEmpty) return null;
       return parts.first;
     },
@@ -63,13 +68,11 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: _C.bgPrimary,
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(context),
       body: ordersAsync.when(
         data: (orders) => _AnimatedBody(
           child: orders.isEmpty
-              ? _EmptyHome(
-                  firstName: _firstNameFromUser(currentUserAsync),
-                )
+              ? _EmptyHome(firstName: _firstNameFromUser(currentUserAsync))
               : _MultiOrderHome(
                   orders: orders,
                   pendingPayments: pendingPayments,
@@ -83,7 +86,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: _C.bgPrimary,
       elevation: 0,
@@ -91,12 +94,21 @@ class HomeScreen extends ConsumerWidget {
       automaticallyImplyLeading: false,
       titleSpacing: 20,
       title: const _AppLogo(),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.headset_mic_rounded, size: 22),
+          color: AppColors.textSecondary,
+          tooltip: 'Support',
+          style: IconButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            padding: const EdgeInsets.only(right: 16),
+          ),
+          onPressed: () => SupportBottomSheet.show(context),
+        ),
+      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(
-          height: 0.5,
-          color: _C.border,
-        ),
+        child: Container(height: 0.5, color: _C.border),
       ),
     );
   }

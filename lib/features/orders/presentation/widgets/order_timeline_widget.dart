@@ -77,8 +77,9 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
   @override
   Widget build(BuildContext context) {
     final timelineAsync = ref.watch(orderTimelineProvider(widget.orderId));
-    final pendingAsync =
-        ref.watch(pendingPaymentRequestsProvider(widget.orderId));
+    final pendingAsync = ref.watch(
+      pendingPaymentRequestsProvider(widget.orderId),
+    );
     final shippingAsync = ref.watch(orderShippingProvider(widget.orderId));
     final clearanceAsync = ref.watch(orderClearanceProvider(widget.orderId));
     final repairAsync = ref.watch(orderRepairJobProvider(widget.orderId));
@@ -134,7 +135,8 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
                       orderId: widget.orderId,
                       order: widget.order,
                       isLast: isLast,
-                      lineAfterIsComplete: s.isComplete,
+                      lineAfterIsComplete:
+                          s.stageNumber < widget.order.stageNumber,
                       pendingPayments: pending,
                       shipping: shipping,
                       clearance: clearance,
@@ -165,62 +167,66 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
 class _TimelineShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: List.generate(8, (i) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Shimmer.fromColors(
-                baseColor: AppColors.surface,
-                highlightColor: Colors.white,
-                child: Container(
-                  width: 16,
-                  height: 16,
+    return Shimmer.fromColors(
+      baseColor: AppColors.surface,
+      highlightColor: Colors.white,
+      child: Column(
+        children: List.generate(6, (i) {
+          final isActive = i == 1;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
                   decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
                     color: Colors.white,
+                    shape: BoxShape.circle,
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Shimmer.fromColors(
-                      baseColor: AppColors.surface,
-                      highlightColor: Colors.white,
-                      child: Container(
-                        height: 12,
-                        width: 120,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 6),
+                      Container(
+                        height: 13,
+                        width: isActive ? 160 : 120,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Shimmer.fromColors(
-                      baseColor: AppColors.surface,
-                      highlightColor: Colors.white,
-                      child: Container(
-                        height: 10,
-                        width: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
+                      if (isActive) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          height: 10,
+                          width: 220,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                        const SizedBox(height: 10),
+                        Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      }),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 }

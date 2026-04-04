@@ -19,9 +19,9 @@ class ClearanceFirestoreDataSource {
         .limit(1)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return dutyClearanceFromDoc(snapshot.docs.first);
-    });
+          if (snapshot.docs.isEmpty) return null;
+          return dutyClearanceFromDoc(snapshot.docs.first);
+        });
   }
 
   /// Returns the duty_clearance document if it exists (for guard against double-submit).
@@ -35,23 +35,16 @@ class ClearanceFirestoreDataSource {
     return dutyClearanceFromDoc(snapshot.docs.first);
   }
 
-  /// Fetches system_settings clearanceServiceFeeGhs. Fallback 3200.0 on missing/error.
-  Future<double> getClearanceServiceFeeGhs() async {
-    try {
-      final snapshot = await _firestore
-          .collection(FirestoreCollections.systemSettings)
-          .where('key', isEqualTo: ClearanceConstants.systemSettingsKeyClearanceFee)
-          .limit(1)
-          .get();
-      if (snapshot.docs.isEmpty) return ClearanceConstants.clearanceFeeFallbackGhs;
-      final data = snapshot.docs.first.data();
-      final value = data['value'];
-      if (value is num) return value.toDouble();
-      if (value is String) return double.tryParse(value) ?? ClearanceConstants.clearanceFeeFallbackGhs;
-      return ClearanceConstants.clearanceFeeFallbackGhs;
-    } catch (_) {
+  /// Resolves clearance fee from a pre-loaded `system_settings` map
+  /// (`systemSettingsProvider`). Fallback 3200.0 on missing/invalid.
+  double getClearanceServiceFeeGhs(Map<String, dynamic> settings) {
+    final v = settings[ClearanceConstants.systemSettingsKeyClearanceFee];
+    if (v == null) {
       return ClearanceConstants.clearanceFeeFallbackGhs;
     }
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString()) ??
+        ClearanceConstants.clearanceFeeFallbackGhs;
   }
 
   Future<void> createDutyClearanceAgent({
@@ -94,7 +87,10 @@ class ClearanceFirestoreDataSource {
     });
   }
 
-  Future<void> _updateCarPreferencesClearanceOptedIn(String orderId, bool optedIn) async {
+  Future<void> _updateCarPreferencesClearanceOptedIn(
+    String orderId,
+    bool optedIn,
+  ) async {
     final snapshot = await _firestore
         .collection(FirestoreCollections.carPreferences)
         .where('orderId', isEqualTo: orderId)
@@ -122,7 +118,10 @@ class ClearanceFirestoreDataSource {
     required String orderId,
     required double clearanceFeeGhs,
   }) async {
-    await createDutyClearanceAgent(orderId: orderId, clearanceFeeGhs: clearanceFeeGhs);
+    await createDutyClearanceAgent(
+      orderId: orderId,
+      clearanceFeeGhs: clearanceFeeGhs,
+    );
     await _updateCarPreferencesClearanceOptedIn(orderId, true);
     await setClearanceTimelineActive(orderId);
   }
@@ -137,7 +136,10 @@ class ClearanceFirestoreDataSource {
     required String orderId,
     required double clearanceFeeGhs,
   }) async {
-    await updateDutyClearanceToAgent(orderId: orderId, clearanceFeeGhs: clearanceFeeGhs);
+    await updateDutyClearanceToAgent(
+      orderId: orderId,
+      clearanceFeeGhs: clearanceFeeGhs,
+    );
     await _updateCarPreferencesClearanceOptedIn(orderId, true);
   }
 }

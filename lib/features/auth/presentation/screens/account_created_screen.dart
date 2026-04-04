@@ -46,7 +46,7 @@ class AccountCreatedScreen extends ConsumerWidget {
               ),
             const Spacer(),
             ElevatedButton(
-              onPressed: () => context.goNamed(RouteConstants.preferencesNew),
+              onPressed: () => context.pushNamed(RouteConstants.preferencesNew),
               child: const Text('Find my car →'),
             ),
           ],

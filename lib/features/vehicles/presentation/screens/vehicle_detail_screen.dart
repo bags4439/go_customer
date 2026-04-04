@@ -13,6 +13,7 @@ import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../core/constants/vehicle_detail_constants.dart';
 import '../../domain/entities/vehicle_option_entity.dart';
 import '../providers/vehicle_detail_providers.dart';
+import '../widgets/agent_vehicle_avatar.dart';
 
 const _kBorderColor = 0xFFE0DFD8;
 const _kSurface = 0xFFF5F4F0;
@@ -52,7 +53,8 @@ class VehicleDetailScreen extends ConsumerWidget {
         if (option == null) {
           return _NotFoundState(orderId: orderId);
         }
-        final isRejected = option.status == FirestoreEnumValues.vehicleOptionStatusRejected;
+        final isRejected =
+            option.status == FirestoreEnumValues.vehicleOptionStatusRejected;
         return _VehicleDetailScaffold(
           orderId: orderId,
           vehicleOptionId: vehicleOptionId,
@@ -66,7 +68,11 @@ class VehicleDetailScreen extends ConsumerWidget {
   }
 }
 
-PreferredSizeWidget _buildAppBar(BuildContext context, String orderId, String? lotNumber) {
+PreferredSizeWidget _buildAppBar(
+  BuildContext context,
+  String orderId,
+  String? lotNumber,
+) {
   return AppBar(
     leading: IconButton(
       icon: const Icon(Icons.arrow_back),
@@ -138,7 +144,10 @@ class _LoadingScaffold extends StatelessWidget {
                     child: Container(
                       height: 24,
                       width: 200,
-                      decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(4)),
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -148,7 +157,10 @@ class _LoadingScaffold extends StatelessWidget {
                     child: Container(
                       height: 16,
                       width: 160,
-                      decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(4)),
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
                 ],
@@ -182,17 +194,27 @@ class _NotFoundState extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.directions_car_outlined, size: 48, color: Color(_kTextTertiary)),
+                const Icon(
+                  Icons.directions_car_outlined,
+                  size: 48,
+                  color: Color(_kTextTertiary),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   VehicleDetailConstants.vehicleNotFound,
-                  style: GoogleFonts.dmSans(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   VehicleDetailConstants.vehicleNotFoundSub,
-                  style: GoogleFonts.dmSans(fontSize: 13, color: const Color(_kTextSecondary)),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: const Color(_kTextSecondary),
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
@@ -230,10 +252,12 @@ class _VehicleDetailScaffold extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_VehicleDetailScaffold> createState() => _VehicleDetailScaffoldState();
+  ConsumerState<_VehicleDetailScaffold> createState() =>
+      _VehicleDetailScaffoldState();
 }
 
-class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> {
+class _VehicleDetailScaffoldState
+    extends ConsumerState<_VehicleDetailScaffold> {
   final PageController _pageController = PageController();
   int _photoIndex = 0;
   bool _damageExpanded = false;
@@ -244,10 +268,9 @@ class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> 
     super.dispose();
   }
 
-  List<String> get _photoUrls =>
-      widget.option.photoUrls.isNotEmpty
-          ? widget.option.photoUrls
-          : (widget.option.photoUrl != null ? [widget.option.photoUrl!] : []);
+  List<String> get _photoUrls => widget.option.photoUrls.isNotEmpty
+      ? widget.option.photoUrls
+      : (widget.option.photoUrl != null ? [widget.option.photoUrl!] : []);
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +295,10 @@ class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> 
                   else
                     const _PhotoPlaceholder(),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -285,9 +311,12 @@ class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> 
                         _DamageBlock(
                           option: widget.option,
                           expanded: _damageExpanded,
-                          onToggle: () => setState(() => _damageExpanded = !_damageExpanded),
+                          onToggle: () => setState(
+                            () => _damageExpanded = !_damageExpanded,
+                          ),
                         ),
-                        if (widget.option.agentNote != null && widget.option.agentNote!.isNotEmpty) ...[
+                        if (widget.option.agentNote != null &&
+                            widget.option.agentNote!.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           _AgentNote(
                             vehicleOptionId: widget.vehicleOptionId,
@@ -295,7 +324,9 @@ class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> 
                           ),
                         ],
                         const SizedBox(height: 12),
-                        _ReadOnlyCostCard(vehicleOptionId: widget.vehicleOptionId),
+                        _ReadOnlyCostCard(
+                          vehicleOptionId: widget.vehicleOptionId,
+                        ),
                         const SizedBox(height: 16),
                         SizedBox(
                           height: 44,
@@ -303,11 +334,17 @@ class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> 
                             onPressed: () => context.pop(),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(_kPrimary),
-                              side: const BorderSide(color: Color(_kPrimary), width: 0.5),
+                              side: const BorderSide(
+                                color: Color(_kPrimary),
+                                width: 0.5,
+                              ),
                             ),
                             child: Text(
                               VehicleDetailConstants.chatWithAgentCta,
-                              style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500),
+                              style: GoogleFonts.dmSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ),
@@ -329,7 +366,9 @@ class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> 
     if (widget.option.year != null) parts.add('${widget.option.year}');
     parts.add(widget.option.make ?? '');
     parts.add(widget.option.model ?? '');
-    if (widget.option.trim != null && widget.option.trim!.isNotEmpty) parts.add(widget.option.trim!);
+    if (widget.option.trim != null && widget.option.trim!.isNotEmpty) {
+      parts.add(widget.option.trim!);
+    }
     final title = parts.where((e) => e.isNotEmpty).join(' ');
     return Text(
       title.isEmpty ? 'Vehicle' : title,
@@ -348,11 +387,15 @@ class _VehicleDetailScaffoldState extends ConsumerState<_VehicleDetailScaffold> 
     final parts = <String>[
       source,
       if (loc.isNotEmpty) loc,
-      if (date.isNotEmpty && !widget.option.isBuyItNow) '${VehicleDetailConstants.auctionLabel}: $date',
+      if (date.isNotEmpty && !widget.option.isBuyItNow)
+        '${VehicleDetailConstants.auctionLabel}: $date',
     ];
     return Text(
       parts.join(' · '),
-      style: GoogleFonts.dmSans(fontSize: 13, color: const Color(_kTextSecondary)),
+      style: GoogleFonts.dmSans(
+        fontSize: 13,
+        color: const Color(_kTextSecondary),
+      ),
     );
   }
 }
@@ -366,17 +409,26 @@ class _RejectedBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(_kAmberBg),
-        border: const Border(left: BorderSide(color: Color(_kAmberBorder), width: 3)),
+        border: const Border(
+          left: BorderSide(color: Color(_kAmberBorder), width: 3),
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, size: 20, color: Color(_kAmberBorder)),
+          const Icon(
+            Icons.warning_amber_rounded,
+            size: 20,
+            color: Color(_kAmberBorder),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               VehicleDetailConstants.rejectedBanner,
-              style: GoogleFonts.dmSans(fontSize: 12, color: const Color(_kAmberText)),
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: const Color(_kAmberText),
+              ),
             ),
           ),
         ],
@@ -430,7 +482,11 @@ class _PhotoGallery extends StatelessWidget {
                       child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.directions_car_outlined, size: 48, color: Color(_kTextTertiary)),
+                          Icon(
+                            Icons.directions_car_outlined,
+                            size: 48,
+                            color: Color(_kTextTertiary),
+                          ),
                         ],
                       ),
                     ),
@@ -453,7 +509,9 @@ class _PhotoGallery extends StatelessWidget {
                   width: active ? 8 : 6,
                   height: active ? 8 : 6,
                   decoration: BoxDecoration(
-                    color: active ? const Color(_kPrimary) : const Color(_kBorderColor),
+                    color: active
+                        ? const Color(_kPrimary)
+                        : const Color(_kBorderColor),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -542,7 +600,11 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
               child: InkWell(
                 onTap: () => Navigator.of(context).pop(),
                 customBorder: const CircleBorder(),
-                child: const SizedBox(width: 44, height: 44, child: Icon(Icons.close, color: Colors.white, size: 24)),
+                child: const SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(Icons.close, color: Colors.white, size: 24),
+                ),
               ),
             ),
           ),
@@ -552,7 +614,10 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black45,
                   borderRadius: BorderRadius.circular(8),
@@ -581,11 +646,18 @@ class _PhotoPlaceholder extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.directions_car_outlined, size: 48, color: Color(_kTextTertiary)),
+          const Icon(
+            Icons.directions_car_outlined,
+            size: 48,
+            color: Color(_kTextTertiary),
+          ),
           const SizedBox(height: 8),
           Text(
             VehicleDetailConstants.photoNotAvailable,
-            style: GoogleFonts.dmSans(fontSize: 11, color: const Color(_kTextTertiary)),
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              color: const Color(_kTextTertiary),
+            ),
           ),
         ],
       ),
@@ -607,14 +679,22 @@ class _SpecsPills extends StatelessWidget {
       if (option.condition == FirestoreEnumValues.vehicleConditionRunAndDrive) {
         bg = const Color(_kConditionGreen);
         text = const Color(_kConditionGreenText);
-      } else if (option.condition == FirestoreEnumValues.vehicleConditionRepairable) {
+      } else if (option.condition ==
+          FirestoreEnumValues.vehicleConditionRepairable) {
         bg = const Color(_kConditionAmber);
         text = const Color(_kConditionAmberText);
-      } else if (option.condition == FirestoreEnumValues.vehicleConditionFullRebuild) {
+      } else if (option.condition ==
+          FirestoreEnumValues.vehicleConditionFullRebuild) {
         bg = const Color(_kConditionRed);
         text = const Color(_kConditionRedText);
       }
-      pills.add(_Pill(text: option.conditionLabel!, backgroundColor: bg, textColor: text));
+      pills.add(
+        _Pill(
+          text: option.conditionLabel!,
+          backgroundColor: bg,
+          textColor: text,
+        ),
+      );
     }
     if (option.mileage != null) {
       final formatted = NumberFormat('#,###').format(option.mileage);
@@ -643,10 +723,13 @@ class _SpecsPills extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: List.generate(pills.length, (i) => Padding(
-          padding: const EdgeInsets.only(right: 6),
-          child: pills[i],
-        )),
+        children: List.generate(
+          pills.length,
+          (i) => Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: pills[i],
+          ),
+        ),
       ),
     );
   }
@@ -698,7 +781,11 @@ class _DamageBlock extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle_outline, size: 14, color: Color(_kSuccess)),
+          const Icon(
+            Icons.check_circle_outline,
+            size: 14,
+            color: Color(_kSuccess),
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 6),
@@ -744,7 +831,9 @@ class _DamageBlock extends StatelessWidget {
                 Text(
                   desc,
                   maxLines: expanded ? null : 3,
-                  overflow: expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                  overflow: expanded
+                      ? TextOverflow.visible
+                      : TextOverflow.ellipsis,
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     color: const Color(_kTextSecondary),
@@ -788,19 +877,31 @@ class _AgentNote extends ConsumerWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: const BoxDecoration(
-            color: Color(0xFFE6F1FB),
-            shape: BoxShape.circle,
+        if (agent != null)
+          AgentVehicleAvatar(
+            agent: agent,
+            radius: 16,
+            heroTag:
+                'agent_avatar_${agent.agentId}_vehicle_$vehicleOptionId',
+          )
+        else
+          Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE6F1FB),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              'AG',
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: const Color(_kPrimaryText),
+              ),
+            ),
           ),
-          alignment: Alignment.center,
-          child: Text(
-            agent?.initials ?? 'AG',
-            style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(_kPrimaryText)),
-          ),
-        ),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -808,11 +909,18 @@ class _AgentNote extends ConsumerWidget {
             children: [
               Text(
                 "${agent?.firstName ?? 'Agent'}${VehicleDetailConstants.agentNoteSuffix}",
-                style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w500, color: const Color(_kPrimaryText)),
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(_kPrimaryText),
+                ),
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: const BoxDecoration(
                   color: Color(_kSurface),
                   borderRadius: BorderRadius.only(
@@ -824,7 +932,11 @@ class _AgentNote extends ConsumerWidget {
                 ),
                 child: Text(
                   note,
-                  style: GoogleFonts.dmSans(fontSize: 13, color: const Color(_kTextSecondary), height: 1.5),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: const Color(_kTextSecondary),
+                    height: 1.5,
+                  ),
                 ),
               ),
             ],
@@ -843,7 +955,9 @@ class _ReadOnlyCostCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cost = ref.watch(readOnlyVehicleCostProvider(vehicleOptionId));
-    final option = ref.watch(vehicleOptionStreamProvider(vehicleOptionId)).valueOrNull;
+    final option = ref
+        .watch(vehicleOptionStreamProvider(vehicleOptionId))
+        .valueOrNull;
     final rateAsync = ref.watch(exchangeRateProvider);
     final rate = rateAsync.valueOrNull?.usdToGhs;
     final rOk = rate != null && rate > 0;
@@ -866,7 +980,9 @@ class _ReadOnlyCostCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _usdGhsRow(
-            cost.isBuyItNow ? 'Buy It Now price' : VehicleDetailConstants.auctionPriceLabel,
+            cost.isBuyItNow
+                ? 'Buy It Now price'
+                : VehicleDetailConstants.auctionPriceLabel,
             list,
             rOk,
             rate,
@@ -887,7 +1003,11 @@ class _ReadOnlyCostCard extends ConsumerWidget {
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
-            child: Divider(height: 0.5, thickness: 0.5, color: Color(_kBorderColor)),
+            child: Divider(
+              height: 0.5,
+              thickness: 0.5,
+              color: Color(_kBorderColor),
+            ),
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -903,7 +1023,9 @@ class _ReadOnlyCostCard extends ConsumerWidget {
                 ),
               ),
               Text(
-                rOk ? CurrencyFormatter.formatGhs(cost.totalUsd * rate) : VehicleDetailConstants.rateUnavailable,
+                rOk
+                    ? CurrencyFormatter.formatGhs(cost.totalUsd * rate)
+                    : VehicleDetailConstants.rateUnavailable,
                 style: GoogleFonts.dmSans(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -915,7 +1037,10 @@ class _ReadOnlyCostCard extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(
             '${VehicleDetailConstants.atRateNote}${rate?.toStringAsFixed(2) ?? '—'}',
-            style: GoogleFonts.dmSans(fontSize: 10, color: const Color(_kTextTertiary)),
+            style: GoogleFonts.dmSans(
+              fontSize: 10,
+              color: const Color(_kTextTertiary),
+            ),
             textAlign: TextAlign.right,
           ),
           const SizedBox(height: 10),
@@ -928,7 +1053,11 @@ class _ReadOnlyCostCard extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.info_outline, size: 14, color: Color(_kAmberBorder)),
+                const Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: Color(_kAmberBorder),
+                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 6),
@@ -958,7 +1087,10 @@ class _ReadOnlyCostCard extends ConsumerWidget {
         Expanded(
           child: Text(
             label,
-            style: GoogleFonts.dmSans(fontSize: 12, color: const Color(_kTextSecondary)),
+            style: GoogleFonts.dmSans(
+              fontSize: 12,
+              color: const Color(_kTextSecondary),
+            ),
           ),
         ),
         Column(
@@ -966,13 +1098,20 @@ class _ReadOnlyCostCard extends ConsumerWidget {
           children: [
             Text(
               CurrencyFormatter.formatUsd(usd),
-              style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
             ),
             Text(
               rOk && rate != null
                   ? CurrencyFormatter.formatGhs(usd * rate)
                   : VehicleDetailConstants.rateUnavailable,
-              style: GoogleFonts.dmSans(fontSize: 12, color: const Color(_kTextSecondary)),
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: const Color(_kTextSecondary),
+              ),
             ),
           ],
         ),

@@ -11,8 +11,7 @@ class ReferralUiConstants {
   static const String linkWebsite = 'Website';
 
   /// Shown when [referralDiscountAmount] is present (amount inserted between prefix/suffix).
-  static const String bodyWithRewardPrefix =
-      'Earn a fixed credit of ';
+  static const String bodyWithRewardPrefix = 'Earn a fixed credit of ';
   static const String bodyWithRewardMiddle =
       ' when a friend joins with your code and completes onboarding. ';
   static const String bodyPerks =

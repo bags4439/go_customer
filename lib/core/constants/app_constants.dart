@@ -7,10 +7,15 @@ class AppConstants {
   static const String oneSignalAppId = '9a05e7b1-ca1c-4de2-b521-a175c1d66e34';
 
   /// Paystack secret key (mobile). Required for payment flow. Configure manually.
-  static const String paystackSecretKey = 'sk_test_3fb395ade7ccf7b5452cda34c14a97d6bcd7b896';
+  static const String paystackSecretKey =
+      'sk_test_3fb395ade7ccf7b5452cda34c14a97d6bcd7b896';
 
   /// Paystack callback URL (from dashboard). Required for mobile WebView to close after payment.
-  static const String paystackCallBackUrl = 'https://europe-west1-velocitech-auto-go.cloudfunctions.net/paystackWebhook';
+  static const String paystackCallBackUrl =
+      'https://europe-west1-velocitech-auto-go.cloudfunctions.net/paystackWebhook';
+
+  /// Google Places / Geocoding (delivery address search). Replace with your key from Google Cloud.
+  static const String googlePlacesApiKey = 'YOUR_KEY';
 
   // payment_requests.type — used for conditional UI (deposit note, repair note)
   static const String paymentRequestTypeVehicleBalanceAndShipping =
@@ -33,6 +38,12 @@ class AppConstants {
   static const String purchaseOriginUsCanada = 'us_canada';
   static const String purchaseOriginDubai = 'dubai';
   static const String purchaseOriginChina = 'china';
+
+  /// orders.status — buyer confirmed receipt; before final delivered/review.
+  static const String statusDeliveryConfirmed = 'delivery_confirmed';
+
+  /// orders.status — order complete after buyer review.
+  static const String statusDelivered = 'delivered';
 
   static const Map<String, String> purchaseOriginLabels = {
     'any': 'No preference',
@@ -115,6 +126,7 @@ class FirestoreEnumValues {
   static const String orderStatusRepairPending = 'repairPending';
   static const String orderStatusRepairInProgress = 'repairInProgress';
   static const String orderStatusRepairComplete = 'repairComplete';
+  static const String orderStatusDeliveryConfirmed = 'delivery_confirmed';
   static const String orderStatusDelivered = 'delivered';
   static const String orderStatusCancelled = 'cancelled';
   static const String orderStatusDormant = 'dormant';
@@ -137,6 +149,7 @@ class FirestoreEnumValues {
     orderStatusRepairPending,
     orderStatusRepairInProgress,
     orderStatusRepairComplete,
+    orderStatusDeliveryConfirmed,
     orderStatusDelivered,
     orderStatusCancelled,
     orderStatusDormant,
@@ -374,4 +387,3 @@ class FirestoreEnumValues {
 //
 // payment_processing_screen.dart and payment_firestore_data_source.dart
 // do not reference AppConstants; no constants were added for them.
-

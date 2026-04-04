@@ -3,14 +3,18 @@ import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/agent_connection_agent_avatar.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
 import '../widgets/chat_message_widgets.dart';
@@ -46,7 +50,9 @@ class _PendingItem implements _ListItem {
 }
 
 List<_ListItem> _messagesWithDateDividersFromDisplay(
-    List<Object> displayMessages, String userId) {
+  List<Object> displayMessages,
+  String userId,
+) {
   final result = <_ListItem>[];
   DateTime? lastDate;
   for (final obj in displayMessages) {
@@ -106,12 +112,17 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels <= 0) {
-      final pagination = ref.read(chatPaginationNotifierProvider(widget.orderId));
+      final pagination = ref.read(
+        chatPaginationNotifierProvider(widget.orderId),
+      );
       if (pagination.isLoadingMore || !pagination.hasMoreMessages) return;
-      final lastDoc = pagination.lastDocumentForLoadMore ??
+      final lastDoc =
+          pagination.lastDocumentForLoadMore ??
           ref.read(chatFirstPageLastDocProvider(widget.orderId));
       if (lastDoc != null) {
-        ref.read(chatPaginationNotifierProvider(widget.orderId).notifier).loadMore(lastDoc);
+        ref
+            .read(chatPaginationNotifierProvider(widget.orderId).notifier)
+            .loadMore(lastDoc);
       }
     }
   }
@@ -142,7 +153,10 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
     final input = ref.watch(messageInputProvider);
     final replyState = ref.watch(replyStateProvider(orderId));
 
-    ref.listen<List<Object>>(chatDisplayMessagesProvider(orderId), (prev, next) {
+    ref.listen<List<Object>>(chatDisplayMessagesProvider(orderId), (
+      prev,
+      next,
+    ) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     });
 
@@ -151,10 +165,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
         orderAsync.when(
           data: (order) {
             if (order?.agentId == null) return const SizedBox.shrink();
-            return _ChatAgentHeader(
-              orderId: orderId,
-              agentId: order!.agentId!,
-            );
+            return _ChatAgentHeader(orderId: orderId, agentId: order!.agentId!);
           },
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
@@ -168,9 +179,9 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
               child: Text(
                 'Agent is typing…',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                      fontStyle: FontStyle.italic,
-                    ),
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             );
           },
@@ -185,20 +196,27 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
               : Builder(
                   builder: (context) {
                     WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => _scrollToBottom());
+                      (_) => _scrollToBottom(),
+                    );
                     final userId = ref.watch(authStateProvider).value;
                     final reactions = reactionsAsync.valueOrNull ?? {};
-                    final pageResult = ref.watch(messagesProvider(orderId)).valueOrNull;
+                    final pageResult = ref
+                        .watch(messagesProvider(orderId))
+                        .valueOrNull;
                     final streamMessages = pageResult?.messages ?? [];
                     final idToBody = {
-                      for (final m in streamMessages) m.id: (m.body ?? '')
+                      for (final m in streamMessages) m.id: (m.body ?? ''),
                     };
-                    final pagination = ref.watch(chatPaginationNotifierProvider(orderId));
+                    final pagination = ref.watch(
+                      chatPaginationNotifierProvider(orderId),
+                    );
                     for (final m in pagination.olderMessages) {
                       idToBody[m.id] = m.body ?? '';
                     }
                     final items = _messagesWithDateDividersFromDisplay(
-                        displayMessages, userId ?? '');
+                      displayMessages,
+                      userId ?? '',
+                    );
 
                     return ListView.builder(
                       controller: _scrollController,
@@ -213,7 +231,9 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                 child: SizedBox(
                                   width: 24,
                                   height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                               ),
                             );
@@ -224,9 +244,8 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                               child: Center(
                                 child: Text(
                                   'Beginning of conversation',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.grey,
-                                      ),
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: Colors.grey),
                                 ),
                               ),
                             );
@@ -273,19 +292,23 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                               onLongPress: () async {
                                 final result =
                                     await showModalBottomSheet<String>(
-                                  context: context,
-                                  builder: (ctx) => _MessageActionSheet(
-                                    orderId: orderId,
-                                    messageId: msg.id,
-                                    messageBody: msg.body,
-                                  ),
-                                );
+                                      context: context,
+                                      builder: (ctx) => _MessageActionSheet(
+                                        orderId: orderId,
+                                        messageId: msg.id,
+                                        messageBody: msg.body,
+                                      ),
+                                    );
                                 if (result != null) {
                                   if (result == 'reply') {
                                     ref
-                                        .read(replyStateProvider(orderId).notifier)
+                                        .read(
+                                          replyStateProvider(orderId).notifier,
+                                        )
                                         .state = ReplyState(
-                                            messageId: msg.id, body: msg.body);
+                                      messageId: msg.id,
+                                      body: msg.body,
+                                    );
                                   } else {
                                     await toggleReactionForMessage(
                                       ref,
@@ -302,8 +325,13 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                 orderId: orderId,
                                 reactions: messageReactions,
                                 replyToBody: replyToBody,
-                                onVideoTap: msg.messageType == 'video' && msg.mediaUrl != null
-                                    ? () => _openFullScreenVideo(context, msg.mediaUrl!)
+                                onVideoTap:
+                                    msg.messageType == 'video' &&
+                                        msg.mediaUrl != null
+                                    ? () => _openFullScreenVideo(
+                                        context,
+                                        msg.mediaUrl!,
+                                      )
                                     : null,
                               ),
                             ),
@@ -361,10 +389,7 @@ class _ChatAgentHeader extends ConsumerWidget {
   final String orderId;
   final String agentId;
 
-  const _ChatAgentHeader({
-    required this.orderId,
-    required this.agentId,
-  });
+  const _ChatAgentHeader({required this.orderId, required this.agentId});
 
   Future<void> _launchCall(String? phone) async {
     if (phone == null || phone.isEmpty) return;
@@ -384,23 +409,15 @@ class _ChatAgentHeader extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              bottom: BorderSide(color: Colors.grey.shade300),
-            ),
+            color: AppColors.background,
+            border: Border(bottom: BorderSide(color: AppColors.borderSolid)),
           ),
           child: Row(
             children: [
-              CircleAvatar(
+              AgentConnectionAgentAvatar(
+                agent: agent,
                 radius: 22,
-                backgroundColor: const Color(0xFF378ADD),
-                child: Text(
-                  agent.initials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                heroTag: 'agent_avatar_${agent.agentId}_chat',
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -409,14 +426,19 @@ class _ChatAgentHeader extends ConsumerWidget {
                   children: [
                     Text(
                       agent.fullName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
+                      style: GoogleFonts.dmSans(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
-                      '${agent.totalOrdersCompleted} orders · ${agent.rating.toStringAsFixed(1)} ★',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      '${agent.totalOrdersCompleted} orders · '
+                      '${agent.rating.toStringAsFixed(1)} ★',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -424,13 +446,69 @@ class _ChatAgentHeader extends ConsumerWidget {
               if (agent.phone != null && agent.phone!.isNotEmpty)
                 IconButton(
                   icon: const Icon(Icons.call),
+                  color: AppColors.secondary,
                   onPressed: () => _launchCall(agent.phone),
                 ),
             ],
           ),
         );
       },
-      loading: () => const SizedBox.shrink(),
+      loading: () => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          border: Border(bottom: BorderSide(color: AppColors.borderSolid)),
+        ),
+        child: Row(
+          children: [
+            Shimmer.fromColors(
+              baseColor: AppColors.surface,
+              highlightColor: Colors.white,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Shimmer.fromColors(
+                    baseColor: AppColors.surface,
+                    highlightColor: Colors.white,
+                    child: Container(
+                      height: 14,
+                      width: 160,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Shimmer.fromColors(
+                    baseColor: AppColors.surface,
+                    highlightColor: Colors.white,
+                    child: Container(
+                      height: 12,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
       error: (_, __) => const SizedBox.shrink(),
     );
   }
@@ -520,7 +598,12 @@ class _VideoPreviewBar extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text('Video ready', style: Theme.of(context).textTheme.bodySmall)),
+          Expanded(
+            child: Text(
+              'Video ready',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
           TextButton(
             onPressed: () => sendVideoForOrder(ref, orderId),
             child: const Text('Send'),
@@ -528,7 +611,8 @@ class _VideoPreviewBar extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () =>
-                ref.read(pendingVideoPathProvider(orderId).notifier).state = null,
+                ref.read(pendingVideoPathProvider(orderId).notifier).state =
+                    null,
           ),
         ],
       ),
@@ -609,8 +693,10 @@ class _InputBarState extends ConsumerState<_InputBar> {
       try {
         final path = await _recorder.stop();
         if (path != null) {
-          final durationSecs =
-              _recordingStopwatch.elapsed.inSeconds.clamp(1, 999);
+          final durationSecs = _recordingStopwatch.elapsed.inSeconds.clamp(
+            1,
+            999,
+          );
           _recordingStopwatch.stop();
           _recordingStopwatch.reset();
           final file = File(path);
@@ -628,7 +714,8 @@ class _InputBarState extends ConsumerState<_InputBar> {
     }
 
     final dir = Directory.systemTemp;
-    final path = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    final path =
+        '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
       if (mounted) {
@@ -639,17 +726,14 @@ class _InputBarState extends ConsumerState<_InputBar> {
       return;
     }
     try {
-      await _recorder.start(
-        const RecordConfig(bitRate: 64000),
-        path: path,
-      );
+      await _recorder.start(const RecordConfig(bitRate: 64000), path: path);
       _recordingStopwatch.start();
       ref.read(isRecordingProvider.notifier).state = true;
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Recording failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Recording failed: $e')));
       }
     }
   }
@@ -800,10 +884,7 @@ class _MessageActionSheet extends StatelessWidget {
                     .map(
                       (e) => IconButton(
                         onPressed: () => Navigator.of(context).pop(e),
-                        icon: Text(
-                          e,
-                          style: const TextStyle(fontSize: 24),
-                        ),
+                        icon: Text(e, style: const TextStyle(fontSize: 24)),
                       ),
                     )
                     .toList(),
@@ -832,7 +913,9 @@ class _FullScreenVideoPageState extends State<_FullScreenVideoPage> {
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.mediaUrl));
+    _videoController = VideoPlayerController.networkUrl(
+      Uri.parse(widget.mediaUrl),
+    );
     _videoController!.initialize().then((_) {
       if (!mounted) return;
       setState(() {

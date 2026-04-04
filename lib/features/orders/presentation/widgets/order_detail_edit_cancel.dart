@@ -70,9 +70,6 @@ class _OrderDetailEditCancelSectionState
                           color: AppColors.secondary,
                           width: 1,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -108,9 +105,6 @@ class _OrderDetailEditCancelSectionState
                         side: const BorderSide(
                           color: AppColors.danger,
                           width: 1,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: Row(
