@@ -227,13 +227,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             onPhoneTap: _onPhoneEditTap,
                           ),
                         ),
-                        _AnimatedSection(
-                          index: 2,
-                          animation: _sectionAnimations[2]!,
-                          title: ProfileConstants.sectionNotifications,
-                          hasUnsaved: false,
-                          child: _NotificationsSection(user: user),
-                        ),
+                        // _AnimatedSection(
+                        //   index: 2,
+                        //   animation: _sectionAnimations[2]!,
+                        //   title: ProfileConstants.sectionNotifications,
+                        //   hasUnsaved: false,
+                        //   child: _NotificationsSection(user: user),
+                        // ),
                         _AnimatedSection(
                           index: 3,
                           animation: _sectionAnimations[3]!,
@@ -887,29 +887,9 @@ class _PersonalDetailsSection extends ConsumerWidget {
           subtitle: ProfileConstants.phoneChangeNote,
         ),
         _DividerIndent(),
-        _EditRow(
-          label: ProfileConstants.locationLabel,
-          value: user.location,
-          expanded: edit.expandedField == 'location',
-          draftValue: edit.draftValue,
-          errorMessage: edit.expandedField == 'location'
-              ? edit.errorMessage
-              : null,
-          onTap: () => ref
-              .read(profileEditProvider.notifier)
-              .expandField('location', user.location),
-          onDraftChanged: (v) =>
-              ref.read(profileEditProvider.notifier).updateDraft(v),
-          onSave: () {
-            final v = (edit.draftValue ?? user.location).trim();
-            if (v.isEmpty) {
-              ref.read(profileEditProvider.notifier).setError('Required');
-              return;
-            }
-            onSaveLocation(v);
-          },
-          onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
-          validator: (v) => v.trim().isEmpty ? 'Required' : null,
+        _CountryRow(
+          currentIsoCode: user.country,
+          userId: user.id,
         ),
         _DividerIndent(),
         GhanaCardProfileRow(user: user),
@@ -1317,11 +1297,6 @@ class _LanguageCurrencySection extends ConsumerWidget {
         _DividerIndent(),
         _CurrencyRow(
           currentCurrency: user.preferredCurrency,
-          userId: user.id,
-        ),
-        _DividerIndent(),
-        _CountryRow(
-          currentIsoCode: user.country,
           userId: user.id,
         ),
       ],
