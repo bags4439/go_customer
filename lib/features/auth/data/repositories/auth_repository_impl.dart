@@ -215,6 +215,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, String>> completeProfile({
     required String uid,
     required String fullName,
+    required String country,
   }) async {
     try {
       String code = ReferralCodeGenerator.generate();
@@ -229,12 +230,35 @@ class AuthRepositoryImpl implements AuthRepository {
             : ReferralCodeGenerator.generate();
       }
 
+      var preferredCurrency = 'USD';
+      if (country.isNotEmpty) {
+        try {
+          final currencySnap = await _firestore
+              .collection(FirestoreCollections.currencies)
+              .where('countryCodes', arrayContains: country)
+              .where('isActive', isEqualTo: true)
+              .limit(1)
+              .get();
+
+          if (currencySnap.docs.isNotEmpty) {
+            final code_ = currencySnap.docs.first.data()['code'] as String?;
+            if (code_ != null && code_.isNotEmpty) {
+              preferredCurrency = code_;
+            }
+          }
+        } catch (_) {
+          preferredCurrency = 'USD';
+        }
+      }
+
       final batch = _firestore.batch();
 
       batch.set(
         _firestore.collection(FirestoreCollections.users).doc(uid),
         {
           'fullName': fullName.trim(),
+          'country': country,
+          'preferredCurrency': preferredCurrency,
           'referralCode': code,
           'referralDiscountGhs': 0.0,
           'referredBy': null,

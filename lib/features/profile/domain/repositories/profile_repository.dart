@@ -19,6 +19,10 @@ abstract class ProfileRepository {
     String userId,
     String value,
   );
+  Future<Either<Failure, Unit>> updateCountry(
+    String userId,
+    String isoCode,
+  );
   Future<Either<Failure, Unit>> updatePreferredLanguage(
     String userId,
     String value,

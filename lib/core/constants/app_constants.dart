@@ -91,6 +91,8 @@ class FirestoreCollections {
   static const String costDefaults = 'cost_defaults';
   static const String systemSettings = 'system_settings';
   static const String referralCodes = 'referral_codes';
+  static const String countries = 'countries';
+  static const String currencies = 'currencies';
   static const String carMakes = 'car_makes';
 
   /// Subcollection under each `car_makes/{makeSlug}` document.

@@ -28,6 +28,7 @@ mixin _$UserModel {
   String get role =>
       throw _privateConstructorUsedError; // 'buyer' | 'agent' | 'admin'
   String? get location => throw _privateConstructorUsedError;
+  String get country => throw _privateConstructorUsedError;
   bool get isFirstTimeBuyer => throw _privateConstructorUsedError;
   bool get isVerified => throw _privateConstructorUsedError;
   String? get ghanaCardPhotoUrl => throw _privateConstructorUsedError;
@@ -64,6 +65,7 @@ abstract class $UserModelCopyWith<$Res> {
     String? email,
     String role,
     String? location,
+    String country,
     bool isFirstTimeBuyer,
     bool isVerified,
     String? ghanaCardPhotoUrl,
@@ -100,6 +102,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? email = freezed,
     Object? role = null,
     Object? location = freezed,
+    Object? country = null,
     Object? isFirstTimeBuyer = null,
     Object? isVerified = null,
     Object? ghanaCardPhotoUrl = freezed,
@@ -139,6 +142,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.location
                 : location // ignore: cast_nullable_to_non_nullable
                       as String?,
+            country: null == country
+                ? _value.country
+                : country // ignore: cast_nullable_to_non_nullable
+                      as String,
             isFirstTimeBuyer: null == isFirstTimeBuyer
                 ? _value.isFirstTimeBuyer
                 : isFirstTimeBuyer // ignore: cast_nullable_to_non_nullable
@@ -209,6 +216,7 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String? email,
     String role,
     String? location,
+    String country,
     bool isFirstTimeBuyer,
     bool isVerified,
     String? ghanaCardPhotoUrl,
@@ -244,6 +252,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? email = freezed,
     Object? role = null,
     Object? location = freezed,
+    Object? country = null,
     Object? isFirstTimeBuyer = null,
     Object? isVerified = null,
     Object? ghanaCardPhotoUrl = freezed,
@@ -283,6 +292,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.location
             : location // ignore: cast_nullable_to_non_nullable
                   as String?,
+        country: null == country
+            ? _value.country
+            : country // ignore: cast_nullable_to_non_nullable
+                  as String,
         isFirstTimeBuyer: null == isFirstTimeBuyer
             ? _value.isFirstTimeBuyer
             : isFirstTimeBuyer // ignore: cast_nullable_to_non_nullable
@@ -346,6 +359,7 @@ class _$UserModelImpl implements _UserModel {
     this.email,
     required this.role,
     this.location,
+    this.country = '',
     this.isFirstTimeBuyer = false,
     this.isVerified = false,
     this.ghanaCardPhotoUrl,
@@ -376,6 +390,9 @@ class _$UserModelImpl implements _UserModel {
   // 'buyer' | 'agent' | 'admin'
   @override
   final String? location;
+  @override
+  @JsonKey()
+  final String country;
   @override
   @JsonKey()
   final bool isFirstTimeBuyer;
@@ -417,7 +434,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, country: $country, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -433,6 +450,7 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.role, role) || other.role == role) &&
             (identical(other.location, location) ||
                 other.location == location) &&
+            (identical(other.country, country) || other.country == country) &&
             (identical(other.isFirstTimeBuyer, isFirstTimeBuyer) ||
                 other.isFirstTimeBuyer == isFirstTimeBuyer) &&
             (identical(other.isVerified, isVerified) ||
@@ -463,7 +481,7 @@ class _$UserModelImpl implements _UserModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     id,
     fullName,
@@ -471,6 +489,7 @@ class _$UserModelImpl implements _UserModel {
     email,
     role,
     location,
+    country,
     isFirstTimeBuyer,
     isVerified,
     ghanaCardPhotoUrl,
@@ -483,7 +502,7 @@ class _$UserModelImpl implements _UserModel {
     lastActiveAt,
     createdAt,
     updatedAt,
-  );
+  ]);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -507,6 +526,7 @@ abstract class _UserModel implements UserModel {
     final String? email,
     required final String role,
     final String? location,
+    final String country,
     final bool isFirstTimeBuyer,
     final bool isVerified,
     final String? ghanaCardPhotoUrl,
@@ -536,6 +556,8 @@ abstract class _UserModel implements UserModel {
   String get role; // 'buyer' | 'agent' | 'admin'
   @override
   String? get location;
+  @override
+  String get country;
   @override
   bool get isFirstTimeBuyer;
   @override

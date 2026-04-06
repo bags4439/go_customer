@@ -26,6 +26,7 @@ class LoginState with _$LoginState {
     @Default('') String verificationId,
     @Default('') String otp,
     @Default('') String fullName,
+    @Default('') String country,
     @Default('') String referralCode,
     @Default('') String ghanaCardNumber,
     String? ghanaCardPhotoPath,

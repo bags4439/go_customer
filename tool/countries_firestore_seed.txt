@@ -1,0 +1,65 @@
+Countries collection — one-time seed (CA_COUNTRY_01_DATA)
+============================================================
+
+Collection path: countries
+
+Create a composite index (required for the client query) before or when prompted:
+  Collection: countries
+  Fields: isActive — Ascending, sortOrder — Ascending
+
+In Firebase Console: Firestore → Indexes → Composite → add the fields above.
+
+---
+
+Manual seed — Firebase Console
+-------------------------------
+For each row below: Firestore → Start collection (or add document) → Document ID
+must match the ID column exactly. Add fields with the given types.
+
+Document ID: GH
+  isoCode     (string)  GH
+  name        (string)  Ghana
+  flag        (string)  🇬🇭
+  dialCode    (string)  +233
+  isActive    (boolean) true
+  sortOrder   (number)  1
+
+Document ID: US
+  isoCode     (string)  US
+  name        (string)  United States
+  flag        (string)  🇺🇸
+  dialCode    (string)  +1
+  isActive    (boolean) true
+  sortOrder   (number)  2
+
+Document ID: GB
+  isoCode     (string)  GB
+  name        (string)  United Kingdom
+  flag        (string)  🇬🇧
+  dialCode    (string)  +44
+  isActive    (boolean) true
+  sortOrder   (number)  3
+
+Document ID: DE
+  isoCode     (string)  DE
+  name        (string)  Germany
+  flag        (string)  🇩🇪
+  dialCode    (string)  +49
+  isActive    (boolean) true
+  sortOrder   (number)  4
+
+Document ID: CA
+  isoCode     (string)  CA
+  name        (string)  Canada
+  flag        (string)  🇨🇦
+  dialCode    (string)  +1
+  isActive    (boolean) true
+  sortOrder   (number)  5
+
+Document ID: NL
+  isoCode     (string)  NL
+  name        (string)  Netherlands
+  flag        (string)  🇳🇱
+  dialCode    (string)  +31
+  isActive    (boolean) true
+  sortOrder   (number)  6

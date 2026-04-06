@@ -47,6 +47,12 @@ class LoginNotifier extends StateNotifier<LoginState> {
   void updateFullName(String v) =>
       state = state.copyWith(fullName: v, error: null);
 
+  void updateCountry(String isoCode) =>
+      state = state.copyWith(
+        country: isoCode,
+        error: null,
+      );
+
   void updateReferralCode(String v) => state = state.copyWith(referralCode: v);
 
   void updateGhanaCardNumber(String v) =>
@@ -132,22 +138,41 @@ class LoginNotifier extends StateNotifier<LoginState> {
   Future<void> completeProfile() async {
     final name = state.fullName.trim();
     if (name.length < 2) {
-      state = state.copyWith(error: 'Please enter your full name');
+      state = state.copyWith(
+        error: 'Please enter your full name',
+      );
       return;
     }
+    if (state.country.isEmpty) {
+      state = state.copyWith(
+        error: 'Please select your country',
+      );
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     final uidResult = await _getAuthenticatedUserId();
     if (!_alive) return;
+
     await uidResult.fold(
       (failure) async {
-        state = state.copyWith(isLoading: false, error: failure.message);
+        state = state.copyWith(
+          isLoading: false,
+          error: failure.message,
+        );
       },
       (uid) async {
-        final result = await _completeProfile(uid: uid, fullName: name);
+        final result = await _completeProfile(
+          uid: uid,
+          fullName: name,
+          country: state.country,
+        );
         if (!_alive) return;
         result.fold(
-          (failure) =>
-              state = state.copyWith(isLoading: false, error: failure.message),
+          (failure) => state = state.copyWith(
+            isLoading: false,
+            error: failure.message,
+          ),
           (code) => state = state.copyWith(
             isLoading: false,
             generatedReferralCode: code,

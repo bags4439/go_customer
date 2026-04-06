@@ -22,6 +22,7 @@ mixin _$LoginState {
   String get verificationId => throw _privateConstructorUsedError;
   String get otp => throw _privateConstructorUsedError;
   String get fullName => throw _privateConstructorUsedError;
+  String get country => throw _privateConstructorUsedError;
   String get referralCode => throw _privateConstructorUsedError;
   String get ghanaCardNumber => throw _privateConstructorUsedError;
   String? get ghanaCardPhotoPath =>
@@ -57,6 +58,7 @@ abstract class $LoginStateCopyWith<$Res> {
     String verificationId,
     String otp,
     String fullName,
+    String country,
     String referralCode,
     String ghanaCardNumber,
     String? ghanaCardPhotoPath,
@@ -90,6 +92,7 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
     Object? verificationId = null,
     Object? otp = null,
     Object? fullName = null,
+    Object? country = null,
     Object? referralCode = null,
     Object? ghanaCardNumber = null,
     Object? ghanaCardPhotoPath = freezed,
@@ -119,6 +122,10 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
             fullName: null == fullName
                 ? _value.fullName
                 : fullName // ignore: cast_nullable_to_non_nullable
+                      as String,
+            country: null == country
+                ? _value.country
+                : country // ignore: cast_nullable_to_non_nullable
                       as String,
             referralCode: null == referralCode
                 ? _value.referralCode
@@ -184,6 +191,7 @@ abstract class _$$LoginStateImplCopyWith<$Res>
     String verificationId,
     String otp,
     String fullName,
+    String country,
     String referralCode,
     String ghanaCardNumber,
     String? ghanaCardPhotoPath,
@@ -216,6 +224,7 @@ class __$$LoginStateImplCopyWithImpl<$Res>
     Object? verificationId = null,
     Object? otp = null,
     Object? fullName = null,
+    Object? country = null,
     Object? referralCode = null,
     Object? ghanaCardNumber = null,
     Object? ghanaCardPhotoPath = freezed,
@@ -245,6 +254,10 @@ class __$$LoginStateImplCopyWithImpl<$Res>
         fullName: null == fullName
             ? _value.fullName
             : fullName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        country: null == country
+            ? _value.country
+            : country // ignore: cast_nullable_to_non_nullable
                   as String,
         referralCode: null == referralCode
             ? _value.referralCode
@@ -303,6 +316,7 @@ class _$LoginStateImpl implements _LoginState {
     this.verificationId = '',
     this.otp = '',
     this.fullName = '',
+    this.country = '',
     this.referralCode = '',
     this.ghanaCardNumber = '',
     this.ghanaCardPhotoPath,
@@ -329,6 +343,9 @@ class _$LoginStateImpl implements _LoginState {
   @override
   @JsonKey()
   final String fullName;
+  @override
+  @JsonKey()
+  final String country;
   @override
   @JsonKey()
   final String referralCode;
@@ -367,7 +384,7 @@ class _$LoginStateImpl implements _LoginState {
 
   @override
   String toString() {
-    return 'LoginState(phone: $phone, verificationId: $verificationId, otp: $otp, fullName: $fullName, referralCode: $referralCode, ghanaCardNumber: $ghanaCardNumber, ghanaCardPhotoPath: $ghanaCardPhotoPath, step: $step, nav: $nav, isLoading: $isLoading, isUploadingPhoto: $isUploadingPhoto, error: $error, generatedReferralCode: $generatedReferralCode, resendCountdown: $resendCountdown, resendEnabled: $resendEnabled)';
+    return 'LoginState(phone: $phone, verificationId: $verificationId, otp: $otp, fullName: $fullName, country: $country, referralCode: $referralCode, ghanaCardNumber: $ghanaCardNumber, ghanaCardPhotoPath: $ghanaCardPhotoPath, step: $step, nav: $nav, isLoading: $isLoading, isUploadingPhoto: $isUploadingPhoto, error: $error, generatedReferralCode: $generatedReferralCode, resendCountdown: $resendCountdown, resendEnabled: $resendEnabled)';
   }
 
   @override
@@ -381,6 +398,7 @@ class _$LoginStateImpl implements _LoginState {
             (identical(other.otp, otp) || other.otp == otp) &&
             (identical(other.fullName, fullName) ||
                 other.fullName == fullName) &&
+            (identical(other.country, country) || other.country == country) &&
             (identical(other.referralCode, referralCode) ||
                 other.referralCode == referralCode) &&
             (identical(other.ghanaCardNumber, ghanaCardNumber) ||
@@ -409,6 +427,7 @@ class _$LoginStateImpl implements _LoginState {
     verificationId,
     otp,
     fullName,
+    country,
     referralCode,
     ghanaCardNumber,
     ghanaCardPhotoPath,
@@ -437,6 +456,7 @@ abstract class _LoginState implements LoginState {
     final String verificationId,
     final String otp,
     final String fullName,
+    final String country,
     final String referralCode,
     final String ghanaCardNumber,
     final String? ghanaCardPhotoPath,
@@ -459,6 +479,8 @@ abstract class _LoginState implements LoginState {
   String get otp;
   @override
   String get fullName;
+  @override
+  String get country;
   @override
   String get referralCode;
   @override

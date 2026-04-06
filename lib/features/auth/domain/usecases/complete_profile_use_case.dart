@@ -10,9 +10,12 @@ class CompleteProfileUseCase {
   Future<Either<Failure, String>> call({
     required String uid,
     required String fullName,
-  }) =>
-      _repository.completeProfile(
-        uid: uid,
-        fullName: fullName,
-      );
+    required String country,
+  }) {
+    return _repository.completeProfile(
+      uid: uid,
+      fullName: fullName,
+      country: country,
+    );
+  }
 }

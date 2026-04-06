@@ -11,9 +11,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/utils/responsive_layout.dart';
+import '../../domain/entities/country.dart';
 import '../notifiers/login_notifier.dart';
 import '../notifiers/login_state.dart';
+import '../providers/countries_providers.dart';
 import '../providers/login_providers.dart';
+import '../widgets/country_picker_sheet.dart';
 
 // ─────────────────────────────────────────────────────────────
 // LoginScreen
@@ -312,6 +315,89 @@ class _StyledTextFieldState extends State<_StyledTextField> {
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tappable field that opens [CountryPickerSheet].
+/// Matches [_StyledTextField] resting, error, and active (sheet open) borders.
+class _CountryPickerField extends StatelessWidget {
+  const _CountryPickerField({
+    required this.selectedCountry,
+    required this.onTap,
+    this.hasError = false,
+    this.isActive = false,
+  });
+
+  final Country? selectedCountry;
+  final VoidCallback onTap;
+  final bool hasError;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasSelection = selectedCountry != null;
+    final borderFocused = isActive && !hasError;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: const Color(0xFF378ADD).withValues(alpha: 0.08),
+        highlightColor: const Color(0xFF378ADD).withValues(alpha: 0.04),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 56,
+          decoration: BoxDecoration(
+            color: hasError
+                ? const Color(0xFFFCEBEB)
+                : Colors.white,
+            border: Border.all(
+              color: hasError
+                  ? const Color(0xFFE24B4A)
+                  : borderFocused
+                      ? const Color(0xFF378ADD)
+                      : const Color(0xFFE0DFD8),
+              width: (hasError || borderFocused) ? 1.5 : 1.0,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                if (hasSelection) ...[
+                  Text(
+                    selectedCountry!.flag,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  child: Text(
+                    hasSelection
+                        ? selectedCountry!.name
+                        : 'Select your country',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: hasSelection
+                          ? const Color(0xFF1A1A18)
+                          : const Color(0xFFAAAAAA),
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: Color(0xFFAAAAAA),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1456,9 +1542,13 @@ class _NameStepState extends ConsumerState<_NameStep>
   late final Animation<double> _headingSlide;
   late final Animation<double> _fieldFade;
   late final Animation<double> _fieldSlide;
+  late final Animation<double> _countryFade;
+  late final Animation<double> _countrySlide;
   late final Animation<double> _buttonFade;
   late final Animation<double> _buttonSlide;
   late final TextEditingController _nameCtrl;
+  Country? _selectedCountry;
+  bool _countrySheetOpen = false;
 
   @override
   void initState() {
@@ -1501,6 +1591,16 @@ class _NameStepState extends ConsumerState<_NameStep>
         curve: const Interval(0.30, 0.80, curve: Curves.easeOutCubic),
       ),
     );
+    _countryFade = CurvedAnimation(
+      parent: _ac,
+      curve: const Interval(0.38, 0.88, curve: Curves.easeOutCubic),
+    );
+    _countrySlide = Tween<double>(begin: 0.05, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _ac,
+        curve: const Interval(0.38, 0.88, curve: Curves.easeOutCubic),
+      ),
+    );
     _buttonFade = CurvedAnimation(
       parent: _ac,
       curve: const Interval(0.45, 1.00, curve: Curves.easeOutCubic),
@@ -1525,6 +1625,11 @@ class _NameStepState extends ConsumerState<_NameStep>
           offset: widget.state.fullName.length,
         ),
       );
+    }
+    if (widget.state.country.isEmpty &&
+        oldWidget.state.country.isNotEmpty &&
+        _selectedCountry != null) {
+      _selectedCountry = null;
     }
   }
 
@@ -1553,12 +1658,50 @@ class _NameStepState extends ConsumerState<_NameStep>
     );
   }
 
+  Future<void> _openCountryPicker() async {
+    setState(() => _countrySheetOpen = true);
+    final country = await CountryPickerSheet.show(
+      context,
+      selectedIsoCode:
+          _selectedCountry?.isoCode ?? widget.state.country,
+    );
+    if (!mounted) return;
+    setState(() {
+      _countrySheetOpen = false;
+      if (country != null) {
+        _selectedCountry = country;
+        widget.notifier.updateCountry(country.isoCode);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
     final notifier = widget.notifier;
-    final nameError =
-        state.error != null && state.step == LoginStep.name;
+    final loginStepName = state.step == LoginStep.name;
+    final nameFieldHasError = loginStepName &&
+        state.error != null &&
+        state.error != 'Please select your country';
+    final countryFieldHasError =
+        loginStepName && state.error == 'Please select your country';
+    final nameInlineError = nameFieldHasError ? state.error : null;
+    final countryInlineError =
+        countryFieldHasError ? state.error : null;
+
+    final countriesAsync = ref.watch(countriesProvider);
+    Country? displayCountry = _selectedCountry;
+    if (displayCountry == null && state.country.isNotEmpty) {
+      displayCountry = countriesAsync.maybeWhen(
+        data: (list) {
+          for (final c in list) {
+            if (c.isoCode == state.country) return c;
+          }
+          return null;
+        },
+        orElse: () => null,
+      );
+    }
 
     return _AuthResponsiveWrapper(
       child: Column(
@@ -1626,21 +1769,49 @@ class _NameStepState extends ConsumerState<_NameStep>
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.done,
                   onSubmit: notifier.completeProfile,
-                  hasError: nameError,
+                  hasError: nameFieldHasError,
                   autofocus: true,
                 ),
-                _InlineError(error: nameError ? state.error : null),
+                _InlineError(error: nameInlineError),
               ],
             ),
             _fieldFade,
             _fieldSlide,
+          ),
+          const SizedBox(height: 16),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'COUNTRY',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFFAAAAAA),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _CountryPickerField(
+                  selectedCountry: displayCountry,
+                  onTap: _openCountryPicker,
+                  hasError: countryFieldHasError,
+                  isActive: _countrySheetOpen,
+                ),
+                _InlineError(error: countryInlineError),
+              ],
+            ),
+            _countryFade,
+            _countrySlide,
           ),
           const SizedBox(height: 32),
           _fadeSlide(
             _AuthPrimaryButton(
               label: 'Continue →',
               isLoading: state.isLoading,
-              isEnabled: state.fullName.trim().length >= 2,
+              isEnabled: state.fullName.trim().length >= 2 &&
+                  state.country.isNotEmpty,
               onTap: notifier.completeProfile,
             ),
             _buttonFade,

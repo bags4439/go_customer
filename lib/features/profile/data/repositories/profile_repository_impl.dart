@@ -90,6 +90,21 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> updateCountry(
+    String userId,
+    String isoCode,
+  ) async {
+    try {
+      await _profileDataSource.updateCountry(userId, isoCode);
+      return right(unit);
+    } catch (e) {
+      return left(
+        FirestoreFailure(message: 'Could not save country.', cause: e),
+      );
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> updatePreferredLanguage(
     String userId,
     String value,

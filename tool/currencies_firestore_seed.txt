@@ -1,0 +1,48 @@
+Currencies collection — one-time seed (CA_COUNTRY_02_PROFILE_COMPLETION)
+========================================================================
+
+Collection path: currencies
+
+Composite index (create when the Console prompts, or under Indexes):
+  Collection: currencies
+  Fields: countryCodes — Arrays, isActive — Ascending
+
+The client query uses array-contains on countryCodes plus isActive == true.
+
+---
+
+Manual seed — Firebase Console
+-------------------------------
+
+Document ID: GHS
+  code           (string)   GHS
+  symbol         (string)   ₵
+  name           (string)   Ghanaian Cedi
+  decimalDigits  (number)   0
+  isActive       (boolean)  true
+  sortOrder      (number)   1
+  usdToRate      (number)   15.40
+  countryCodes   (array)    GH  (single string element)
+
+Document ID: USD
+  code           (string)   USD
+  symbol         (string)   $
+  name           (string)   US Dollar
+  decimalDigits  (number)   0
+  isActive       (boolean)  true
+  sortOrder      (number)   2
+  usdToRate      (number)   1.0
+  countryCodes   (array)    US, CA  (two string elements)
+
+Document ID: EUR
+  code           (string)   EUR
+  symbol         (string)   €
+  name           (string)   Euro
+  decimalDigits  (number)   2
+  isActive       (boolean)  true
+  sortOrder      (number)   3
+  usdToRate      (number)   0.92
+  countryCodes   (array)    DE, NL, FR, IT, ES, BE, AT, PT
+
+Note: GB is not mapped to GBP in this initial set; those users receive
+preferredCurrency USD from completeProfile when no currency row matches.

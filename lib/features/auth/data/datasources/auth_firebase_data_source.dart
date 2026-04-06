@@ -101,6 +101,7 @@ class AuthFirebaseDataSource {
           'email': params.email,
           'role': FirestoreEnumValues.roleBuyer,
           'location': params.location,
+          'country': params.country,
           'isFirstTimeBuyer': params.isFirstTimeBuyer,
           'isVerified': false,
           'ghanaCardPhotoUrl': null,

@@ -15,6 +15,7 @@ class UserModel with _$UserModel {
     String? email,
     required String role, // 'buyer' | 'agent' | 'admin'
     String? location,
+    @Default('') String country,
     @Default(false) bool isFirstTimeBuyer,
     @Default(false) bool isVerified,
     String? ghanaCardPhotoUrl,
@@ -35,7 +36,13 @@ class UserModel with _$UserModel {
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>?;
     if (data == null) {
-      return UserModel(id: doc.id, fullName: '', phone: '', role: 'buyer');
+      return UserModel(
+        id: doc.id,
+        fullName: '',
+        phone: '',
+        role: 'buyer',
+        country: '',
+      );
     }
     return UserModel(
       id: doc.id,
@@ -44,6 +51,7 @@ class UserModel with _$UserModel {
       email: data['email'] as String?,
       role: data['role'] as String? ?? 'buyer',
       location: data['location'] as String?,
+      country: data['country'] as String? ?? '',
       isFirstTimeBuyer: data['isFirstTimeBuyer'] as bool? ?? false,
       isVerified: data['isVerified'] as bool? ?? false,
       ghanaCardPhotoUrl:
@@ -103,6 +111,7 @@ extension UserModelX on UserModel {
       email: email,
       role: role,
       location: location ?? '',
+      country: country,
       isFirstTimeBuyer: isFirstTimeBuyer,
       isVerified: isVerified,
       ghanaCardPhotoUrl: ghanaCardPhotoUrl,

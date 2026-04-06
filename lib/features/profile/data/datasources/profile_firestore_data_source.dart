@@ -62,6 +62,13 @@ class ProfileFirestoreDataSource {
     });
   }
 
+  Future<void> updateCountry(String userId, String isoCode) async {
+    await _firestore.collection(FirestoreCollections.users).doc(userId).update({
+      'country': isoCode,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   Future<void> updatePreferredLanguage(String userId, String value) async {
     await _firestore.collection(FirestoreCollections.users).doc(userId).update({
       'preferredLanguage': value,

@@ -11,10 +11,15 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_version.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
+import '../../../../shared/providers/currencies_provider.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../auth/domain/entities/app_user.dart';
+import '../../../auth/domain/entities/country.dart';
+import '../../../auth/presentation/providers/countries_providers.dart';
+import '../../../auth/presentation/widgets/country_picker_sheet.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/presentation/providers/guide_providers.dart';
 import '../../../guide/presentation/widgets/guide_help_button.dart';
@@ -1307,7 +1312,15 @@ class _LanguageCurrencySection extends ConsumerWidget {
       children: [
         _LanguageRow(currentLanguage: user.preferredLanguage),
         _DividerIndent(),
-        _CurrencyRow(currentCurrency: user.preferredCurrency, userId: user.id),
+        _CurrencyRow(
+          currentCurrency: user.preferredCurrency,
+          userId: user.id,
+        ),
+        _DividerIndent(),
+        _CountryRow(
+          currentIsoCode: user.country,
+          userId: user.id,
+        ),
       ],
     );
   }
@@ -1379,116 +1392,402 @@ class _LanguageRow extends StatelessWidget {
 }
 
 class _CurrencyRow extends ConsumerWidget {
-  const _CurrencyRow({required this.currentCurrency, required this.userId});
+  const _CurrencyRow({
+    required this.currentCurrency,
+    required this.userId,
+  });
 
   final String currentCurrency;
   final String userId;
 
+  static String _currencyLabel(
+    String code,
+    List<CurrencyModel>? currencies,
+  ) {
+    if (currencies == null) return code;
+    for (final c in currencies) {
+      if (c.code == code) {
+        return '${c.symbol}  ${c.name}';
+      }
+    }
+    return code;
+  }
+
+  Future<void> _openPicker(
+    BuildContext context,
+    WidgetRef ref,
+    List<CurrencyModel> currencies,
+  ) async {
+    if (currencies.isEmpty) return;
+
+    final selected = await showModalBottomSheet<CurrencyModel>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _CurrencyPickerSheet(
+        currencies: currencies,
+        selectedCode: currentCurrency,
+      ),
+    );
+
+    if (selected == null) return;
+    if (!context.mounted) return;
+
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updatePreferredCurrency(userId, selected.code);
+
+    result.fold(
+      (_) => showErrorSnackBar(
+        context,
+        ProfileConstants.errorSaveField,
+        actionLabel: ProfileConstants.retry,
+      ),
+      (_) {
+        ref.invalidate(currentUserProfileProvider);
+        ref.invalidate(exchangeRateProvider);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 52),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        children: [
-          Text(
-            ProfileConstants.displayCurrencyLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const Spacer(),
-          _SegmentedCurrency(
-            value: currentCurrency,
-            onChanged: (v) async {
-              final result = await ref
-                  .read(profileRepositoryProvider)
-                  .updatePreferredCurrency(userId, v);
-              result.fold(
-                (_) => showErrorSnackBar(
-                  context,
-                  ProfileConstants.errorSaveField,
-                  actionLabel: ProfileConstants.retry,
-                ),
-                (_) {
-                  ref.invalidate(currentUserProfileProvider);
-                  ref.invalidate(exchangeRateProvider);
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
+    final currenciesAsync = ref.watch(currenciesProvider);
+    final list = currenciesAsync.valueOrNull ?? const <CurrencyModel>[];
 
-class _SegmentedCurrency extends StatelessWidget {
-  const _SegmentedCurrency({required this.value, required this.onChanged});
-
-  final String value;
-  final void Function(String) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: _kBorder,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _Segment(
-            label: 'GHS',
-            selected: value == 'GHS',
-            onTap: () => onChanged('GHS'),
-          ),
-          _Segment(
-            label: 'USD',
-            selected: value == 'USD',
-            onTap: () => onChanged('USD'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Segment extends StatelessWidget {
-  const _Segment({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: selected ? _kPrimary : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+        onTap: () => _openPicker(context, ref, list),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      ProfileConstants.displayCurrencyLabel,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      _currencyLabel(
+                        currentCurrency,
+                        currenciesAsync.valueOrNull,
+                      ),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.edit_outlined,
+                size: 20,
+                color: _kTextTertiary,
+              ),
+            ],
           ),
-          child: Text(
-            label,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: selected ? Colors.white : Colors.black54,
-            ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CurrencyPickerSheet extends StatelessWidget {
+  const _CurrencyPickerSheet({
+    required this.currencies,
+    required this.selectedCode,
+  });
+
+  final List<CurrencyModel> currencies;
+  final String selectedCode;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final maxH = MediaQuery.sizeOf(context).height * 0.75;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: maxH,
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Center(
+                  child: Container(
+                    width: 32,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: AppColors.borderSolid,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.currency_exchange_rounded,
+                        color: AppColors.secondary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Display currency',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Prices will display in this currency.',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Divider(
+                height: 1,
+                thickness: 0.5,
+                color: AppColors.borderSolid,
+              ),
+              Expanded(
+                child: ListView.separated(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    8,
+                    20,
+                    24 + bottomInset,
+                  ),
+                  itemCount: currencies.length,
+                  separatorBuilder: (_, __) => const Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    color: AppColors.borderSolid,
+                  ),
+                  itemBuilder: (context, i) {
+                    final currency = currencies[i];
+                    final isSelected = currency.code == selectedCode;
+                    return Material(
+                      color: isSelected
+                          ? AppColors.selectionTint
+                          : Colors.transparent,
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context, currency),
+                        splashColor:
+                            AppColors.secondary.withValues(alpha: 0.08),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 4,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.surface
+                                      : AppColors.surface,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  currency.symbol,
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? AppColors.secondary
+                                        : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      currency.name,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 14,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? AppColors.secondary
+                                            : AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      currency.code,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(
+                                  Icons.check_rounded,
+                                  size: 18,
+                                  color: AppColors.secondary,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CountryRow extends ConsumerWidget {
+  const _CountryRow({
+    required this.currentIsoCode,
+    required this.userId,
+  });
+
+  final String currentIsoCode;
+  final String userId;
+
+  Country? _currentCountry(List<Country>? countries) {
+    if (countries == null) return null;
+    for (final c in countries) {
+      if (c.isoCode == currentIsoCode) return c;
+    }
+    return null;
+  }
+
+  Future<void> _openPicker(BuildContext context, WidgetRef ref) async {
+    final selected = await CountryPickerSheet.show(
+      context,
+      selectedIsoCode: currentIsoCode,
+    );
+
+    if (selected == null) return;
+    if (!context.mounted) return;
+
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateCountry(userId, selected.isoCode);
+
+    result.fold(
+      (_) => showErrorSnackBar(
+        context,
+        ProfileConstants.errorSaveField,
+        actionLabel: ProfileConstants.retry,
+      ),
+      (_) {
+        ref.invalidate(currentUserProfileProvider);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final countriesAsync = ref.watch(countriesProvider);
+    final currentCountry =
+        _currentCountry(countriesAsync.valueOrNull);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openPicker(context, ref),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Country',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      currentCountry != null
+                          ? currentCountry.displayLabel
+                          : currentIsoCode.isNotEmpty
+                              ? currentIsoCode
+                              : 'Not set',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.edit_outlined,
+                size: 20,
+                color: _kTextTertiary,
+              ),
+            ],
           ),
         ),
       ),

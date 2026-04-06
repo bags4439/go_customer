@@ -5,6 +5,8 @@ class AppUser {
   final String? email;
   final String role;
   final String location;
+  /// ISO 3166-1 alpha-2 e.g. 'GH'; empty if unset.
+  final String country;
   final bool isFirstTimeBuyer;
   final bool isVerified;
   final String? ghanaCardPhotoUrl;
@@ -21,6 +23,7 @@ class AppUser {
     required this.email,
     required this.role,
     required this.location,
+    this.country = '',
     required this.isFirstTimeBuyer,
     required this.isVerified,
     this.ghanaCardPhotoUrl,
@@ -51,6 +54,8 @@ class RegisterUserParams {
   final String phone;
   final String? email;
   final String location;
+  /// ISO 3166-1 alpha-2; empty string when not collected yet.
+  final String country;
   final bool isFirstTimeBuyer;
 
   const RegisterUserParams({
@@ -59,6 +64,7 @@ class RegisterUserParams {
     required this.phone,
     required this.email,
     required this.location,
+    this.country = '',
     required this.isFirstTimeBuyer,
   });
 }

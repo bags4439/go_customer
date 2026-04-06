@@ -48,11 +48,14 @@ abstract class AuthRepository {
     required String smsCode,
   });
 
-  /// Saves the user's full name and generates a
-  /// unique referral code. Returns the generated code.
+  /// Saves the user's full name, country, and
+  /// preferred currency (derived from country).
+  /// Generates a unique referral code.
+  /// Returns the generated referral code.
   Future<Either<Failure, String>> completeProfile({
     required String uid,
     required String fullName,
+    required String country,
   });
 
   /// Saves Ghana card details.
