@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../data/services/paystack_payment_service.dart';
 import '../../domain/entities/payment_request.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -29,6 +30,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currency = ref.watch(preferredCurrencyProvider);
     final requestAsync = ref.watch(paymentRequestProvider(widget.requestId));
     final selectedMethod = ref.watch(selectedPaymentMethodProvider);
     final momoNumber = ref.watch(momoNumberProvider);
@@ -59,7 +61,10 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               onPressed: () => context.pop(),
             ),
             title: Text(
-              '$typeLabel · ${CurrencyFormatter.formatGhs(request.totalGhs)}',
+              '$typeLabel · ${CurrencyFormatter.formatForDisplay(
+                usdAmount: request.totalGhs,
+                preferredCurrency: currency,
+              ).primary}',
               style: const TextStyle(color: Colors.black87, fontSize: 16),
             ),
             centerTitle: true,
@@ -151,11 +156,24 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                   ),
                   child: Column(
                     children: [
-                      _SummaryRow('Amount', CurrencyFormatter.formatGhs(request.totalGhs)),
+                      _SummaryRow(
+                        'Amount',
+                        CurrencyFormatter.format(
+                          request.totalGhs * currency.usdToRate,
+                          currency,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      _SummaryRow('Processing fee', CurrencyFormatter.formatGhs(processingFee)),
+                      const _SummaryRow('Processing fee', 'Free'),
                       const Divider(color: Color(0xFFE0DFD8)),
-                      _SummaryRow('Total', CurrencyFormatter.formatGhs(total), bold: true),
+                      _SummaryRow(
+                        'Total',
+                        CurrencyFormatter.format(
+                          total * currency.usdToRate,
+                          currency,
+                        ),
+                        bold: true,
+                      ),
                     ],
                   ),
                 ),
@@ -171,7 +189,12 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey,
                     ),
-                    child: Text('Confirm & pay ${CurrencyFormatter.formatGhs(total)} →'),
+                    child: Text(
+                      'Confirm & pay ${CurrencyFormatter.format(
+                        total * currency.usdToRate,
+                        currency,
+                      )} →',
+                    ),
                   ),
                 ),
               ],

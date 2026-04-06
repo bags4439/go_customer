@@ -33,6 +33,7 @@ mixin _$UserModel {
   bool get isVerified => throw _privateConstructorUsedError;
   String? get ghanaCardPhotoUrl => throw _privateConstructorUsedError;
   String? get ghanaCardNumber => throw _privateConstructorUsedError;
+  String get idDocumentType => throw _privateConstructorUsedError;
   String get preferredCurrency => throw _privateConstructorUsedError;
   String get preferredLanguage => throw _privateConstructorUsedError;
   String get referralCode => throw _privateConstructorUsedError;
@@ -70,6 +71,7 @@ abstract class $UserModelCopyWith<$Res> {
     bool isVerified,
     String? ghanaCardPhotoUrl,
     String? ghanaCardNumber,
+    String idDocumentType,
     String preferredCurrency,
     String preferredLanguage,
     String referralCode,
@@ -107,6 +109,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? isVerified = null,
     Object? ghanaCardPhotoUrl = freezed,
     Object? ghanaCardNumber = freezed,
+    Object? idDocumentType = null,
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
     Object? referralCode = null,
@@ -162,6 +165,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.ghanaCardNumber
                 : ghanaCardNumber // ignore: cast_nullable_to_non_nullable
                       as String?,
+            idDocumentType: null == idDocumentType
+                ? _value.idDocumentType
+                : idDocumentType // ignore: cast_nullable_to_non_nullable
+                      as String,
             preferredCurrency: null == preferredCurrency
                 ? _value.preferredCurrency
                 : preferredCurrency // ignore: cast_nullable_to_non_nullable
@@ -221,6 +228,7 @@ abstract class _$$UserModelImplCopyWith<$Res>
     bool isVerified,
     String? ghanaCardPhotoUrl,
     String? ghanaCardNumber,
+    String idDocumentType,
     String preferredCurrency,
     String preferredLanguage,
     String referralCode,
@@ -257,6 +265,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? isVerified = null,
     Object? ghanaCardPhotoUrl = freezed,
     Object? ghanaCardNumber = freezed,
+    Object? idDocumentType = null,
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
     Object? referralCode = null,
@@ -312,6 +321,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.ghanaCardNumber
             : ghanaCardNumber // ignore: cast_nullable_to_non_nullable
                   as String?,
+        idDocumentType: null == idDocumentType
+            ? _value.idDocumentType
+            : idDocumentType // ignore: cast_nullable_to_non_nullable
+                  as String,
         preferredCurrency: null == preferredCurrency
             ? _value.preferredCurrency
             : preferredCurrency // ignore: cast_nullable_to_non_nullable
@@ -364,6 +377,7 @@ class _$UserModelImpl implements _UserModel {
     this.isVerified = false,
     this.ghanaCardPhotoUrl,
     this.ghanaCardNumber,
+    this.idDocumentType = '',
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
     this.referralCode = '',
@@ -405,6 +419,9 @@ class _$UserModelImpl implements _UserModel {
   final String? ghanaCardNumber;
   @override
   @JsonKey()
+  final String idDocumentType;
+  @override
+  @JsonKey()
   final String preferredCurrency;
   @override
   @JsonKey()
@@ -434,7 +451,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, country: $country, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, country: $country, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, idDocumentType: $idDocumentType, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -459,6 +476,8 @@ class _$UserModelImpl implements _UserModel {
                 other.ghanaCardPhotoUrl == ghanaCardPhotoUrl) &&
             (identical(other.ghanaCardNumber, ghanaCardNumber) ||
                 other.ghanaCardNumber == ghanaCardNumber) &&
+            (identical(other.idDocumentType, idDocumentType) ||
+                other.idDocumentType == idDocumentType) &&
             (identical(other.preferredCurrency, preferredCurrency) ||
                 other.preferredCurrency == preferredCurrency) &&
             (identical(other.preferredLanguage, preferredLanguage) ||
@@ -494,6 +513,7 @@ class _$UserModelImpl implements _UserModel {
     isVerified,
     ghanaCardPhotoUrl,
     ghanaCardNumber,
+    idDocumentType,
     preferredCurrency,
     preferredLanguage,
     referralCode,
@@ -531,6 +551,7 @@ abstract class _UserModel implements UserModel {
     final bool isVerified,
     final String? ghanaCardPhotoUrl,
     final String? ghanaCardNumber,
+    final String idDocumentType,
     final String preferredCurrency,
     final String preferredLanguage,
     final String referralCode,
@@ -566,6 +587,8 @@ abstract class _UserModel implements UserModel {
   String? get ghanaCardPhotoUrl;
   @override
   String? get ghanaCardNumber;
+  @override
+  String get idDocumentType;
   @override
   String get preferredCurrency;
   @override

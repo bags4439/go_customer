@@ -11,10 +11,13 @@ class SaveGhanaCardUseCase {
     required String uid,
     String? idNumber,
     String? photoPath,
-  }) =>
-      _repository.saveGhanaCard(
-        uid: uid,
-        idNumber: idNumber,
-        photoPath: photoPath,
-      );
+    String idDocumentType = 'ghana_card',
+  }) {
+    return _repository.saveGhanaCard(
+      uid: uid,
+      idNumber: idNumber,
+      photoPath: photoPath,
+      idDocumentType: idDocumentType,
+    );
+  }
 }

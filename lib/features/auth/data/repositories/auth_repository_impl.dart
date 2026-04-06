@@ -295,9 +295,12 @@ class AuthRepositoryImpl implements AuthRepository {
     required String uid,
     String? idNumber,
     String? photoPath,
+    String idDocumentType = 'ghana_card',
   }) async {
     try {
-      final data = <String, dynamic>{'updatedAt': FieldValue.serverTimestamp()};
+      final data = <String, dynamic>{
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
 
       if (idNumber != null && idNumber.trim().isNotEmpty) {
         data['ghanaCardNumber'] = idNumber.trim().toUpperCase();
@@ -305,13 +308,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
       if (photoPath != null && photoPath.isNotEmpty) {
         final ref = FirebaseStorage.instance.ref().child(
-          'ghana_cards/$uid.jpg',
+          'id_documents/$uid.jpg',
         );
         await ref.putFile(File(photoPath));
         data['ghanaCardPhotoUrl'] = await ref.getDownloadURL();
       }
 
       if (data.length > 1) {
+        data['idDocumentType'] = idDocumentType;
         await _firestore
             .collection(FirestoreCollections.users)
             .doc(uid)
@@ -321,7 +325,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on FirebaseException catch (e) {
       return Left(
         FirestoreFailure(
-          message: e.message ?? 'Could not save Ghana card.',
+          message: e.message ?? 'Could not save identity document.',
           cause: e,
         ),
       );

@@ -11,6 +11,9 @@ class AppUser {
   final bool isVerified;
   final String? ghanaCardPhotoUrl;
   final String? ghanaCardNumber;
+  /// Type of identity document provided.
+  /// 'ghana_card' | 'passport' | '' (not set)
+  final String idDocumentType;
   final String preferredCurrency;
   final String preferredLanguage;
   final Map<String, bool> notificationPreferences;
@@ -28,6 +31,7 @@ class AppUser {
     required this.isVerified,
     this.ghanaCardPhotoUrl,
     this.ghanaCardNumber,
+    this.idDocumentType = '',
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
     this.referralCode = '',
@@ -41,11 +45,30 @@ class AppUser {
              'promotionsAndNews': false,
            };
 
-  /// True if the user has provided either their
-  /// Ghana card photo or card number.
-  bool get hasGhanaCard =>
+  /// True if the user has provided any identity document.
+  bool get hasIdDocument =>
       (ghanaCardPhotoUrl != null && ghanaCardPhotoUrl!.isNotEmpty) ||
       (ghanaCardNumber != null && ghanaCardNumber!.isNotEmpty);
+
+  /// Alias for [hasIdDocument] (backward compatibility).
+  bool get hasGhanaCard => hasIdDocument;
+
+  /// Returns true if user is Ghanaian.
+  bool get isGhanaian => country == 'GH';
+
+  /// The correct document type label for this user based on their country.
+  String get idDocumentLabel => isGhanaian ? 'Ghana Card' : 'Passport';
+
+  /// The correct number label for this user.
+  String get idNumberLabel =>
+      isGhanaian ? 'Ghana Card number' : 'Passport number';
+
+  /// The correct number hint for this user.
+  String get idNumberHint => isGhanaian ? 'GHA-XXXXXXXXX-X' : 'A12345678';
+
+  /// The resolved document type for saving.
+  String get resolvedDocumentType =>
+      isGhanaian ? 'ghana_card' : 'passport';
 }
 
 class RegisterUserParams {

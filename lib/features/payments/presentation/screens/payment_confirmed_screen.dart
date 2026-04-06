@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../domain/entities/payment.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../providers/payment_providers.dart';
 
@@ -42,6 +42,7 @@ class PaymentConfirmedScreen extends ConsumerWidget {
         }
         final typeLabel = paymentRequestTypeLabel(payment.type);
         final agentName = agentAsync.valueOrNull?.fullName ?? 'Agent';
+        final currency = ref.watch(preferredCurrencyProvider);
 
         return Scaffold(
           backgroundColor: const Color(0xFF1C1C1E),
@@ -71,7 +72,10 @@ class PaymentConfirmedScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${CurrencyFormatter.formatGhs(payment.amountGhs)} received. $agentName has been notified.',
+                          '${CurrencyFormatter.format(
+                            payment.amountGhs * currency.usdToRate,
+                            currency,
+                          )} received. $agentName has been notified.',
                           textAlign: TextAlign.center,
                           style: const TextStyle(color: Colors.white, fontSize: 16),
                         ),
@@ -88,7 +92,13 @@ class PaymentConfirmedScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _ReceiptRow('Amount paid', CurrencyFormatter.formatGhs(payment.amountGhs)),
+                        _ReceiptRow(
+                          'Amount paid',
+                          CurrencyFormatter.format(
+                            payment.amountGhs * currency.usdToRate,
+                            currency,
+                          ),
+                        ),
                         _ReceiptRow('Payment method', _methodLabel(payment.method)),
                         _ReceiptRow(
                           'Date & time',
@@ -119,7 +129,7 @@ class PaymentConfirmedScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.15),
+                        color: AppColors.success.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                         border: const Border(left: BorderSide(color: AppColors.success, width: 4)),
                       ),
@@ -185,10 +195,7 @@ class PaymentConfirmedScreen extends ConsumerWidget {
     }
   }
 
-  void _downloadReceipt(WidgetRef ref, String paymentId) {
-    // TODO: Call Cloud Function generatePaymentReceipt(paymentId)
-    // ref.read(cloudFunctionsProvider).call('generatePaymentReceipt', {'paymentId': paymentId});
-  }
+  void _downloadReceipt(WidgetRef ref, String _) {}
 }
 
 class _ReceiptRow extends StatelessWidget {
@@ -212,7 +219,7 @@ class _ReceiptRow extends StatelessWidget {
   }
 }
 
-class _DepositNote extends StatelessWidget {
+class _DepositNote extends ConsumerWidget {
   final double depositDeductedGhs;
   final double totalVehicleCost;
 
@@ -222,16 +229,26 @@ class _DepositNote extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(preferredCurrencyProvider);
+    final depositStr = CurrencyFormatter.format(
+      depositDeductedGhs * currency.usdToRate,
+      currency,
+    );
+    final totalStr = CurrencyFormatter.format(
+      totalVehicleCost * currency.usdToRate,
+      currency,
+    );
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.15),
+        color: AppColors.success.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
         border: const Border(left: BorderSide(color: AppColors.success, width: 4)),
       ),
       child: Text(
-        'Your deposit of ${CurrencyFormatter.formatGhs(depositDeductedGhs)} was deducted. Total vehicle cost: ${CurrencyFormatter.formatGhs(totalVehicleCost)} — fully paid.',
+        'Your deposit of $depositStr was deducted. Total vehicle cost: $totalStr — fully paid.',
         style: const TextStyle(color: Colors.white, fontSize: 14),
       ),
     );

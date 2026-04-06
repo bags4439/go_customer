@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../orders/core/constants/order_timeline_constants.dart';
 import '../../data/models/payment_request_model.dart';
@@ -20,7 +22,7 @@ const _kDanger = 0xFFE24B4A;
 const _kWarn = 0xFFBA7517;
 
 /// Timeline-embedded payment request card with breakdown, invoice, deadline.
-class PaymentRequestCard extends StatefulWidget {
+class PaymentRequestCard extends ConsumerStatefulWidget {
   final PaymentRequestModel paymentRequest;
   final String orderId;
 
@@ -31,10 +33,11 @@ class PaymentRequestCard extends StatefulWidget {
   });
 
   @override
-  State<PaymentRequestCard> createState() => _PaymentRequestCardState();
+  ConsumerState<PaymentRequestCard> createState() =>
+      _PaymentRequestCardState();
 }
 
-class _PaymentRequestCardState extends State<PaymentRequestCard> {
+class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
   bool _breakdownExpanded = false;
   double _opacity = 0;
   bool _payLoading = false;
@@ -42,9 +45,6 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
   @override
   void initState() {
     super.initState();
-    print(
-      'payment type: ${widget.paymentRequest.type.firestoreValue}, label: ${widget.paymentRequest.type.label}',
-    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() => _opacity = 1);
     });
@@ -58,8 +58,6 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
       widget.paymentRequest.type.label;
 
   PaymentRequestModel get pr => widget.paymentRequest;
-
-  bool get _showUsdNote => pr.totalUsd != null;
 
   Widget _deadlineRow(DateTime? deadline) {
     if (deadline == null) return const SizedBox.shrink();
@@ -134,6 +132,11 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
 
   @override
   Widget build(BuildContext context) {
+    final currency = ref.watch(preferredCurrencyProvider);
+    final display = CurrencyFormatter.formatForDisplay(
+      usdAmount: pr.totalGhs,
+      preferredCurrency: currency,
+    );
     final hasBreakdown = pr.breakdownJson.isNotEmpty;
 
     return AnimatedOpacity(
@@ -212,14 +215,29 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                     const SizedBox(height: 2),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
-                      child: Text(
-                        CurrencyFormatter.formatGhs(pr.totalGhs),
+                      child: Column(
                         key: ValueKey(pr.totalGhs),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(_kPrimary),
-                        ),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            display.primary,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(_kPrimary),
+                            ),
+                          ),
+                          if (display.hasSecondary) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              display.secondary!,
+                              style: GoogleFonts.dmSans(
+                                fontSize: 12,
+                                color: const Color(_kTextTertiary),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     if (hasBreakdown) ...[
@@ -280,8 +298,9 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                                             ),
                                           ),
                                           Text(
-                                            CurrencyFormatter.formatGhs(
-                                              b.amountGhs,
+                                            CurrencyFormatter.format(
+                                              b.amountGhs * currency.usdToRate,
+                                              currency,
                                             ),
                                             style: GoogleFonts.dmSans(
                                               fontSize: 12,
@@ -308,9 +327,7 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                                         ),
                                       ),
                                       Text(
-                                        CurrencyFormatter.formatGhs(
-                                          pr.totalGhs,
-                                        ),
+                                        display.primary,
                                         style: GoogleFonts.dmSans(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -358,16 +375,6 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                       ),
                     ],
                     _deadlineRow(pr.deadlineAt),
-                    if (_showUsdNote && pr.exchangeRate != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        '${OrderTimelineConstants.atRateNote}${pr.exchangeRate!.toStringAsFixed(2)}',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 10,
-                          color: const Color(_kTextTertiary),
-                        ),
-                      ),
-                    ],
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
@@ -381,8 +388,9 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                                 context.push(
                                   '/order/${widget.orderId}/payment-request/${pr.id}',
                                 );
-                                if (mounted)
+                                if (mounted) {
                                   setState(() => _payLoading = false);
+                                }
                               },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(_kPrimary),
@@ -400,10 +408,7 @@ class _PaymentRequestCardState extends State<PaymentRequestCard> {
                             : Text(
                                 OrderTimelineConstants.payNowButton
                                     .replaceAll('[label]', _typeLabel)
-                                    .replaceAll(
-                                      '[amount]',
-                                      CurrencyFormatter.formatGhs(pr.totalGhs),
-                                    ),
+                                    .replaceAll('[amount]', display.primary),
                                 style: GoogleFonts.dmSans(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,

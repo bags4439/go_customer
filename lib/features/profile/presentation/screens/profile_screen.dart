@@ -210,7 +210,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                         if (!user.hasGhanaCard) ...[
                           const SizedBox(height: 12),
-                          IdVerificationBanner(pulse: _pulseController),
+                          IdVerificationBanner(
+                            pulse: _pulseController,
+                            user: user,
+                          ),
                         ],
                         _AnimatedSection(
                           index: 1,

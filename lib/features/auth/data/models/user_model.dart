@@ -20,6 +20,7 @@ class UserModel with _$UserModel {
     @Default(false) bool isVerified,
     String? ghanaCardPhotoUrl,
     String? ghanaCardNumber,
+    @Default('') String idDocumentType,
     @Default('GHS') String preferredCurrency,
     @Default('en') String preferredLanguage,
     @Default('') String referralCode,
@@ -57,6 +58,7 @@ class UserModel with _$UserModel {
       ghanaCardPhotoUrl:
           data['ghanaCardPhotoUrl'] as String? ?? data['ghanaidUrl'] as String?,
       ghanaCardNumber: data['ghanaCardNumber'] as String?,
+      idDocumentType: data['idDocumentType'] as String? ?? '',
       preferredCurrency: data['preferredCurrency'] as String? ?? 'GHS',
       preferredLanguage: data['preferredLanguage'] as String? ?? 'en',
       referralCode: data['referralCode'] as String? ?? '',
@@ -116,6 +118,7 @@ extension UserModelX on UserModel {
       isVerified: isVerified,
       ghanaCardPhotoUrl: ghanaCardPhotoUrl,
       ghanaCardNumber: ghanaCardNumber,
+      idDocumentType: idDocumentType,
       preferredCurrency: preferredCurrency,
       preferredLanguage: preferredLanguage,
       referralCode: referralCode,

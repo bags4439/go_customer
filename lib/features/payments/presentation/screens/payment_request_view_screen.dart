@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../domain/entities/breakdown_item.dart';
 import '../../domain/entities/payment_request.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
@@ -181,15 +183,18 @@ class _AgentHeader extends ConsumerWidget {
   }
 }
 
-class _AmountHero extends StatelessWidget {
-  final PaymentRequest request;
-
+class _AmountHero extends ConsumerWidget {
   const _AmountHero({required this.request});
 
+  final PaymentRequest request;
+
   @override
-  Widget build(BuildContext context) {
-    final rate = request.exchangeRate > 0 ? request.exchangeRate : 15.40;
-    final usdEquivalent = CurrencyFormatter.ghsToUsd(request.totalGhs, rate);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(preferredCurrencyProvider);
+    final display = CurrencyFormatter.formatForDisplay(
+      usdAmount: request.totalGhs,
+      preferredCurrency: currency,
+    );
     final deadlineWidget = request.deadlineAt != null
         ? _DeadlinePill(deadlineAt: request.deadlineAt!)
         : const SizedBox.shrink();
@@ -197,24 +202,34 @@ class _AmountHero extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'AMOUNT DUE',
-          style: TextStyle(color: Colors.black54, fontSize: 12),
-        ),
-        const SizedBox(height: 4),
         Text(
-          CurrencyFormatter.formatGhs(request.totalGhs),
-          style: const TextStyle(
-            color: Colors.black87,
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
+          'AMOUNT DUE',
+          style: GoogleFonts.dmSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textTertiary,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
-          '~${CurrencyFormatter.formatUsd(usdEquivalent)} at GHS ${rate.toStringAsFixed(2)}',
-          style: const TextStyle(color: Colors.black54, fontSize: 14),
+          display.primary,
+          style: GoogleFonts.dmSans(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
         ),
+        if (display.hasSecondary) ...[
+          const SizedBox(height: 4),
+          Text(
+            display.secondary!,
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         deadlineWidget,
       ],
@@ -286,13 +301,19 @@ class _DeadlinePillState extends State<_DeadlinePill> with SingleTickerProviderS
   }
 }
 
-class _BreakdownSection extends StatelessWidget {
+class _BreakdownSection extends ConsumerWidget {
   final PaymentRequest request;
 
   const _BreakdownSection({required this.request});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(preferredCurrencyProvider);
+    final totalPrimary = CurrencyFormatter.formatForDisplay(
+      usdAmount: request.totalGhs,
+      preferredCurrency: currency,
+    ).primary;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -311,13 +332,14 @@ class _BreakdownSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  CurrencyFormatter.formatGhs(request.totalGhs),
+                  totalPrimary,
                   style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 18),
                 ),
-                Text(
-                  '~${CurrencyFormatter.formatUsd(request.totalUsd)}',
-                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                ),
+                if (currency.code != 'USD')
+                  Text(
+                    '≈ ${CurrencyFormatter.formatUsd(request.totalGhs)}',
+                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                  ),
               ],
             ),
           ],
@@ -327,21 +349,21 @@ class _BreakdownSection extends StatelessWidget {
   }
 }
 
-class _BreakdownRow extends StatelessWidget {
+class _BreakdownRow extends ConsumerWidget {
   final BreakdownItem item;
 
   const _BreakdownRow({required this.item});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(preferredCurrencyProvider);
     final isDeduction = item.isDeduction;
     final color = isDeduction ? AppColors.success : Colors.black87;
-    final ghsStr = isDeduction
-        ? '−${CurrencyFormatter.formatGhs(item.amountGhs)}'
-        : CurrencyFormatter.formatGhs(item.amountGhs);
-    final usdStr = isDeduction
-        ? '−${CurrencyFormatter.formatUsd(item.amountUsd)}'
-        : CurrencyFormatter.formatUsd(item.amountUsd);
+
+    final converted = item.amountGhs * currency.usdToRate;
+    final formattedStr = isDeduction
+        ? '−${CurrencyFormatter.format(converted, currency)}'
+        : CurrencyFormatter.format(converted, currency);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -355,7 +377,7 @@ class _BreakdownRow extends StatelessWidget {
             ),
           ),
           Text(
-            '$usdStr / $ghsStr',
+            formattedStr,
             style: TextStyle(color: color, fontSize: 14),
           ),
         ],
@@ -364,13 +386,19 @@ class _BreakdownRow extends StatelessWidget {
   }
 }
 
-class _DepositClarityNote extends StatelessWidget {
+class _DepositClarityNote extends ConsumerWidget {
   final double depositDeductedGhs;
 
   const _DepositClarityNote({required this.depositDeductedGhs});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(preferredCurrencyProvider);
+    final depositFormatted = CurrencyFormatter.format(
+      depositDeductedGhs * currency.usdToRate,
+      currency,
+    );
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -379,7 +407,7 @@ class _DepositClarityNote extends StatelessWidget {
         border: const Border(left: BorderSide(color: AppColors.success, width: 4)),
       ),
       child: Text(
-        'Your 10% deposit of ${CurrencyFormatter.formatGhs(depositDeductedGhs)} has been deducted from the vehicle purchase price. You are only paying the remaining balance.',
+        'Your 10% deposit of $depositFormatted has been deducted from the vehicle purchase price. You are only paying the remaining balance.',
         style: const TextStyle(color: Colors.black87, fontSize: 14),
       ),
     );

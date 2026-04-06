@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../vehicle_options/data/models/vehicle_option_model.dart';
 import '../../data/datasources/vehicle_firestore_data_source.dart';
@@ -52,7 +50,6 @@ class ReadOnlyVehicleCost {
   final double premiumUsd;
   final double fixedFeesUsd;
   final double totalUsd;
-  final double? rate;
 
   const ReadOnlyVehicleCost({
     required this.isBuyItNow,
@@ -60,21 +57,9 @@ class ReadOnlyVehicleCost {
     required this.premiumUsd,
     required this.fixedFeesUsd,
     required this.totalUsd,
-    required this.rate,
   });
 
-  bool get isRateAvailable => rate != null && rate! > 0;
-
-  String? ghsText(double usdAmount) {
-    final r = rate;
-    if (r == null || r <= 0) return null;
-    return CurrencyFormatter.formatGhs(usdAmount * r);
-  }
-
-  static ReadOnlyVehicleCost? fromOption(
-    VehicleOptionEntity? option,
-    double? rate,
-  ) {
+  static ReadOnlyVehicleCost? fromOption(VehicleOptionEntity? option) {
     if (option == null) return null;
     final pct = (option.buyersPremiumPct ?? 0) / 100.0;
     final fixed = option.fixedPlatformFeesUsd ?? 0.0;
@@ -91,7 +76,6 @@ class ReadOnlyVehicleCost {
       premiumUsd: premium,
       fixedFeesUsd: fixed,
       totalUsd: total,
-      rate: rate,
     );
   }
 }
@@ -101,8 +85,7 @@ final readOnlyVehicleCostProvider =
       final option = ref
           .watch(vehicleOptionStreamProvider(vehicleOptionId))
           .valueOrNull;
-      final rate = ref.watch(exchangeRateProvider).valueOrNull?.usdToGhs;
-      return ReadOnlyVehicleCost.fromOption(option, rate);
+      return ReadOnlyVehicleCost.fromOption(option);
     });
 
 /// Agent info for vehicle detail (name, initials) from vehicle's agentId.

@@ -11,6 +11,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
 import '../../../guide/core/constants/guide_keys.dart';

@@ -58,13 +58,14 @@ abstract class AuthRepository {
     required String country,
   });
 
-  /// Saves Ghana card details.
-  /// Both idNumber and photoPath are optional.
-  /// Uploads photo to Firebase Storage if photoPath
-  /// is provided.
+  /// Saves identity document details.
+  /// Supports both Ghana Card and Passport.
+  /// idNumber and photoPath are optional.
+  /// Uploads photo to Firebase Storage if photoPath is provided.
   Future<Either<Failure, Unit>> saveGhanaCard({
     required String uid,
     String? idNumber,
     String? photoPath,
+    String idDocumentType = 'ghana_card',
   });
 }

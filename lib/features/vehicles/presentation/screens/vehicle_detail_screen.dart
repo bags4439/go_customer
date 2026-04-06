@@ -7,9 +7,10 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/models/currency_model.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/exchange_rate_provider.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../core/constants/vehicle_detail_constants.dart';
 import '../../domain/entities/vehicle_option_entity.dart';
 import '../providers/vehicle_detail_providers.dart';
@@ -958,9 +959,7 @@ class _ReadOnlyCostCard extends ConsumerWidget {
     final option = ref
         .watch(vehicleOptionStreamProvider(vehicleOptionId))
         .valueOrNull;
-    final rateAsync = ref.watch(exchangeRateProvider);
-    final rate = rateAsync.valueOrNull?.usdToGhs;
-    final rOk = rate != null && rate > 0;
+    final currency = ref.watch(preferredCurrencyProvider);
 
     if (option == null || cost == null || cost.listPriceUsd == null) {
       return const SizedBox.shrink();
@@ -979,27 +978,24 @@ class _ReadOnlyCostCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _usdGhsRow(
+          _currencyRow(
             cost.isBuyItNow
                 ? 'Buy It Now price'
                 : VehicleDetailConstants.auctionPriceLabel,
             list,
-            rOk,
-            rate,
+            currency,
           ),
           const SizedBox(height: 10),
-          _usdGhsRow(
-            "${VehicleDetailConstants.buyersPremium} ($pctLabel%)",
+          _currencyRow(
+            '${VehicleDetailConstants.buyersPremium} ($pctLabel%)',
             cost.premiumUsd,
-            rOk,
-            rate,
+            currency,
           ),
           const SizedBox(height: 10),
-          _usdGhsRow(
+          _currencyRow(
             VehicleDetailConstants.copartIaaFees,
             cost.fixedFeesUsd,
-            rOk,
-            rate,
+            currency,
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -1022,26 +1018,33 @@ class _ReadOnlyCostCard extends ConsumerWidget {
                   ),
                 ),
               ),
-              Text(
-                rOk
-                    ? CurrencyFormatter.formatGhs(cost.totalUsd * rate)
-                    : VehicleDetailConstants.rateUnavailable,
-                style: GoogleFonts.dmSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(_kSuccess),
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    CurrencyFormatter.format(
+                      cost.totalUsd * currency.usdToRate,
+                      currency,
+                    ),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(_kSuccess),
+                    ),
+                  ),
+                  if (currency.code != 'USD') ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '≈ ${CurrencyFormatter.formatUsd(cost.totalUsd)}',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 11,
+                        color: const Color(_kTextTertiary),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${VehicleDetailConstants.atRateNote}${rate?.toStringAsFixed(2) ?? '—'}',
-            style: GoogleFonts.dmSans(
-              fontSize: 10,
-              color: const Color(_kTextTertiary),
-            ),
-            textAlign: TextAlign.right,
           ),
           const SizedBox(height: 10),
           Container(
@@ -1080,7 +1083,12 @@ class _ReadOnlyCostCard extends ConsumerWidget {
     );
   }
 
-  Widget _usdGhsRow(String label, double usd, bool rOk, double? rate) {
+  Widget _currencyRow(
+    String label,
+    double usdAmount,
+    CurrencyModel currency,
+  ) {
+    final converted = usdAmount * currency.usdToRate;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1097,22 +1105,21 @@ class _ReadOnlyCostCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              CurrencyFormatter.formatUsd(usd),
+              CurrencyFormatter.format(converted, currency),
               style: GoogleFonts.dmSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),
             ),
-            Text(
-              rOk && rate != null
-                  ? CurrencyFormatter.formatGhs(usd * rate)
-                  : VehicleDetailConstants.rateUnavailable,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                color: const Color(_kTextSecondary),
+            if (currency.code != 'USD')
+              Text(
+                '≈ ${CurrencyFormatter.formatUsd(usdAmount)}',
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  color: const Color(_kTextTertiary),
+                ),
               ),
-            ),
           ],
         ),
       ],

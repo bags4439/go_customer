@@ -235,6 +235,10 @@ class GhanaCardNotifier extends StateNotifier<GhanaCardState> {
     final uid = _ref.read(authStateProvider).value;
     if (uid == null) return;
 
+    final profileUser = _ref.read(currentUserProfileProvider).valueOrNull;
+    final docType =
+        profileUser?.resolvedDocumentType ?? 'ghana_card';
+
     final number = state.cardNumber.trim();
     final photo = state.photoPath;
 
@@ -250,6 +254,7 @@ class GhanaCardNotifier extends StateNotifier<GhanaCardState> {
       uid: uid,
       idNumber: number.isEmpty ? null : number,
       photoPath: photo,
+      idDocumentType: docType,
     );
 
     result.fold(

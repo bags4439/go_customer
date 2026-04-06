@@ -6,11 +6,21 @@ import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/domain/entities/app_user.dart';
 
-/// Tappable row linking to Ghana Card add/update from profile personal details.
+/// Tappable row linking to identity document add/update from profile.
 class GhanaCardProfileRow extends StatelessWidget {
   const GhanaCardProfileRow({super.key, required this.user});
 
   final AppUser user;
+
+  String get _label {
+    if (user.idDocumentType == 'passport') {
+      return 'Passport';
+    }
+    if (user.country == 'GH' || user.idDocumentType == 'ghana_card') {
+      return 'Ghana Card';
+    }
+    return user.isGhanaian ? 'Ghana Card' : 'Passport';
+  }
 
   String get _valueLabel {
     final n = user.ghanaCardNumber?.trim() ?? '';
@@ -18,11 +28,11 @@ class GhanaCardProfileRow extends StatelessWidget {
       return '···${n.substring(n.length - 4)}';
     }
     if (n.isNotEmpty) return n;
-    if (user.hasGhanaCard) return 'Photo on file';
+    if (user.hasIdDocument) return 'Photo on file';
     return 'Not added';
   }
 
-  bool get _hasValue => user.hasGhanaCard;
+  bool get _hasValue => user.hasIdDocument;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +51,7 @@ class GhanaCardProfileRow extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Ghana Card',
+                      _label,
                       style: GoogleFonts.dmSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,

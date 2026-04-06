@@ -30,6 +30,7 @@ class LoginState with _$LoginState {
     @Default('') String referralCode,
     @Default('') String ghanaCardNumber,
     String? ghanaCardPhotoPath,
+    @Default('ghana_card') String idDocumentType,
 
     // Step and navigation
     @Default(LoginStep.phone) LoginStep step,

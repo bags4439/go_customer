@@ -398,14 +398,23 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-class _PaymentInlineCta extends StatelessWidget {
+class _PaymentInlineCta extends ConsumerWidget {
   final PaymentRequestView payment;
   final String orderId;
 
-  const _PaymentInlineCta({required this.payment, required this.orderId});
+  const _PaymentInlineCta({
+    required this.payment,
+    required this.orderId,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(preferredCurrencyProvider);
+    final display = CurrencyFormatter.formatForDisplay(
+      usdAmount: payment.totalGhs,
+      preferredCurrency: currency,
+    );
+
     return Container(
       decoration: BoxDecoration(
         color: _C.primary,
@@ -419,13 +428,23 @@ class _PaymentInlineCta extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  CurrencyFormatter.formatGhs(payment.totalGhs),
+                  display.primary,
                   style: _ts(
                     size: 14,
                     weight: FontWeight.w600,
                     color: Colors.white,
                   ),
                 ),
+                if (display.hasSecondary) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    display.secondary!,
+                    style: _ts(
+                      size: 10,
+                      color: Colors.white.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 2),
                 Text(
                   AppConstants.paymentRequestTypeLabels[payment.type] ??

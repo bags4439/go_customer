@@ -2135,6 +2135,11 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
       ),
     );
     _ac.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.notifier.updateIdDocumentType(
+        widget.state.country == 'GH' ? 'ghana_card' : 'passport',
+      );
+    });
   }
 
   @override
@@ -2166,6 +2171,16 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
   Widget build(BuildContext context) {
     final state = widget.state;
     final notifier = widget.notifier;
+    final isGhanaian = state.country == 'GH';
+    final docLabel = isGhanaian ? 'Ghana Card' : 'Passport';
+    final numberLabel = isGhanaian
+        ? 'GHANA CARD NUMBER (OPTIONAL)'
+        : 'PASSPORT NUMBER (OPTIONAL)';
+    final numberHint = isGhanaian ? 'GHA-XXXXXXXXX-X' : 'A12345678';
+    final photoLabel = isGhanaian
+        ? 'PHOTO OF GHANA CARD (OPTIONAL)'
+        : 'PHOTO OF PASSPORT (OPTIONAL)';
+    final emoji = isGhanaian ? '🪪' : '🛂';
     final cardError = state.error != null &&
         state.step == LoginStep.ghanaCard;
 
@@ -2182,8 +2197,11 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
             opacity: _emojiFade,
             child: ScaleTransition(
               scale: _emojiScale,
-              child: const Center(
-                child: Text('🪪', style: TextStyle(fontSize: 44)),
+              child: Center(
+                child: Text(
+                  emoji,
+                  style: const TextStyle(fontSize: 44),
+                ),
               ),
             ),
           ),
@@ -2202,7 +2220,9 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Optional — you can add this from your profile anytime.',
+                  'Add your $docLabel to help your agent verify your '
+                  'identity. Optional — you can do this from your profile '
+                  'anytime.',
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -2220,7 +2240,7 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'GHANA CARD NUMBER (OPTIONAL)',
+                  numberLabel,
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -2230,14 +2250,14 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
                 ),
                 const SizedBox(height: 8),
                 _StyledTextField(
-                  hintText: 'GHA-XXXXXXXXX-X',
+                  hintText: numberHint,
                   controller: _cardCtrl,
                   textCapitalization: TextCapitalization.characters,
                   textInputAction: TextInputAction.next,
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'PHOTO OF GHANA CARD (OPTIONAL)',
+                  photoLabel,
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,

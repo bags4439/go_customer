@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../domain/entities/payment_request_view.dart';
-
-String formatOrderDetailGhs(double value) {
-  return 'GHS ${value.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
-}
 
 String? formatOrderDetailDeadline(DateTime deadlineAt) {
   final now = DateTime.now();
   final diff = deadlineAt.difference(now);
   final days = diff.inDays;
-  if (days <= 0) return 'Pay today · avoid storage charges';
-  if (days == 1) return 'Pay within 1 day · avoid storage charges';
+  if (days <= 0) {
+    return 'Pay today · avoid storage charges';
+  }
+  if (days == 1) {
+    return 'Pay within 1 day · avoid storage charges';
+  }
   return 'Pay within $days days · avoid storage charges';
 }
 
 /// Gradient payment CTA for order overview.
-class OrderDetailPaymentCard extends StatelessWidget {
-  final PaymentRequestView payment;
-  final String typeLabel;
-  final String? deadlineText;
-  final VoidCallback onPayPressed;
-
+/// Displays amount in user's preferred currency
+/// with USD equivalent secondary.
+class OrderDetailPaymentCard extends ConsumerWidget {
   const OrderDetailPaymentCard({
     super.key,
     required this.payment,
@@ -32,8 +32,19 @@ class OrderDetailPaymentCard extends StatelessWidget {
     required this.onPayPressed,
   });
 
+  final PaymentRequestView payment;
+  final String typeLabel;
+  final String? deadlineText;
+  final VoidCallback onPayPressed;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(preferredCurrencyProvider);
+    final display = CurrencyFormatter.formatForDisplay(
+      usdAmount: payment.totalGhs,
+      preferredCurrency: currency,
+    );
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -41,7 +52,10 @@ class OrderDetailPaymentCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.secondary, AppColors.infoText],
+          colors: [
+            AppColors.secondary,
+            AppColors.infoText,
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -80,14 +94,24 @@ class OrderDetailPaymentCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            formatOrderDetailGhs(payment.totalGhs),
+            display.primary,
             style: GoogleFonts.dmSans(
               fontSize: 28,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 2),
+          if (display.hasSecondary) ...[
+            const SizedBox(height: 2),
+            Text(
+              display.secondary!,
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.70),
+              ),
+            ),
+          ],
+          const SizedBox(height: 4),
           Text(
             typeLabel,
             style: GoogleFonts.dmSans(

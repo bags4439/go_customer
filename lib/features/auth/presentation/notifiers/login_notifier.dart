@@ -47,16 +47,20 @@ class LoginNotifier extends StateNotifier<LoginState> {
   void updateFullName(String v) =>
       state = state.copyWith(fullName: v, error: null);
 
-  void updateCountry(String isoCode) =>
-      state = state.copyWith(
+  void updateCountry(String isoCode) => state = state.copyWith(
         country: isoCode,
         error: null,
+        idDocumentType:
+            isoCode == 'GH' ? 'ghana_card' : 'passport',
       );
 
   void updateReferralCode(String v) => state = state.copyWith(referralCode: v);
 
   void updateGhanaCardNumber(String v) =>
       state = state.copyWith(ghanaCardNumber: v);
+
+  void updateIdDocumentType(String type) =>
+      state = state.copyWith(idDocumentType: type);
 
   void setGhanaCardPhoto(String path) =>
       state = state.copyWith(ghanaCardPhotoPath: path);
@@ -189,7 +193,12 @@ class LoginNotifier extends StateNotifier<LoginState> {
   // ─────────────────────────────────────────────────
 
   void proceedToGhanaCard() {
-    state = state.copyWith(step: LoginStep.ghanaCard, error: null);
+    state = state.copyWith(
+      step: LoginStep.ghanaCard,
+      error: null,
+      idDocumentType:
+          state.country == 'GH' ? 'ghana_card' : 'passport',
+    );
   }
 
   void skipReferral() => proceedToGhanaCard();
@@ -224,6 +233,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
         uid: uid,
         idNumber: idNumber.isEmpty ? null : idNumber,
         photoPath: photoPath,
+        idDocumentType: state.idDocumentType,
       );
       if (!_alive) return;
       if (result.isLeft()) {

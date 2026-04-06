@@ -8,13 +8,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../vehicles/core/constants/vehicle_detail_constants.dart';
 import '../../../vehicles/domain/entities/vehicle_option_entity.dart';
 import '../../../vehicles/presentation/providers/vehicle_detail_providers.dart';
-import '../../../../shared/providers/exchange_rate_provider.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../constants/vehicle_chat_card_constants.dart';
 
 const _kBorder = Color(0xFFE0DFD8);
@@ -597,13 +598,9 @@ class _PricingSummarySection extends ConsumerWidget {
 
   final VehicleOptionEntity vo;
 
-  String _rateUnavailable() => VehicleDetailConstants.rateUnavailable;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rateAsync = ref.watch(exchangeRateProvider);
-    final rate = rateAsync.valueOrNull?.usdToGhs;
-    final rOk = rate != null && rate > 0;
+    final currency = ref.watch(preferredCurrencyProvider);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -613,65 +610,96 @@ class _PricingSummarySection extends ConsumerWidget {
           const Divider(height: 1, thickness: 0.5, color: _kBorder),
           Padding(
             padding: const EdgeInsets.all(12),
-            child: vo.isBuyItNow ? _binRows(vo, rate, rOk) : _auctionRows(vo, rate, rOk),
+            child: vo.isBuyItNow
+                ? _binRows(vo, currency)
+                : _auctionRows(vo, currency),
           ),
         ],
       ),
     );
   }
 
-  Widget _auctionRows(VehicleOptionEntity vo, double? rate, bool rOk) {
+  Widget _auctionRows(VehicleOptionEntity vo, CurrencyModel currency) {
     final auctionUsd = vo.auctionPriceUsd ?? 0;
     final pct = (vo.buyersPremiumPct ?? 0) / 100.0;
     final fixed = vo.fixedPlatformFeesUsd ?? 0;
     final feesUsd = auctionUsd * pct + fixed;
     final totalUsd = auctionUsd + feesUsd;
 
-    String ghs(double usd) => rOk ? CurrencyFormatter.formatGhs(usd * rate!) : _rateUnavailable();
+    String primary(double usd) => CurrencyFormatter.format(
+          usd * currency.usdToRate,
+          currency,
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _priceRow('Auction price', ghs(auctionUsd)),
+        _priceRow('Auction price', primary(auctionUsd)),
         const SizedBox(height: 4),
         _priceRow(
           'Auction fees (est.)',
-          ghs(feesUsd),
+          primary(feesUsd),
           subLabel: "Buyer's premium + Copart/IAAI fees",
         ),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
           child: Divider(height: 0.5, thickness: 0.5, color: _kBorder),
         ),
-        _totalRow('Est. total', ghs(totalUsd)),
+        _totalRow('Est. total', primary(totalUsd)),
+        if (currency.code != 'USD') ...[
+          const SizedBox(height: 4),
+          _secondaryUsdRow(totalUsd),
+        ],
         const SizedBox(height: 8),
         _amberDisclaimer(),
       ],
     );
   }
 
-  Widget _binRows(VehicleOptionEntity vo, double? rate, bool rOk) {
+  Widget _binRows(VehicleOptionEntity vo, CurrencyModel currency) {
     final binUsd = vo.buyItNowPriceUsd ?? vo.auctionPriceUsd ?? 0;
     final pct = (vo.buyersPremiumPct ?? 0) / 100.0;
     final fixed = vo.fixedPlatformFeesUsd ?? 0;
     final feesUsd = binUsd * pct + fixed;
     final totalUsd = binUsd + feesUsd;
 
-    String ghs(double usd) => rOk ? CurrencyFormatter.formatGhs(usd * rate!) : _rateUnavailable();
+    String primary(double usd) => CurrencyFormatter.format(
+          usd * currency.usdToRate,
+          currency,
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _priceRow('Buy It Now price', ghs(binUsd)),
+        _priceRow('Buy It Now price', primary(binUsd)),
         const SizedBox(height: 4),
-        _priceRow('Auction fees', ghs(feesUsd)),
+        _priceRow('Auction fees', primary(feesUsd)),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
           child: Divider(height: 0.5, thickness: 0.5, color: _kBorder),
         ),
-        _totalRow('Total', ghs(totalUsd)),
+        _totalRow('Total', primary(totalUsd)),
+        if (currency.code != 'USD') ...[
+          const SizedBox(height: 4),
+          _secondaryUsdRow(totalUsd),
+        ],
         const SizedBox(height: 8),
         _amberDisclaimer(),
+      ],
+    );
+  }
+
+  Widget _secondaryUsdRow(double usdAmount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Text(
+          '≈ ${CurrencyFormatter.formatUsd(usdAmount)}',
+          style: GoogleFonts.dmSans(
+            fontSize: 11,
+            color: _kTextTertiary,
+          ),
+        ),
       ],
     );
   }

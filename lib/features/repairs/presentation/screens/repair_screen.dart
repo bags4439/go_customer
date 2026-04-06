@@ -6,9 +6,11 @@ import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/providers/guide_providers.dart';
 import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
@@ -61,6 +63,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currency = ref.watch(preferredCurrencyProvider);
     final screenState = ref.watch(repairScreenStateProvider(widget.orderId));
     final jobAsync = ref.watch(repairJobProvider(widget.orderId));
     final dutyAsync = ref.watch(dutyClearanceProvider(widget.orderId));
@@ -144,6 +147,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
                           job: jobAsync.valueOrNull,
                           dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
                           repairOptedIn: repairOptedInAsync.valueOrNull,
+                          currency: currency,
                         ),
                       ),
           ),
@@ -278,6 +282,7 @@ class _RepairBody extends StatelessWidget {
   final RepairJob? job;
   final DateTime? dutyClearedAt;
   final bool? repairOptedIn;
+  final CurrencyModel currency;
 
   const _RepairBody({
     super.key,
@@ -286,6 +291,7 @@ class _RepairBody extends StatelessWidget {
     required this.job,
     required this.dutyClearedAt,
     required this.repairOptedIn,
+    required this.currency,
   });
 
   @override
@@ -298,17 +304,30 @@ class _RepairBody extends StatelessWidget {
           orderId: orderId,
           dutyClearedAt: dutyClearedAt,
           repairOptedIn: repairOptedIn,
+          currency: currency,
         );
       case RepairScreenState.awaitingQuote:
         return _StateAwaitingQuote(orderId: orderId);
       case RepairScreenState.quoteSent:
-        return _State2QuoteReceived(orderId: orderId, job: job!);
+        return _State2QuoteReceived(
+          orderId: orderId,
+          job: job!,
+          currency: currency,
+        );
       case RepairScreenState.quoteDeclined:
         return _State2BQuoteDeclined(orderId: orderId);
       case RepairScreenState.inProgress:
-        return _State3InProgress(orderId: orderId, job: job!);
+        return _State3InProgress(
+          orderId: orderId,
+          job: job!,
+          currency: currency,
+        );
       case RepairScreenState.complete:
-        return _State4Complete(orderId: orderId, job: job!);
+        return _State4Complete(
+          orderId: orderId,
+          job: job!,
+          currency: currency,
+        );
       case RepairScreenState.noRepair:
         return _State5NoRepair(orderId: orderId);
     }
@@ -369,11 +388,13 @@ class _State1Choice extends ConsumerStatefulWidget {
   final String orderId;
   final DateTime? dutyClearedAt;
   final bool? repairOptedIn;
+  final CurrencyModel currency;
 
   const _State1Choice({
     required this.orderId,
     required this.dutyClearedAt,
     required this.repairOptedIn,
+    required this.currency,
   });
 
   @override
@@ -444,7 +465,10 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
     final estimateAsync = ref.watch(repairEstimateProvider(widget.orderId));
     final estimate = estimateAsync.valueOrNull;
     final estimateStr = estimate != null
-        ? '~${CurrencyFormatter.formatGhs(estimate)}'
+        ? '~${CurrencyFormatter.format(
+            estimate * widget.currency.usdToRate,
+            widget.currency,
+          )}'
         : RepairConstants.estVaries;
 
     return SingleChildScrollView(
@@ -898,8 +922,13 @@ class _RepairConfirmButton extends StatelessWidget {
 class _State2QuoteReceived extends ConsumerStatefulWidget {
   final String orderId;
   final RepairJob job;
+  final CurrencyModel currency;
 
-  const _State2QuoteReceived({required this.orderId, required this.job});
+  const _State2QuoteReceived({
+    required this.orderId,
+    required this.job,
+    required this.currency,
+  });
 
   @override
   ConsumerState<_State2QuoteReceived> createState() =>
@@ -1024,14 +1053,17 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                   const SizedBox(height: 8),
                   _QuoteLineRow(
                     label: RepairConstants.platformServiceFeeLabel,
-                    value: CurrencyFormatter.formatGhs(
-                      widget.job.platformServiceFeeGhs!,
+                    value: CurrencyFormatter.format(
+                      widget.job.platformServiceFeeGhs! *
+                          widget.currency.usdToRate,
+                      widget.currency,
                     ),
                   ),
                 ],
                 const Divider(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       RepairConstants.totalLabel,
@@ -1040,17 +1072,37 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Text(
-                      widget.job.totalQuotedGhs != null
-                          ? CurrencyFormatter.formatGhs(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          widget.job.totalQuotedGhs != null
+                              ? CurrencyFormatter.format(
+                                  widget.job.totalQuotedGhs! *
+                                      widget.currency.usdToRate,
+                                  widget.currency,
+                                )
+                              : '—',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                        if (widget.currency.code != 'USD' &&
+                            widget.job.totalQuotedGhs != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '≈ ${CurrencyFormatter.formatUsd(
                               widget.job.totalQuotedGhs!,
-                            )
-                          : '—',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.secondary,
-                      ),
+                            )}',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
@@ -1377,8 +1429,13 @@ class _PulsingDotsState extends State<_PulsingDots>
 class _State3InProgress extends ConsumerStatefulWidget {
   final String orderId;
   final RepairJob job;
+  final CurrencyModel currency;
 
-  const _State3InProgress({required this.orderId, required this.job});
+  const _State3InProgress({
+    required this.orderId,
+    required this.job,
+    required this.currency,
+  });
 
   @override
   ConsumerState<_State3InProgress> createState() => _State3InProgressState();
@@ -1521,7 +1578,11 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
                 _GarageInfoRow(
                   label: RepairConstants.approvedQuoteLabel,
                   value: widget.job.totalQuotedGhs != null
-                      ? CurrencyFormatter.formatGhs(widget.job.totalQuotedGhs!)
+                      ? CurrencyFormatter.format(
+                          widget.job.totalQuotedGhs! *
+                              widget.currency.usdToRate,
+                          widget.currency,
+                        )
                       : '—',
                 ),
               ],
@@ -1608,8 +1669,13 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
 class _State4Complete extends ConsumerStatefulWidget {
   final String orderId;
   final RepairJob job;
+  final CurrencyModel currency;
 
-  const _State4Complete({required this.orderId, required this.job});
+  const _State4Complete({
+    required this.orderId,
+    required this.job,
+    required this.currency,
+  });
 
   @override
   ConsumerState<_State4Complete> createState() => _State4CompleteState();
@@ -1667,7 +1733,7 @@ class _State4CompleteState extends ConsumerState<_State4Complete> {
           ],
           if (_sectionVisible[2]) ...[
             const SizedBox(height: 20),
-            _State4WorkCard(job: widget.job),
+            _State4WorkCard(job: widget.job, currency: widget.currency),
           ],
           if (_sectionVisible[3]) ...[
             const SizedBox(height: 12),
@@ -1982,8 +2048,9 @@ class _RepairPhotoViewerState extends State<_RepairPhotoViewer> {
 
 class _State4WorkCard extends StatelessWidget {
   final RepairJob job;
+  final CurrencyModel currency;
 
-  const _State4WorkCard({required this.job});
+  const _State4WorkCard({required this.job, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -2020,11 +2087,15 @@ class _State4WorkCard extends StatelessWidget {
           if (job.platformServiceFeeGhs != null)
             _DoneRow(
               label:
-                  '${RepairConstants.platformServiceFeeLabel} ${CurrencyFormatter.formatGhs(job.platformServiceFeeGhs!)}',
+                  '${RepairConstants.platformServiceFeeLabel} ${CurrencyFormatter.format(
+                job.platformServiceFeeGhs! * currency.usdToRate,
+                currency,
+              )}',
             ),
           const Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 RepairConstants.totalPaidLabel,
@@ -2033,14 +2104,32 @@ class _State4WorkCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Text(
-                totalPaid != null
-                    ? CurrencyFormatter.formatGhs(totalPaid)
-                    : '—',
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    totalPaid != null
+                        ? CurrencyFormatter.format(
+                            totalPaid * currency.usdToRate,
+                            currency,
+                          )
+                        : '—',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (currency.code != 'USD' && totalPaid != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '≈ ${CurrencyFormatter.formatUsd(totalPaid)}',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),

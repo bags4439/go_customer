@@ -25,7 +25,8 @@ mixin _$LoginState {
   String get country => throw _privateConstructorUsedError;
   String get referralCode => throw _privateConstructorUsedError;
   String get ghanaCardNumber => throw _privateConstructorUsedError;
-  String? get ghanaCardPhotoPath =>
+  String? get ghanaCardPhotoPath => throw _privateConstructorUsedError;
+  String get idDocumentType =>
       throw _privateConstructorUsedError; // Step and navigation
   LoginStep get step => throw _privateConstructorUsedError;
   LoginNav get nav => throw _privateConstructorUsedError; // Loading states
@@ -62,6 +63,7 @@ abstract class $LoginStateCopyWith<$Res> {
     String referralCode,
     String ghanaCardNumber,
     String? ghanaCardPhotoPath,
+    String idDocumentType,
     LoginStep step,
     LoginNav nav,
     bool isLoading,
@@ -96,6 +98,7 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
     Object? referralCode = null,
     Object? ghanaCardNumber = null,
     Object? ghanaCardPhotoPath = freezed,
+    Object? idDocumentType = null,
     Object? step = null,
     Object? nav = null,
     Object? isLoading = null,
@@ -139,6 +142,10 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
                 ? _value.ghanaCardPhotoPath
                 : ghanaCardPhotoPath // ignore: cast_nullable_to_non_nullable
                       as String?,
+            idDocumentType: null == idDocumentType
+                ? _value.idDocumentType
+                : idDocumentType // ignore: cast_nullable_to_non_nullable
+                      as String,
             step: null == step
                 ? _value.step
                 : step // ignore: cast_nullable_to_non_nullable
@@ -195,6 +202,7 @@ abstract class _$$LoginStateImplCopyWith<$Res>
     String referralCode,
     String ghanaCardNumber,
     String? ghanaCardPhotoPath,
+    String idDocumentType,
     LoginStep step,
     LoginNav nav,
     bool isLoading,
@@ -228,6 +236,7 @@ class __$$LoginStateImplCopyWithImpl<$Res>
     Object? referralCode = null,
     Object? ghanaCardNumber = null,
     Object? ghanaCardPhotoPath = freezed,
+    Object? idDocumentType = null,
     Object? step = null,
     Object? nav = null,
     Object? isLoading = null,
@@ -271,6 +280,10 @@ class __$$LoginStateImplCopyWithImpl<$Res>
             ? _value.ghanaCardPhotoPath
             : ghanaCardPhotoPath // ignore: cast_nullable_to_non_nullable
                   as String?,
+        idDocumentType: null == idDocumentType
+            ? _value.idDocumentType
+            : idDocumentType // ignore: cast_nullable_to_non_nullable
+                  as String,
         step: null == step
             ? _value.step
             : step // ignore: cast_nullable_to_non_nullable
@@ -320,6 +333,7 @@ class _$LoginStateImpl implements _LoginState {
     this.referralCode = '',
     this.ghanaCardNumber = '',
     this.ghanaCardPhotoPath,
+    this.idDocumentType = 'ghana_card',
     this.step = LoginStep.phone,
     this.nav = LoginNav.none,
     this.isLoading = false,
@@ -354,6 +368,9 @@ class _$LoginStateImpl implements _LoginState {
   final String ghanaCardNumber;
   @override
   final String? ghanaCardPhotoPath;
+  @override
+  @JsonKey()
+  final String idDocumentType;
   // Step and navigation
   @override
   @JsonKey()
@@ -384,7 +401,7 @@ class _$LoginStateImpl implements _LoginState {
 
   @override
   String toString() {
-    return 'LoginState(phone: $phone, verificationId: $verificationId, otp: $otp, fullName: $fullName, country: $country, referralCode: $referralCode, ghanaCardNumber: $ghanaCardNumber, ghanaCardPhotoPath: $ghanaCardPhotoPath, step: $step, nav: $nav, isLoading: $isLoading, isUploadingPhoto: $isUploadingPhoto, error: $error, generatedReferralCode: $generatedReferralCode, resendCountdown: $resendCountdown, resendEnabled: $resendEnabled)';
+    return 'LoginState(phone: $phone, verificationId: $verificationId, otp: $otp, fullName: $fullName, country: $country, referralCode: $referralCode, ghanaCardNumber: $ghanaCardNumber, ghanaCardPhotoPath: $ghanaCardPhotoPath, idDocumentType: $idDocumentType, step: $step, nav: $nav, isLoading: $isLoading, isUploadingPhoto: $isUploadingPhoto, error: $error, generatedReferralCode: $generatedReferralCode, resendCountdown: $resendCountdown, resendEnabled: $resendEnabled)';
   }
 
   @override
@@ -405,6 +422,8 @@ class _$LoginStateImpl implements _LoginState {
                 other.ghanaCardNumber == ghanaCardNumber) &&
             (identical(other.ghanaCardPhotoPath, ghanaCardPhotoPath) ||
                 other.ghanaCardPhotoPath == ghanaCardPhotoPath) &&
+            (identical(other.idDocumentType, idDocumentType) ||
+                other.idDocumentType == idDocumentType) &&
             (identical(other.step, step) || other.step == step) &&
             (identical(other.nav, nav) || other.nav == nav) &&
             (identical(other.isLoading, isLoading) ||
@@ -431,6 +450,7 @@ class _$LoginStateImpl implements _LoginState {
     referralCode,
     ghanaCardNumber,
     ghanaCardPhotoPath,
+    idDocumentType,
     step,
     nav,
     isLoading,
@@ -460,6 +480,7 @@ abstract class _LoginState implements LoginState {
     final String referralCode,
     final String ghanaCardNumber,
     final String? ghanaCardPhotoPath,
+    final String idDocumentType,
     final LoginStep step,
     final LoginNav nav,
     final bool isLoading,
@@ -486,7 +507,9 @@ abstract class _LoginState implements LoginState {
   @override
   String get ghanaCardNumber;
   @override
-  String? get ghanaCardPhotoPath; // Step and navigation
+  String? get ghanaCardPhotoPath;
+  @override
+  String get idDocumentType; // Step and navigation
   @override
   LoginStep get step;
   @override

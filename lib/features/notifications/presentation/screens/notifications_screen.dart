@@ -982,9 +982,9 @@ class _NotificationIcon extends StatelessWidget {
       case 'payment_confirmed':
         bgColor = const Color(0xFFE6F1FB);
         content = Text(
-          '₵',
+          'GHS',
           style: GoogleFonts.dmSans(
-            fontSize: 13,
+            fontSize: 11,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF185FA5),
           ),

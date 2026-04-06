@@ -4,15 +4,23 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/domain/entities/app_user.dart';
 
-/// Profile home banner when the user has not added Ghana Card data.
+/// Profile home banner when the user has not added identity document data.
 class IdVerificationBanner extends StatelessWidget {
-  const IdVerificationBanner({super.key, required this.pulse});
+  const IdVerificationBanner({
+    super.key,
+    required this.pulse,
+    required this.user,
+  });
 
   final AnimationController pulse;
+  final AppUser user;
 
   @override
   Widget build(BuildContext context) {
+    final docLabel = user.isGhanaian ? 'Ghana Card' : 'Passport';
+
     return AnimatedBuilder(
       animation: pulse,
       builder: (context, child) {
@@ -48,7 +56,7 @@ class IdVerificationBanner extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Add your Ghana Card',
+                        'Add your $docLabel',
                         style: GoogleFonts.dmSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
