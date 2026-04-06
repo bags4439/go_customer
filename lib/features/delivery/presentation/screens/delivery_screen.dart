@@ -13,6 +13,11 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
+import '../../../guide/core/constants/guide_keys.dart';
+import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
+import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
+import '../../../guide/presentation/widgets/guide_help_button.dart';
+import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../domain/entities/delivery.dart';
 import '../providers/delivery_providers.dart';
 
@@ -25,7 +30,9 @@ class DeliveryScreen extends ConsumerStatefulWidget {
   ConsumerState<DeliveryScreen> createState() => _DeliveryScreenState();
 }
 
-class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
+class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
+    with CoachMarkMixin<DeliveryScreen> {
+  final _locationSectionKey = GlobalKey();
   final _addressCtrl = TextEditingController();
   final _cityCtrl = TextEditingController();
   final _searchCtrl = TextEditingController();
@@ -38,6 +45,16 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
   double? _selectedLng;
   String? _selectedLocationLabel;
   Timer? _searchDebounce;
+
+  @override
+  String get coachMarkKey => GuideKeys.stageDelivery;
+
+  bool _showDeliveryLocationCoach(Delivery? d) {
+    if (d == null) return false;
+    if (d.isConfirmed == true) return false;
+    if (d.hasLocation == true && !_editingLocation) return false;
+    return true;
+  }
 
   @override
   void dispose() {
@@ -127,62 +144,92 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
             color: AppColors.primary,
           ),
         ),
+        actions: [GuideHelpButton(onShowGuide: showCoachMarkManually)],
       ),
-      body: deliveryAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
-          child: Padding(
-            padding: ResponsiveLayout.contentPadding(context),
-            child: Text(
-              'Could not load delivery details.',
-              style: GoogleFonts.dmSans(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: deliveryAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => Center(
+                child: Padding(
+                  padding: ResponsiveLayout.contentPadding(context),
+                  child: Text(
+                    'Could not load delivery details.',
+                    style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              data: (delivery) {
+                if (delivery?.isConfirmed == true) {
+                  return _wrapScrollable(
+                    context,
+                    _ConfirmedState(orderId: widget.orderId),
+                  );
+                }
+
+                if (delivery?.hasLocation == true && !_editingLocation) {
+                  return _wrapScrollable(
+                    context,
+                    _LocationSetState(
+                      delivery: delivery!,
+                      isConfirming: _isConfirming,
+                      onEdit: () => setState(() {
+                        _editingLocation = true;
+                        _prefillFromDelivery(delivery);
+                      }),
+                      onConfirm: () => _confirmDelivery(),
+                      onViewMap: () => _openMap(delivery),
+                    ),
+                  );
+                }
+
+                return _wrapScrollable(
+                  context,
+                  KeyedSubtree(
+                    key: _locationSectionKey,
+                    child: _LocationInputState(
+                      addressCtrl: _addressCtrl,
+                      cityCtrl: _cityCtrl,
+                      searchCtrl: _searchCtrl,
+                      isSaving: _isSavingLocation,
+                      isSearching: _isSearching,
+                      suggestions: _suggestions,
+                      selectedLat: _selectedLat,
+                      selectedLng: _selectedLng,
+                      selectedLabel: _selectedLocationLabel,
+                      onSearchChanged: _onSearchChangedDebounced,
+                      onSuggestionSelected: _onSuggestionSelected,
+                      onUseGps: _isSavingLocation ? null : _useGpsLocation,
+                      onSaveManual: _isSavingLocation
+                          ? null
+                          : _saveManualLocation,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-        ),
-        data: (delivery) {
-          if (delivery?.isConfirmed == true) {
-            return _wrapScrollable(
-              context,
-              _ConfirmedState(orderId: widget.orderId),
-            );
-          }
-
-          if (delivery?.hasLocation == true && !_editingLocation) {
-            return _wrapScrollable(
-              context,
-              _LocationSetState(
-                delivery: delivery!,
-                isConfirming: _isConfirming,
-                onEdit: () => setState(() {
-                  _editingLocation = true;
-                  _prefillFromDelivery(delivery);
-                }),
-                onConfirm: () => _confirmDelivery(),
-                onViewMap: () => _openMap(delivery),
-              ),
-            );
-          }
-
-          return _wrapScrollable(
-            context,
-            _LocationInputState(
-              addressCtrl: _addressCtrl,
-              cityCtrl: _cityCtrl,
-              searchCtrl: _searchCtrl,
-              isSaving: _isSavingLocation,
-              isSearching: _isSearching,
-              suggestions: _suggestions,
-              selectedLat: _selectedLat,
-              selectedLng: _selectedLng,
-              selectedLabel: _selectedLocationLabel,
-              onSearchChanged: _onSearchChangedDebounced,
-              onSuggestionSelected: _onSuggestionSelected,
-              onUseGps: _isSavingLocation ? null : _useGpsLocation,
-              onSaveManual: _isSavingLocation ? null : _saveManualLocation,
+          if (showCoachMark &&
+              _showDeliveryLocationCoach(deliveryAsync.valueOrNull))
+            CoachMarkOverlay(
+              guideKey: GuideKeys.stageDelivery,
+              targetKey: _locationSectionKey,
+              title: 'Set your delivery address',
+              body:
+                  'Tell us where to bring your car. '
+                  'Your agent will deliver it directly '
+                  'to this address.',
+              spotlightShape: SpotlightShape.roundedRect,
+              onDismiss: hideCoachMark,
+              onFaqTap: () {
+                hideCoachMark();
+                GuideFaqSheet.show(context);
+              },
             ),
-          );
-        },
+        ],
       ),
     );
   }

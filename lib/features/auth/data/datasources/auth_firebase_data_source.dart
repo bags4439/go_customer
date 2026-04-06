@@ -156,8 +156,11 @@ class AuthFirebaseDataSource {
     // Prefer legacy API name if available, otherwise use OneSignal v5 login.
     final dynamic oneSignal = OneSignal;
     try {
-      oneSignal.setExternalUserId(userId);
-    } catch (_) {
+      print('Attempting to set OneSignal external user ID: $userId');
+      // oneSignal.setExternalUserId(userId);
+      await OneSignal.login(userId);
+    } catch (e){
+      print('OneSignal setExternalUserId failed, falling back to login: $userId, error: $e');
       OneSignal.login(userId);
     }
     final playerId = OneSignal.User.pushSubscription.id;

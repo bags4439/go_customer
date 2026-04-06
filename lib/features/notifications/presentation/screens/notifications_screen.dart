@@ -7,18 +7,70 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../guide/core/constants/guide_keys.dart';
+import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
+import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
+import '../../../guide/presentation/widgets/guide_help_button.dart';
+import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../core/constants/notification_constants.dart';
 import '../../core/utils/notification_timestamp.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../models/notification_list_item.dart';
 import '../providers/notifications_providers.dart';
 
-class NotificationsScreen extends ConsumerWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
+    with CoachMarkMixin<NotificationsScreen> {
+  final _firstNotificationKey = GlobalKey();
+
+  @override
+  String get coachMarkKey => GuideKeys.notifications;
+
+  Future<void> _onMarkAllRead(BuildContext context, WidgetRef ref) async {
+    final filter = ref.read(notificationFilterProvider);
+    final items = ref.read(notificationListItemsProvider(filter));
+    final unreadIds = [
+      for (final item in items)
+        if (item is NotificationListItemEntry && !item.notification.isRead)
+          item.notification.id,
+    ];
+    if (unreadIds.isEmpty) return;
+    ref.read(markAllReadIdsProvider.notifier).state = unreadIds;
+    ref.read(markAllReadInProgressProvider.notifier).state = true;
+    try {
+      await ref
+          .read(notificationsNotifierProvider.notifier)
+          .markAllRead(unreadIds);
+    } catch (_) {
+      ref.read(markAllReadIdsProvider.notifier).state = null;
+      if (context.mounted) {
+        showErrorSnackBar(
+          context,
+          NotificationConstants.markAllReadError,
+          actionLabel: NotificationConstants.retry,
+          onAction: () => _onMarkAllRead(context, ref),
+        );
+      }
+    } finally {
+      ref.read(markAllReadInProgressProvider.notifier).state = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
+    final filter = ref.watch(notificationFilterProvider);
+    final items = ref.watch(notificationListItemsProvider(filter));
+    final hasNotificationEntry = items.any(
+      (e) => e is NotificationListItemEntry,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
@@ -44,13 +96,16 @@ class NotificationsScreen extends ConsumerWidget {
               style: GoogleFonts.dmSans(
                 fontSize: 12,
                 color: unreadCount > 0
-                    ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75)
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.75)
                     : AppColors.success,
               ),
             ),
           ],
         ),
         actions: [
+          GuideHelpButton(onShowGuide: showCoachMarkManually),
           if (unreadCount > 0)
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -59,47 +114,43 @@ class NotificationsScreen extends ConsumerWidget {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            color: AppColors.border,
-            height: 0.5,
-          ),
+          child: Container(color: AppColors.border, height: 0.5),
         ),
       ),
-      body: const _NotificationsBody(),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: _NotificationsBody(
+              firstNotificationEntryKey: _firstNotificationKey,
+            ),
+          ),
+          if (showCoachMark && hasNotificationEntry)
+            CoachMarkOverlay(
+              guideKey: GuideKeys.notifications,
+              targetKey: _firstNotificationKey,
+              title: 'Stay in the loop',
+              body:
+                  'Every update about your order '
+                  'appears here. Tap any notification '
+                  'to go directly to that part of '
+                  'your order.',
+              spotlightShape: SpotlightShape.roundedRect,
+              onDismiss: hideCoachMark,
+              onFaqTap: () {
+                hideCoachMark();
+                GuideFaqSheet.show(context);
+              },
+            ),
+        ],
+      ),
     );
-  }
-
-  Future<void> _onMarkAllRead(BuildContext context, WidgetRef ref) async {
-    final filter = ref.read(notificationFilterProvider);
-    final items = ref.read(notificationListItemsProvider(filter));
-    final unreadIds = [
-      for (final item in items)
-        if (item is NotificationListItemEntry && !item.notification.isRead)
-          item.notification.id,
-    ];
-    if (unreadIds.isEmpty) return;
-    ref.read(markAllReadIdsProvider.notifier).state = unreadIds;
-    ref.read(markAllReadInProgressProvider.notifier).state = true;
-    try {
-      await ref.read(notificationsNotifierProvider.notifier).markAllRead(unreadIds);
-    } catch (_) {
-      ref.read(markAllReadIdsProvider.notifier).state = null;
-      if (context.mounted) {
-        showErrorSnackBar(
-          context,
-          NotificationConstants.markAllReadError,
-          actionLabel: NotificationConstants.retry,
-          onAction: () => _onMarkAllRead(context, ref),
-        );
-      }
-    } finally {
-      ref.read(markAllReadInProgressProvider.notifier).state = false;
-    }
   }
 }
 
 class _MarkAllReadButton extends ConsumerWidget {
-  final Future<void> Function(BuildContext context, WidgetRef ref) onMarkAllRead;
+  final Future<void> Function(BuildContext context, WidgetRef ref)
+  onMarkAllRead;
 
   const _MarkAllReadButton({required this.onMarkAllRead});
 
@@ -130,7 +181,11 @@ class _MarkAllReadButton extends ConsumerWidget {
 }
 
 class _NotificationsBody extends ConsumerWidget {
-  const _NotificationsBody();
+  const _NotificationsBody({
+    required this.firstNotificationEntryKey,
+  });
+
+  final GlobalKey firstNotificationEntryKey;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -140,23 +195,27 @@ class _NotificationsBody extends ConsumerWidget {
     final filter = ref.watch(notificationFilterProvider);
 
     if (userId == null || userId.isEmpty) {
-      return Center(
-          child: Text(NotificationConstants.signInPrompt));
+      return Center(child: Text(NotificationConstants.signInPrompt));
     }
 
     return asyncState.when(
       data: (state) {
         if (state.streamError != null) {
-          return _NotificationsError(onRetry: () {
-            ref.invalidate(notificationsNotifierProvider);
-          });
+          return _NotificationsError(
+            onRetry: () {
+              ref.invalidate(notificationsNotifierProvider);
+            },
+          );
         }
         return Column(
           children: [
             const _FilterTabs(),
             Expanded(
               child: _NotificationsAnimatedBody(
-                child: _NotificationsList(key: ValueKey(filter)),
+                child: _NotificationsList(
+                  key: ValueKey(filter),
+                  firstEntryKey: firstNotificationEntryKey,
+                ),
               ),
             ),
           ],
@@ -176,11 +235,21 @@ class _FilterTabs extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(notificationFilterProvider);
-    final hasUnreadAll = ref.watch(unreadCountByFilterProvider(NotificationFilter.all));
-    final hasUnreadPayments = ref.watch(unreadCountByFilterProvider(NotificationFilter.payments));
-    final hasUnreadOrderUpdates = ref.watch(unreadCountByFilterProvider(NotificationFilter.orderUpdates));
-    final hasUnreadMessages = ref.watch(unreadCountByFilterProvider(NotificationFilter.messages));
-    final hasUnreadAlerts = ref.watch(unreadCountByFilterProvider(NotificationFilter.alerts));
+    final hasUnreadAll = ref.watch(
+      unreadCountByFilterProvider(NotificationFilter.all),
+    );
+    final hasUnreadPayments = ref.watch(
+      unreadCountByFilterProvider(NotificationFilter.payments),
+    );
+    final hasUnreadOrderUpdates = ref.watch(
+      unreadCountByFilterProvider(NotificationFilter.orderUpdates),
+    );
+    final hasUnreadMessages = ref.watch(
+      unreadCountByFilterProvider(NotificationFilter.messages),
+    );
+    final hasUnreadAlerts = ref.watch(
+      unreadCountByFilterProvider(NotificationFilter.alerts),
+    );
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -191,45 +260,40 @@ class _FilterTabs extends ConsumerWidget {
             label: NotificationConstants.filterAll,
             isActive: filter == NotificationFilter.all,
             hasUnread: hasUnreadAll,
-            onTap: () =>
-                ref.read(notificationFilterProvider.notifier).state =
-                    NotificationFilter.all,
+            onTap: () => ref.read(notificationFilterProvider.notifier).state =
+                NotificationFilter.all,
           ),
           const SizedBox(width: 8),
           _FilterPill(
             label: NotificationConstants.filterPayments,
             isActive: filter == NotificationFilter.payments,
             hasUnread: hasUnreadPayments,
-            onTap: () =>
-                ref.read(notificationFilterProvider.notifier).state =
-                    NotificationFilter.payments,
+            onTap: () => ref.read(notificationFilterProvider.notifier).state =
+                NotificationFilter.payments,
           ),
           const SizedBox(width: 8),
           _FilterPill(
             label: NotificationConstants.filterOrderUpdates,
             isActive: filter == NotificationFilter.orderUpdates,
             hasUnread: hasUnreadOrderUpdates,
-            onTap: () =>
-                ref.read(notificationFilterProvider.notifier).state =
-                    NotificationFilter.orderUpdates,
+            onTap: () => ref.read(notificationFilterProvider.notifier).state =
+                NotificationFilter.orderUpdates,
           ),
           const SizedBox(width: 8),
           _FilterPill(
             label: NotificationConstants.filterMessages,
             isActive: filter == NotificationFilter.messages,
             hasUnread: hasUnreadMessages,
-            onTap: () =>
-                ref.read(notificationFilterProvider.notifier).state =
-                    NotificationFilter.messages,
+            onTap: () => ref.read(notificationFilterProvider.notifier).state =
+                NotificationFilter.messages,
           ),
           const SizedBox(width: 8),
           _FilterPill(
             label: NotificationConstants.filterAlerts,
             isActive: filter == NotificationFilter.alerts,
             hasUnread: hasUnreadAlerts,
-            onTap: () =>
-                ref.read(notificationFilterProvider.notifier).state =
-                    NotificationFilter.alerts,
+            onTap: () => ref.read(notificationFilterProvider.notifier).state =
+                NotificationFilter.alerts,
           ),
         ],
       ),
@@ -295,10 +359,7 @@ class _NotificationsAnimatedBodyState extends State<_NotificationsAnimatedBody>
 
 /// Same motion as [home_screen.dart] `_StaggeredItem`: staggered fade + slide.
 class _NotificationsStaggeredRow extends StatefulWidget {
-  const _NotificationsStaggeredRow({
-    required this.index,
-    required this.child,
-  });
+  const _NotificationsStaggeredRow({required this.index, required this.child});
 
   /// List row index (for delay); capped internally for long lists.
   final int index;
@@ -400,10 +461,9 @@ class _FilterPill extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                   color: isActive
                       ? const Color(0xFF185FA5)
-                      : Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.75),
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.75),
                 ),
               ),
               if (hasUnread) ...[
@@ -431,7 +491,9 @@ class _FilterPill extends StatelessWidget {
 }
 
 class _NotificationsList extends ConsumerStatefulWidget {
-  const _NotificationsList({super.key});
+  const _NotificationsList({super.key, required this.firstEntryKey});
+
+  final GlobalKey firstEntryKey;
 
   @override
   ConsumerState<_NotificationsList> createState() => _NotificationsListState();
@@ -485,8 +547,7 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
         if (!mounted || _markAllReadController != null) return;
         _markAllReadController = AnimationController(
           vsync: this,
-          duration: Duration(
-              milliseconds: markAllReadIds.length * 30 + 200),
+          duration: Duration(milliseconds: markAllReadIds.length * 30 + 200),
         );
         _markAllReadController!.addStatusListener((status) {
           if (status == AnimationStatus.completed) {
@@ -512,6 +573,10 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
     if (items.isEmpty) {
       return _EmptyState(filter: filter);
     }
+
+    final firstEntryIndex = items.indexWhere(
+      (e) => e is NotificationListItemEntry,
+    );
 
     return ListView.builder(
       controller: _scrollController,
@@ -542,29 +607,20 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  height: 1,
-                  width: 40,
-                  color: AppColors.border,
-                ),
+                Container(height: 1, width: 40, color: AppColors.border),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     NotificationConstants.noMoreNotifications,
                     style: GoogleFonts.dmSans(
                       fontSize: 11,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
-                Container(
-                  height: 1,
-                  width: 40,
-                  color: AppColors.border,
-                ),
+                Container(height: 1, width: 40, color: AppColors.border),
               ],
             ),
           );
@@ -588,18 +644,25 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
           );
         }
         final entry = item as NotificationListItemEntry;
-        final markAllReadStaggerIndex = _markAllReadIds?.indexOf(entry.notification.id) ?? -1;
+        final markAllReadStaggerIndex =
+            _markAllReadIds?.indexOf(entry.notification.id) ?? -1;
         final markAllReadTotal = _markAllReadIds?.length ?? 0;
-        final card = _NotificationItemCard(
+        Widget card = _NotificationItemCard(
           notification: entry.notification,
           onTap: () => _onNotificationTap(context, ref, entry.notification),
           onActionTap: () => _onActionTap(context, ref, entry.notification),
-          markAllReadAnimation: _markAllReadController != null && markAllReadStaggerIndex >= 0
+          markAllReadAnimation:
+              _markAllReadController != null && markAllReadStaggerIndex >= 0
               ? _markAllReadController!
               : null,
-          markAllReadStaggerIndex: markAllReadStaggerIndex >= 0 ? markAllReadStaggerIndex : null,
+          markAllReadStaggerIndex: markAllReadStaggerIndex >= 0
+              ? markAllReadStaggerIndex
+              : null,
           markAllReadTotalCount: markAllReadTotal > 0 ? markAllReadTotal : null,
         );
+        if (index == firstEntryIndex) {
+          card = KeyedSubtree(key: widget.firstEntryKey, child: card);
+        }
         return _NotificationsStaggeredRow(
           index: index,
           child: Padding(
@@ -612,13 +675,15 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
   }
 
   void _onNotificationTap(
-      BuildContext context, WidgetRef ref, NotificationEntity n) {
+    BuildContext context,
+    WidgetRef ref,
+    NotificationEntity n,
+  ) {
     ref.read(notificationsNotifierProvider.notifier).markRead(n.id);
     _navigateForNotification(context, n);
   }
 
-  void _onActionTap(
-      BuildContext context, WidgetRef ref, NotificationEntity n) {
+  void _onActionTap(BuildContext context, WidgetRef ref, NotificationEntity n) {
     ref.read(notificationsNotifierProvider.notifier).markRead(n.id);
     _navigateForNotification(context, n);
   }
@@ -692,7 +757,8 @@ class _NotificationItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final useMarkAllReadAnimation = markAllReadAnimation != null &&
+    final useMarkAllReadAnimation =
+        markAllReadAnimation != null &&
         markAllReadStaggerIndex != null &&
         markAllReadTotalCount != null &&
         markAllReadTotalCount! > 0;
@@ -700,14 +766,13 @@ class _NotificationItemCard extends StatelessWidget {
       return AnimatedBuilder(
         animation: markAllReadAnimation!,
         builder: (context, _) {
-          final totalDuration =
-              markAllReadTotalCount! * 30 + 200;
+          final totalDuration = markAllReadTotalCount! * 30 + 200;
           final value = markAllReadAnimation!.value;
-          final localT = (value * totalDuration -
-                  markAllReadStaggerIndex! * 30) /
-              200;
-          final localProgress =
-              Curves.easeInOut.transform(localT.clamp(0.0, 1.0));
+          final localT =
+              (value * totalDuration - markAllReadStaggerIndex! * 30) / 200;
+          final localProgress = Curves.easeInOut.transform(
+            localT.clamp(0.0, 1.0),
+          );
           return _buildContent(context, localProgress);
         },
       );
@@ -742,7 +807,8 @@ class _NotificationItemCard extends StatelessWidget {
             color: backgroundColor,
             border: Border.all(color: AppColors.border, width: 0.5),
             borderRadius: BorderRadius.circular(12),
-            boxShadow: (isUnread ||
+            boxShadow:
+                (isUnread ||
                     (markAllReadProgress != null && markAllReadProgress < 1))
                 ? [
                     BoxShadow(
@@ -766,13 +832,14 @@ class _NotificationItemCard extends StatelessWidget {
                       notification.title,
                       style: GoogleFonts.dmSans(
                         fontSize: 13,
-                        fontWeight: isUnread ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: isUnread
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                         color: isUnread
                             ? AppColors.primary
-                            : Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.85),
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.85),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -780,10 +847,9 @@ class _NotificationItemCard extends StatelessWidget {
                       notification.body,
                       style: GoogleFonts.dmSans(
                         fontSize: 12,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.75),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.75),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -792,7 +858,9 @@ class _NotificationItemCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE6F1FB),
                           borderRadius: BorderRadius.circular(20),
@@ -816,7 +884,9 @@ class _NotificationItemCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 9, vertical: 3),
+                              horizontal: 9,
+                              vertical: 3,
+                            ),
                             constraints: const BoxConstraints(minHeight: 26),
                             decoration: BoxDecoration(
                               color: AppColors.secondary,
@@ -862,10 +932,9 @@ class _NotificationItemCard extends StatelessWidget {
                     formatNotificationTimestamp(notification.sentAt),
                     style: GoogleFonts.dmSans(
                       fontSize: 10,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -939,7 +1008,9 @@ class _NotificationIcon extends StatelessWidget {
         content = Icon(
           Icons.chat_bubble_outline,
           size: 16,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurface.withValues(alpha: 0.75),
         );
         break;
       case 'agent_assigned':
@@ -978,16 +1049,15 @@ class _NotificationIcon extends StatelessWidget {
         content = Icon(
           Icons.info_outline,
           size: 16,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurface.withValues(alpha: 0.75),
         );
     }
     return Container(
       width: 36,
       height: 36,
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: content,
     );
@@ -1054,10 +1124,9 @@ class _EmptyState extends ConsumerWidget {
                   body,
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.75),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1083,8 +1152,11 @@ class _NotificationsError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.notifications_off_outlined,
-                size: 64, color: AppColors.danger),
+            const Icon(
+              Icons.notifications_off_outlined,
+              size: 64,
+              color: AppColors.danger,
+            ),
             const SizedBox(height: 16),
             Text(
               NotificationConstants.errorTitle,
@@ -1099,10 +1171,9 @@ class _NotificationsError extends StatelessWidget {
               NotificationConstants.errorBody,
               style: GoogleFonts.dmSans(
                 fontSize: 14,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.75),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.75),
               ),
               textAlign: TextAlign.center,
             ),

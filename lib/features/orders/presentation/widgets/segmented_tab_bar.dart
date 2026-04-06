@@ -9,11 +9,15 @@ import '../../../chat/presentation/providers/chat_providers.dart';
 class SegmentedTabBar extends ConsumerStatefulWidget {
   final TabController controller;
   final String orderId;
+  final GlobalKey? chatTabKey;
+  final GlobalKey? documentsTabKey;
 
   const SegmentedTabBar({
     super.key,
     required this.controller,
     required this.orderId,
+    this.chatTabKey,
+    this.documentsTabKey,
   });
 
   @override
@@ -113,24 +117,35 @@ class _SegmentedTabBarState extends ConsumerState<SegmentedTabBar> {
                       Row(
                         children: tabs.map((tab) {
                           final isActive = tab.index == activeLabelIndex;
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                widget.controller.animateTo(tab.index);
-                              },
-                              behavior: HitTestBehavior.opaque,
-                              child: SizedBox(
-                                height: 44,
-                                child: Center(
-                                  child: _TabLabel(
-                                    label: tab.label,
-                                    isActive: isActive,
-                                    badgeCount: tab.badgeCount,
-                                  ),
+                          Widget tabChild = GestureDetector(
+                            onTap: () {
+                              widget.controller.animateTo(tab.index);
+                            },
+                            behavior: HitTestBehavior.opaque,
+                            child: SizedBox(
+                              height: 44,
+                              child: Center(
+                                child: _TabLabel(
+                                  label: tab.label,
+                                  isActive: isActive,
+                                  badgeCount: tab.badgeCount,
                                 ),
                               ),
                             ),
                           );
+                          if (tab.index == 1 && widget.chatTabKey != null) {
+                            tabChild = KeyedSubtree(
+                              key: widget.chatTabKey,
+                              child: tabChild,
+                            );
+                          } else if (tab.index == 2 &&
+                              widget.documentsTabKey != null) {
+                            tabChild = KeyedSubtree(
+                              key: widget.documentsTabKey,
+                              child: tabChild,
+                            );
+                          }
+                          return Expanded(child: tabChild);
                         }).toList(),
                       ),
                     ],

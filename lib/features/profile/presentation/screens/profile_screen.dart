@@ -11,10 +11,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_version.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../guide/presentation/providers/guide_providers.dart';
+import '../../../guide/presentation/widgets/guide_help_button.dart';
 import '../../core/constants/profile_constants.dart';
 import '../../domain/entities/user_session_entity.dart';
 import '../providers/profile_providers.dart';
@@ -32,6 +35,35 @@ const Color _kAmberBg = Color(0xFFFAEEDA);
 const Color _kBlueTint = Color(0xFFE6F1FB);
 const Color _kBlueText = Color(0xFF185FA5);
 const Color _kDarkBrown = Color(0xFF633806);
+
+Future<void> _resetGuide(
+  BuildContext context,
+  WidgetRef ref,
+) async {
+  await ref.read(guideNotifierProvider.notifier).resetAll();
+
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        'Guide reset — revisit any screen to '
+        'see the walkthrough again.',
+        style: GoogleFonts.dmSans(
+          color: Colors.white,
+          fontSize: 13,
+        ),
+      ),
+      backgroundColor: AppColors.textPrimary,
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      duration: const Duration(seconds: 3),
+    ),
+  );
+}
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -131,6 +163,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               preferredSize: const Size.fromHeight(0.5),
               child: Container(color: _kBorder),
             ),
+            actions: const [
+              GuideHelpButton(),
+            ],
           ),
           body: user == null
               ? const _ProfileShimmer()
@@ -203,7 +238,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           animation: _sectionAnimations[4]!,
                           title: ProfileConstants.sectionSupport,
                           hasUnsaved: false,
-                          child: const _SupportSection(),
+                          child: _SupportSection(
+                            onResetGuide: () => _resetGuide(context, ref),
+                          ),
                         ),
                         _AnimatedSection(
                           index: 5,
@@ -1459,8 +1496,79 @@ class _Segment extends StatelessWidget {
   }
 }
 
+class _ProfileMenuTile extends StatelessWidget {
+  const _ProfileMenuTile({
+    required this.icon,
+    required this.label,
+    required this.sublabel,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String sublabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 22,
+                color: _kPrimary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      sublabel,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: _kTextTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: _kTextTertiary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SupportSection extends StatelessWidget {
-  const _SupportSection();
+  const _SupportSection({required this.onResetGuide});
+
+  final Future<void> Function() onResetGuide;
 
   @override
   Widget build(BuildContext context) {
@@ -1503,6 +1611,13 @@ class _SupportSection extends StatelessWidget {
               );
             }
           },
+        ),
+        _DividerIndent(),
+        _ProfileMenuTile(
+          icon: Icons.tour_outlined,
+          label: 'App guide',
+          sublabel: 'Replay the in-app walkthrough',
+          onTap: () => onResetGuide(),
         ),
       ],
     );

@@ -9,6 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../guide/core/constants/guide_keys.dart';
+import '../../../guide/presentation/providers/guide_providers.dart';
+import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
+import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
+import '../../../guide/presentation/widgets/guide_help_button.dart';
+import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
@@ -17,18 +23,49 @@ import '../providers/repair_providers.dart';
 
 final _dateFormat = DateFormat('d MMM yyyy');
 
-class RepairScreen extends ConsumerWidget {
+class RepairScreen extends ConsumerStatefulWidget {
   final String orderId;
 
   const RepairScreen({super.key, required this.orderId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final screenState = ref.watch(repairScreenStateProvider(orderId));
-    final jobAsync = ref.watch(repairJobProvider(orderId));
-    final dutyAsync = ref.watch(dutyClearanceProvider(orderId));
+  ConsumerState<RepairScreen> createState() => _RepairScreenState();
+}
+
+class _RepairScreenState extends ConsumerState<RepairScreen> {
+  final GlobalKey _repairCoachKey = GlobalKey();
+  bool _showRepairCoach = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowRepairCoach());
+  }
+
+  bool _repairCoachEligible(RepairScreenState state) {
+    return state != RepairScreenState.notAvailable &&
+        state != RepairScreenState.noRepair;
+  }
+
+  Future<void> _maybeShowRepairCoach() async {
+    if (!mounted) return;
+    final screenState = ref.read(repairScreenStateProvider(widget.orderId));
+    if (!_repairCoachEligible(screenState)) return;
+    final seen = await ref.read(
+      hasSeenGuideProvider(GuideKeys.stageRepair).future,
+    );
+    if (!seen && mounted) {
+      setState(() => _showRepairCoach = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenState = ref.watch(repairScreenStateProvider(widget.orderId));
+    final jobAsync = ref.watch(repairJobProvider(widget.orderId));
+    final dutyAsync = ref.watch(dutyClearanceProvider(widget.orderId));
     final repairOptedInAsync = ref.watch(
-      carPreferencesRepairOptedInProvider(orderId),
+      carPreferencesRepairOptedInProvider(widget.orderId),
     );
 
     final isLoading =
@@ -57,14 +94,17 @@ class RepairScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          GuideHelpButton(
+            onShowGuide: () => setState(() => _showRepairCoach = true),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: ref
-                  .watch(orderProvider(orderId))
+                  .watch(orderProvider(widget.orderId))
                   .when(
                     data: (order) => Text(
-                      order?.orderRef ?? orderId,
+                      order?.orderRef ?? widget.orderId,
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
                         color: AppColors.primary.withValues(alpha: 0.7),
@@ -77,28 +117,53 @@ class RepairScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: hasError
-          ? _RepairErrorCard(
-              orderId: orderId,
-              onRetry: () {
-                ref.invalidate(repairJobProvider(orderId));
-                ref.invalidate(dutyClearanceProvider(orderId));
-                ref.invalidate(carPreferencesRepairOptedInProvider(orderId));
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          KeyedSubtree(
+            key: _repairCoachKey,
+            child: hasError
+                ? _RepairErrorCard(
+                    orderId: widget.orderId,
+                    onRetry: () {
+                      ref.invalidate(repairJobProvider(widget.orderId));
+                      ref.invalidate(dutyClearanceProvider(widget.orderId));
+                      ref.invalidate(
+                        carPreferencesRepairOptedInProvider(widget.orderId),
+                      );
+                    },
+                  )
+                : isLoading
+                    ? const _RepairLoadingBody()
+                    : AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _RepairBody(
+                          key: ValueKey(screenState),
+                          orderId: widget.orderId,
+                          screenState: screenState,
+                          job: jobAsync.valueOrNull,
+                          dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
+                          repairOptedIn: repairOptedInAsync.valueOrNull,
+                        ),
+                      ),
+          ),
+          if (_showRepairCoach && _repairCoachEligible(screenState))
+            CoachMarkOverlay(
+              guideKey: GuideKeys.stageRepair,
+              targetKey: _repairCoachKey,
+              title: 'Review your repair quote',
+              body: 'Your agent sent a repair quote. '
+                  'Check the details carefully — '
+                  'no work begins until you approve it.',
+              spotlightShape: SpotlightShape.roundedRect,
+              onDismiss: () => setState(() => _showRepairCoach = false),
+              onFaqTap: () {
+                setState(() => _showRepairCoach = false);
+                GuideFaqSheet.show(context);
               },
-            )
-          : isLoading
-          ? const _RepairLoadingBody()
-          : AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _RepairBody(
-                key: ValueKey(screenState),
-                orderId: orderId,
-                screenState: screenState,
-                job: jobAsync.valueOrNull,
-                dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
-                repairOptedIn: repairOptedInAsync.valueOrNull,
-              ),
             ),
+        ],
+      ),
     );
   }
 }

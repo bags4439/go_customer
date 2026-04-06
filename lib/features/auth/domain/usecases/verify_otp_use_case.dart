@@ -7,7 +7,7 @@ class VerifyOtpUseCase {
   final AuthRepository _repository;
   const VerifyOtpUseCase(this._repository);
 
-  Future<Either<Failure, bool>> call({
+  Future<Either<Failure, (String, bool)>> call({
     required String verificationId,
     required String smsCode,
   }) =>

@@ -15,7 +15,13 @@ class _MultiOrderHome extends ConsumerStatefulWidget {
   ConsumerState<_MultiOrderHome> createState() => _MultiOrderHomeState();
 }
 
-class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
+class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
+    with CoachMarkMixin<_MultiOrderHome> {
+  final _firstOrderCardKey = GlobalKey();
+
+  @override
+  String get coachMarkKey => GuideKeys.homeOrders;
+
   String _subtitleText(int active, int needsAction) {
     if (needsAction > 0) {
       return '$active active ${active == 1 ? 'order' : 'orders'} · '
@@ -42,9 +48,7 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
         return b.stageNumber.compareTo(a.stageNumber);
       });
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-      children: [
+    final listChildren = <Widget>[
         Padding(
           padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
           child: Column(
@@ -115,7 +119,12 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
         ...sorted.asMap().entries.map(
               (entry) => _StaggeredItem(
                 index: entry.key,
-                child: _OrderCard(order: entry.value),
+                child: entry.key == 0
+                    ? KeyedSubtree(
+                        key: _firstOrderCardKey,
+                        child: _OrderCard(order: entry.value),
+                      )
+                    : _OrderCard(order: entry.value),
               ),
             ),
         const SizedBox(height: 8),
@@ -190,6 +199,29 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome> {
         ),
         const SizedBox(height: 20),
         const ReferralPromoCard(),
+    ];
+
+    return Stack(
+      children: [
+        ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          children: listChildren,
+        ),
+        if (showCoachMark && sorted.isNotEmpty)
+          CoachMarkOverlay(
+            guideKey: GuideKeys.homeOrders,
+            targetKey: _firstOrderCardKey,
+            title: 'Your order at a glance',
+            body: 'This card shows your import progress. '
+                'Tap it to see every detail of your '
+                'journey from search to delivery.',
+            spotlightShape: SpotlightShape.roundedRect,
+            onDismiss: hideCoachMark,
+            onFaqTap: () {
+              hideCoachMark();
+              GuideFaqSheet.show(context);
+            },
+          ),
       ],
     );
   }

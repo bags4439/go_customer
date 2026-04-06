@@ -43,5 +43,6 @@ final loginNotifierProvider =
     getAuthenticatedUserId: GetAuthenticatedUserIdUseCase(
       ref.watch(authRepositoryProvider),
     ),
+    syncOneSignalUseCase: ref.watch(syncOneSignalUseCaseProvider)
   ),
 );

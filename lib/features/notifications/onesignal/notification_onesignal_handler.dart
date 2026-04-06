@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../router.dart';
 import '../core/constants/notification_constants.dart';
 
@@ -31,11 +32,16 @@ void setupNotificationHandlers(GoRouter router) {
       return;
     }
     event.preventDefault();
+
+    final data = event.notification.additionalData;
+    final type = data?['type'] is String ? data!['type'] as String : null;
+
     _showInAppBanner(
       title: event.notification.title ?? NotificationConstants.appBarTitle,
       body: event.notification.body ?? '',
       actionUrl: _actionUrlFromNotification(event.notification),
       notificationId: _notificationIdFromNotification(event.notification),
+      type: type,
       router: router,
     );
   });
@@ -81,16 +87,15 @@ void _showInAppBanner({
   required String body,
   required String? actionUrl,
   required String? notificationId,
+  required String? type,
   required GoRouter router,
 }) {
   final overlay = rootNavigatorKey.currentState?.overlay;
   if (overlay == null) return;
 
   OverlayEntry? entry;
-  Timer? dismissTimer;
 
   void remove() {
-    dismissTimer?.cancel();
     entry?.remove();
     entry = null;
   }
@@ -106,69 +111,311 @@ void _showInAppBanner({
   }
 
   entry = OverlayEntry(
-    builder: (context) => Material(
-      color: Colors.transparent,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
-          child: GestureDetector(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1A18),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.notifications, color: Colors.white, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (body.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            body,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 12,
-                              color: Colors.white70,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    builder: (context) => _NotificationBanner(
+      title: title,
+      body: body,
+      type: type,
+      onTap: onTap,
+      onDismiss: remove,
     ),
   );
 
   overlay.insert(entry!);
-  dismissTimer = Timer(const Duration(seconds: 4), remove);
+}
+
+// ── Banner widget ─────────────────────────────────────────
+
+class _NotificationBanner extends StatefulWidget {
+  const _NotificationBanner({
+    required this.title,
+    required this.body,
+    required this.type,
+    required this.onTap,
+    required this.onDismiss,
+  });
+
+  final String title;
+  final String body;
+  final String? type;
+  final VoidCallback onTap;
+  final VoidCallback onDismiss;
+
+  @override
+  State<_NotificationBanner> createState() => _NotificationBannerState();
+}
+
+class _NotificationBannerState extends State<_NotificationBanner>
+    with TickerProviderStateMixin {
+  late final AnimationController _slideCtrl;
+  late final AnimationController _progressCtrl;
+  late final Animation<Offset> _slideAnim;
+  bool _dismissing = false;
+  double _dragOffset = 0;
+
+  static const _duration = Duration(seconds: 5);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _slideCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, -1.6),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutCubic));
+
+    _progressCtrl = AnimationController(vsync: this, duration: _duration);
+
+    _slideCtrl.forward();
+    _progressCtrl.forward();
+    _progressCtrl.addStatusListener((s) {
+      if (s == AnimationStatus.completed) _dismiss();
+    });
+  }
+
+  @override
+  void dispose() {
+    _slideCtrl.dispose();
+    _progressCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _dismiss() async {
+    if (_dismissing) return;
+    _dismissing = true;
+    _progressCtrl.stop();
+    await _slideCtrl.reverse();
+    widget.onDismiss();
+  }
+
+  ({IconData icon, Color accent, Color accentBg}) get _config {
+    switch (widget.type) {
+      case 'agent_assigned':
+        return (
+          icon: Icons.person_rounded,
+          accent: AppColors.secondary,
+          accentBg: AppColors.selectionTint,
+        );
+      case 'bid_won':
+        return (
+          icon: Icons.emoji_events_rounded,
+          accent: AppColors.success,
+          accentBg: AppColors.successMutedBackground,
+        );
+      case 'bid_lost':
+        return (
+          icon: Icons.info_rounded,
+          accent: AppColors.warning,
+          accentBg: AppColors.amberBackground,
+        );
+      case 'arrival':
+        return (
+          icon: Icons.anchor_rounded,
+          accent: AppColors.secondary,
+          accentBg: AppColors.selectionTint,
+        );
+      case 'repair_quote':
+        return (
+          icon: Icons.build_rounded,
+          accent: AppColors.warning,
+          accentBg: AppColors.amberBackground,
+        );
+      case 'quote_approved':
+        return (
+          icon: Icons.build_rounded,
+          accent: AppColors.success,
+          accentBg: AppColors.successMutedBackground,
+        );
+      case 'payment_request':
+        return (
+          icon: Icons.credit_card_rounded,
+          accent: AppColors.danger,
+          accentBg: AppColors.dangerMutedBackground,
+        );
+      case 'payment_confirmed':
+        return (
+          icon: Icons.check_circle_rounded,
+          accent: AppColors.success,
+          accentBg: AppColors.successMutedBackground,
+        );
+      case 'order_cancelled':
+        return (
+          icon: Icons.cancel_rounded,
+          accent: AppColors.danger,
+          accentBg: AppColors.dangerMutedBackground,
+        );
+      case 'delivery_location_set':
+        return (
+          icon: Icons.location_on_rounded,
+          accent: AppColors.success,
+          accentBg: AppColors.successMutedBackground,
+        );
+      case 'delivery_confirmed':
+        return (
+          icon: Icons.local_shipping_rounded,
+          accent: AppColors.success,
+          accentBg: AppColors.successMutedBackground,
+        );
+      case 'stage_update':
+      default:
+        return (
+          icon: Icons.notifications_rounded,
+          accent: AppColors.secondary,
+          accentBg: AppColors.selectionTint,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final topPad = MediaQuery.paddingOf(context).top;
+    final cfg = _config;
+
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: topPad + 10,
+            left: 16,
+            right: 16,
+            child: SlideTransition(
+              position: _slideAnim,
+              child: Transform.translate(
+                offset: Offset(0, _dragOffset),
+                child: GestureDetector(
+                  onTap: widget.onTap,
+                  onVerticalDragUpdate: (details) {
+                    if (details.delta.dy < 0) {
+                      setState(() {
+                        _dragOffset += details.delta.dy * 0.6;
+                      });
+                    }
+                  },
+                  onVerticalDragEnd: (details) {
+                    if (_dragOffset < -20 ||
+                        (details.primaryVelocity ?? 0) < -300) {
+                      _dismiss();
+                    } else {
+                      setState(() => _dragOffset = 0);
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.borderSolid,
+                        width: 0.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(14, 14, 6, 12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: cfg.accentBg,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    cfg.icon,
+                                    color: cfg.accent,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.title,
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                          height: 1.2,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      if (widget.body.isNotEmpty) ...[
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          widget.body,
+                                          style: GoogleFonts.dmSans(
+                                            fontSize: 12,
+                                            color: AppColors.textSecondary,
+                                            height: 1.4,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: _dismiss,
+                                  style: IconButton.styleFrom(
+                                    minimumSize: const Size(48, 48),
+                                    padding: EdgeInsets.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          AnimatedBuilder(
+                            animation: _progressCtrl,
+                            builder: (context, _) {
+                              return LinearProgressIndicator(
+                                value: 1.0 - _progressCtrl.value,
+                                minHeight: 2,
+                                backgroundColor: AppColors.borderSolid,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  cfg.accent,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

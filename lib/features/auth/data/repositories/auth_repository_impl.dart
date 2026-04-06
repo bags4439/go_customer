@@ -29,12 +29,16 @@ class AuthRepositoryImpl implements AuthRepository {
   Stream<String?> authStateChanges() => _dataSource.authStateChanges();
 
   @override
-  Future<Either<Failure, Unit>> createUserProfile(RegisterUserParams params) async {
+  Future<Either<Failure, Unit>> createUserProfile(
+    RegisterUserParams params,
+  ) async {
     try {
       await _dataSource.createUserProfile(params);
       return right(unit);
     } catch (e) {
-      return left(const FirestoreFailure(message: 'Could not save your profile.'));
+      return left(
+        const FirestoreFailure(message: 'Could not save your profile.'),
+      );
     }
   }
 
@@ -44,7 +48,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = await _dataSource.getCurrentUser();
       return right(user);
     } catch (e) {
-      return left(const FirestoreFailure(message: 'Could not load your profile.'));
+      return left(
+        const FirestoreFailure(message: 'Could not load your profile.'),
+      );
     }
   }
 
@@ -60,7 +66,12 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return right(session);
     } on FirebaseAuthException catch (e) {
-      return left(AuthFailure(message: e.message ?? 'Phone verification failed.', cause: e));
+      return left(
+        AuthFailure(
+          message: e.message ?? 'Phone verification failed.',
+          cause: e,
+        ),
+      );
     } catch (e) {
       return left(AuthFailure(message: 'Phone verification failed.', cause: e));
     }
@@ -90,7 +101,9 @@ class AuthRepositoryImpl implements AuthRepository {
       await _dataSource.syncOneSignalIdentity(userId);
       return right(unit);
     } catch (e) {
-      return left(UnexpectedFailure(message: 'Could not link notifications.', cause: e));
+      return left(
+        UnexpectedFailure(message: 'Could not link notifications.', cause: e),
+      );
     }
   }
 
@@ -108,7 +121,9 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return right(unit);
     } catch (e) {
-      return left(StorageFailure(message: 'Could not upload your ID document.', cause: e));
+      return left(
+        StorageFailure(message: 'Could not upload your ID document.', cause: e),
+      );
     }
   }
 
@@ -130,9 +145,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> requestOtp(
-    String e164Phone,
-  ) async {
+  Future<Either<Failure, String>> requestOtp(String e164Phone) async {
     final completer = Completer<Either<Failure, String>>();
     await _firebaseAuth.verifyPhoneNumber(
       phoneNumber: e164Phone,
@@ -145,12 +158,7 @@ class AuthRepositoryImpl implements AuthRepository {
       verificationFailed: (e) {
         if (!completer.isCompleted) {
           completer.complete(
-            Left(
-              FirebaseAuthFailure(
-                message: _mapAuthError(e.code),
-                cause: e,
-              ),
-            ),
+            Left(FirebaseAuthFailure(message: _mapAuthError(e.code), cause: e)),
           );
         }
       },
@@ -169,7 +177,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> verifyOtp({
+  Future<Either<Failure, (String, bool)>> verifyOtp({
     required String verificationId,
     required String smsCode,
   }) async {
@@ -182,9 +190,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final uid = result.user?.uid;
       if (uid == null) {
         return const Left(
-          FirebaseAuthFailure(
-            message: 'Sign in failed. Please try again.',
-          ),
+          FirebaseAuthFailure(message: 'Sign in failed. Please try again.'),
         );
       }
       final doc = await _firestore
@@ -192,18 +198,16 @@ class AuthRepositoryImpl implements AuthRepository {
           .doc(uid)
           .get();
       final fullName = doc.data()?['fullName'] as String?;
-      final isNewUser = !doc.exists ||
-          fullName == null ||
-          fullName.trim().isEmpty;
-      return Right(isNewUser);
+      final isNewUser =
+          !doc.exists || fullName == null || fullName.trim().isEmpty;
+
+      return Right((doc.data()?['id'] ?? doc.id, isNewUser));
     } on FirebaseAuthException catch (e) {
       return Left(
         FirebaseAuthFailure(message: _mapAuthError(e.code), cause: e),
       );
     } catch (e) {
-      return Left(
-        UnexpectedFailure(message: e.toString(), cause: e),
-      );
+      return Left(UnexpectedFailure(message: e.toString(), cause: e));
     }
   }
 
@@ -269,22 +273,25 @@ class AuthRepositoryImpl implements AuthRepository {
     String? photoPath,
   }) async {
     try {
-      final data = <String, dynamic>{
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
+      final data = <String, dynamic>{'updatedAt': FieldValue.serverTimestamp()};
 
       if (idNumber != null && idNumber.trim().isNotEmpty) {
         data['ghanaCardNumber'] = idNumber.trim().toUpperCase();
       }
 
       if (photoPath != null && photoPath.isNotEmpty) {
-        final ref = FirebaseStorage.instance.ref().child('ghana_cards/$uid.jpg');
+        final ref = FirebaseStorage.instance.ref().child(
+          'ghana_cards/$uid.jpg',
+        );
         await ref.putFile(File(photoPath));
         data['ghanaCardPhotoUrl'] = await ref.getDownloadURL();
       }
 
       if (data.length > 1) {
-        await _firestore.collection(FirestoreCollections.users).doc(uid).update(data);
+        await _firestore
+            .collection(FirestoreCollections.users)
+            .doc(uid)
+            .update(data);
       }
       return const Right(unit);
     } on FirebaseException catch (e) {
@@ -295,9 +302,7 @@ class AuthRepositoryImpl implements AuthRepository {
         ),
       );
     } catch (e) {
-      return Left(
-        UnexpectedFailure(message: e.toString(), cause: e),
-      );
+      return Left(UnexpectedFailure(message: e.toString(), cause: e));
     }
   }
 }
@@ -310,8 +315,7 @@ String _mapAuthError(String code) {
     'session-expired' => 'Code expired. Please request a new one.',
     'too-many-requests' => 'Too many attempts. Please try again later.',
     'invalid-phone-number' => 'Invalid phone number.',
-    'network-request-failed' =>
-      'No internet connection. Please try again.',
+    'network-request-failed' => 'No internet connection. Please try again.',
     _ => 'Something went wrong. Please try again.',
   };
 }

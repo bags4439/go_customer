@@ -26,10 +26,21 @@ class OtpVerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
-  final _controllers =
-      List.generate(6, (_) => TextEditingController(), growable: false);
+  final _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+    growable: false,
+  );
   final _focusNodes = List.generate(6, (_) => FocusNode(), growable: false);
   bool _isBusy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print(
+      'OTP Verification Screen - registerFlow: ${widget.registerFlow}, phoneChange: ${widget.phoneChange}, newPhone: ${widget.newPhone}',
+    );
+  }
 
   @override
   void dispose() {
@@ -50,38 +61,47 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     final attempts = ref.read(otpAttemptCountProvider);
     if (attempts >= 5) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Max OTP attempts reached. Try again later.')),
+        const SnackBar(
+          content: Text('Max OTP attempts reached. Try again later.'),
+        ),
       );
       return;
     }
     if (DateTime.now().isAfter(session.expiresAt)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('OTP expired. Please request a new code.')),
+        const SnackBar(
+          content: Text('OTP expired. Please request a new code.'),
+        ),
       );
       return;
     }
     if (_code.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter the 6-digit code.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter the 6-digit code.')));
       return;
     }
 
     ref.read(otpAttemptCountProvider.notifier).state = attempts + 1;
     setState(() => _isBusy = true);
-    final verifyResult = await ref.read(verifyOtpUseCaseProvider).call(
-          verificationId: session.verificationId,
-          smsCode: _code,
-        );
+    print('Verifying OTP for session ${session.verificationId} with code $_code');
+    final verifyResult = await ref
+        .read(verifyOtpUseCaseProvider)
+        .call(verificationId: session.verificationId, smsCode: _code);
     if (!mounted) return;
+
+    print('OTP verification result: ${verifyResult.fold((f) => 'Failure: $f', (r) => 'Success, userId: $r')}');
     await verifyResult.fold(
       (failure) async {
         await showFailureSnackBar(context, failure);
       },
       (userId) async {
+        print('OTP verified successfully for userId: $userId. Proceeding with post-verification steps. widget.registerFlow: ${widget.registerFlow}');
         if (widget.registerFlow) {
           final form = ref.read(registrationFormProvider);
-          final registerResult = await ref.read(registerUserUseCaseProvider).call(
+          final registerResult = await ref
+              .read(registerUserUseCaseProvider)
+              .call(
                 RegisterUserParams(
                   userId: userId,
                   fullName: form.fullName.trim(),
@@ -91,8 +111,13 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                   isFirstTimeBuyer: form.isFirstTimeBuyer,
                 ),
               );
-          final syncResult =
-              await ref.read(syncOneSignalUseCaseProvider).call(userId);
+
+          print(
+            'Register result for userId $userId: ${registerResult.fold((f) => 'Failure: $f', (r) => 'Success')}, proceeding to sync OneSignal',
+          );
+          final syncResult = await ref
+              .read(syncOneSignalUseCaseProvider)
+              .call(userId);
           if (!mounted) return;
           registerResult.fold(
             (f) => showFailureSnackBar(context, f),
@@ -107,29 +132,25 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                 .read(profileRepositoryProvider)
                 .updatePhone(userId, widget.newPhone!);
             if (!mounted) return;
-            updateResult.fold(
-              (f) => showFailureSnackBar(context, f),
-              (_) {
-                ref.invalidate(currentUserProfileProvider);
-                context.goNamed(RouteConstants.profile);
-              },
-            );
+            updateResult.fold((f) => showFailureSnackBar(context, f), (_) {
+              ref.invalidate(currentUserProfileProvider);
+              context.goNamed(RouteConstants.profile);
+            });
             return;
           }
-          final syncResult =
-              await ref.read(syncOneSignalUseCaseProvider).call(userId);
-          final profileResult =
-              await ref.read(getCurrentUserUseCaseProvider).call();
+          final syncResult = await ref
+              .read(syncOneSignalUseCaseProvider)
+              .call(userId);
+          final profileResult = await ref
+              .read(getCurrentUserUseCaseProvider)
+              .call();
           if (!mounted) return;
-          syncResult.fold(
-            (f) => showFailureSnackBar(context, f),
-            (_) {
-              profileResult.fold(
-                (f) => showFailureSnackBar(context, f),
-                (_) => context.goNamed(RouteConstants.home),
-              );
-            },
-          );
+          syncResult.fold((f) => showFailureSnackBar(context, f), (_) {
+            profileResult.fold(
+              (f) => showFailureSnackBar(context, f),
+              (_) => context.goNamed(RouteConstants.home),
+            );
+          });
         }
       },
     );
@@ -142,21 +163,17 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
     final form = ref.read(registrationFormProvider);
     final existing = ref.read(otpVerificationSessionProvider);
-    final result = await ref.read(startPhoneVerificationUseCaseProvider).call(
-          phoneNumber: form.fullPhone,
-          resendToken: existing?.resendToken,
-        );
+    final result = await ref
+        .read(startPhoneVerificationUseCaseProvider)
+        .call(phoneNumber: form.fullPhone, resendToken: existing?.resendToken);
     if (!mounted) return;
-    result.fold(
-      (failure) => showFailureSnackBar(context, failure),
-      (session) {
-        ref.read(otpVerificationSessionProvider.notifier).state = session;
-        ref.read(otpCountdownControllerProvider).start();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('New code sent.')),
-        );
-      },
-    );
+    result.fold((failure) => showFailureSnackBar(context, failure), (session) {
+      ref.read(otpVerificationSessionProvider.notifier).state = session;
+      ref.read(otpCountdownControllerProvider).start();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('New code sent.')));
+    });
   }
 
   @override
@@ -217,4 +234,3 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     );
   }
 }
-

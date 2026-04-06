@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/features/auth/domain/usecases/sync_onesignal_use_case.dart';
 
 import '../../domain/usecases/complete_profile_use_case.dart';
 import '../../domain/usecases/get_authenticated_user_id_use_case.dart';
@@ -17,18 +18,21 @@ class LoginNotifier extends StateNotifier<LoginState> {
     required CompleteProfileUseCase completeProfile,
     required SaveGhanaCardUseCase saveGhanaCard,
     required GetAuthenticatedUserIdUseCase getAuthenticatedUserId,
-  })  : _requestOtp = requestOtp,
-        _verifyOtp = verifyOtp,
-        _completeProfile = completeProfile,
-        _saveGhanaCard = saveGhanaCard,
-        _getAuthenticatedUserId = getAuthenticatedUserId,
-        super(const LoginState());
+    required SyncOneSignalUseCase syncOneSignalUseCase,
+  }) : _requestOtp = requestOtp,
+       _verifyOtp = verifyOtp,
+       _completeProfile = completeProfile,
+       _saveGhanaCard = saveGhanaCard,
+       _getAuthenticatedUserId = getAuthenticatedUserId,
+       _syncOneSignalUseCase = syncOneSignalUseCase,
+       super(const LoginState());
 
   final RequestOtpUseCase _requestOtp;
   final VerifyOtpUseCase _verifyOtp;
   final CompleteProfileUseCase _completeProfile;
   final SaveGhanaCardUseCase _saveGhanaCard;
   final GetAuthenticatedUserIdUseCase _getAuthenticatedUserId;
+  final SyncOneSignalUseCase _syncOneSignalUseCase;
   Timer? _resendTimer;
   bool _alive = true;
 
@@ -36,17 +40,14 @@ class LoginNotifier extends StateNotifier<LoginState> {
   // Input Updates — called on every keystroke
   // ─────────────────────────────────────────────────
 
-  void updatePhone(String v) =>
-      state = state.copyWith(phone: v, error: null);
+  void updatePhone(String v) => state = state.copyWith(phone: v, error: null);
 
-  void updateOtp(String v) =>
-      state = state.copyWith(otp: v, error: null);
+  void updateOtp(String v) => state = state.copyWith(otp: v, error: null);
 
   void updateFullName(String v) =>
       state = state.copyWith(fullName: v, error: null);
 
-  void updateReferralCode(String v) =>
-      state = state.copyWith(referralCode: v);
+  void updateReferralCode(String v) => state = state.copyWith(referralCode: v);
 
   void updateGhanaCardNumber(String v) =>
       state = state.copyWith(ghanaCardNumber: v);
@@ -68,17 +69,12 @@ class LoginNotifier extends StateNotifier<LoginState> {
         state = state.copyWith(error: failure.message);
       },
       (phoneNumber) async {
-        state = state.copyWith(
-          isLoading: true,
-          error: null,
-        );
+        state = state.copyWith(isLoading: true, error: null);
         final result = await _requestOtp(phoneNumber);
         if (!_alive) return;
         result.fold(
-          (failure) => state = state.copyWith(
-            isLoading: false,
-            error: failure.message,
-          ),
+          (failure) =>
+              state = state.copyWith(isLoading: false, error: failure.message),
           (verificationId) {
             state = state.copyWith(
               isLoading: false,
@@ -99,7 +95,6 @@ class LoginNotifier extends StateNotifier<LoginState> {
   // ─────────────────────────────────────────────────
 
   Future<void> verifyOtp() async {
-    print('verifyOtp: ${state.otp}');
     if (state.otp.length != 6) return;
     state = state.copyWith(isLoading: true, error: null);
     final result = await _verifyOtp(
@@ -107,7 +102,6 @@ class LoginNotifier extends StateNotifier<LoginState> {
       smsCode: state.otp,
     );
 
-    print('verifyOtp _alive: $_alive');
     if (!_alive) return;
     result.fold(
       (failure) => state = state.copyWith(
@@ -115,8 +109,9 @@ class LoginNotifier extends StateNotifier<LoginState> {
         error: failure.message,
         otp: '',
       ),
-      (isNewUser) {
-        print('isNewUser: $isNewUser');
+      (result) async {
+        final (uid, isNewUser) = result;
+        await _syncOneSignalUseCase.call(uid);
         if (isNewUser) {
           state = state.copyWith(
             isLoading: false,
@@ -124,10 +119,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
             error: null,
           );
         } else {
-          state = state.copyWith(
-            isLoading: false,
-            nav: LoginNav.goHome,
-          );
+          state = state.copyWith(isLoading: false, nav: LoginNav.goHome);
         }
       },
     );
@@ -140,9 +132,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
   Future<void> completeProfile() async {
     final name = state.fullName.trim();
     if (name.length < 2) {
-      state = state.copyWith(
-        error: 'Please enter your full name',
-      );
+      state = state.copyWith(error: 'Please enter your full name');
       return;
     }
     state = state.copyWith(isLoading: true, error: null);
@@ -150,22 +140,14 @@ class LoginNotifier extends StateNotifier<LoginState> {
     if (!_alive) return;
     await uidResult.fold(
       (failure) async {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
       },
       (uid) async {
-        final result = await _completeProfile(
-          uid: uid,
-          fullName: name,
-        );
+        final result = await _completeProfile(uid: uid, fullName: name);
         if (!_alive) return;
         result.fold(
-          (failure) => state = state.copyWith(
-            isLoading: false,
-            error: failure.message,
-          ),
+          (failure) =>
+              state = state.copyWith(isLoading: false, error: failure.message),
           (code) => state = state.copyWith(
             isLoading: false,
             generatedReferralCode: code,
@@ -182,10 +164,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
   // ─────────────────────────────────────────────────
 
   void proceedToGhanaCard() {
-    state = state.copyWith(
-      step: LoginStep.ghanaCard,
-      error: null,
-    );
+    state = state.copyWith(step: LoginStep.ghanaCard, error: null);
   }
 
   void skipReferral() => proceedToGhanaCard();
@@ -260,30 +239,19 @@ class LoginNotifier extends StateNotifier<LoginState> {
 
   void _startResendCountdown() {
     _resendTimer?.cancel();
-    state = state.copyWith(
-      resendCountdown: 60,
-      resendEnabled: false,
-    );
-    _resendTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (!_alive) {
-          timer.cancel();
-          return;
-        }
-        if (state.resendCountdown <= 1) {
-          timer.cancel();
-          state = state.copyWith(
-            resendCountdown: 0,
-            resendEnabled: true,
-          );
-        } else {
-          state = state.copyWith(
-            resendCountdown: state.resendCountdown - 1,
-          );
-        }
-      },
-    );
+    state = state.copyWith(resendCountdown: 60, resendEnabled: false);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!_alive) {
+        timer.cancel();
+        return;
+      }
+      if (state.resendCountdown <= 1) {
+        timer.cancel();
+        state = state.copyWith(resendCountdown: 0, resendEnabled: true);
+      } else {
+        state = state.copyWith(resendCountdown: state.resendCountdown - 1);
+      }
+    });
   }
 
   Future<void> resendOtp() async {

@@ -43,7 +43,7 @@ abstract class AuthRepository {
   /// Verifies the OTP against the verificationId.
   /// Returns true if the user is new (no fullName set).
   /// Returns false if the user is returning.
-  Future<Either<Failure, bool>> verifyOtp({
+  Future<Either<Failure, (String, bool)>> verifyOtp({
     required String verificationId,
     required String smsCode,
   });
