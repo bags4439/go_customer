@@ -8,10 +8,12 @@ class GhanaCardNumberField extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onChanged,
+    this.hintText = 'GHA-XXXXXXXXX-X',
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final String hintText;
 
   @override
   State<GhanaCardNumberField> createState() => _GhanaCardNumberFieldState();
@@ -53,7 +55,7 @@ class _GhanaCardNumberFieldState extends State<GhanaCardNumberField> {
         onChanged: widget.onChanged,
         style: GoogleFonts.dmSans(fontSize: 15, color: AppColors.textPrimary),
         decoration: InputDecoration(
-          hintText: 'GHA-XXXXXXXXX-X',
+          hintText: widget.hintText,
           hintStyle: GoogleFonts.dmSans(
             fontSize: 15,
             color: AppColors.textTertiary,

@@ -32,6 +32,24 @@ class DocumentConstants {
   static const String ghanaCardMissingSub = 'Tap to add your Ghana Card';
   static const String ghanaCardOnFileShort = 'Provided';
   static const String addNow = 'Add now';
+
+  /// Dynamic ID document strings — use with [AppUser.idDocumentLabel].
+  static String idDocProvided(String docLabel) => '$docLabel provided';
+
+  static String idDocProvidedSub() => 'Tap to view or update';
+
+  static String idDocMissing(String docLabel) => '$docLabel not added';
+
+  static String idDocMissingSub(String docLabel) =>
+      'Tap to add your $docLabel';
+
+  static const String sectionFromAgent = 'FROM YOUR AGENT';
+
+  static const String noAgentDocuments =
+      'No documents from your agent yet';
+
+  static const String noAgentDocumentsBody =
+      'Your agent will upload documents here as your order progresses.';
   static const String documentsProgressHeading = 'Documents';
   static const String documentsProgressReadySuffix = 'ready';
   static const String couldNotLoadDocumentsTitle = 'Could not load documents';
@@ -103,6 +121,8 @@ class DocumentConstants {
     'repair_quote': 'Repair quote',
     'repair_receipt': 'Repair receipt',
     'delivery_note': 'Delivery note',
+    'invoice': 'Invoice',
+    'receipt': 'Receipt',
     'other': 'Other document',
   };
 

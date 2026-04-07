@@ -128,12 +128,20 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       if (next.status == GhanaCardSaveStatus.success &&
           prev?.status != GhanaCardSaveStatus.success) {
         if (!context.mounted) return;
-        showSuccessSnackBar(context, 'Ghana card saved.');
+        final u = ref.read(currentUserProfileProvider).valueOrNull;
+        final label = u?.idDocumentLabel ?? 'Document';
+        showSuccessSnackBar(
+          context,
+          '$label saved.',
+        );
         context.pop();
       }
     });
 
     final isSaving = cardState.status == GhanaCardSaveStatus.saving;
+    final appBarDocLabel =
+        profileAsync.valueOrNull?.idDocumentLabel ??
+            ProfileConstants.idVerificationTitle;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -150,7 +158,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Ghana Card',
+          appBarDocLabel,
           style: GoogleFonts.dmSans(
             fontSize: 17,
             fontWeight: FontWeight.w600,
@@ -167,6 +175,26 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
           if (user == null) {
             return const Center(child: Text('Please sign in'));
           }
+          final isGhanaian = user.isGhanaian;
+          final docLabel = user.idDocumentLabel;
+          final numberLabel = isGhanaian
+              ? 'CARD NUMBER'
+              : 'PASSPORT NUMBER';
+          final numberHint =
+              isGhanaian ? 'GHA-XXXXXXXXX-X' : 'A12345678';
+          final numberFormatHint = isGhanaian
+              ? 'Format: GHA-XXXXXXXXX-X'
+              : 'Enter your passport number';
+          final photoLabel =
+              isGhanaian ? 'CARD PHOTO' : 'PASSPORT PHOTO';
+          final hasDoc = user.hasIdDocument;
+          final headingText = hasDoc
+              ? 'Update your $docLabel'
+              : 'Add your $docLabel';
+          final buttonText = hasDoc
+              ? 'Update $docLabel'
+              : 'Save $docLabel';
+
           _scheduleInitIfNeeded(user);
           final canSave = _canSave(user, cardState);
 
@@ -176,9 +204,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  user.hasGhanaCard
-                      ? 'Update your Ghana Card'
-                      : 'Add your Ghana Card',
+                  headingText,
                   style: GoogleFonts.dmSans(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
@@ -187,8 +213,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Your card details are kept private and used only to verify '
-                  'your identity.',
+                  'Your ${docLabel.toLowerCase()} details are kept private '
+                  'and used only to verify your identity.',
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     color: AppColors.textSecondary,
@@ -197,7 +223,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  'CARD NUMBER',
+                  numberLabel,
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -210,10 +236,11 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                   controller: _cardNumberController,
                   onChanged: (v) =>
                       ref.read(ghanaCardProvider.notifier).updateCardNumber(v),
+                  hintText: numberHint,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Format: GHA-XXXXXXXXX-X',
+                  numberFormatHint,
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     color: AppColors.textTertiary,
@@ -221,7 +248,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'CARD PHOTO',
+                  photoLabel,
                   style: GoogleFonts.dmSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -272,9 +299,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                             ),
                           )
                         : Text(
-                            user.hasGhanaCard
-                                ? 'Update Ghana Card'
-                                : 'Save Ghana Card',
+                            buttonText,
                             style: GoogleFonts.dmSans(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,

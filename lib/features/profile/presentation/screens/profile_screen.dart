@@ -22,7 +22,9 @@ import '../../../auth/presentation/providers/countries_providers.dart';
 import '../../../auth/presentation/widgets/country_picker_sheet.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/presentation/providers/guide_providers.dart';
+import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
 import '../../../guide/presentation/widgets/guide_help_button.dart';
+import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../../core/constants/profile_constants.dart';
 import '../../domain/entities/user_session_entity.dart';
 import '../providers/profile_providers.dart';
@@ -522,35 +524,6 @@ class _AnimatedHeaderCard extends StatelessWidget {
                         color: Colors.black54,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      user.location.isEmpty ? '—' : user.location,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    if (user.isFirstTimeBuyer) ...[
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _kBlueTint,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          ProfileConstants.firstTimeBuyerPill,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: _kBlueText,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -1853,17 +1826,12 @@ class _SupportSection extends StatelessWidget {
       children: [
         _SupportRow(
           label: ProfileConstants.contactSupport,
-          onTap: () => launchUrl(
-            Uri(scheme: 'mailto', path: ProfileConstants.supportEmail),
-          ),
+          onTap: () => SupportBottomSheet.show(context),
         ),
         _DividerIndent(),
         _SupportRow(
           label: ProfileConstants.faqs,
-          onTap: () => launchUrl(
-            Uri.parse(ProfileConstants.faqUrl),
-            mode: LaunchMode.inAppWebView,
-          ),
+          onTap: () =>  GuideFaqSheet.show(context)
         ),
         _DividerIndent(),
         _SupportRow(

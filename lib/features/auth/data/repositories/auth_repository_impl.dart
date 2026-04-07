@@ -218,6 +218,8 @@ class AuthRepositoryImpl implements AuthRepository {
     required String country,
   }) async {
     try {
+      final firebasePhone =
+          _firebaseAuth.currentUser?.phoneNumber ?? '';
       String code = ReferralCodeGenerator.generate();
       for (var attempt = 0; attempt < 5; attempt++) {
         final existing = await _firestore
@@ -260,6 +262,7 @@ class AuthRepositoryImpl implements AuthRepository {
           'country': country,
           'preferredCurrency': preferredCurrency,
           'referralCode': code,
+          if (firebasePhone.isNotEmpty) 'phone': firebasePhone,
           'referralDiscountGhs': 0.0,
           'referredBy': null,
           'createdAt': FieldValue.serverTimestamp(),

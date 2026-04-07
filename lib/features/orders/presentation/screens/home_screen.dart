@@ -12,7 +12,7 @@ import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/coach_mark_card.dart';
@@ -57,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ordersAsync = ref.watch(buyerOrdersProvider);
-    final currentUserAsync = ref.watch(currentUserProvider);
+    final currentUserAsync = ref.watch(currentUserProfileProvider);
     final pendingPayments = ref.watch(pendingPaymentCountProvider);
 
     ordersAsync.whenOrNull(
