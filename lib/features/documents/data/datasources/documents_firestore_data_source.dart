@@ -13,11 +13,17 @@ class DocumentsFirestoreDataSource {
     return _firestore
         .collection(FirestoreCollections.documents)
         .where('orderId', isEqualTo: orderId)
-        .orderBy('uploadedAt', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((d) => documentFromDoc(d))
-            .toList());
+        .map((snapshot) {
+          final list = snapshot.docs.map(documentFromDoc).toList();
+          list.sort(
+            (a, b) => (a.uploadedAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+                .compareTo(
+                  b.uploadedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+                ),
+          );
+          return list;
+        });
   }
 
   Future<DocumentEntity?> getDocument(String documentId) async {

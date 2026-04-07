@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,7 +15,6 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
-import '../../../../shared/providers/firebase_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../core/constants/document_constants.dart';
 import '../../domain/entities/document_entity.dart';
@@ -157,7 +155,7 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          _PreviewArea(document: doc, storage: ref.read(storageProvider)),
+          _PreviewArea(document: doc),
           const SizedBox(height: 16),
           _MetadataCard(document: doc, orderRef: widget.orderRef),
           if (doc.isRejected) ...[
@@ -208,14 +206,20 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
   Future<void> _onDownload(BuildContext context) async {
     setState(() => _downloadInProgress = true);
     try {
-      final storage = ref.read(storageProvider);
-      final storageRef = storage.ref(widget.document.fileUrl!);
-      final url = await storageRef.getDownloadURL();
+      final url = widget.document.fileUrl!;
       final response = await http.get(Uri.parse(url));
       if (response.statusCode != 200) throw Exception('Download failed');
       final dir = await getApplicationDocumentsDirectory();
-      final ext = widget.document.fileType ?? 'bin';
-      final file = File('${dir.path}/document_${widget.document.id}.$ext');
+      final ext = url.contains('.')
+          ? url
+              .split('?')
+              .first
+              .split('.')
+              .last
+              .toLowerCase()
+          : 'bin';
+      final file = File(
+          '${dir.path}/document_${widget.document.id}.$ext');
       await file.writeAsBytes(response.bodyBytes);
       await OpenFile.open(file.path);
       if (context.mounted) {
@@ -249,14 +253,20 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
   Future<void> _onShare(BuildContext context) async {
     setState(() => _shareInProgress = true);
     try {
-      final storage = ref.read(storageProvider);
-      final storageRef = storage.ref(widget.document.fileUrl!);
-      final url = await storageRef.getDownloadURL();
+      final url = widget.document.fileUrl!;
       final response = await http.get(Uri.parse(url));
       if (response.statusCode != 200) throw Exception('Share failed');
       final dir = await getTemporaryDirectory();
-      final ext = widget.document.fileType ?? 'bin';
-      final file = File('${dir.path}/share_${widget.document.id}.$ext');
+      final ext = url.contains('.')
+          ? url
+              .split('?')
+              .first
+              .split('.')
+              .last
+              .toLowerCase()
+          : 'bin';
+      final file = File(
+          '${dir.path}/share_${widget.document.id}.$ext');
       await file.writeAsBytes(response.bodyBytes);
       await Share.shareXFiles([XFile(file.path)]);
     } catch (_) {
@@ -271,9 +281,8 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
 
 class _PreviewArea extends StatefulWidget {
   final DocumentEntity document;
-  final FirebaseStorage storage;
 
-  const _PreviewArea({required this.document, required this.storage});
+  const _PreviewArea({required this.document});
 
   @override
   State<_PreviewArea> createState() => _PreviewAreaState();
@@ -283,8 +292,6 @@ class _PreviewAreaState extends State<_PreviewArea> {
   String? _downloadUrl;
   bool _loadFailed = false;
 
-  static const Set<String> _imageTypes = {'jpg', 'jpeg', 'png', 'webp'};
-
   @override
   void initState() {
     super.initState();
@@ -293,21 +300,27 @@ class _PreviewAreaState extends State<_PreviewArea> {
     }
   }
 
-  Future<void> _fetchUrl() async {
-    try {
-      final url = await widget.storage.ref(widget.document.fileUrl!).getDownloadURL();
-      if (mounted) setState(() { _downloadUrl = url; _loadFailed = false; });
-    } catch (_) {
-      if (mounted) setState(() { _loadFailed = true; });
+  void _fetchUrl() {
+    final url = widget.document.fileUrl!;
+    if (mounted) {
+      setState(() {
+        _downloadUrl = url;
+        _loadFailed = false;
+      });
     }
+    return;
   }
 
   @override
   Widget build(BuildContext context) {
     final doc = widget.document;
     final fileType = doc.fileType?.toLowerCase() ?? '';
-    final isPdf = fileType == 'pdf';
-    final isImage = _imageTypes.contains(fileType);
+    final isPdf = fileType.contains('pdf');
+    final isImage = fileType.contains('image') ||
+        fileType.contains('jpg') ||
+        fileType.contains('jpeg') ||
+        fileType.contains('png') ||
+        fileType.contains('webp');
 
     if (doc.fileUrl == null) {
       return _buildUnknownPreview(context);

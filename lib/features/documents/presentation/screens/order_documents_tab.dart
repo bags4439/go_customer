@@ -318,118 +318,140 @@ class _AgentDocumentTile extends StatelessWidget {
     final verified = doc.status == 'verified';
     final rejected = doc.status == 'rejected';
 
+    final hasAccent = verified || rejected;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _openDocument(context),
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(12),
-            border: Border(
-              left: BorderSide(
-                color: verified
-                    ? AppColors.success
-                    : rejected
-                        ? AppColors.danger
-                        : AppColors.borderSolid,
-                width: verified || rejected ? 3 : 0.5,
-              ),
-              top: const BorderSide(
-                color: AppColors.borderSolid,
-                width: 0.5,
-              ),
-              right: const BorderSide(
-                color: AppColors.borderSolid,
-                width: 0.5,
-              ),
-              bottom: const BorderSide(
-                color: AppColors.borderSolid,
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              if (hasAccent)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 3,
+                    color: verified ? AppColors.success : AppColors.danger,
+                  ),
+                ),
+              Padding(
+                padding: EdgeInsets.only(left: hasAccent ? 3 : 0),
+                child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: _isPdf
-                        ? AppColors.infoBackground
-                        : _isImage
-                            ? AppColors.selectionTint
-                            : AppColors.surface,
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.background,
+                    border: hasAccent
+                        ? const Border(
+                            top: BorderSide(
+                              color: AppColors.borderSolid,
+                              width: 0.5,
+                            ),
+                            right: BorderSide(
+                              color: AppColors.borderSolid,
+                              width: 0.5,
+                            ),
+                            bottom: BorderSide(
+                              color: AppColors.borderSolid,
+                              width: 0.5,
+                            ),
+                          )
+                        : const Border.fromBorderSide(
+                            BorderSide(
+                              color: AppColors.borderSolid,
+                              width: 0.5,
+                            ),
+                          ),
                   ),
-                  child: Icon(
-                    _isPdf
-                        ? Icons.picture_as_pdf_outlined
-                        : _isImage
-                            ? Icons.image_outlined
-                            : Icons.insert_drive_file_outlined,
-                    size: 20,
-                    color: _isPdf
-                        ? AppColors.infoText
-                        : _isImage
-                            ? AppColors.secondary
-                            : AppColors.textTertiary,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: _isPdf
+                                ? AppColors.infoBackground
+                                : _isImage
+                                    ? AppColors.selectionTint
+                                    : AppColors.surface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            _isPdf
+                                ? Icons.picture_as_pdf_outlined
+                                : _isImage
+                                    ? Icons.image_outlined
+                                    : Icons.insert_drive_file_outlined,
+                            size: 20,
+                            color: _isPdf
+                                ? AppColors.infoText
+                                : _isImage
+                                    ? AppColors.secondary
+                                    : AppColors.textTertiary,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _primaryTitle,
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              if (doc.label.trim().isNotEmpty &&
+                                  _typeLabel != _primaryTitle) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  _typeLabel,
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                              if (doc.notes != null &&
+                                  doc.notes!.trim().isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  doc.notes!.trim(),
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                              if (doc.uploadedAt != null) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  DateFormat('d MMM yyyy')
+                                      .format(doc.uploadedAt!),
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 11,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        _StatusBadge(status: doc.status),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _primaryTitle,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      if (doc.label.trim().isNotEmpty &&
-                          _typeLabel != _primaryTitle) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          _typeLabel,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                      if (doc.notes != null && doc.notes!.trim().isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          doc.notes!.trim(),
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                      if (doc.uploadedAt != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          DateFormat('d MMM yyyy').format(doc.uploadedAt!),
-                          style: GoogleFonts.dmSans(
-                            fontSize: 11,
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                _StatusBadge(status: doc.status),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
