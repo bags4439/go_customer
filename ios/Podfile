@@ -40,4 +40,29 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
   end
+
+  # Sync Firebase URL schemes from GoogleService-Info.plist into xcconfig for Info.plist.
+  plist = File.expand_path('Runner/GoogleService-Info.plist', __dir__)
+  out = File.expand_path('Flutter/Firebase-Auth.generated.xcconfig', __dir__)
+  rev = ''
+  google_app_id = ''
+  if File.exist?(plist)
+    rev = `LC_ALL=C /usr/libexec/PlistBuddy -c 'Print :REVERSED_CLIENT_ID' "#{plist}" 2>/dev/null`.strip
+    google_app_id = `LC_ALL=C /usr/libexec/PlistBuddy -c 'Print :GOOGLE_APP_ID' "#{plist}" 2>/dev/null`.strip
+  end
+  if rev.empty?
+    rev = 'com.googleusercontent.apps.REVERSED_CLIENT_ID_MISSING_REDOWNLOAD_GOOGLE_SERVICE_INFO_PLIST'
+  end
+  # Phone Auth requires app-<GOOGLE_APP_ID with ':' replaced by '-'> (FirebaseAuth PhoneAuthProvider).
+  ios_url_scheme = if google_app_id.empty?
+                     'app-MISSING_GOOGLE_APP_ID_IN_PLIST'
+                   else
+                     'app-' + google_app_id.tr(':', '-')
+                   end
+  File.write(
+    out,
+    "// Synced from Runner/GoogleService-Info.plist by ios/Podfile post_install.\n" \
+    "FIREBASE_REVERSED_CLIENT_ID=#{rev}\n" \
+    "FIREBASE_IOS_URL_SCHEME=#{ios_url_scheme}\n",
+  )
 end

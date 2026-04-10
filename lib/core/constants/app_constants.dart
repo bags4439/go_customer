@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'AutoImport GH — Customer';
+  static const String appName = 'AutoImport GH';
 
   /// Set this to your OneSignal App ID.
   ///

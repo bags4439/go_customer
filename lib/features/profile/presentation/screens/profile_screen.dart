@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -9,8 +10,6 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_version.dart';
-import '../../../../core/constants/route_constants.dart';
-import '../../../../core/error/error_handler.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
@@ -2386,82 +2385,450 @@ class _PhoneChangeSheet extends ConsumerStatefulWidget {
 }
 
 class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
-  final _controller = TextEditingController();
+  int _step = 0;
+  final _phoneCtrl = TextEditingController();
+  final _otpCtrl = TextEditingController();
   bool _busy = false;
+  String? _verificationId;
+  int? _resendToken;
+  String? _newPhone;
+  int _countdown = 0;
+  String _otpCode = '';
+  Timer? _countdownTimer;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _countdownTimer?.cancel();
+    _phoneCtrl.dispose();
+    _otpCtrl.dispose();
     super.dispose();
   }
 
+  String _dialCodeForCountry(String isoCode) {
+    const map = {
+      'GH': '+233',
+      'NG': '+234',
+      'US': '+1',
+      'GB': '+44',
+      'CA': '+1',
+      'DE': '+49',
+      'FR': '+33',
+      'ZA': '+27',
+      'KE': '+254',
+      'AU': '+61',
+      'NL': '+31',
+    };
+    return map[isoCode] ?? '+233';
+  }
+
+  void _startCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() {
+        if (_countdown <= 1) {
+          _countdown = 0;
+          t.cancel();
+        } else {
+          _countdown--;
+        }
+      });
+    });
+  }
+
   Future<void> _sendOtp() async {
-    final digits = _controller.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.length != 9) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter 9 digits for Ghana number')),
+    final digits =
+        _phoneCtrl.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length < 7 || digits.length > 11) {
+      showErrorSnackBar(
+        context,
+        'Enter a valid phone number',
       );
       return;
     }
-    final phone = '+233$digits';
+
+    final user = ref.read(currentUserProfileProvider).valueOrNull;
+    final iso = user?.country ?? '';
+    final dialCode = _dialCodeForCountry(iso.isNotEmpty ? iso : 'GH');
+    final phone = '$dialCode$digits';
+
     setState(() => _busy = true);
+
     final result = await ref
         .read(startPhoneVerificationUseCaseProvider)
-        .call(phoneNumber: phone);
+        .call(
+          phoneNumber: phone,
+          resendToken: _resendToken,
+        );
+
     if (!mounted) return;
     setState(() => _busy = false);
-    result.fold((f) => showFailureSnackBar(context, f), (session) {
-      ref.read(otpVerificationSessionProvider.notifier).state = session;
-      Navigator.pop(context);
-      context.pushNamed(
-        RouteConstants.otpVerification,
-        extra: {'register': false, 'phoneChange': true, 'newPhone': phone},
-      );
-    });
+
+    result.fold(
+      (f) => showErrorSnackBar(context, f.message),
+      (session) {
+        setState(() {
+          _verificationId = session.verificationId;
+          _resendToken = session.resendToken;
+          _newPhone = phone;
+          _step = 1;
+          _countdown = 30;
+        });
+        _startCountdown();
+      },
+    );
+  }
+
+  Future<void> _resend() async {
+    if (_countdown > 0 || _newPhone == null) return;
+    setState(() => _busy = true);
+
+    final result = await ref
+        .read(startPhoneVerificationUseCaseProvider)
+        .call(
+          phoneNumber: _newPhone!,
+          resendToken: _resendToken,
+        );
+
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    result.fold(
+      (f) => showErrorSnackBar(context, f.message),
+      (session) {
+        setState(() {
+          _verificationId = session.verificationId;
+          _resendToken = session.resendToken;
+          _countdown = 30;
+        });
+        _startCountdown();
+        showSuccessSnackBar(context, 'New code sent.');
+      },
+    );
+  }
+
+  Future<void> _verifyOtp() async {
+    if (_otpCode.length != 6 || _verificationId == null) return;
+    setState(() => _busy = true);
+
+    final result = await ref.read(verifyOtpUseCaseProvider).call(
+          verificationId: _verificationId!,
+          smsCode: _otpCode,
+        );
+
+    if (!mounted) return;
+
+    await result.fold<Future<void>>(
+      (failure) async {
+        if (!mounted) return;
+        setState(() => _busy = false);
+        showErrorSnackBar(context, failure.message);
+      },
+      (userId) async {
+        final updateResult = await ref
+            .read(profileRepositoryProvider)
+            .updatePhone(userId, _newPhone!);
+        if (!mounted) return;
+        setState(() => _busy = false);
+        updateResult.fold(
+          (f) => showErrorSnackBar(context, f.message),
+          (_) {
+            ref.invalidate(currentUserProfileProvider);
+            Navigator.pop(context);
+            widget.onVerified();
+            showSuccessSnackBar(
+              context,
+              'Phone number updated.',
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset =
+        MediaQuery.viewInsetsOf(context).bottom;
+    final user = ref.watch(currentUserProfileProvider).valueOrNull;
+    final iso = user?.country ?? '';
+    final dialCode = _dialCodeForCountry(iso.isNotEmpty ? iso : 'GH');
+
     return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
       padding: EdgeInsets.fromLTRB(
-        24,
-        24,
-        24,
-        24 + MediaQuery.of(context).padding.bottom,
+        20,
+        16,
+        20,
+        24 + bottomInset,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            ProfileConstants.phoneLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+          Center(
+            child: Container(
+              width: 32,
+              height: 3,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: AppColors.borderSolid,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text('+233 '),
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    hintText: 'XX XXX XXXX',
-                    isDense: true,
-                  ),
-                  maxLength: 9,
+          if (_step == 0) ...[
+            Text(
+              'Change phone number',
+              style: GoogleFonts.dmSans(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Enter your new phone number. '
+              'We will send a verification code.',
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.borderSolid,
+                  width: 0.5,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _busy ? null : _sendOtp,
-            child: Text(_busy ? 'Sending...' : 'Send verification code'),
-          ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                    ),
+                    child: Text(
+                      dialCode,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 0.5,
+                    height: 24,
+                    color: AppColors.borderSolid,
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _phoneCtrl,
+                      autofocus: true,
+                      keyboardType: TextInputType.phone,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Phone number',
+                        hintStyle: GoogleFonts.dmSans(
+                          fontSize: 15,
+                          color: AppColors.textTertiary,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _busy ? null : _sendOtp,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.borderSolid,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: _busy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Send code',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ] else ...[
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() {
+                    _step = 0;
+                    _otpCtrl.clear();
+                    _otpCode = '';
+                  }),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'Enter verification code',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Code sent to $_newPhone',
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _otpCtrl,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 12,
+                color: AppColors.textPrimary,
+              ),
+              decoration: InputDecoration(
+                counterText: '',
+                hintText: '------',
+                hintStyle: GoogleFonts.dmSans(
+                  fontSize: 24,
+                  letterSpacing: 12,
+                  color: AppColors.textTertiary,
+                ),
+                filled: true,
+                fillColor: AppColors.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppColors.borderSolid,
+                    width: 0.5,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppColors.borderSolid,
+                    width: 0.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppColors.secondary,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              onChanged: (v) {
+                setState(() => _otpCode = v);
+                if (v.length == 6) _verifyOtp();
+              },
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: _countdown > 0 ? null : _resend,
+              child: Text(
+                _countdown > 0
+                    ? 'Resend code in ${_countdown}s'
+                    : 'Resend code',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  color: _countdown > 0
+                      ? AppColors.textTertiary
+                      : AppColors.secondary,
+                  fontWeight: _countdown > 0
+                      ? FontWeight.w400
+                      : FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 52,
+              child: ElevatedButton(
+                onPressed:
+                    (_otpCode.length == 6 && !_busy) ? _verifyOtp : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.borderSolid,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: _busy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Verify & update',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ],
         ],
       ),
     );
