@@ -120,6 +120,15 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
   }
 
   void _onTabChanged() {
+    // Only fire when the tab animation
+    // is fully settled — not on every
+    // frame during a swipe. This prevents
+    // setState being called mid-rebuild
+    // which breaks context.pop() in the
+    // AppBar back button.
+    if (_tabController.indexIsChanging) {
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _isChatTabActive = _tabController.index == 1;
@@ -132,6 +141,10 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
         focus.unfocus();
       }
     }
+  }
+
+  void _onSwitchToChat() {
+    _tabController.animateTo(1);
   }
 
   @override
@@ -181,7 +194,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                             .watch(orderProvider(widget.orderId))
                             .valueOrNull
                             ?.orderRef ??
-                        widget.orderId,
+                        '--',
                     style: GoogleFonts.dmSans(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
@@ -221,6 +234,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                           paymentCardKey: _paymentCardKey,
                           suppressTimelineStageCoaches:
                               _showPaymentCoach || _guideStep != 0,
+                          onChatTap: _onSwitchToChat,
                         ),
                         OrderChatTab(orderId: widget.orderId),
                         OrderDocumentsTab(orderId: widget.orderId),
@@ -328,12 +342,14 @@ class _OrderOverviewTab extends ConsumerWidget {
   final GlobalKey timelineKey;
   final GlobalKey paymentCardKey;
   final bool suppressTimelineStageCoaches;
+  final VoidCallback? onChatTap;
 
   const _OrderOverviewTab({
     required this.orderId,
     required this.timelineKey,
     required this.paymentCardKey,
     this.suppressTimelineStageCoaches = false,
+    this.onChatTap,
   });
 
   @override
@@ -431,6 +447,7 @@ class _OrderOverviewTab extends ConsumerWidget {
                 orderId: orderId,
                 order: order,
                 suppressStageCoachMarks: suppressTimelineStageCoaches,
+                onChatTap: onChatTap,
               ),
             ),
             if (ref.watch(canEditOrderProvider(order.id))) ...[
@@ -490,50 +507,71 @@ class _AgentAppBarTitle extends ConsumerWidget {
         }
         return Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE0DFD8), width: 0.5),
-              ),
-              child: ClipOval(
-                child: agent.photoUrl != null && agent.photoUrl!.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: agent.photoUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
-                          color: const Color(0xFFE6F1FB),
-                          child: const Icon(
-                            Icons.person_outline,
-                            size: 18,
-                            color: Color(0xFF378ADD),
-                          ),
-                        ),
-                        errorWidget: (_, __, ___) => Container(
-                          color: const Color(0xFFE6F1FB),
-                          child: const Icon(
-                            Icons.person_outline,
-                            size: 18,
-                            color: Color(0xFF378ADD),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: const Color(0xFFE6F1FB),
-                        child: Center(
-                          child: Text(
-                            agent.fullName.isNotEmpty
-                                ? agent.fullName[0].toUpperCase()
-                                : '?',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF378ADD),
-                            ),
-                          ),
+            GestureDetector(
+              onTap: (agent.photoUrl != null && agent.photoUrl!.isNotEmpty)
+                  ? () => Navigator.of(context).push(
+                      PageRouteBuilder<void>(
+                        opaque: false,
+                        barrierColor: Colors.black87,
+                        transitionDuration: const Duration(milliseconds: 250),
+                        pageBuilder: (_, __, ___) => _AgentPhotoViewer(
+                          photoUrl: agent.photoUrl!,
+                          agentName: agent.fullName,
                         ),
                       ),
+                    )
+                  : null,
+              child: Hero(
+                tag: 'agent_photo_${agent.photoUrl ?? ''}',
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFE0DFD8),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: agent.photoUrl != null && agent.photoUrl!.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: agent.photoUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: const Color(0xFFE6F1FB),
+                              child: const Icon(
+                                Icons.person_outline,
+                                size: 18,
+                                color: Color(0xFF378ADD),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: const Color(0xFFE6F1FB),
+                              child: const Icon(
+                                Icons.person_outline,
+                                size: 18,
+                                color: Color(0xFF378ADD),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: const Color(0xFFE6F1FB),
+                            child: Center(
+                              child: Text(
+                                agent.fullName.isNotEmpty
+                                    ? agent.fullName[0].toUpperCase()
+                                    : '?',
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF378ADD),
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -605,6 +643,106 @@ class _AgentAppBarTitle extends ConsumerWidget {
         ],
       ),
       error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _AgentPhotoViewer extends StatelessWidget {
+  final String photoUrl;
+  final String agentName;
+
+  const _AgentPhotoViewer({required this.photoUrl, required this.agentName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Center(
+            child: Hero(
+              tag: 'agent_photo_$photoUrl',
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 5.0,
+                child: CachedNetworkImage(
+                  imageUrl: photoUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (_, __) => const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                  errorWidget: (_, __, ___) => Container(
+                    color: const Color(0xFF1A1A18),
+                    child: const Icon(
+                      Icons.person_outline,
+                      size: 64,
+                      color: Colors.white24,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(
+                8,
+                MediaQuery.of(context).padding.top + 8,
+                8,
+                16,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.7),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      agentName,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

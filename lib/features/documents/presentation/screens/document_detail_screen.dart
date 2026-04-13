@@ -661,7 +661,7 @@ class _RejectionReasonCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           GestureDetector(
-            onTap: () => context.push('/order/$orderId?tab=chat'),
+            onTap: () => context.go('/order/$orderId?tab=chat'),
             child: Text(
               DocumentConstants.contactAgentForHelp,
               style: GoogleFonts.dmSans(

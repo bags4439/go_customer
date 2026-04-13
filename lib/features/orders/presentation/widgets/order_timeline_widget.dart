@@ -20,12 +20,14 @@ class OrderTimelineWidget extends ConsumerStatefulWidget {
   final String orderId;
   final OrderView order;
   final bool suppressStageCoachMarks;
+  final VoidCallback? onChatTap;
 
   const OrderTimelineWidget({
     super.key,
     required this.orderId,
     required this.order,
     this.suppressStageCoachMarks = false,
+    this.onChatTap,
   });
 
   @override
@@ -249,6 +251,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
             shipping: shipping,
             clearance: clearance,
             repairJob: repairJob,
+            onChatTap: widget.onChatTap,
           );
           final isActive = s.stageNumber == widget.order.stageNumber;
           if (isActive) {

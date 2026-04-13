@@ -58,6 +58,7 @@ class OrderTimelineStepRow extends StatelessWidget {
   final ShippingModel? shipping;
   final DutyClearanceModel? clearance;
   final RepairJobModel? repairJob;
+  final VoidCallback? onChatTap;
 
   const OrderTimelineStepRow({
     super.key,
@@ -70,6 +71,7 @@ class OrderTimelineStepRow extends StatelessWidget {
     this.shipping,
     this.clearance,
     this.repairJob,
+    this.onChatTap,
   });
 
   @override
@@ -181,6 +183,7 @@ class OrderTimelineStepRow extends StatelessWidget {
                               shipping: shipping,
                               clearance: clearance,
                               repairJob: repairJob,
+                              onChatTap: onChatTap,
                             ),
                           )
                         : const SizedBox.shrink(),
@@ -377,6 +380,7 @@ class _SubActionArea extends StatelessWidget {
   final ShippingModel? shipping;
   final DutyClearanceModel? clearance;
   final RepairJobModel? repairJob;
+  final VoidCallback? onChatTap;
 
   const _SubActionArea({
     required this.stage,
@@ -386,6 +390,7 @@ class _SubActionArea extends StatelessWidget {
     this.shipping,
     this.clearance,
     this.repairJob,
+    this.onChatTap,
   });
 
   @override
@@ -419,7 +424,11 @@ class _SubActionArea extends StatelessWidget {
       case 'clearance':
         final c = clearance;
         if (c != null) {
-          return ClearanceStatusCard(clearance: c, orderId: orderId);
+          return ClearanceStatusCard(
+            clearance: c,
+            orderId: orderId,
+            onChatTap: onChatTap,
+          );
         }
         return _chooseClearance(context);
       case 'repair':
@@ -524,7 +533,7 @@ class _SubActionArea extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-        _buildChatButton(context, orderId),
+        _buildChatButton(context, orderId, onChatTap),
       ],
     );
   }
@@ -681,11 +690,15 @@ class _DeliveryActionCard extends ConsumerWidget {
   }
 }
 
-Widget _buildChatButton(BuildContext context, String orderId) {
+Widget _buildChatButton(
+  BuildContext context,
+  String orderId,
+  VoidCallback? onChatTap,
+) {
   return SizedBox(
     width: double.infinity,
     child: OutlinedButton.icon(
-      onPressed: () => context.push('/order/$orderId?tab=chat'),
+      onPressed: onChatTap,
       icon: const Icon(
         Icons.chat_bubble_outline_rounded,
         size: 15,

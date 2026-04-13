@@ -142,6 +142,8 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       markChatAsRead(ref, widget.orderId);
+      // Scroll to bottom on first load
+      _scrollToBottom();
     });
   }
 
@@ -198,7 +200,18 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
       prev,
       next,
     ) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+      // Only scroll to bottom when a new
+      // message is actually added.
+      // Do NOT scroll on rebuilds caused
+      // by bottom sheets closing, reactions,
+      // or deletions — this was causing the
+      // selected message to scroll out of
+      // view when long-pressing.
+      final prevCount = prev?.length ?? 0;
+      final nextCount = next.length;
+      if (nextCount > prevCount) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+      }
     });
 
     return GestureDetector(
@@ -314,9 +327,6 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                       )
                     : Builder(
                         builder: (context) {
-                          WidgetsBinding.instance.addPostFrameCallback(
-                            (_) => _scrollToBottom(),
-                          );
                           final userId = ref.watch(authStateProvider).value;
                           final reactions = reactionsAsync.valueOrNull ?? {};
                           final pageResult = ref
@@ -1229,14 +1239,10 @@ class _InputBarState extends ConsumerState<_InputBar> {
                         _pickVideo();
                       },
                     ),
-                    _AttachTile(
+                    _AttachTileDisabled(
                       icon: Icons.insert_drive_file_outlined,
                       label: 'File',
                       color: const Color(0xFFBA7517),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        sendFileForOrder(ref, widget.orderId);
-                      },
                     ),
                   ],
                 ),
@@ -1635,6 +1641,149 @@ class _AttachTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AttachTileDisabled extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _AttachTileDisabled({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pop();
+        Future.microtask(() {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.rocket_launch_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'File sharing coming soon',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'For now, you can access all '
+                            'files sent to you via the '
+                            'Documents tab.',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11.5,
+                              color: Colors.white
+                                  .withValues(alpha: 0.8),
+                              height: 1.4,
+                            ),
+                            softWrap: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF1A1A18),
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              ),
+            );
+          }
+        });
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Opacity(
+        opacity: 0.45,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.15),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Icon(icon, color: color, size: 26),
+                ),
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1A18),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'Soon',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: GoogleFonts.dmSans(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF888888),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

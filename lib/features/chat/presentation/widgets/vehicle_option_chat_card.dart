@@ -811,7 +811,7 @@ class _ChatLinkSection extends StatelessWidget {
           child: SizedBox(
             height: 44,
             child: OutlinedButton(
-              onPressed: () => context.push('/order/$orderId?tab=chat'),
+              onPressed: () => context.go('/order/$orderId?tab=chat'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: _kPrimary,
                 side: const BorderSide(color: _kPrimary, width: 0.5),

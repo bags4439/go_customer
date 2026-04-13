@@ -18,11 +18,13 @@ const _kSuccess = 0xFF1D9E75;
 class ClearanceStatusCard extends StatelessWidget {
   final DutyClearanceModel clearance;
   final String orderId;
+  final VoidCallback? onChatTap;
 
   const ClearanceStatusCard({
     super.key,
     required this.clearance,
     required this.orderId,
+    this.onChatTap,
   });
 
   @override
@@ -66,7 +68,7 @@ class ClearanceStatusCard extends StatelessWidget {
             if (clearance.handledBy == 'agent') ...[
               const SizedBox(height: 8),
               TextButton(
-                onPressed: () => context.push('/order/$orderId?tab=chat'),
+                onPressed: onChatTap,
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 0,

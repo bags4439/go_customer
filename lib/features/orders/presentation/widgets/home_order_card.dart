@@ -57,7 +57,7 @@ class _OrderCard extends ConsumerWidget {
         color: _C.bgPrimary,
         borderRadius: BorderRadius.circular(radius),
         child: InkWell(
-          onTap: () => router.go('/order/${order.id}'),
+          onTap: () => router.push('/order/${order.id}'),
           borderRadius: BorderRadius.circular(radius),
           splashColor: _C.infoBg,
           highlightColor: _C.bgSecondary,
@@ -459,7 +459,7 @@ class _PaymentInlineCta extends ConsumerWidget {
           ),
           GestureDetector(
             onTap: () => GoRouter.of(context)
-                .go('/order/$orderId/payment-request/${payment.id}'),
+                .push('/order/$orderId/payment-request/${payment.id}'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
