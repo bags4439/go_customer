@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/crash_reporter.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../data/datasources/auth_firebase_data_source.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -58,6 +59,17 @@ final syncOneSignalUseCaseProvider = Provider<SyncOneSignalUseCase>((ref) {
 
 final authStateProvider = StreamProvider<String?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges();
+});
+
+/// Side-effect provider — sets Crashlytics
+/// user identity whenever auth state changes.
+/// Must be watched somewhere that is always
+/// alive (e.g. the root widget or shell).
+final crashlyticsUserSyncProvider = Provider<void>((ref) {
+  final authState = ref.watch(authStateProvider);
+  authState.whenData((uid) {
+    CrashReporter.setUser(uid);
+  });
 });
 
 final currentUserProvider = FutureProvider<AppUser?>((ref) async {

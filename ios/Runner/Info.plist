@@ -59,5 +59,11 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to suggest your delivery address.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AutoImport GH uses your camera to capture photos of identity documents and files for upload.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AutoImport GH accesses your photo library to select images for upload.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AutoImport GH may use the microphone for video recording.</string>
 </dict>
 </plist>

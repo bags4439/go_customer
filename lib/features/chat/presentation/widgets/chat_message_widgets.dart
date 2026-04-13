@@ -1,14 +1,33 @@
+// ignore_for_file: unused_element, unused_element_parameter
+// _k* constants, _BubblePainter, _ReplyBlock: infrastructure for upcoming bubble UI.
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
 import 'vehicle_option_chat_card.dart';
+
+// ─────────────────────────────────────
+// Design constants — WhatsApp adapted
+// to AutoImport GH brand palette
+// ─────────────────────────────────────
+const _kSentBg = Color(0xFFE8F4FD);
+const _kSentFg = Color(0xFF1A1A18);
+const _kSentTimestamp = Color(0xFF7B9AB5);
+const _kReceivedBg = Color(0xFFFFFFFF);
+const _kReceivedFg = Color(0xFF1A1A18);
+const _kReceivedTimestamp = Color(0xFF999999);
+const _kAccent = Color(0xFF378ADD);
+const _kBubbleRadius = 7.5;
+const _kMaxBubbleWidth = 280.0;
 
 /// Status for sent messages: pending (clock), sent (done), read (done_all blue).
 String _messageStatusKey(ChatMessage msg) {
@@ -17,38 +36,290 @@ String _messageStatusKey(ChatMessage msg) {
   return 'sent';
 }
 
-Widget _statusIcon(String statusKey, bool isMe) {
-  if (!isMe) return const SizedBox.shrink();
-  IconData icon;
-  Color color;
+/// Tick icon for sent message status.
+Widget _tickIcon(String statusKey) {
   if (statusKey == 'pending') {
-    icon = Icons.access_time;
-    color = Colors.white.withOpacity(0.6);
-  } else if (statusKey == 'sent') {
-    icon = Icons.done;
-    color = Colors.white.withOpacity(0.7);
-  } else {
-    icon = Icons.done_all;
-    color = const Color(0xFF53BDEB);
+    return Icon(Icons.access_time_rounded, size: 11, color: _kSentTimestamp);
   }
-  return Icon(icon, size: 12, color: color);
+  if (statusKey == 'sent') {
+    return Icon(Icons.done_rounded, size: 13, color: _kSentTimestamp);
+  }
+  // read
+  return Icon(Icons.done_all_rounded, size: 13, color: _kAccent);
 }
 
-/// Bottom row for my messages: timestamp + status icon inside bubble.
-Widget _timestampAndStatusRow(DateTime sentAt, String statusKey, bool isMe) {
-  final time = DateFormat.Hm().format(sentAt);
+/// Timestamp + tick for sent messages.
+/// Replaces the old _timestampAndStatusRow.
+Widget _sentMeta(DateTime sentAt, String statusKey) {
   return Row(
     mainAxisSize: MainAxisSize.min,
-    mainAxisAlignment: MainAxisAlignment.end,
     children: [
       Text(
-        time,
-        style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.8)),
+        DateFormat.Hm().format(sentAt),
+        style: GoogleFonts.dmSans(
+          fontSize: 11,
+          color: _kSentTimestamp,
+          height: 1,
+        ),
       ),
       const SizedBox(width: 3),
-      _statusIcon(statusKey, isMe),
+      _tickIcon(statusKey),
     ],
   );
+}
+
+/// Timestamp for received messages.
+Widget _receivedMeta(DateTime sentAt) {
+  return Text(
+    DateFormat.Hm().format(sentAt),
+    style: GoogleFonts.dmSans(
+      fontSize: 11,
+      color: _kReceivedTimestamp,
+      height: 1,
+    ),
+  );
+}
+
+/// Used by existing bubble widgets until they adopt _sentMeta / _receivedMeta.
+Widget _timestampAndStatusRow(DateTime sentAt, String statusKey, bool isMe) {
+  return isMe ? _sentMeta(sentAt, statusKey) : _receivedMeta(sentAt);
+}
+
+/// Draws a WhatsApp-style bubble with
+/// an optional tail on the bottom corner.
+class _BubblePainter extends CustomPainter {
+  final bool isMe;
+  final bool hasTail;
+  final Color color;
+  final Color? borderColor;
+
+  const _BubblePainter({
+    required this.isMe,
+    required this.hasTail,
+    required this.color,
+    this.borderColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = _kBubbleRadius;
+    final tailW = hasTail ? 6.5 : 0.0;
+    final tailH = hasTail ? 10.0 : 0.0;
+    final path = Path();
+
+    if (isMe) {
+      // Sent — tail exits bottom-right
+      final l = 0.0;
+      final ri = size.width - tailW;
+
+      path.moveTo(l + r, 0);
+      path.lineTo(ri - r, 0);
+      path.arcToPoint(
+        Offset(ri, r),
+        radius: Radius.circular(r),
+        clockwise: true,
+      );
+      path.lineTo(ri, size.height - tailH);
+
+      if (hasTail) {
+        path.quadraticBezierTo(
+          ri + tailW * 0.4,
+          size.height - tailH * 0.3,
+          ri + tailW,
+          size.height,
+        );
+        path.lineTo(ri - r * 0.6, size.height);
+        path.arcToPoint(
+          Offset(ri - r, size.height - r * 0.4),
+          radius: Radius.circular(r * 0.7),
+          clockwise: false,
+        );
+      } else {
+        path.arcToPoint(
+          Offset(ri - r, size.height),
+          radius: Radius.circular(r),
+          clockwise: true,
+        );
+      }
+
+      path.lineTo(l + r, size.height);
+      path.arcToPoint(
+        Offset(l, size.height - r),
+        radius: Radius.circular(r),
+        clockwise: true,
+      );
+      path.lineTo(l, r);
+      path.arcToPoint(
+        Offset(l + r, 0),
+        radius: Radius.circular(r),
+        clockwise: true,
+      );
+    } else {
+      // Received — tail exits bottom-left
+      final l = tailW;
+      final ri = size.width;
+
+      path.moveTo(l + r, 0);
+      path.lineTo(ri - r, 0);
+      path.arcToPoint(
+        Offset(ri, r),
+        radius: Radius.circular(r),
+        clockwise: true,
+      );
+      path.lineTo(ri, size.height - r);
+      path.arcToPoint(
+        Offset(ri - r, size.height),
+        radius: Radius.circular(r),
+        clockwise: true,
+      );
+      path.lineTo(l + r, size.height);
+
+      if (hasTail) {
+        path.arcToPoint(
+          Offset(l, size.height - r * 0.4),
+          radius: Radius.circular(r * 0.7),
+          clockwise: true,
+        );
+        path.lineTo(l, size.height - tailH);
+        path.quadraticBezierTo(
+          l - tailW * 0.4,
+          size.height - tailH * 0.3,
+          l - tailW,
+          size.height,
+        );
+        path.lineTo(l + r * 0.6, size.height);
+      } else {
+        path.arcToPoint(
+          Offset(l, size.height - r),
+          radius: Radius.circular(r),
+          clockwise: true,
+        );
+      }
+
+      path.lineTo(l, r);
+      path.arcToPoint(
+        Offset(l + r, 0),
+        radius: Radius.circular(r),
+        clockwise: true,
+      );
+    }
+
+    path.close();
+
+    // Subtle shadow for received bubbles
+    if (!isMe) {
+      canvas.drawShadow(path, Colors.black.withValues(alpha: 0.12), 2.0, false);
+    }
+
+    // Fill
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.fill,
+    );
+
+    // Border for received bubbles
+    if (borderColor != null) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = borderColor!
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.5,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BubblePainter old) =>
+      old.isMe != isMe ||
+      old.hasTail != hasTail ||
+      old.color != color ||
+      old.borderColor != borderColor;
+
+  @override
+  bool hitTest(Offset position) => true;
+}
+
+/// Quoted reply block shown inside a
+/// bubble when replying to a message.
+class _ReplyBlock extends StatelessWidget {
+  final String body;
+  final bool isMe;
+
+  const _ReplyBlock({required this.body, required this.isMe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.fromLTRB(10, 7, 10, 7),
+      decoration: BoxDecoration(
+        color: isMe
+            ? _kAccent.withValues(alpha: 0.12)
+            : const Color(0xFFF0EFE9),
+        borderRadius: BorderRadius.circular(6),
+        border: Border(left: BorderSide(color: _kAccent, width: 3)),
+      ),
+      child: Text(
+        body,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.dmSans(
+          fontSize: 12,
+          color: isMe ? const Color(0xFF185FA5) : const Color(0xFF555555),
+          height: 1.4,
+        ),
+      ),
+    );
+  }
+}
+
+/// Emoji reactions shown below a bubble.
+class _ReactionsRow extends StatelessWidget {
+  final List<String> reactions;
+  final bool isMe;
+
+  const _ReactionsRow({required this.reactions, required this.isMe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 2,
+        left: isMe ? 0 : 10,
+        right: isMe ? 10 : 0,
+      ),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 2,
+        children: reactions
+            .map(
+              (e) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFFE0DFD8),
+                    width: 0.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Text(e, style: const TextStyle(fontSize: 13)),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
 }
 
 class ChatMessageBubble extends StatelessWidget {
@@ -59,6 +330,8 @@ class ChatMessageBubble extends StatelessWidget {
   final PendingMessage? pending;
   final VoidCallback? onVideoTap;
   final String orderId;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const ChatMessageBubble({
     super.key,
@@ -69,6 +342,8 @@ class ChatMessageBubble extends StatelessWidget {
     this.replyToBody,
     this.pending,
     this.onVideoTap,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   }) : assert(message != null || pending != null);
 
   factory ChatMessageBubble.pending({
@@ -76,12 +351,16 @@ class ChatMessageBubble extends StatelessWidget {
     required bool isMe,
     required String orderId,
     VoidCallback? onVideoTap,
+    bool isFirstInGroup = true,
+    bool isLastInGroup = true,
   }) {
     return ChatMessageBubble(
       isMe: isMe,
       orderId: orderId,
       pending: pending,
       onVideoTap: onVideoTap,
+      isFirstInGroup: isFirstInGroup,
+      isLastInGroup: isLastInGroup,
     );
   }
 
@@ -92,10 +371,34 @@ class ChatMessageBubble extends StatelessWidget {
         pending: pending!,
         isMe: isMe,
         onVideoTap: onVideoTap,
+        isFirstInGroup: isFirstInGroup,
+        isLastInGroup: isLastInGroup,
       );
     }
     final msg = message!;
+
+    if (msg.isDeleted) {
+      final bubble = _DeletedBubble(
+        isMe: isMe,
+        isFirstInGroup: isFirstInGroup,
+        isLastInGroup: isLastInGroup,
+      );
+      if (reactions.isEmpty) return bubble;
+      return Column(
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          bubble,
+          _ReactionsRow(reactions: reactions, isMe: isMe),
+        ],
+      );
+    }
+
     final statusKey = _messageStatusKey(msg);
+    // ignore: unused_local_variable
+    final hasTail = isFirstInGroup;
     final Widget child;
     switch (msg.messageType) {
       case 'voice_note':
@@ -103,10 +406,18 @@ class ChatMessageBubble extends StatelessWidget {
           message: msg,
           isMe: isMe,
           statusKey: statusKey,
+          isFirstInGroup: isFirstInGroup,
+          isLastInGroup: isLastInGroup,
         );
         break;
       case 'image':
-        child = _ImageBubble(message: msg, isMe: isMe, statusKey: statusKey);
+        child = _ImageBubble(
+          message: msg,
+          isMe: isMe,
+          statusKey: statusKey,
+          isFirstInGroup: isFirstInGroup,
+          isLastInGroup: isLastInGroup,
+        );
         break;
       case 'video':
         child = _VideoBubble(
@@ -114,10 +425,19 @@ class ChatMessageBubble extends StatelessWidget {
           isMe: isMe,
           statusKey: statusKey,
           onTap: onVideoTap,
+          isFirstInGroup: isFirstInGroup,
+          isLastInGroup: isLastInGroup,
         );
         break;
       case 'file':
-        child = _FileBubble(message: msg, isMe: isMe, statusKey: statusKey);
+        child = _FileBubble(
+          message: msg,
+          isMe: isMe,
+          statusKey: statusKey,
+          replyToBody: replyToBody,
+          isFirstInGroup: isFirstInGroup,
+          isLastInGroup: isLastInGroup,
+        );
         break;
       case 'vehicle_card':
         child = _VehicleCard(message: msg, orderId: orderId);
@@ -129,15 +449,19 @@ class ChatMessageBubble extends StatelessWidget {
         child = _PaymentConfirmedCard(message: msg);
         break;
       case 'bid_won':
-        child = _BidWonCard(message: msg);
+        child = _SystemPill(text: msg.body ?? 'Bid won', icon: '🎉');
         break;
       case 'bid_lost':
-        child = _BidLostCard(message: msg);
+        child = _SystemPill(
+          text: msg.body ?? 'Bid was not successful',
+          icon: '—',
+        );
         break;
       case 'shipping_update':
         child = _ShippingUpdateCard(message: msg);
         break;
       case 'stage_update':
+      case 'system':
         child = _SystemPill(text: msg.body ?? '');
         break;
       default:
@@ -146,6 +470,8 @@ class ChatMessageBubble extends StatelessWidget {
           isMe: isMe,
           replyToBody: replyToBody,
           statusKey: statusKey,
+          isFirstInGroup: isFirstInGroup,
+          isLastInGroup: isLastInGroup,
         );
     }
     if (reactions.isEmpty) return child;
@@ -156,26 +482,7 @@ class ChatMessageBubble extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         child,
-        const SizedBox(height: 4),
-        Wrap(
-          spacing: 4,
-          runSpacing: 2,
-          children: reactions
-              .map(
-                (e) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(e, style: const TextStyle(fontSize: 12)),
-                ),
-              )
-              .toList(),
-        ),
+        _ReactionsRow(reactions: reactions, isMe: isMe),
       ],
     );
   }
@@ -185,11 +492,15 @@ class _PendingBubble extends StatelessWidget {
   final PendingMessage pending;
   final bool isMe;
   final VoidCallback? onVideoTap;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const _PendingBubble({
     required this.pending,
     required this.isMe,
     this.onVideoTap,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   });
 
   @override
@@ -202,6 +513,8 @@ class _PendingBubble extends StatelessWidget {
         localPath: pending.localPath,
         uploadProgress: pending.progress < 1 ? pending.progress : null,
         statusKey: 'pending',
+        isFirstInGroup: isFirstInGroup,
+        isLastInGroup: isLastInGroup,
       );
     } else if (pending.messageType == 'video' && pending.localPath != null) {
       child = _VideoBubble(
@@ -211,6 +524,8 @@ class _PendingBubble extends StatelessWidget {
         uploadProgress: pending.progress < 1 ? pending.progress : null,
         statusKey: 'pending',
         onTap: onVideoTap,
+        isFirstInGroup: isFirstInGroup,
+        isLastInGroup: isLastInGroup,
       );
     } else {
       return const SizedBox.shrink();
@@ -222,7 +537,58 @@ class _PendingBubble extends StatelessWidget {
         child,
         const Padding(
           padding: EdgeInsets.only(top: 2, right: 4),
-          child: Icon(Icons.access_time, size: 12, color: Colors.white),
+          child: Icon(
+            Icons.access_time_rounded,
+            size: 11,
+            color: _kSentTimestamp,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Renders message body with timestamp
+/// inline after the text (Wrap), matching
+/// WhatsApp-style flow.
+class _MessageWithInlineMeta extends StatelessWidget {
+  final String body;
+  final bool isMe;
+  final String statusKey;
+  final DateTime sentAt;
+
+  const _MessageWithInlineMeta({
+    required this.body,
+    required this.isMe,
+    required this.statusKey,
+    required this.sentAt,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final meta = isMe ? _sentMeta(sentAt, statusKey) : _receivedMeta(sentAt);
+
+    return Column(
+      crossAxisAlignment: isMe
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.end,
+          crossAxisAlignment: WrapCrossAlignment.end,
+          spacing: 4,
+          children: [
+            Text(
+              body,
+              style: GoogleFonts.dmSans(
+                fontSize: 14.5,
+                color: isMe ? _kSentFg : _kReceivedFg,
+                height: 1.45,
+              ),
+            ),
+            Padding(padding: const EdgeInsets.only(bottom: 1), child: meta),
+          ],
         ),
       ],
     );
@@ -234,149 +600,329 @@ class _TextBubble extends StatelessWidget {
   final bool isMe;
   final String? replyToBody;
   final String statusKey;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const _TextBubble({
     required this.message,
     required this.isMe,
     this.replyToBody,
     required this.statusKey,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bg = isMe ? const Color(0xFF378ADD) : Colors.white;
-    final fg = isMe ? Colors.white : Colors.black87;
-    final align = isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    final radius = isMe
-        ? const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(4),
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          )
-        : const BorderRadius.only(
-            topLeft: Radius.circular(4),
-            topRight: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          );
-    return Column(
-      crossAxisAlignment: align,
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: radius,
-            border: isMe
-                ? null
-                : Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+    final hasTail = isFirstInGroup;
+    final tailW = hasTail ? 6.5 : 0.0;
+    final body = message.body ?? '';
+
+    return Container(
+      margin: EdgeInsets.only(
+        top: isFirstInGroup ? 6 : 1.5,
+        bottom: isLastInGroup ? 2 : 1.5,
+        // Push sent messages to the right,
+        // received to the left. The tail
+        // eats into the bubble width so we
+        // compensate with margin on the
+        // opposite side.
+        left: isMe ? 52 : 0,
+        right: isMe ? 0 : 52,
+      ),
+      child: CustomPaint(
+        painter: _BubblePainter(
+          isMe: isMe,
+          hasTail: hasTail,
+          color: isMe ? _kSentBg : _kReceivedBg,
+          borderColor: isMe ? null : const Color(0xFFE8E7E2),
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            // Left padding: received bubbles
+            // need extra room for the tail
+            isMe ? 10 : 10 + tailW,
+            8,
+            // Right padding: sent bubbles
+            // need extra room for the tail
+            isMe ? 10 + tailW : 10,
+            7,
           ),
-          child: Column(
-            crossAxisAlignment: align,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (replyToBody != null && replyToBody!.isNotEmpty) ...[
-                Container(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  margin: const EdgeInsets.only(bottom: 6),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      left: BorderSide(
-                        color: fg.withValues(alpha: 0.6),
-                        width: 3,
-                      ),
-                    ),
-                  ),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      replyToBody!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: fg.withValues(alpha: 0.8),
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _kMaxBubbleWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (replyToBody != null && replyToBody!.isNotEmpty)
+                  _ReplyBlock(body: replyToBody!, isMe: isMe),
+                _MessageWithInlineMeta(
+                  body: body,
+                  isMe: isMe,
+                  statusKey: statusKey,
+                  sentAt: message.sentAt,
                 ),
               ],
-              Text(message.body ?? '', style: TextStyle(color: fg)),
-              if (isMe) ...[
-                const SizedBox(height: 4),
-                _timestampAndStatusRow(message.sentAt, statusKey, isMe),
-              ],
-            ],
+            ),
           ),
         ),
-      ],
+      ),
     );
   }
 }
 
-class _VoiceNoteBubble extends StatelessWidget {
+class _VoiceNoteBubble extends StatefulWidget {
   final ChatMessage message;
   final bool isMe;
   final String statusKey;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const _VoiceNoteBubble({
     required this.message,
     required this.isMe,
     required this.statusKey,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   });
 
   @override
+  State<_VoiceNoteBubble> createState() => _VoiceNoteBubbleState();
+}
+
+class _VoiceNoteBubbleState extends State<_VoiceNoteBubble>
+    with SingleTickerProviderStateMixin {
+  late final AudioPlayer _player;
+  late final AnimationController _waveCtrl;
+  bool _isPlaying = false;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+
+  // 30 bars with organic heights that
+  // mimic a natural audio waveform
+  static const _barHeights = <double>[
+    8,
+    14,
+    20,
+    12,
+    22,
+    10,
+    18,
+    24,
+    9,
+    15,
+    21,
+    13,
+    19,
+    11,
+    23,
+    8,
+    16,
+    22,
+    10,
+    14,
+    20,
+    12,
+    18,
+    9,
+    22,
+    15,
+    11,
+    19,
+    8,
+    16,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _player = AudioPlayer();
+    _waveCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..repeat(reverse: true);
+
+    _player.positionStream.listen((p) {
+      if (mounted) {
+        setState(() => _position = p);
+      }
+    });
+    _player.durationStream.listen((d) {
+      if (mounted && d != null) {
+        setState(() => _duration = d);
+      }
+    });
+    _player.playerStateStream.listen((s) {
+      if (!mounted) return;
+      setState(() => _isPlaying = s.playing);
+      if (s.playing) {
+        _waveCtrl.repeat(reverse: true);
+      } else {
+        _waveCtrl.stop();
+      }
+      if (s.processingState == ProcessingState.completed) {
+        _player.seek(Duration.zero);
+        _player.pause();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    _waveCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _toggle() async {
+    final url = widget.message.mediaUrl;
+    if (url == null || url.isEmpty) return;
+    if (_isPlaying) {
+      await _player.pause();
+    } else {
+      if (_player.audioSource == null) {
+        await _player.setUrl(url);
+      }
+      await _player.play();
+    }
+  }
+
+  String _fmt(Duration d) {
+    final m = d.inMinutes.remainder(60).toString();
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bg = isMe ? const Color(0xFF378ADD) : Colors.white;
-    final fg = isMe ? Colors.white : Colors.black87;
+    final isMe = widget.isMe;
+    final hasTail = widget.isFirstInGroup;
+    final tailW = hasTail ? 6.5 : 0.0;
+
+    final totalSecs = _duration.inSeconds > 0
+        ? _duration.inSeconds
+        : (widget.message.mediaDurationSecs ?? 1);
+    final elapsed = _position.inSeconds;
+    final progress = totalSecs > 0
+        ? (elapsed / totalSecs).clamp(0.0, 1.0)
+        : 0.0;
+    final bars = _barHeights.length;
+    final filledBars = (progress * bars).round();
+
+    final durationLabel = _isPlaying || elapsed > 0
+        ? _fmt(_position)
+        : _fmt(Duration(seconds: widget.message.mediaDurationSecs ?? 0));
+
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(16),
-        border: isMe
-            ? null
-            : Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+      margin: EdgeInsets.only(
+        top: widget.isFirstInGroup ? 6 : 1.5,
+        bottom: widget.isLastInGroup ? 2 : 1.5,
+        left: isMe ? 52 : 0,
+        right: isMe ? 0 : 52,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.play_arrow, color: fg),
-              const SizedBox(width: 8),
-              Row(
-                children: List.generate(
-                  12,
-                  (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                    width: 3,
-                    height: 6.0 + (index % 4) * 3,
-                    decoration: BoxDecoration(
-                      color: fg.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${message.mediaDurationSecs ?? 0}s',
-                style: TextStyle(color: fg),
-              ),
-            ],
+      child: CustomPaint(
+        painter: _BubblePainter(
+          isMe: isMe,
+          hasTail: hasTail,
+          color: isMe ? _kSentBg : _kReceivedBg,
+          borderColor: isMe ? null : const Color(0xFFE8E7E2),
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            isMe ? 10 : 10 + tailW,
+            10,
+            isMe ? 10 + tailW : 10,
+            8,
           ),
-          if (isMe) ...[
-            const SizedBox(height: 4),
-            _timestampAndStatusRow(message.sentAt, statusKey, isMe),
-          ],
-        ],
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _kMaxBubbleWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: _toggle,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _kAccent,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: _kAccent.withValues(alpha: 0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          _isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedBuilder(
+                          animation: _waveCtrl,
+                          builder: (_, __) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(bars, (i) {
+                                final isFilled = i < filledBars;
+                                double h = _barHeights[i];
+                                if (_isPlaying && isFilled) {
+                                  h += _waveCtrl.value * 3.0;
+                                }
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 1.0,
+                                  ),
+                                  width: 2.5,
+                                  height: h,
+                                  decoration: BoxDecoration(
+                                    color: isFilled
+                                        ? _kAccent
+                                        : _kAccent.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                );
+                              }),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          durationLabel,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 11,
+                            color: isMe ? _kSentTimestamp : _kReceivedTimestamp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                isMe
+                    ? _sentMeta(widget.message.sentAt, widget.statusKey)
+                    : _receivedMeta(widget.message.sentAt),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -388,6 +934,8 @@ class _ImageBubble extends StatelessWidget {
   final String? localPath;
   final double? uploadProgress;
   final String statusKey;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const _ImageBubble({
     this.message,
@@ -395,12 +943,33 @@ class _ImageBubble extends StatelessWidget {
     this.localPath,
     this.uploadProgress,
     required this.statusKey,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   });
+
+  static void _openFullScreen(
+    BuildContext context,
+    String url,
+    String heroTag,
+  ) {
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        opaque: false,
+        barrierColor: Colors.black87,
+        transitionDuration: const Duration(milliseconds: 220),
+        pageBuilder: (_, __, ___) =>
+            _FullScreenImageViewer(url: url, heroTag: heroTag),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final url = message?.mediaUrl;
     final showProgress = uploadProgress != null && uploadProgress! < 1.0;
+    final heroTag = 'chat_img_${message?.id ?? localPath ?? ''}';
+    final hasTail = isFirstInGroup;
+    final r = _kBubbleRadius;
 
     Widget content;
     if (localPath != null && File(localPath!).existsSync()) {
@@ -410,7 +979,7 @@ class _ImageBubble extends StatelessWidget {
         imageUrl: url,
         fit: BoxFit.cover,
         placeholder: (context, url) => Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
+          baseColor: Colors.grey.shade200,
           highlightColor: Colors.grey.shade100,
           child: Container(color: Colors.white),
         ),
@@ -420,11 +989,28 @@ class _ImageBubble extends StatelessWidget {
       content = const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      constraints: const BoxConstraints(maxWidth: 220, maxHeight: 220),
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(isMe ? r : (hasTail ? 2.0 : r)),
+      topRight: Radius.circular(isMe ? (hasTail ? 2.0 : r) : r),
+      bottomLeft: Radius.circular(isMe ? r : (isLastInGroup ? r : 2.0)),
+      bottomRight: Radius.circular(isMe ? (isLastInGroup ? r : 2.0) : r),
+    );
+
+    Widget img = Container(
+      margin: EdgeInsets.only(
+        top: isFirstInGroup ? 6 : 1.5,
+        bottom: isLastInGroup ? 2 : 1.5,
+        left: isMe ? 52 : (hasTail ? 6.5 : 0),
+        right: isMe ? (hasTail ? 6.5 : 0) : 52,
+      ),
+      constraints: const BoxConstraints(
+        maxWidth: 220,
+        maxHeight: 280,
+        minWidth: 120,
+        minHeight: 120,
+      ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: borderRadius,
         color: Colors.grey.shade200,
       ),
       clipBehavior: Clip.antiAlias,
@@ -437,8 +1023,8 @@ class _ImageBubble extends StatelessWidget {
               color: Colors.black45,
               child: Center(
                 child: SizedBox(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   child: CircularProgressIndicator(
                     value: uploadProgress,
                     strokeWidth: 2,
@@ -447,20 +1033,82 @@ class _ImageBubble extends StatelessWidget {
                 ),
               ),
             ),
-          if (isMe && message != null)
+          if (message != null)
             Positioned(
               bottom: 6,
-              right: 6,
+              right: 8,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.black.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: _timestampAndStatusRow(message!.sentAt, statusKey, isMe),
+                child: isMe
+                    ? _sentMeta(message!.sentAt, statusKey)
+                    : _receivedMeta(message!.sentAt),
               ),
             ),
         ],
+      ),
+    );
+
+    if (url != null && url.isNotEmpty && !showProgress) {
+      img = GestureDetector(
+        onTap: () => _openFullScreen(context, url, heroTag),
+        child: Hero(tag: heroTag, child: img),
+      );
+    }
+
+    return img;
+  }
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  final String url;
+  final String heroTag;
+
+  const _FullScreenImageViewer({required this.url, required this.heroTag});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Stack(
+          children: [
+            Center(
+              child: Hero(
+                tag: heroTag,
+                child: InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 6.0,
+                  child: CachedNetworkImage(imageUrl: url, fit: BoxFit.contain),
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              right: 16,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -473,6 +1121,8 @@ class _VideoBubble extends StatelessWidget {
   final double? uploadProgress;
   final String statusKey;
   final VoidCallback? onTap;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const _VideoBubble({
     this.message,
@@ -481,6 +1131,8 @@ class _VideoBubble extends StatelessWidget {
     this.uploadProgress,
     required this.statusKey,
     this.onTap,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   });
 
   static String _durationLabel(int? secs) {
@@ -494,6 +1146,8 @@ class _VideoBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final showProgress = uploadProgress != null && uploadProgress! < 1.0;
     final thumbUrl = message?.thumbnailUrl;
+    final hasTail = isFirstInGroup;
+    final r = _kBubbleRadius;
 
     Widget thumbnail;
     if (localPath != null && File(localPath!).existsSync()) {
@@ -503,105 +1157,79 @@ class _VideoBubble extends StatelessWidget {
         imageUrl: thumbUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
+          baseColor: Colors.grey.shade200,
           highlightColor: Colors.grey.shade100,
           child: Container(color: Colors.white),
         ),
         errorWidget: (context, url, error) => const ColoredBox(
-          color: Colors.grey,
+          color: Color(0xFF222222),
           child: Center(
-            child: Icon(Icons.play_arrow, color: Colors.white54, size: 48),
-          ),
-        ),
-      );
-    } else if (message?.mediaUrl != null && message!.mediaUrl!.isNotEmpty) {
-      thumbnail = CachedNetworkImage(
-        imageUrl: message!.mediaUrl!,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
-          highlightColor: Colors.grey.shade100,
-          child: Container(color: Colors.white),
-        ),
-        errorWidget: (context, url, error) => const ColoredBox(
-          color: Colors.grey,
-          child: Center(
-            child: Icon(Icons.play_arrow, color: Colors.white54, size: 48),
+            child: Icon(Icons.videocam, color: Colors.white54, size: 32),
           ),
         ),
       );
     } else {
       thumbnail = const ColoredBox(
-        color: Colors.grey,
+        color: Color(0xFF222222),
         child: Center(
-          child: Icon(Icons.play_arrow, color: Colors.white54, size: 48),
+          child: Icon(Icons.videocam, color: Colors.white54, size: 32),
         ),
       );
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      constraints: const BoxConstraints(maxWidth: 220, maxHeight: 220),
+      margin: EdgeInsets.only(
+        top: isFirstInGroup ? 6 : 1.5,
+        bottom: isLastInGroup ? 2 : 1.5,
+        left: isMe ? 52 : (hasTail ? 6.5 : 0),
+        right: isMe ? (hasTail ? 6.5 : 0) : 52,
+      ),
+      constraints: const BoxConstraints(
+        maxWidth: 220,
+        maxHeight: 260,
+        minWidth: 120,
+        minHeight: 120,
+      ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(isMe ? r : (hasTail ? 2.0 : r)),
+          topRight: Radius.circular(isMe ? (hasTail ? 2.0 : r) : r),
+          bottomLeft: Radius.circular(isMe ? r : (isLastInGroup ? r : 2.0)),
+          bottomRight: Radius.circular(isMe ? (isLastInGroup ? r : 2.0) : r),
+        ),
+        color: const Color(0xFF222222),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         fit: StackFit.expand,
         children: [
           thumbnail,
-          Center(
-            child: GestureDetector(
-              onTap: showProgress ? null : () => onTap?.call(),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.play_arrow,
-                  color: Color(0xFF378ADD),
-                  size: 32,
+          if (!showProgress)
+            Center(
+              child: GestureDetector(
+                onTap: onTap,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 6,
-            right: 6,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    _durationLabel(message?.mediaDurationSecs),
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ),
-                if (isMe && message != null) ...[
-                  const SizedBox(width: 4),
-                  _timestampAndStatusRow(message!.sentAt, statusKey, isMe),
-                ],
-              ],
-            ),
-          ),
           if (showProgress)
             Container(
-              color: Colors.black45,
+              color: Colors.black54,
               child: Center(
                 child: SizedBox(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   child: CircularProgressIndicator(
                     value: uploadProgress,
                     strokeWidth: 2,
@@ -610,6 +1238,42 @@ class _VideoBubble extends StatelessWidget {
                 ),
               ),
             ),
+          Positioned(
+            bottom: 6,
+            left: 8,
+            right: 8,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _durationLabel(message?.mediaDurationSecs),
+                    style: const TextStyle(color: Colors.white, fontSize: 11),
+                  ),
+                ),
+                if (isMe && message != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: _sentMeta(message!.sentAt, statusKey),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -620,57 +1284,94 @@ class _FileBubble extends StatelessWidget {
   final ChatMessage message;
   final bool isMe;
   final String statusKey;
+  final String? replyToBody;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   const _FileBubble({
     required this.message,
     required this.isMe,
     required this.statusKey,
+    this.replyToBody,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final fg = isMe ? Colors.white : Colors.black87;
-    final bg = isMe ? const Color(0xFF378ADD) : Colors.grey.shade200;
-    return InkWell(
-      onTap: message.mediaUrl != null
-          ? () {
-              // Could use url_launcher to open file
-            }
-          : null,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(12),
-          border: isMe
-              ? null
-              : Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+    final hasTail = isFirstInGroup;
+    final tailW = hasTail ? 6.5 : 0.0;
+
+    return Container(
+      margin: EdgeInsets.only(
+        top: isFirstInGroup ? 6 : 1.5,
+        bottom: isLastInGroup ? 2 : 1.5,
+        left: isMe ? 52 : 0,
+        right: isMe ? 0 : 52,
+      ),
+      child: CustomPaint(
+        painter: _BubblePainter(
+          isMe: isMe,
+          hasTail: hasTail,
+          color: isMe ? _kSentBg : _kReceivedBg,
+          borderColor: isMe ? null : const Color(0xFFE8E7E2),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            isMe ? 10 : 10 + tailW,
+            10,
+            isMe ? 10 + tailW : 10,
+            8,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _kMaxBubbleWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.insert_drive_file, color: fg, size: 24),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    message.mediaFileName ?? 'File',
-                    style: TextStyle(color: fg, fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                if (replyToBody != null && replyToBody!.isNotEmpty)
+                  _ReplyBlock(body: replyToBody!, isMe: isMe),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: _kAccent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.insert_drive_file_rounded,
+                        color: _kAccent,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        message.mediaFileName ?? 'File',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                          color: isMe ? _kSentFg : _kReceivedFg,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: isMe
+                      ? _sentMeta(message.sentAt, statusKey)
+                      : _receivedMeta(message.sentAt),
                 ),
               ],
             ),
-            if (isMe) ...[
-              const SizedBox(height: 4),
-              _timestampAndStatusRow(message.sentAt, statusKey, isMe),
-            ],
-          ],
+          ),
         ),
       ),
     );
@@ -725,8 +1426,8 @@ class _PaymentRequestCard extends StatelessWidget {
             ElevatedButton(
               onPressed: message.paymentRequestId != null
                   ? () => context.push(
-                '/order/$orderId/payment-request/${message.paymentRequestId}',
-              )
+                      '/order/$orderId/payment-request/${message.paymentRequestId}',
+                    )
                   : null,
               child: const Text('Pay now →'),
             ),
@@ -765,72 +1466,6 @@ class _PaymentConfirmedCard extends StatelessWidget {
   }
 }
 
-class _BidWonCard extends StatelessWidget {
-  final ChatMessage message;
-
-  const _BidWonCard({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: const Color(0xFFE5F5E8),
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '🎉 Bid won!',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 4),
-            Text(message.body ?? ''),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {},
-              child: const Text('View next steps →'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BidLostCard extends StatelessWidget {
-  final ChatMessage message;
-
-  const _BidLostCard({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: const Color(0xFFF0F0F0),
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'This one got away',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 4),
-            Text(message.body ?? ''),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {},
-              child: const Text('See new options →'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ShippingUpdateCard extends StatelessWidget {
   final ChatMessage message;
 
@@ -860,22 +1495,106 @@ class _ShippingUpdateCard extends StatelessWidget {
   }
 }
 
-class _SystemPill extends StatelessWidget {
-  final String text;
+class _DeletedBubble extends StatelessWidget {
+  final bool isMe;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
-  const _SystemPill({required this.text});
+  const _DeletedBubble({
+    required this.isMe,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF5F4F0),
-          borderRadius: BorderRadius.circular(999),
+    final hasTail = isFirstInGroup;
+    final tailW = hasTail ? 6.5 : 0.0;
+
+    return Container(
+      margin: EdgeInsets.only(
+        top: isFirstInGroup ? 6 : 1.5,
+        bottom: isLastInGroup ? 2 : 1.5,
+        left: isMe ? 52 : 0,
+        right: isMe ? 0 : 52,
+      ),
+      child: CustomPaint(
+        painter: _BubblePainter(
+          isMe: isMe,
+          hasTail: hasTail,
+          color: isMe ? const Color(0xFFF0EFE9) : const Color(0xFFF8F8F8),
+          borderColor: const Color(0xFFE0DFD8),
         ),
-        child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            isMe ? 12 : 12 + tailW,
+            8,
+            isMe ? 12 + tailW : 12,
+            8,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.block_rounded,
+                size: 13,
+                color: Color(0xFFAAAAAA),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'This message was deleted',
+                style: GoogleFonts.dmSans(
+                  fontSize: 13.5,
+                  color: const Color(0xFFAAAAAA),
+                  fontStyle: FontStyle.italic,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SystemPill extends StatelessWidget {
+  final String text;
+  final String? icon;
+
+  const _SystemPill({required this.text, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 40),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: const Color(0xFFE0DFD8), width: 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Text(
+            icon != null && icon!.isNotEmpty ? '$icon  $text' : text,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF888888),
+              letterSpacing: 0.1,
+              height: 1.4,
+            ),
+          ),
+        ),
       ),
     );
   }

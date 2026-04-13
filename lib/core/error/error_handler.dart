@@ -1,13 +1,13 @@
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/crash_reporter.dart';
 import 'failures.dart';
 
 Future<void> reportFailure(Failure failure, [StackTrace? stackTrace]) async {
-  await FirebaseCrashlytics.instance.recordError(
+  await CrashReporter.reportError(
     failure,
-    stackTrace ?? StackTrace.current,
-    reason: failure.message,
+    stackTrace: stackTrace ?? StackTrace.current,
+    context: failure.message,
   );
 }
 

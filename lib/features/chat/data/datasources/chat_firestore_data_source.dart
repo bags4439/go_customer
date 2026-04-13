@@ -59,7 +59,9 @@ class ChatFirestoreDataSource {
         .snapshots()
         .map((snapshot) {
           final docs = snapshot.docs;
-          final messages = docs.map((d) => _messageFromDoc(d, orderId)).toList();
+          final messages = docs
+              .map((d) => _messageFromDoc(d, orderId))
+              .toList();
           final lastDoc = docs.isNotEmpty ? docs.last : null;
           return MessagesPageResult(messages, lastDoc);
         });
@@ -103,8 +105,9 @@ class ChatFirestoreDataSource {
     if (replyToMessageId != null && replyToMessageId.isNotEmpty) {
       data['replyToMessageId'] = replyToMessageId;
     }
-    final docRef =
-        await _firestore.collection(FirestoreCollections.messages).add(data);
+    final docRef = await _firestore
+        .collection(FirestoreCollections.messages)
+        .add(data);
     return docRef.id;
   }
 
@@ -117,7 +120,8 @@ class ChatFirestoreDataSource {
     void Function(double progress)? onProgress,
   }) async {
     final storageRef = _storage.ref().child(
-        'messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      'messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
 
     UploadTask uploadTask;
     if (fileOrBytes is File) {
@@ -153,8 +157,9 @@ class ChatFirestoreDataSource {
     if (replyToMessageId != null && replyToMessageId.isNotEmpty) {
       data['replyToMessageId'] = replyToMessageId;
     }
-    final docRef =
-        await _firestore.collection(FirestoreCollections.messages).add(data);
+    final docRef = await _firestore
+        .collection(FirestoreCollections.messages)
+        .add(data);
     return docRef.id;
   }
 
@@ -167,8 +172,7 @@ class ChatFirestoreDataSource {
     required String videoPath,
     String? replyToMessageId,
   }) async {
-    final messagesRef =
-        _firestore.collection(FirestoreCollections.messages);
+    final messagesRef = _firestore.collection(FirestoreCollections.messages);
     final data = <String, dynamic>{
       'orderId': orderId,
       'senderId': senderId,
@@ -205,17 +209,18 @@ class ChatFirestoreDataSource {
     } catch (_) {}
 
     if (thumbBytes != null && thumbBytes.isNotEmpty) {
-      final thumbRef = _storage
-          .ref()
-          .child('messages/$orderId/thumbnails/$messageId.jpg');
+      final thumbRef = _storage.ref().child(
+        'messages/$orderId/thumbnails/$messageId.jpg',
+      );
       await thumbRef.putData(thumbBytes);
       final thumbUrl = await thumbRef.getDownloadURL();
       await docRef.update({'thumbnailUrl': thumbUrl});
     }
 
     // Upload video and update progress on the doc.
-    final storageRef =
-        _storage.ref().child('messages/$orderId/videos/$messageId.mp4');
+    final storageRef = _storage.ref().child(
+      'messages/$orderId/videos/$messageId.mp4',
+    );
     final uploadTask = storageRef.putFile(file);
     uploadTask.snapshotEvents.listen((snapshot) async {
       final total = snapshot.totalBytes;
@@ -246,9 +251,9 @@ class ChatFirestoreDataSource {
     required int durationSecs,
     String? replyToMessageId,
   }) async {
-    final ref = _storage
-        .ref()
-        .child('messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.m4a');
+    final ref = _storage.ref().child(
+      'messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.m4a',
+    );
     await ref.putFile(file);
     final url = await ref.getDownloadURL();
 
@@ -266,8 +271,9 @@ class ChatFirestoreDataSource {
     if (replyToMessageId != null && replyToMessageId.isNotEmpty) {
       data['replyToMessageId'] = replyToMessageId;
     }
-    final docRef =
-        await _firestore.collection(FirestoreCollections.messages).add(data);
+    final docRef = await _firestore
+        .collection(FirestoreCollections.messages)
+        .add(data);
     return docRef.id;
   }
 
@@ -295,7 +301,8 @@ class ChatFirestoreDataSource {
   }) async {
     final ext = fileName.split('.').last;
     final ref = _storage.ref().child(
-        'messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.$ext');
+      'messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.$ext',
+    );
     await ref.putFile(file);
     final url = await ref.getDownloadURL();
 
@@ -313,8 +320,9 @@ class ChatFirestoreDataSource {
     if (replyToMessageId != null && replyToMessageId.isNotEmpty) {
       data['replyToMessageId'] = replyToMessageId;
     }
-    final docRef =
-        await _firestore.collection(FirestoreCollections.messages).add(data);
+    final docRef = await _firestore
+        .collection(FirestoreCollections.messages)
+        .add(data);
     return docRef.id;
   }
 
@@ -341,6 +349,22 @@ class ChatFirestoreDataSource {
     }
   }
 
+  /// Soft-deletes a message for everyone.
+  /// Sets isDeleted to true and clears
+  /// body and mediaUrl so the content
+  /// is no longer visible to any party.
+  Future<void> deleteMessage({required String messageId}) async {
+    await _firestore
+        .collection(FirestoreCollections.messages)
+        .doc(messageId)
+        .update({
+          'isDeleted': true,
+          'body': null,
+          'mediaUrl': null,
+          'thumbnailUrl': null,
+        });
+  }
+
   /// Stream of messageId -> list of emoji strings for reactions in this order.
   Stream<Map<String, List<String>>> watchMessageReactions(String orderId) {
     return _firestore
@@ -348,17 +372,17 @@ class ChatFirestoreDataSource {
         .where('orderId', isEqualTo: orderId)
         .snapshots()
         .map((snapshot) {
-      final map = <String, List<String>>{};
-      for (final doc in snapshot.docs) {
-        final data = doc.data();
-        final msgId = data['messageId'] as String?;
-        final emoji = data['emoji'] as String?;
-        if (msgId != null && emoji != null) {
-          map.putIfAbsent(msgId, () => []).add(emoji);
-        }
-      }
-      return map;
-    });
+          final map = <String, List<String>>{};
+          for (final doc in snapshot.docs) {
+            final data = doc.data();
+            final msgId = data['messageId'] as String?;
+            final emoji = data['emoji'] as String?;
+            if (msgId != null && emoji != null) {
+              map.putIfAbsent(msgId, () => []).add(emoji);
+            }
+          }
+          return map;
+        });
   }
 
   /// Stream of agent typing status for this order.
@@ -373,4 +397,3 @@ class ChatFirestoreDataSource {
         .map((doc) => (doc.data()?['isTyping'] as bool?) ?? false);
   }
 }
-
