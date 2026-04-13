@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../orders/data/models/buyer_review_model.dart';
 import '../../domain/entities/delivery.dart';
 import '../../domain/repositories/delivery_repository.dart';
 import '../datasources/delivery_firestore_data_source.dart';
@@ -27,6 +28,38 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
         },
       ),
     );
+  }
+
+  @override
+  Stream<Either<Failure, BuyerReviewModel?>> watchReview({
+    required String orderId,
+    required String buyerId,
+  }) {
+    return _ds
+        .watchReview(
+          orderId: orderId,
+          buyerId: buyerId,
+        )
+        .transform(
+          StreamTransformer<BuyerReviewModel?, Either<Failure, BuyerReviewModel?>>.fromHandlers(
+            handleData: (data, sink) =>
+                sink.add(Right<Failure, BuyerReviewModel?>(data)),
+            handleError: (
+              Object error,
+              StackTrace stackTrace,
+              sink,
+            ) {
+              sink.add(
+                Left<Failure, BuyerReviewModel?>(
+                  FirestoreFailure(
+                    message: error.toString(),
+                    cause: error,
+                  ),
+                ),
+              );
+            },
+          ),
+        );
   }
 
   @override

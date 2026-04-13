@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../delivery/presentation/providers/delivery_providers.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../orders/data/models/buyer_review_model.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../clearance/data/models/duty_clearance_model.dart';
 import '../../../payments/data/models/payment_request_model.dart';
@@ -723,13 +725,16 @@ Widget _buildChatButton(
   );
 }
 
-class _DeliveredCard extends StatelessWidget {
+class _DeliveredCard extends ConsumerWidget {
   final String orderId;
 
   const _DeliveredCard({required this.orderId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+    WidgetRef ref,
+  ) {
     return Container(
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(16),
@@ -786,35 +791,138 @@ class _DeliveredCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => context.push('/order/$orderId/review'),
-              icon: const Icon(
-                Icons.star_outline_rounded,
-                size: 16,
-                color: Colors.white,
-              ),
-              label: Text(
-                OrderTimelineConstants.rateExperience,
+          Builder(
+            builder: (ctx) {
+              final userId = ref.watch(authStateProvider).value;
+              if (userId == null) {
+                return const SizedBox.shrink();
+              }
+              final reviewAsync = ref.watch(
+                buyerReviewProvider((
+                  orderId: orderId,
+                  buyerId: userId,
+                )),
+              );
+              final review = reviewAsync.valueOrNull;
+
+              if (review != null) {
+                return _SubmittedReviewCard(
+                  review: review,
+                  orderId: orderId,
+                );
+              }
+
+              return SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push('/order/$orderId/review'),
+                  icon: const Icon(
+                    Icons.star_outline_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    OrderTimelineConstants.rateExperience,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(_kSuccess),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SubmittedReviewCard extends StatelessWidget {
+  final BuyerReviewModel review;
+  final String orderId;
+
+  const _SubmittedReviewCard({
+    required this.review,
+    required this.orderId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final stars =
+        review.overallRating.round().clamp(1, 5);
+
+    return InkWell(
+      onTap: () => context.push('/order/$orderId/review'),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.successMutedBackground,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: AppColors.successMutedBorder,
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.check_circle_rounded,
+              size: 16,
+              color: AppColors.success,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'You rated this experience',
                 style: GoogleFonts.dmSans(
                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(_kSuccess),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.successMutedForeground,
                 ),
               ),
             ),
-          ),
-        ],
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(
+                5,
+                (i) => Icon(
+                  i < stars
+                      ? Icons.star_rounded
+                      : Icons.star_outline_rounded,
+                  size: 14,
+                  color: i < stars
+                      ? const Color(0xFFFFB800)
+                      : AppColors.borderSolid,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'View →',
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.success,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

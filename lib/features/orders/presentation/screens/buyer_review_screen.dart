@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../delivery/presentation/providers/delivery_providers.dart';
+import '../../../orders/data/models/buyer_review_model.dart';
 import '../providers/order_providers.dart';
 
 class BuyerReviewScreen extends ConsumerStatefulWidget {
@@ -60,6 +61,23 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderProvider(widget.orderId));
     final order = orderAsync.valueOrNull;
+    final userId = ref.watch(authStateProvider).value;
+    final reviewAsync = userId != null
+        ? ref.watch(
+            buyerReviewProvider((
+              orderId: widget.orderId,
+              buyerId: userId,
+            )),
+          )
+        : null;
+    final existingReview = reviewAsync?.valueOrNull;
+
+    if (existingReview != null) {
+      return _SubmittedScreen(
+        orderId: widget.orderId,
+        review: existingReview,
+      );
+    }
 
     return PopScope(
       canPop: !_isSubmitting,
@@ -373,6 +391,284 @@ class _RatingRow extends StatelessWidget {
               ),
             );
           }),
+        ),
+      ],
+    );
+  }
+}
+
+class _SubmittedScreen extends StatelessWidget {
+  final String orderId;
+  final BuyerReviewModel review;
+
+  const _SubmittedScreen({
+    required this.orderId,
+    required this.review,
+  });
+
+  static String _formatDate(DateTime dt) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr',
+      'May', 'Jun', 'Jul', 'Aug',
+      'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stars = review.overallRating.round().clamp(1, 5);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+          ),
+          color: AppColors.textPrimary,
+          onPressed: () => Navigator.of(context).pop(),
+          style: IconButton.styleFrom(
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        title: Text(
+          'Your review',
+          style: GoogleFonts.dmSans(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.primary,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(
+            height: 0.5,
+            color: AppColors.borderSolid,
+          ),
+        ),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: ResponsiveLayout.contentMaxWidth(context),
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              28,
+              20,
+              24 + MediaQuery.paddingOf(context).bottom,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F9F4),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.successMutedBorder,
+                  width: 0.5,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      color: AppColors.successMutedBackground,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      size: 28,
+                      color: AppColors.success,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Thank you for your\nfeedback!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Your review has been submitted\n'
+                    'and helps us improve.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'YOUR RATING',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textTertiary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                if (review.createdAt != null)
+                  Text(
+                    _SubmittedScreen._formatDate(review.createdAt!),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: List.generate(
+                5,
+                (i) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Icon(
+                    i < stars ? Icons.star_rounded : Icons.star_outline_rounded,
+                    size: 36,
+                    color: i < stars
+                        ? const Color(0xFFFFB800)
+                        : AppColors.borderSolid,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _ReadOnlyRatingRow(
+              label: 'Agent performance',
+              rating: review.agentRating,
+            ),
+            const SizedBox(height: 12),
+            _ReadOnlyRatingRow(
+              label: 'Communication',
+              rating: review.communicationRating,
+            ),
+            const SizedBox(height: 12),
+            _ReadOnlyRatingRow(
+              label: 'Speed of service',
+              rating: review.speedRating,
+            ),
+            if (review.comment != null && review.comment!.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Text(
+                'YOUR COMMENT',
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textTertiary,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.borderSolid,
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  review.comment!,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 32),
+            SizedBox(
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Back to order',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReadOnlyRatingRow extends StatelessWidget {
+  final String label;
+  final double rating;
+
+  const _ReadOnlyRatingRow({
+    required this.label,
+    required this.rating,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final stars = rating.round().clamp(1, 5);
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.dmSans(
+              fontSize: 13.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        Row(
+          children: List.generate(
+            5,
+            (i) => Icon(
+              i < stars ? Icons.star_rounded : Icons.star_outline_rounded,
+              size: 16,
+              color: i < stars
+                  ? const Color(0xFFFFB800)
+                  : AppColors.borderSolid,
+            ),
+          ),
         ),
       ],
     );

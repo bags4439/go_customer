@@ -1,12 +1,21 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../orders/data/models/buyer_review_model.dart';
 import '../entities/delivery.dart';
 
 abstract class DeliveryRepository {
   /// Watch the delivery document for an order.
   /// Returns null if no delivery document exists yet.
   Stream<Either<Failure, Delivery?>> watchDelivery(String orderId);
+
+  /// Watch the buyer review for a given
+  /// order. Returns null if not yet
+  /// submitted.
+  Stream<Either<Failure, BuyerReviewModel?>> watchReview({
+    required String orderId,
+    required String buyerId,
+  });
 
   /// Save or update the delivery location.
   /// Creates the document if it doesn't exist.

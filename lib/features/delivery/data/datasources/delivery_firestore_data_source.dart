@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../orders/data/models/buyer_review_model.dart';
 import '../../domain/entities/delivery.dart';
 import '../models/delivery_model.dart';
 
@@ -26,6 +27,24 @@ class DeliveryFirestoreDataSource {
         .map((snap) {
       if (snap.docs.isEmpty) return null;
       return _mapDelivery(snap.docs.first);
+    });
+  }
+
+  /// Streams the buyer review for a
+  /// given order and buyer. Returns null
+  /// if no review has been submitted yet.
+  Stream<BuyerReviewModel?> watchReview({
+    required String orderId,
+    required String buyerId,
+  }) {
+    return _reviews
+        .where('orderId', isEqualTo: orderId)
+        .where('buyerId', isEqualTo: buyerId)
+        .limit(1)
+        .snapshots()
+        .map((snap) {
+      if (snap.docs.isEmpty) return null;
+      return BuyerReviewModel.fromFirestore(snap.docs.first);
     });
   }
 
@@ -137,7 +156,11 @@ class DeliveryFirestoreDataSource {
   }) async {
     final batch = _firestore.batch();
 
-    final reviewRef = _reviews.doc();
+    // Use a fixed doc ID so re-submissions
+    // overwrite rather than duplicate.
+    // Format: orderId_buyerId
+    final reviewRef =
+        _reviews.doc('${orderId}_$buyerId');
     batch.set(reviewRef, {
       'orderId': orderId,
       'buyerId': buyerId,
