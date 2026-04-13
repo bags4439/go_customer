@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
@@ -17,6 +18,12 @@ import '../../core/utils/notification_timestamp.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../models/notification_list_item.dart';
 import '../providers/notifications_providers.dart';
+
+double _notificationsShellFloatingNavExtra(BuildContext context) {
+  if (!ResponsiveLayout.isMobile(context)) return 0;
+  final bottomInset = MediaQuery.paddingOf(context).bottom;
+  return bottomInset + 64 + 24;
+}
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -580,7 +587,12 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
 
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: EdgeInsets.fromLTRB(
+        14,
+        8,
+        14,
+        8 + _notificationsShellFloatingNavExtra(context),
+      ),
       itemCount: items.length + 1,
       itemBuilder: (context, index) {
         if (index == items.length) {
@@ -1131,6 +1143,7 @@ class _EmptyState extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
+              SizedBox(height: _notificationsShellFloatingNavExtra(context)),
             ],
           ),
         ),
@@ -1148,7 +1161,12 @@ class _NotificationsError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + _notificationsShellFloatingNavExtra(context),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1202,7 +1220,12 @@ class _ShimmerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: EdgeInsets.fromLTRB(
+        14,
+        8,
+        14,
+        8 + _notificationsShellFloatingNavExtra(context),
+      ),
       itemCount: 6,
       itemBuilder: (context, index) {
         return Padding(

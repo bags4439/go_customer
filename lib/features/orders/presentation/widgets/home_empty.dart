@@ -50,7 +50,12 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                   constraints:
                       BoxConstraints(minHeight: constraints.maxHeight),
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      20,
+                      20,
+                      20 + _shellFloatingNavScrollBottomExtra(context),
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,

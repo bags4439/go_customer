@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_version.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../../shared/providers/currencies_provider.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
@@ -29,6 +30,12 @@ import '../../domain/entities/user_session_entity.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/ghana_card_profile_row.dart';
 import '../widgets/id_verification_banner.dart';
+
+double _profileShellFloatingNavExtra(BuildContext context) {
+  if (!ResponsiveLayout.isMobile(context)) return 0;
+  final bottomInset = MediaQuery.paddingOf(context).bottom;
+  return bottomInset + 64 + 24;
+}
 
 const Color _kPrimary = Color(0xFF378ADD);
 const Color _kSuccess = Color(0xFF1D9E75);
@@ -182,7 +189,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   },
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      16,
+                      16,
+                      24 + _profileShellFloatingNavExtra(context),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -302,7 +314,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           backgroundColor: Colors.white,
           elevation: 0,
         ),
-        body: const _ProfileShimmer(),
+        body: _ProfileShimmer(),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: Colors.white,
@@ -2841,7 +2853,12 @@ class _ProfileShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        16 + _profileShellFloatingNavExtra(context),
+      ),
       children: [
         Container(
           height: 100,
@@ -2881,7 +2898,12 @@ class _ProfileError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + _profileShellFloatingNavExtra(context),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

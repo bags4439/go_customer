@@ -204,7 +204,12 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            24 + _shellFloatingNavScrollBottomExtra(context),
+          ),
           children: listChildren,
         ),
         if (showCoachMark && sorted.isNotEmpty)

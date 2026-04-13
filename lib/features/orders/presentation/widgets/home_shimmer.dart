@@ -9,7 +9,12 @@ class _HomeShimmer extends StatelessWidget {
       baseColor: _C.bgSecondary,
       highlightColor: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          _shellFloatingNavScrollBottomExtra(context),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

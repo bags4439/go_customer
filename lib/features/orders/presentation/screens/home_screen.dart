@@ -8,6 +8,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -31,6 +32,13 @@ part '../widgets/home_metric_card.dart';
 part '../widgets/home_order_card.dart';
 part '../widgets/home_staggered_item.dart';
 part '../widgets/home_multi_order.dart';
+
+/// Extra bottom inset when [HomeScreen] is under the mobile floating shell nav.
+double _shellFloatingNavScrollBottomExtra(BuildContext context) {
+  if (!ResponsiveLayout.isMobile(context)) return 0;
+  final bottomInset = MediaQuery.paddingOf(context).bottom;
+  return bottomInset + 64 + 24;
+}
 
 String? _firstNameFromUser(AsyncValue<dynamic> userAsync) {
   return userAsync.maybeWhen(

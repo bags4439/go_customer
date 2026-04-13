@@ -9,7 +9,12 @@ class _ErrorHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.fromLTRB(
+          32,
+          32,
+          32,
+          32 + _shellFloatingNavScrollBottomExtra(context),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
