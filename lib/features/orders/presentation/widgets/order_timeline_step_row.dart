@@ -87,15 +87,28 @@ class OrderTimelineStepRow extends ConsumerWidget {
             ? AppColors.secondary.withValues(alpha: 0.3)
             : AppColors.borderSolid;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    const dotTopOffset = 12.0;
+    const dotSize = 22.0;
+    const lineStart = dotTopOffset + dotSize + 3;
+
+    return Stack(
       children: [
-        SizedBox(
-          width: 44,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
+        if (!isLast)
+          Positioned(
+            left: 21,
+            top: lineStart,
+            bottom: 0,
+            child: Container(
+              width: 1.5,
+              color: lineColor,
+            ),
+          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 44,
+              child: Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: isComplete
                     ? const _CompletedDot()
@@ -103,44 +116,37 @@ class OrderTimelineStepRow extends ConsumerWidget {
                         ? const _PulsingActiveDot()
                         : _UpcomingDot(number: stageNumber),
               ),
-              if (!isLast)
-                Container(
-                  width: 1.5,
-                  height: isActive ? 200 : 32,
-                  margin: const EdgeInsets.only(top: 3),
-                  decoration: BoxDecoration(
-                    color: lineColor,
-                    borderRadius: BorderRadius.circular(1),
-                  ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  right: 16,
+                  bottom: 8,
                 ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: isComplete
-                ? _CompletedRow(
-                    stage: stage,
-                    isLast: isLast,
-                  )
-                : isActive
-                    ? _ActiveStageContent(
+                child: isComplete
+                    ? _CompletedRow(
                         stage: stage,
-                        orderId: orderId,
-                        order: order,
                         isLast: isLast,
-                        pendingPayments: pendingPayments,
-                        shipping: shipping,
-                        clearance: clearance,
-                        repairJob: repairJob,
-                        onChatTap: onChatTap,
                       )
-                    : _UpcomingRow(
-                        stage: stage,
-                        isLast: isLast,
-                      ),
-          ),
+                    : isActive
+                        ? _ActiveStageContent(
+                            stage: stage,
+                            orderId: orderId,
+                            order: order,
+                            isLast: isLast,
+                            pendingPayments: pendingPayments,
+                            shipping: shipping,
+                            clearance: clearance,
+                            repairJob: repairJob,
+                            onChatTap: onChatTap,
+                          )
+                        : _UpcomingRow(
+                            stage: stage,
+                            isLast: isLast,
+                          ),
+              ),
+            ),
+          ],
         ),
       ],
     );

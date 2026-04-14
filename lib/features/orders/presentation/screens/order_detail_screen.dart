@@ -408,7 +408,7 @@ class _OrderOverviewTab extends ConsumerWidget {
               error: (_, __) => const SizedBox.shrink(),
             ),
             OrderDetailCarCard(order: order),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             Text(
               OrderTimelineConstants.journeyTitle,
               style: GoogleFonts.dmSans(

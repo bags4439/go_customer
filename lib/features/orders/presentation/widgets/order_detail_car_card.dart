@@ -60,96 +60,109 @@ class OrderDetailPill extends StatelessWidget {
 class OrderDetailCarCard extends StatelessWidget {
   final OrderView order;
 
-  const OrderDetailCarCard({super.key, required this.order});
+  const OrderDetailCarCard({
+    super.key,
+    required this.order,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final carName =
+        '${order.make ?? 'Vehicle'} ${order.model ?? ''}'.trim();
+
+    final chips = <String>[];
+    if (order.purchaseOrigin != 'any') {
+      chips.add(
+        orderDetailOriginLabel(
+          order.purchaseOrigin,
+        ),
+      );
+    }
+    if (order.trim != null &&
+        order.trim!.isNotEmpty &&
+        order.trim != 'Other') {
+      chips.add(order.trim!);
+    }
+    if (order.isNewVehicle) {
+      chips.add('New vehicle');
+    }
+
+    final subtitle = chips.isNotEmpty ? chips.join(' · ') : null;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderSolid, width: 0.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.borderSolid,
+          width: 0.5,
+        ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 36,
+            height: 36,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AppColors.secondary, AppColors.infoText],
+                colors: [
+                  AppColors.secondary,
+                  AppColors.infoText,
+                ],
               ),
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+              borderRadius: BorderRadius.all(
+                Radius.circular(9),
+              ),
             ),
             child: const Icon(
               Icons.directions_car_filled,
               color: Colors.white,
-              size: 24,
+              size: 18,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${order.make ?? 'Vehicle'} ${order.model ?? ''}'.trim(),
+                  carName,
                   style: GoogleFonts.dmSans(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  order.orderRef,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    color: AppColors.textTertiary,
+                if (subtitle != null)
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      color: AppColors.textTertiary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    if (order.purchaseOrigin != 'any')
-                      OrderDetailPill(
-                        label: orderDetailOriginLabel(order.purchaseOrigin),
-                        bg: orderDetailOriginBg(order.purchaseOrigin),
-                        textColor: orderDetailOriginText(order.purchaseOrigin),
-                      ),
-                    if (order.trim != null &&
-                        order.trim!.isNotEmpty &&
-                        order.trim != 'Other')
-                      OrderDetailPill(
-                        label: order.trim!,
-                        bg: AppColors.surface,
-                        textColor: AppColors.textSecondary,
-                      ),
-                    if (order.isNewVehicle)
-                      OrderDetailPill(
-                        label: 'New vehicle',
-                        bg: AppColors.successMutedBackground,
-                        textColor: AppColors.successMutedForeground,
-                      ),
-                  ],
-                ),
               ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            order.orderRef,
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              color: AppColors.textTertiary,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
