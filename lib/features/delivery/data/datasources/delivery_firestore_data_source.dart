@@ -19,6 +19,9 @@ class DeliveryFirestoreDataSource {
   CollectionReference<Map<String, dynamic>> get _reviews =>
       _firestore.collection(FirestoreCollections.buyerReviews);
 
+  CollectionReference<Map<String, dynamic>> get _timeline =>
+      _firestore.collection(FirestoreCollections.orderTimeline);
+
   Stream<Delivery?> watchDelivery(String orderId) {
     return _delivery
         .where('orderId', isEqualTo: orderId)
@@ -154,11 +157,14 @@ class DeliveryFirestoreDataSource {
     required double speedRating,
     String? comment,
   }) async {
+    final timelineSnap = await _timeline
+        .where('orderId', isEqualTo: orderId)
+        .where('stageKey', isEqualTo: 'delivery')
+        .limit(1)
+        .get();
+
     final batch = _firestore.batch();
 
-    // Use a fixed doc ID so re-submissions
-    // overwrite rather than duplicate.
-    // Format: orderId_buyerId
     final reviewRef =
         _reviews.doc('${orderId}_$buyerId');
     batch.set(reviewRef, {
@@ -179,6 +185,18 @@ class DeliveryFirestoreDataSource {
       'deliveredAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    if (timelineSnap.docs.isNotEmpty) {
+      batch.update(
+        timelineSnap.docs.first.reference,
+        {
+          'isComplete': true,
+          'isActive': false,
+          'completedAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+      );
+    }
 
     await batch.commit();
   }

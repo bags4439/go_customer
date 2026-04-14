@@ -409,36 +409,13 @@ class _OrderOverviewTab extends ConsumerWidget {
             ),
             OrderDetailCarCard(order: order),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Text(
-                  OrderTimelineConstants.journeyTitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.selectionTint,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Step ${order.stageNumber} of 9',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.infoText,
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              OrderTimelineConstants.journeyTitle,
+              style: GoogleFonts.dmSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 14),
             KeyedSubtree(

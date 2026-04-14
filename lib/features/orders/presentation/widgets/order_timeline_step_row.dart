@@ -8,7 +8,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../delivery/presentation/providers/delivery_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../orders/data/models/buyer_review_model.dart';
-import '../../../../core/utils/date_formatter.dart';
 import '../../../clearance/data/models/duty_clearance_model.dart';
 import '../../../payments/data/models/payment_request_model.dart';
 import '../../../payments/presentation/widgets/payment_request_card.dart';
@@ -22,13 +21,9 @@ import 'clearance_status_card.dart';
 import 'repair_status_card.dart';
 import 'shipping_status_card.dart';
 
-const _kSurface = 0xFFF5F4F0;
-const _kBorder = 0xFFE0DFD8;
 const _kPrimary = 0xFF378ADD;
 const _kSuccess = 0xFF1D9E75;
-const _kTextTertiary = 0xFFAAAAAA;
 const _kTextSecondary = 0xFF666666;
-const _kTextPrimary = 0xFF1A1A18;
 const _kDeliveredGreen = 0xFF1A4731;
 const _kDeliveredSub = 0xFF27500A;
 
@@ -50,11 +45,12 @@ bool _isPostVehicleBalancePaid(String status) {
 }
 
 /// One row of the order journey timeline (Firestore-driven).
-class OrderTimelineStepRow extends StatelessWidget {
+class OrderTimelineStepRow extends ConsumerWidget {
   final OrderTimelineModel stage;
   final String orderId;
   final OrderView order;
   final bool isLast;
+  // ignore: unused_field
   final bool lineAfterIsComplete;
   final List<PaymentRequestModel> pendingPayments;
   final ShippingModel? shipping;
@@ -77,215 +73,97 @@ class OrderTimelineStepRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final isStageComplete = stage.stageNumber < order.stageNumber;
-    final isStageActive = stage.stageNumber == order.stageNumber;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stageNumber = stage.stageNumber;
+    final orderStageNumber = order.stageNumber;
+    final isComplete =
+        stage.isComplete || stageNumber < orderStageNumber;
+    final isActive =
+        stage.isActive || stageNumber == orderStageNumber;
 
-    final row = IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: 44,
-            child: Column(
-              children: [
-                _StepDot(stage: stage, orderStageNumber: order.stageNumber),
-                if (!isLast)
-                  Expanded(
-                    child: Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                        width: 2,
-                        decoration: BoxDecoration(
-                          color: lineAfterIsComplete
-                              ? const Color(_kSuccess)
-                              : const Color(_kBorder),
-                          borderRadius: BorderRadius.circular(1),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: 14,
-                bottom: isStageActive ? 0 : (isLast ? 0 : 36),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          stage.label,
-                          style: GoogleFonts.dmSans(
-                            fontSize: isStageActive ? 15 : 13,
-                            fontWeight: isStageActive
-                                ? FontWeight.w600
-                                : FontWeight.w500,
-                            color: isStageActive
-                                ? const Color(_kTextPrimary)
-                                : const Color(_kTextSecondary),
-                          ),
-                        ),
-                      ),
-                      if (isStageComplete && stage.completedAt != null)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.check_circle_outline_rounded,
-                              size: 10,
-                              color: Color(_kSuccess),
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              DateFormatter.formatRelative(stage.completedAt!),
-                              style: GoogleFonts.dmSans(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(_kSuccess),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                  if (stage.detail != null &&
-                      stage.detail!.isNotEmpty &&
-                      isStageActive) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      stage.detail!,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(_kTextSecondary),
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeInOut,
-                    child: isStageActive
-                        ? Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: _SubActionArea(
-                              stage: stage,
-                              orderId: orderId,
-                              order: order,
-                              pendingPayments: pendingPayments,
-                              shipping: shipping,
-                              clearance: clearance,
-                              repairJob: repairJob,
-                              onChatTap: onChatTap,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    final lineColor = isComplete
+        ? AppColors.success
+        : isActive
+            ? AppColors.secondary.withValues(alpha: 0.3)
+            : AppColors.borderSolid;
 
-    if (isStageActive) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEBF4FD),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: const Color(_kPrimary).withValues(alpha: 0.15),
-            width: 1,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 44,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: isComplete
+                    ? const _CompletedDot()
+                    : isActive
+                        ? const _PulsingActiveDot()
+                        : _UpcomingDot(number: stageNumber),
+              ),
+              if (!isLast)
+                Container(
+                  width: 1.5,
+                  height: isActive ? 200 : 32,
+                  margin: const EdgeInsets.only(top: 3),
+                  decoration: BoxDecoration(
+                    color: lineColor,
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+            ],
           ),
         ),
-        child: row,
-      );
-    }
-
-    return row;
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: isComplete
+                ? _CompletedRow(
+                    stage: stage,
+                    isLast: isLast,
+                  )
+                : isActive
+                    ? _ActiveStageContent(
+                        stage: stage,
+                        orderId: orderId,
+                        order: order,
+                        isLast: isLast,
+                        pendingPayments: pendingPayments,
+                        shipping: shipping,
+                        clearance: clearance,
+                        repairJob: repairJob,
+                        onChatTap: onChatTap,
+                      )
+                    : _UpcomingRow(
+                        stage: stage,
+                        isLast: isLast,
+                      ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
-class _StepDot extends StatelessWidget {
-  final OrderTimelineModel stage;
-  final int orderStageNumber;
-
-  const _StepDot({required this.stage, required this.orderStageNumber});
+class _CompletedDot extends StatelessWidget {
+  const _CompletedDot();
 
   @override
   Widget build(BuildContext context) {
-    final isComplete = stage.stageNumber < orderStageNumber;
-    final isActive = stage.stageNumber == orderStageNumber;
-    final isLocked = stage.stageNumber > orderStageNumber;
-
-    if (isLocked) {
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: const Color(_kSurface),
-          shape: BoxShape.circle,
-          border: Border.all(color: const Color(_kBorder), width: 1.5),
-        ),
-        child: const Icon(
-          Icons.lock_outline_rounded,
-          size: 13,
-          color: Color(_kTextTertiary),
-        ),
-      );
-    }
-    if (isComplete) {
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: const Color(_kSuccess),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: const Color(_kSuccess).withValues(alpha: 0.30),
-              blurRadius: 10,
-              spreadRadius: 0,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
-      );
-    }
-    if (isActive) {
-      return const _PulsingActiveDot(child: SizedBox.shrink());
-    }
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: const Color(_kSurface),
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: const BoxDecoration(
+        color: AppColors.success,
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(_kBorder), width: 1.5),
       ),
-      alignment: Alignment.center,
-      child: Text(
-        '${stage.stageNumber}',
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: const Color(_kTextTertiary),
+      child: const Center(
+        child: Icon(
+          Icons.check_rounded,
+          size: 12,
+          color: Colors.white,
         ),
       ),
     );
@@ -293,9 +171,7 @@ class _StepDot extends StatelessWidget {
 }
 
 class _PulsingActiveDot extends StatefulWidget {
-  final Widget child;
-
-  const _PulsingActiveDot({required this.child});
+  const _PulsingActiveDot();
 
   @override
   State<_PulsingActiveDot> createState() => _PulsingActiveDotState();
@@ -303,69 +179,293 @@ class _PulsingActiveDot extends StatefulWidget {
 
 class _PulsingActiveDotState extends State<_PulsingActiveDot>
     with SingleTickerProviderStateMixin {
-  late AnimationController _c;
-  late Animation<double> _ring;
-  late Animation<double> _ringOpacity;
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(
+    _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat();
-    _ring = Tween<double>(
-      begin: 0.6,
-      end: 1.4,
-    ).animate(CurvedAnimation(parent: _c, curve: Curves.easeOut));
-    _ringOpacity = Tween<double>(
-      begin: 0.5,
-      end: 0.0,
-    ).animate(CurvedAnimation(parent: _c, curve: Curves.easeOut));
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+    _scale = Tween<double>(
+      begin: 0.88,
+      end: 1.12,
+    ).animate(CurvedAnimation(
+      parent: _ctrl,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
   void dispose() {
-    _c.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 32,
-      height: 32,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          AnimatedBuilder(
-            animation: _c,
-            builder: (_, __) => Transform.scale(
-              scale: _ring.value,
-              child: Opacity(
-                opacity: _ringOpacity.value,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(_kPrimary), width: 2),
-                  ),
-                ),
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) => Transform.scale(
+        scale: _scale.value,
+        child: Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: AppColors.secondary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.secondary.withValues(alpha: 0.35),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
               ),
             ),
           ),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              color: Color(_kPrimary),
-              shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+}
+
+class _UpcomingDot extends StatelessWidget {
+  // ignore: unused_field
+  final int number;
+
+  const _UpcomingDot({required this.number});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.borderSolid,
+          width: 1.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _CompletedRow extends StatelessWidget {
+  final OrderTimelineModel stage;
+  final bool isLast;
+
+  const _CompletedRow({
+    required this.stage,
+    required this.isLast,
+  });
+
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return '';
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${dt.day} ${months[dt.month - 1]}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr = _formatDate(stage.completedAt);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 10,
+        bottom: isLast ? 4 : 0,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              stage.label,
+              style: GoogleFonts.dmSans(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
             ),
-            child: const Icon(
-              Icons.radio_button_checked_rounded,
-              size: 14,
-              color: Colors.white,
+          ),
+          if (dateStr.isNotEmpty)
+            Text(
+              dateStr,
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                color: AppColors.textTertiary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpcomingRow extends StatelessWidget {
+  final OrderTimelineModel stage;
+  final bool isLast;
+
+  const _UpcomingRow({
+    required this.stage,
+    required this.isLast,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 10,
+        bottom: isLast ? 4 : 0,
+      ),
+      child: Text(
+        stage.label,
+        style: GoogleFonts.dmSans(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w400,
+          color: AppColors.textTertiary,
+        ),
+      ),
+    );
+  }
+}
+
+class _ActiveStageContent extends StatelessWidget {
+  final OrderTimelineModel stage;
+  final String orderId;
+  final OrderView order;
+  // ignore: unused_field
+  final bool isLast;
+  final List<PaymentRequestModel> pendingPayments;
+  final ShippingModel? shipping;
+  final DutyClearanceModel? clearance;
+  final RepairJobModel? repairJob;
+  final VoidCallback? onChatTap;
+
+  const _ActiveStageContent({
+    required this.stage,
+    required this.orderId,
+    required this.order,
+    required this.isLast,
+    required this.pendingPayments,
+    this.shipping,
+    this.clearance,
+    this.repairJob,
+    this.onChatTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(
+        top: 8,
+        bottom: 12,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.secondary.withValues(alpha: 0.35),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    stage.label,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.infoBackground,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'In progress',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.infoText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (stage.detail != null && stage.detail!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              child: Text(
+                stage.detail!,
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          Container(
+            height: 0.5,
+            margin: const EdgeInsets.only(top: 10),
+            color: AppColors.borderSolid,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            child: _SubActionArea(
+              stage: stage,
+              orderId: orderId,
+              order: order,
+              pendingPayments: pendingPayments,
+              shipping: shipping,
+              clearance: clearance,
+              repairJob: repairJob,
+              onChatTap: onChatTap,
             ),
           ),
         ],
