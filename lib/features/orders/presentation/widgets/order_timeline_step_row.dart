@@ -1,7 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -13,6 +16,7 @@ import '../../../payments/data/models/payment_request_model.dart';
 import '../../../payments/presentation/widgets/payment_request_card.dart';
 import '../../../repairs/data/models/repair_job_model.dart';
 import '../../../shipping/data/models/shipping_model.dart';
+import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../../data/models/order_timeline_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import '../providers/order_providers.dart';
@@ -505,6 +509,13 @@ class _SubActionArea extends StatelessWidget {
   Widget build(BuildContext context) {
     if (stage.stageKey == 'preferences_submitted') {
       return const SizedBox.shrink();
+    }
+
+    if (stage.stageKey == 'agent_assigned') {
+      return _AgentAssignedCard(
+        order: order,
+        onChatTap: onChatTap,
+      );
     }
 
     final pay = resolvePendingPaymentForStage(stage.stageKey, pendingPayments);
@@ -1028,6 +1039,413 @@ class _SubmittedReviewCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AgentAssignedCard extends ConsumerWidget {
+  final OrderView order;
+  final VoidCallback? onChatTap;
+
+  const _AgentAssignedCard({
+    required this.order,
+    this.onChatTap,
+  });
+
+  Future<void> _call(String? phone) async {
+    if (phone == null || phone.isEmpty) {
+      return;
+    }
+    final uri = Uri(scheme: 'tel', path: phone);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final agentId = order.agentId;
+
+    if (agentId == null) {
+      return _AgentPendingCard(
+        orderId: order.id,
+      );
+    }
+
+    final agentAsync = ref.watch(
+      agentDetailProvider(agentId),
+    );
+
+    return agentAsync.when(
+      loading: () => const _AgentCardShimmer(),
+      error: (_, __) => _AgentPendingCard(orderId: order.id),
+      data: (agent) {
+        if (agent == null) {
+          return _AgentPendingCard(orderId: order.id);
+        }
+
+        return _AgentDetailCard(
+          agent: agent,
+          onChatTap: onChatTap,
+          onCallTap: agent.phone != null
+              ? () => _call(agent.phone)
+              : null,
+        );
+      },
+    );
+  }
+}
+
+class _AgentPendingCard extends StatelessWidget {
+  final String orderId;
+
+  const _AgentPendingCard({required this.orderId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.infoBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.secondary.withValues(alpha: 0.2),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_search_rounded,
+                  size: 18,
+                  color: AppColors.secondary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Finding your agent',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.infoText,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'This usually takes a few minutes.',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: AppColors.infoText.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: () => SupportBottomSheet.show(context),
+              icon: const Icon(
+                Icons.headset_mic_rounded,
+                size: 15,
+                color: AppColors.secondary,
+              ),
+              label: Text(
+                'Contact support',
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.secondary,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.secondary,
+                side: const BorderSide(
+                  color: AppColors.secondary,
+                  width: 0.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AgentDetailCard extends StatelessWidget {
+  final AgentDetailView agent;
+  final VoidCallback? onChatTap;
+  final VoidCallback? onCallTap;
+
+  const _AgentDetailCard({
+    required this.agent,
+    this.onChatTap,
+    this.onCallTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.secondary.withValues(alpha: 0.25),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.borderSolid,
+                    width: 0.5,
+                  ),
+                ),
+                child: ClipOval(
+                  child: agent.photoUrl != null && agent.photoUrl!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: agent.photoUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => _AgentInitials(
+                            name: agent.fullName,
+                          ),
+                          errorWidget: (_, __, ___) => _AgentInitials(
+                            name: agent.fullName,
+                          ),
+                        )
+                      : _AgentInitials(
+                          name: agent.fullName,
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      agent.fullName,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          size: 13,
+                          color: Color(0xFFFFB800),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          agent.rating.toStringAsFixed(1),
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          width: 3,
+                          height: 3,
+                          decoration: const BoxDecoration(
+                            color: AppColors.textTertiary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${agent.totalOrdersCompleted} orders',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (agent.introMessage.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '"${agent.introMessage}"',
+                style: GoogleFonts.dmSans(
+                  fontSize: 12.5,
+                  color: AppColors.textSecondary,
+                  fontStyle: FontStyle.italic,
+                  height: 1.45,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: onChatTap,
+                    icon: const Icon(
+                      Icons.chat_bubble_outline_rounded,
+                      size: 15,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      'Chat',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (onCallTap != null) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: onCallTap,
+                      icon: const Icon(
+                        Icons.call_rounded,
+                        size: 15,
+                        color: AppColors.secondary,
+                      ),
+                      label: Text(
+                        'Call',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.secondary,
+                        side: const BorderSide(
+                          color: AppColors.secondary,
+                          width: 0.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AgentInitials extends StatelessWidget {
+  final String name;
+
+  const _AgentInitials({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final initial =
+        name.isNotEmpty ? name[0].toUpperCase() : '?';
+    return Container(
+      color: AppColors.infoBackground,
+      child: Center(
+        child: Text(
+          initial,
+          style: GoogleFonts.dmSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.secondary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AgentCardShimmer extends StatelessWidget {
+  const _AgentCardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.surface,
+      highlightColor: Colors.white,
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

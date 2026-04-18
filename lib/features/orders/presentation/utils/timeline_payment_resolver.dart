@@ -14,7 +14,6 @@ PaymentRequestModel? resolvePendingPaymentForStage(
   }
 
   switch (stageKey) {
-    case 'agent_assigned':
     case 'deposit_paid':
       return pick((r) => r.timelineStageKey == 'deposit_paid') ??
           pick((r) => r.type == PaymentRequestType.initial);

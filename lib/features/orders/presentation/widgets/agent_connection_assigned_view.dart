@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
@@ -49,6 +50,41 @@ class _AgentConnectionAssignedViewState
         .toList();
     if (parts.isEmpty) return 'agent';
     return parts.first;
+  }
+
+  Future<void> _launchCall(
+    BuildContext context,
+    String? phone,
+  ) async {
+    if (phone == null || phone.isEmpty) {
+      return;
+    }
+    final uri = Uri(scheme: 'tel', path: phone);
+    try {
+      final ok = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!ok && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not launch call.',
+              style: GoogleFonts.dmSans(
+                color: Colors.white,
+                fontSize: 13,
+              ),
+            ),
+            backgroundColor: AppColors.textPrimary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } catch (_) {}
   }
 
   @override
@@ -295,39 +331,76 @@ class _AgentConnectionAssignedViewState
               ),
               const SizedBox(height: 16),
             ],
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () {
-                  context.go('/order/${widget.orderId}?tab=chat');
-                },
-                style:
-                    ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                    ).copyWith(
-                      overlayColor: WidgetStateProperty.all(
-                        Colors.white.withValues(alpha: 0.1),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: SizedBox(
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.push(
+                          '/order/${widget.orderId}?tab=chat',
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 18,
+                        color: Colors.white,
                       ),
-                      elevation: WidgetStateProperty.resolveWith(
-                        (states) =>
-                            states.contains(WidgetState.pressed) ? 0 : 2,
+                      label: Text(
+                        'Chat with $_firstName',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
-                      shadowColor: WidgetStateProperty.all(
-                        AppColors.secondary.withValues(alpha: 0.3),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ).copyWith(
+                        overlayColor: WidgetStateProperty.all(
+                          Colors.white.withValues(alpha: 0.1),
+                        ),
                       ),
                     ),
-                child: Text(
-                  'Open chat with $_firstName →',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
+                if (widget.agent.phone != null &&
+                    widget.agent.phone!.isNotEmpty) ...[
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 52,
+                    height: 52,
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          _launchCall(context, widget.agent.phone),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.secondary,
+                        side: const BorderSide(
+                          color: AppColors.secondary,
+                          width: 1,
+                        ),
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.call_rounded,
+                        size: 22,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),

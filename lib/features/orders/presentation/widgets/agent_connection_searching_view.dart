@@ -1,12 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../../domain/entities/order_view.dart';
 import 'agent_connection_assign_step.dart';
 import 'agent_connection_labels.dart';
 
-class AgentConnectionSearchingView extends StatelessWidget {
+class AgentConnectionSearchingView extends StatefulWidget {
   const AgentConnectionSearchingView({
     super.key,
     required this.order,
@@ -17,6 +20,35 @@ class AgentConnectionSearchingView extends StatelessWidget {
   final OrderView order;
   final AnimationController pulseController;
   final bool showTakingLonger;
+
+  @override
+  State<AgentConnectionSearchingView> createState() =>
+      _AgentConnectionSearchingViewState();
+}
+
+class _AgentConnectionSearchingViewState
+    extends State<AgentConnectionSearchingView> {
+  bool _showSupport = false;
+  Timer? _supportTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _supportTimer = Timer(
+      const Duration(minutes: 2),
+      () {
+        if (mounted) {
+          setState(() => _showSupport = true);
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _supportTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +66,7 @@ class AgentConnectionSearchingView extends StatelessWidget {
                   ScaleTransition(
                     scale: Tween<double>(begin: 0.94, end: 1.06).animate(
                       CurvedAnimation(
-                        parent: pulseController,
+                        parent: widget.pulseController,
                         curve: Curves.easeInOut,
                       ),
                     ),
@@ -102,12 +134,12 @@ class AgentConnectionSearchingView extends StatelessWidget {
                         AgentConnectionAssignStep(
                           done: false,
                           active: false,
-                          text: AgentConnectionLabels.step3Label(order),
+                          text: AgentConnectionLabels.step3Label(widget.order),
                         ),
                         AgentConnectionAssignStep(
                           done: false,
                           active: false,
-                          text: AgentConnectionLabels.step4Label(order),
+                          text: AgentConnectionLabels.step4Label(widget.order),
                           isLast: true,
                         ),
                       ],
@@ -116,7 +148,7 @@ class AgentConnectionSearchingView extends StatelessWidget {
                   const SizedBox(height: 20),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
-                    child: showTakingLonger
+                    child: widget.showTakingLonger
                         ? Container(
                             key: const ValueKey('long'),
                             padding: const EdgeInsets.symmetric(
@@ -177,12 +209,89 @@ class AgentConnectionSearchingView extends StatelessWidget {
                             ],
                           ),
                   ),
+                  const SizedBox(height: 16),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 400),
+                    switchInCurve: Curves.easeOut,
+                    transitionBuilder: (child, anim) => FadeTransition(
+                      opacity: anim,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.3),
+                          end: Offset.zero,
+                        ).animate(anim),
+                        child: child,
+                      ),
+                    ),
+                    child: _showSupport
+                        ? const _SupportPrompt(
+                            key: ValueKey('support'),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey('empty'),
+                          ),
+                  ),
                   const SizedBox(height: 32),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SupportPrompt extends StatelessWidget {
+  const _SupportPrompt({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Taking longer than expected?',
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              color: AppColors.textTertiary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: () => SupportBottomSheet.show(context),
+              icon: const Icon(
+                Icons.headset_mic_rounded,
+                size: 16,
+                color: AppColors.secondary,
+              ),
+              label: Text(
+                'Contact support',
+                style: GoogleFonts.dmSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.secondary,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.secondary,
+                side: const BorderSide(
+                  color: AppColors.secondary,
+                  width: 0.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
