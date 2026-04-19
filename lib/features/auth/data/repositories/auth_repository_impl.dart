@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/firestore_collections.dart';
 import '../../../../core/error/failures.dart';
@@ -313,7 +313,14 @@ class AuthRepositoryImpl implements AuthRepository {
         final ref = FirebaseStorage.instance.ref().child(
           'id_documents/$uid.jpg',
         );
-        await ref.putFile(File(photoPath));
+        // Use XFile.readAsBytes() which works on both mobile and web.
+        // putFile uses dart:io which is not available on web.
+        final xFile = XFile(photoPath);
+        final bytes = await xFile.readAsBytes();
+        await ref.putData(
+          bytes,
+          SettableMetadata(contentType: 'image/jpeg'),
+        );
         data['ghanaCardPhotoUrl'] = await ref.getDownloadURL();
       }
 

@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/cross_platform_image.dart';
 
 class GhanaCardPhotoField extends StatelessWidget {
   const GhanaCardPhotoField({
@@ -48,7 +47,10 @@ class GhanaCardPhotoField extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         if (hasLocal)
-                          Image.file(File(localPath!), fit: BoxFit.cover)
+                          buildLocalImage(
+                            localPath!,
+                            fit: BoxFit.cover,
+                          )
                         else
                           CachedNetworkImage(
                             imageUrl: existingUrl!,

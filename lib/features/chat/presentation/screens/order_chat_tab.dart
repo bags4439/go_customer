@@ -9,6 +9,7 @@ import 'package:record/record.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../core/utils/cross_platform_image.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
@@ -751,7 +752,7 @@ class _ImageThumb extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.file(File(path), fit: BoxFit.cover),
+              child: buildLocalImage(path, fit: BoxFit.cover),
             ),
           ),
           Positioned(
@@ -881,7 +882,10 @@ class _ImagePreviewScreenState extends ConsumerState<_ImagePreviewScreen> {
               minScale: 0.5,
               maxScale: 5.0,
               child: Center(
-                child: Image.file(File(images[i]), fit: BoxFit.contain),
+                child: buildLocalImage(
+                  images[i],
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
@@ -1040,7 +1044,10 @@ class _VideoThumbnail extends StatelessWidget {
       future: _getThumbnail(),
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data != null) {
-          return Image.file(File(snapshot.data!), fit: BoxFit.cover);
+          return buildLocalImage(
+            snapshot.data!,
+            fit: BoxFit.cover,
+          );
         }
         return const ColoredBox(
           color: Colors.black26,

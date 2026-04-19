@@ -76,7 +76,7 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Ready to import your first car?',
+                              'Ready to buy your first car?',
                               style: GoogleFonts.dmSans(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
@@ -199,7 +199,7 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            'Import my first car',
+                                            'Buy my first car',
                                             style: GoogleFonts.dmSans(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,

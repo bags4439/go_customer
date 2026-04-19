@@ -20,6 +20,7 @@ class CrashReporter {
   /// Enables collection in release/profile,
   /// disables in debug.
   static Future<void> initialise() async {
+    if (kIsWeb) return;
     await _instance.setCrashlyticsCollectionEnabled(
       true,
     );
@@ -31,6 +32,7 @@ class CrashReporter {
   /// profile is loaded.
   /// Pass null to clear (e.g. on sign-out).
   static Future<void> setUser(String? userId) async {
+    if (kIsWeb) return;
     if (kDebugMode) return;
     await _instance.setUserIdentifier(
       userId ?? '',
@@ -48,6 +50,7 @@ class CrashReporter {
     String? context,
     bool fatal = false,
   }) async {
+    if (kIsWeb) return;
     if (kDebugMode) {
       debugPrint(
         '[CrashReporter] ${context ?? ''} $error\n$stackTrace',
@@ -68,6 +71,7 @@ class CrashReporter {
   /// the Crashlytics log tab alongside
   /// crash reports.
   static void log(String message) {
+    if (kIsWeb) return;
     if (kDebugMode) return;
     _instance.log(message);
   }
@@ -80,6 +84,7 @@ class CrashReporter {
     String key,
     Object value,
   ) async {
+    if (kIsWeb) return;
     if (kDebugMode) return;
     await _instance.setCustomKey(key, value);
   }

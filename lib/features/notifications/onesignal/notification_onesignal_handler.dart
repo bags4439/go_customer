@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,11 +9,16 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../core/utils/onesignal_web_helper.dart';
 import '../../../../router.dart';
 import '../core/constants/notification_constants.dart';
 
 /// Call on user logout so OneSignal stops associating notifications with the user.
 void clearOneSignalUser() {
+  if (kIsWeb) {
+    oneSignalWebLogout();
+    return;
+  }
   try {
     OneSignal.logout();
   } catch (_) {}

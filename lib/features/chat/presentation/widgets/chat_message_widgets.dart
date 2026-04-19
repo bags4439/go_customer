@@ -1,8 +1,6 @@
 // ignore_for_file: unused_element, unused_element_parameter
 // _k* constants, _BubblePainter, _ReplyBlock: infrastructure for upcoming bubble UI.
 
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/utils/cross_platform_image.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
 import 'vehicle_option_chat_card.dart';
@@ -972,8 +971,12 @@ class _ImageBubble extends StatelessWidget {
     final r = _kBubbleRadius;
 
     Widget content;
-    if (localPath != null && File(localPath!).existsSync()) {
-      content = Image.file(File(localPath!), fit: BoxFit.cover);
+    if (localPath != null) {
+      content = buildLocalImage(
+        localPath!,
+        fit: BoxFit.cover,
+        errorWidget: const Icon(Icons.broken_image),
+      );
     } else if (url != null && url.isNotEmpty) {
       content = CachedNetworkImage(
         imageUrl: url,
@@ -1150,8 +1153,21 @@ class _VideoBubble extends StatelessWidget {
     final r = _kBubbleRadius;
 
     Widget thumbnail;
-    if (localPath != null && File(localPath!).existsSync()) {
-      thumbnail = Image.file(File(localPath!), fit: BoxFit.cover);
+    if (localPath != null) {
+      thumbnail = buildLocalImage(
+        localPath!,
+        fit: BoxFit.cover,
+        errorWidget: const ColoredBox(
+          color: Color(0xFF222222),
+          child: Center(
+            child: Icon(
+              Icons.videocam,
+              color: Colors.white54,
+              size: 32,
+            ),
+          ),
+        ),
+      );
     } else if (thumbUrl != null && thumbUrl.isNotEmpty) {
       thumbnail = CachedNetworkImage(
         imageUrl: thumbUrl,

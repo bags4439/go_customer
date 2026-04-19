@@ -10,6 +10,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/crash_reporter.dart';
+import 'core/utils/onesignal_web_helper.dart';
 import 'features/notifications/onesignal/notification_onesignal_handler.dart';
 import 'firebase_options.dart';
 import 'router.dart';
@@ -52,6 +53,15 @@ Future<void> main() async {
         await OneSignal.Notifications
             .requestPermission(true);
         setupNotificationHandlers(router);
+      } else {
+        // Web: OneSignal JS SDK is already
+        // initialised in index.html.
+        // Request permission after the
+        // app is rendered.
+        Future.delayed(
+          const Duration(seconds: 3),
+          oneSignalWebRequestPermission,
+        );
       }
 
       if (kDebugMode) {

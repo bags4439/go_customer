@@ -170,7 +170,7 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Import another car',
+                        'Buy another car',
                         style: GoogleFonts.dmSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,

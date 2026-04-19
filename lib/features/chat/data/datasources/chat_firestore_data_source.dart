@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:video_compress/video_compress.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -125,7 +126,11 @@ class ChatFirestoreDataSource {
 
     UploadTask uploadTask;
     if (fileOrBytes is File) {
-      uploadTask = storageRef.putFile(fileOrBytes);
+      final bytes = await XFile(fileOrBytes.path).readAsBytes();
+      uploadTask = storageRef.putData(
+        bytes,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
     } else {
       final bytes = fileOrBytes is Uint8List
           ? fileOrBytes
@@ -221,7 +226,11 @@ class ChatFirestoreDataSource {
     final storageRef = _storage.ref().child(
       'messages/$orderId/videos/$messageId.mp4',
     );
-    final uploadTask = storageRef.putFile(file);
+    final videoBytes = await XFile(file.path).readAsBytes();
+    final uploadTask = storageRef.putData(
+      videoBytes,
+      SettableMetadata(contentType: 'video/mp4'),
+    );
     uploadTask.snapshotEvents.listen((snapshot) async {
       final total = snapshot.totalBytes;
       if (total > 0) {
@@ -254,7 +263,11 @@ class ChatFirestoreDataSource {
     final ref = _storage.ref().child(
       'messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.m4a',
     );
-    await ref.putFile(file);
+    final voiceBytes = await XFile(file.path).readAsBytes();
+    await ref.putData(
+      voiceBytes,
+      SettableMetadata(contentType: 'audio/m4a'),
+    );
     final url = await ref.getDownloadURL();
 
     final data = <String, dynamic>{
@@ -303,7 +316,11 @@ class ChatFirestoreDataSource {
     final ref = _storage.ref().child(
       'messages/$orderId/${DateTime.now().millisecondsSinceEpoch}.$ext',
     );
-    await ref.putFile(file);
+    final fileBytes = await XFile(file.path).readAsBytes();
+    await ref.putData(
+      fileBytes,
+      SettableMetadata(contentType: 'application/octet-stream'),
+    );
     final url = await ref.getDownloadURL();
 
     final data = <String, dynamic>{

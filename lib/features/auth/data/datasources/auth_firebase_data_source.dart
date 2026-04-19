@@ -1,12 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/onesignal_web_helper.dart';
 import '../../domain/entities/app_user.dart';
 import '../models/user_model.dart';
 
@@ -139,8 +141,14 @@ class AuthFirebaseDataSource {
   }) async {
     final path = 'users/$userId/id_document.$extension';
     final ref = _storage.ref().child(path);
-    final file = File(localFilePath);
-    await ref.putFile(file);
+    final xFile = XFile(localFilePath);
+    final bytes = await xFile.readAsBytes();
+    await ref.putData(
+      bytes,
+      SettableMetadata(
+        contentType: 'image/${extension.toLowerCase()}',
+      ),
+    );
     final url = await ref.getDownloadURL();
 
     await _firestore.collection(FirestoreCollections.users).doc(userId).update({
@@ -154,14 +162,13 @@ class AuthFirebaseDataSource {
   }
 
   Future<void> syncOneSignalIdentity(String userId) async {
-    // Prefer legacy API name if available, otherwise use OneSignal v5 login.
-    final dynamic oneSignal = OneSignal;
+    if (kIsWeb) {
+      oneSignalWebLogin(userId);
+      return;
+    }
     try {
-      print('Attempting to set OneSignal external user ID: $userId');
-      // oneSignal.setExternalUserId(userId);
       await OneSignal.login(userId);
-    } catch (e){
-      print('OneSignal setExternalUserId failed, falling back to login: $userId, error: $e');
+    } catch (e) {
       OneSignal.login(userId);
     }
     final playerId = OneSignal.User.pushSubscription.id;

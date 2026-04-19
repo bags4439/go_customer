@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../auth/data/models/user_model.dart';
@@ -94,12 +93,22 @@ class ProfileFirestoreDataSource {
   }) async {
     final path = 'users/$userId/id_document.$extension';
     final storageRef = _storage.ref().child(path);
-    final file = File(localFilePath);
-    final uploadTask = storageRef.putFile(file);
+    final xFile = XFile(localFilePath);
+    final bytes = await xFile.readAsBytes();
+    final uploadTask = storageRef.putData(
+      bytes,
+      SettableMetadata(
+        contentType: 'image/${extension.toLowerCase()}',
+      ),
+    );
     if (onProgress != null) {
       uploadTask.snapshotEvents.listen((snapshot) {
-        final p = snapshot.bytesTransferred / snapshot.totalBytes;
-        onProgress(p.clamp(0.0, 1.0));
+        final total = snapshot.totalBytes;
+        if (total > 0) {
+          onProgress(
+            (snapshot.bytesTransferred / total).clamp(0.0, 1.0),
+          );
+        }
       });
     }
     await uploadTask;

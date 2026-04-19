@@ -1,38 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta content="IE=Edge"
+        http-equiv="X-UA-Compatible">
+  <meta name="description"
+        content="AutoImport GH">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="go_customer">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="mobile-web-app-capable"
+        content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style"
+        content="black">
+  <meta name="apple-mobile-web-app-title"
+        content="AutoImport GH">
+  <link rel="apple-touch-icon"
+        href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon"
+        type="image/png"
+        href="favicon.png"/>
 
-  <title>go_customer</title>
+  <title>AutoImport GH</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- OneSignal Web SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+          defer></script>
+  <script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "9a05e7b1-ca1c-4de2-b521-a175c1d66e34",
+      safari_web_id: "web.onesignal.auto.364542e4-0165-4e49-b6eb-0136f3f4eaa9",
+      notifyButton: {
+        enable: true,
+      },
+      allowLocalhostAsSecureOrigin: true,
+    });
+  });
+
+    function oneSignalLoginWeb(userId) {
+      OneSignalDeferred.push(
+          function(OneSignal) {
+        OneSignal.login(userId);
+      });
+    }
+
+    function oneSignalLogoutWeb() {
+      OneSignalDeferred.push(
+          function(OneSignal) {
+        OneSignal.logout();
+      });
+    }
+
+    function oneSignalRequestPermissionWeb() {
+      OneSignalDeferred.push(
+          function(OneSignal) {
+        OneSignal.Notifications
+            .requestPermission();
+      });
+    }
+  </script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js"
+          async></script>
 </body>
 </html>

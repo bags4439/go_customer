@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math' show pi, sin;
 
 import 'package:flutter/gestures.dart';
@@ -10,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/utils/cross_platform_image.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../domain/entities/country.dart';
 import '../notifiers/login_notifier.dart';
@@ -774,8 +774,8 @@ class _GhanaCardPhotoField extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.file(
-                          File(photoPath!),
+                        buildLocalImage(
+                          photoPath!,
                           fit: BoxFit.cover,
                         ),
                         if (isUploading)
