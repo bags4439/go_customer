@@ -938,7 +938,7 @@ class _StepReview extends ConsumerWidget {
                 const NextStepRow(
                   number: 1,
                   text:
-                      'We match you with a dedicated agent (usually within 2 hours)',
+                      'We match you with a dedicated agent (usually within 30 seconds)',
                 ),
                 const NextStepRow(
                   number: 2,

@@ -1,1 +1,55 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"velocitech-auto-go","appId":"1:359295127098:android:c12582adcf6f001c8a2f03","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"velocitech-auto-go","appId":"1:359295127098:ios:af0e5acd80f864138a2f03","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"velocitech-auto-go","appId":"1:359295127098:ios:af0e5acd80f864138a2f03","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"velocitech-auto-go","configurations":{"android":"1:359295127098:android:c12582adcf6f001c8a2f03","ios":"1:359295127098:ios:af0e5acd80f864138a2f03","macos":"1:359295127098:ios:af0e5acd80f864138a2f03","web":"1:359295127098:web:df791db0cba65fcd8a2f03","windows":"1:359295127098:web:237d8d41c4ae24e68a2f03"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "velocitech-auto-go",
+          "appId": "1:359295127098:android:c12582adcf6f001c8a2f03",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "velocitech-auto-go",
+          "appId": "1:359295127098:ios:af0e5acd80f864138a2f03",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "velocitech-auto-go",
+          "appId": "1:359295127098:ios:af0e5acd80f864138a2f03",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "velocitech-auto-go",
+          "configurations": {
+            "android": "1:359295127098:android:c12582adcf6f001c8a2f03",
+            "ios": "1:359295127098:ios:af0e5acd80f864138a2f03",
+            "macos": "1:359295127098:ios:af0e5acd80f864138a2f03",
+            "web": "1:359295127098:web:df791db0cba65fcd8a2f03",
+            "windows": "1:359295127098:web:237d8d41c4ae24e68a2f03"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
