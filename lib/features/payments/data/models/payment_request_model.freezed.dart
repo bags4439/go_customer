@@ -22,8 +22,7 @@ BreakdownItem _$BreakdownItemFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$BreakdownItem {
   String get label => throw _privateConstructorUsedError;
-  double get amountGhs => throw _privateConstructorUsedError;
-  double? get amountUsd => throw _privateConstructorUsedError;
+  double get amountUsd => throw _privateConstructorUsedError;
   bool get isDeduction => throw _privateConstructorUsedError;
 
   /// Serializes this BreakdownItem to a JSON map.
@@ -43,12 +42,7 @@ abstract class $BreakdownItemCopyWith<$Res> {
     $Res Function(BreakdownItem) then,
   ) = _$BreakdownItemCopyWithImpl<$Res, BreakdownItem>;
   @useResult
-  $Res call({
-    String label,
-    double amountGhs,
-    double? amountUsd,
-    bool isDeduction,
-  });
+  $Res call({String label, double amountUsd, bool isDeduction});
 }
 
 /// @nodoc
@@ -67,8 +61,7 @@ class _$BreakdownItemCopyWithImpl<$Res, $Val extends BreakdownItem>
   @override
   $Res call({
     Object? label = null,
-    Object? amountGhs = null,
-    Object? amountUsd = freezed,
+    Object? amountUsd = null,
     Object? isDeduction = null,
   }) {
     return _then(
@@ -77,14 +70,10 @@ class _$BreakdownItemCopyWithImpl<$Res, $Val extends BreakdownItem>
                 ? _value.label
                 : label // ignore: cast_nullable_to_non_nullable
                       as String,
-            amountGhs: null == amountGhs
-                ? _value.amountGhs
-                : amountGhs // ignore: cast_nullable_to_non_nullable
-                      as double,
-            amountUsd: freezed == amountUsd
+            amountUsd: null == amountUsd
                 ? _value.amountUsd
                 : amountUsd // ignore: cast_nullable_to_non_nullable
-                      as double?,
+                      as double,
             isDeduction: null == isDeduction
                 ? _value.isDeduction
                 : isDeduction // ignore: cast_nullable_to_non_nullable
@@ -104,12 +93,7 @@ abstract class _$$BreakdownItemImplCopyWith<$Res>
   ) = __$$BreakdownItemImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String label,
-    double amountGhs,
-    double? amountUsd,
-    bool isDeduction,
-  });
+  $Res call({String label, double amountUsd, bool isDeduction});
 }
 
 /// @nodoc
@@ -127,8 +111,7 @@ class __$$BreakdownItemImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? label = null,
-    Object? amountGhs = null,
-    Object? amountUsd = freezed,
+    Object? amountUsd = null,
     Object? isDeduction = null,
   }) {
     return _then(
@@ -137,14 +120,10 @@ class __$$BreakdownItemImplCopyWithImpl<$Res>
             ? _value.label
             : label // ignore: cast_nullable_to_non_nullable
                   as String,
-        amountGhs: null == amountGhs
-            ? _value.amountGhs
-            : amountGhs // ignore: cast_nullable_to_non_nullable
-                  as double,
-        amountUsd: freezed == amountUsd
+        amountUsd: null == amountUsd
             ? _value.amountUsd
             : amountUsd // ignore: cast_nullable_to_non_nullable
-                  as double?,
+                  as double,
         isDeduction: null == isDeduction
             ? _value.isDeduction
             : isDeduction // ignore: cast_nullable_to_non_nullable
@@ -159,8 +138,7 @@ class __$$BreakdownItemImplCopyWithImpl<$Res>
 class _$BreakdownItemImpl implements _BreakdownItem {
   const _$BreakdownItemImpl({
     required this.label,
-    required this.amountGhs,
-    this.amountUsd,
+    required this.amountUsd,
     this.isDeduction = false,
   });
 
@@ -170,16 +148,14 @@ class _$BreakdownItemImpl implements _BreakdownItem {
   @override
   final String label;
   @override
-  final double amountGhs;
-  @override
-  final double? amountUsd;
+  final double amountUsd;
   @override
   @JsonKey()
   final bool isDeduction;
 
   @override
   String toString() {
-    return 'BreakdownItem(label: $label, amountGhs: $amountGhs, amountUsd: $amountUsd, isDeduction: $isDeduction)';
+    return 'BreakdownItem(label: $label, amountUsd: $amountUsd, isDeduction: $isDeduction)';
   }
 
   @override
@@ -188,8 +164,6 @@ class _$BreakdownItemImpl implements _BreakdownItem {
         (other.runtimeType == runtimeType &&
             other is _$BreakdownItemImpl &&
             (identical(other.label, label) || other.label == label) &&
-            (identical(other.amountGhs, amountGhs) ||
-                other.amountGhs == amountGhs) &&
             (identical(other.amountUsd, amountUsd) ||
                 other.amountUsd == amountUsd) &&
             (identical(other.isDeduction, isDeduction) ||
@@ -198,8 +172,7 @@ class _$BreakdownItemImpl implements _BreakdownItem {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, label, amountGhs, amountUsd, isDeduction);
+  int get hashCode => Object.hash(runtimeType, label, amountUsd, isDeduction);
 
   /// Create a copy of BreakdownItem
   /// with the given fields replaced by the non-null parameter values.
@@ -218,8 +191,7 @@ class _$BreakdownItemImpl implements _BreakdownItem {
 abstract class _BreakdownItem implements BreakdownItem {
   const factory _BreakdownItem({
     required final String label,
-    required final double amountGhs,
-    final double? amountUsd,
+    required final double amountUsd,
     final bool isDeduction,
   }) = _$BreakdownItemImpl;
 
@@ -229,9 +201,7 @@ abstract class _BreakdownItem implements BreakdownItem {
   @override
   String get label;
   @override
-  double get amountGhs;
-  @override
-  double? get amountUsd;
+  double get amountUsd;
   @override
   bool get isDeduction;
 
@@ -260,11 +230,10 @@ mixin _$PaymentRequestModel {
   PaymentRequestType get type => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
-  List<BreakdownItem> get breakdownJson => throw _privateConstructorUsedError;
-  double get totalGhs => throw _privateConstructorUsedError;
-  double? get totalUsd => throw _privateConstructorUsedError;
-  double? get exchangeRate => throw _privateConstructorUsedError;
-  double? get depositDeductedGhs => throw _privateConstructorUsedError;
+  List<BreakdownItem> get breakdown => throw _privateConstructorUsedError;
+  double get amountUsd => throw _privateConstructorUsedError;
+  double? get exchangeRateAtRequest => throw _privateConstructorUsedError;
+  double? get depositDeductedUsd => throw _privateConstructorUsedError;
   String? get timelineStageKey => throw _privateConstructorUsedError;
   String? get invoiceImageUrl => throw _privateConstructorUsedError;
   DateTime? get deadlineAt => throw _privateConstructorUsedError;
@@ -303,11 +272,10 @@ abstract class $PaymentRequestModelCopyWith<$Res> {
     PaymentRequestType type,
     String? description,
     @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
-    List<BreakdownItem> breakdownJson,
-    double totalGhs,
-    double? totalUsd,
-    double? exchangeRate,
-    double? depositDeductedGhs,
+    List<BreakdownItem> breakdown,
+    double amountUsd,
+    double? exchangeRateAtRequest,
+    double? depositDeductedUsd,
     String? timelineStageKey,
     String? invoiceImageUrl,
     DateTime? deadlineAt,
@@ -340,11 +308,10 @@ class _$PaymentRequestModelCopyWithImpl<$Res, $Val extends PaymentRequestModel>
     Object? paymentId = freezed,
     Object? type = null,
     Object? description = freezed,
-    Object? breakdownJson = null,
-    Object? totalGhs = null,
-    Object? totalUsd = freezed,
-    Object? exchangeRate = freezed,
-    Object? depositDeductedGhs = freezed,
+    Object? breakdown = null,
+    Object? amountUsd = null,
+    Object? exchangeRateAtRequest = freezed,
+    Object? depositDeductedUsd = freezed,
     Object? timelineStageKey = freezed,
     Object? invoiceImageUrl = freezed,
     Object? deadlineAt = freezed,
@@ -380,25 +347,21 @@ class _$PaymentRequestModelCopyWithImpl<$Res, $Val extends PaymentRequestModel>
                 ? _value.description
                 : description // ignore: cast_nullable_to_non_nullable
                       as String?,
-            breakdownJson: null == breakdownJson
-                ? _value.breakdownJson
-                : breakdownJson // ignore: cast_nullable_to_non_nullable
+            breakdown: null == breakdown
+                ? _value.breakdown
+                : breakdown // ignore: cast_nullable_to_non_nullable
                       as List<BreakdownItem>,
-            totalGhs: null == totalGhs
-                ? _value.totalGhs
-                : totalGhs // ignore: cast_nullable_to_non_nullable
+            amountUsd: null == amountUsd
+                ? _value.amountUsd
+                : amountUsd // ignore: cast_nullable_to_non_nullable
                       as double,
-            totalUsd: freezed == totalUsd
-                ? _value.totalUsd
-                : totalUsd // ignore: cast_nullable_to_non_nullable
+            exchangeRateAtRequest: freezed == exchangeRateAtRequest
+                ? _value.exchangeRateAtRequest
+                : exchangeRateAtRequest // ignore: cast_nullable_to_non_nullable
                       as double?,
-            exchangeRate: freezed == exchangeRate
-                ? _value.exchangeRate
-                : exchangeRate // ignore: cast_nullable_to_non_nullable
-                      as double?,
-            depositDeductedGhs: freezed == depositDeductedGhs
-                ? _value.depositDeductedGhs
-                : depositDeductedGhs // ignore: cast_nullable_to_non_nullable
+            depositDeductedUsd: freezed == depositDeductedUsd
+                ? _value.depositDeductedUsd
+                : depositDeductedUsd // ignore: cast_nullable_to_non_nullable
                       as double?,
             timelineStageKey: freezed == timelineStageKey
                 ? _value.timelineStageKey
@@ -459,11 +422,10 @@ abstract class _$$PaymentRequestModelImplCopyWith<$Res>
     PaymentRequestType type,
     String? description,
     @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
-    List<BreakdownItem> breakdownJson,
-    double totalGhs,
-    double? totalUsd,
-    double? exchangeRate,
-    double? depositDeductedGhs,
+    List<BreakdownItem> breakdown,
+    double amountUsd,
+    double? exchangeRateAtRequest,
+    double? depositDeductedUsd,
     String? timelineStageKey,
     String? invoiceImageUrl,
     DateTime? deadlineAt,
@@ -495,11 +457,10 @@ class __$$PaymentRequestModelImplCopyWithImpl<$Res>
     Object? paymentId = freezed,
     Object? type = null,
     Object? description = freezed,
-    Object? breakdownJson = null,
-    Object? totalGhs = null,
-    Object? totalUsd = freezed,
-    Object? exchangeRate = freezed,
-    Object? depositDeductedGhs = freezed,
+    Object? breakdown = null,
+    Object? amountUsd = null,
+    Object? exchangeRateAtRequest = freezed,
+    Object? depositDeductedUsd = freezed,
     Object? timelineStageKey = freezed,
     Object? invoiceImageUrl = freezed,
     Object? deadlineAt = freezed,
@@ -535,25 +496,21 @@ class __$$PaymentRequestModelImplCopyWithImpl<$Res>
             ? _value.description
             : description // ignore: cast_nullable_to_non_nullable
                   as String?,
-        breakdownJson: null == breakdownJson
-            ? _value._breakdownJson
-            : breakdownJson // ignore: cast_nullable_to_non_nullable
+        breakdown: null == breakdown
+            ? _value._breakdown
+            : breakdown // ignore: cast_nullable_to_non_nullable
                   as List<BreakdownItem>,
-        totalGhs: null == totalGhs
-            ? _value.totalGhs
-            : totalGhs // ignore: cast_nullable_to_non_nullable
+        amountUsd: null == amountUsd
+            ? _value.amountUsd
+            : amountUsd // ignore: cast_nullable_to_non_nullable
                   as double,
-        totalUsd: freezed == totalUsd
-            ? _value.totalUsd
-            : totalUsd // ignore: cast_nullable_to_non_nullable
+        exchangeRateAtRequest: freezed == exchangeRateAtRequest
+            ? _value.exchangeRateAtRequest
+            : exchangeRateAtRequest // ignore: cast_nullable_to_non_nullable
                   as double?,
-        exchangeRate: freezed == exchangeRate
-            ? _value.exchangeRate
-            : exchangeRate // ignore: cast_nullable_to_non_nullable
-                  as double?,
-        depositDeductedGhs: freezed == depositDeductedGhs
-            ? _value.depositDeductedGhs
-            : depositDeductedGhs // ignore: cast_nullable_to_non_nullable
+        depositDeductedUsd: freezed == depositDeductedUsd
+            ? _value.depositDeductedUsd
+            : depositDeductedUsd // ignore: cast_nullable_to_non_nullable
                   as double?,
         timelineStageKey: freezed == timelineStageKey
             ? _value.timelineStageKey
@@ -607,11 +564,10 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
     required this.type,
     this.description,
     @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
-    final List<BreakdownItem> breakdownJson = const [],
-    required this.totalGhs,
-    this.totalUsd,
-    this.exchangeRate,
-    this.depositDeductedGhs,
+    final List<BreakdownItem> breakdown = const [],
+    required this.amountUsd,
+    this.exchangeRateAtRequest,
+    this.depositDeductedUsd,
     this.timelineStageKey,
     this.invoiceImageUrl,
     this.deadlineAt,
@@ -620,7 +576,7 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
     this.paidAt,
     this.expiredAt,
     this.cancelledAt,
-  }) : _breakdownJson = breakdownJson;
+  }) : _breakdown = breakdown;
 
   factory _$PaymentRequestModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PaymentRequestModelImplFromJson(json);
@@ -641,23 +597,21 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
   final PaymentRequestType type;
   @override
   final String? description;
-  final List<BreakdownItem> _breakdownJson;
+  final List<BreakdownItem> _breakdown;
   @override
   @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
-  List<BreakdownItem> get breakdownJson {
-    if (_breakdownJson is EqualUnmodifiableListView) return _breakdownJson;
+  List<BreakdownItem> get breakdown {
+    if (_breakdown is EqualUnmodifiableListView) return _breakdown;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_breakdownJson);
+    return EqualUnmodifiableListView(_breakdown);
   }
 
   @override
-  final double totalGhs;
+  final double amountUsd;
   @override
-  final double? totalUsd;
+  final double? exchangeRateAtRequest;
   @override
-  final double? exchangeRate;
-  @override
-  final double? depositDeductedGhs;
+  final double? depositDeductedUsd;
   @override
   final String? timelineStageKey;
   @override
@@ -678,7 +632,7 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
 
   @override
   String toString() {
-    return 'PaymentRequestModel(id: $id, orderId: $orderId, createdByAgentId: $createdByAgentId, paymentId: $paymentId, type: $type, description: $description, breakdownJson: $breakdownJson, totalGhs: $totalGhs, totalUsd: $totalUsd, exchangeRate: $exchangeRate, depositDeductedGhs: $depositDeductedGhs, timelineStageKey: $timelineStageKey, invoiceImageUrl: $invoiceImageUrl, deadlineAt: $deadlineAt, status: $status, sentAt: $sentAt, paidAt: $paidAt, expiredAt: $expiredAt, cancelledAt: $cancelledAt)';
+    return 'PaymentRequestModel(id: $id, orderId: $orderId, createdByAgentId: $createdByAgentId, paymentId: $paymentId, type: $type, description: $description, breakdown: $breakdown, amountUsd: $amountUsd, exchangeRateAtRequest: $exchangeRateAtRequest, depositDeductedUsd: $depositDeductedUsd, timelineStageKey: $timelineStageKey, invoiceImageUrl: $invoiceImageUrl, deadlineAt: $deadlineAt, status: $status, sentAt: $sentAt, paidAt: $paidAt, expiredAt: $expiredAt, cancelledAt: $cancelledAt)';
   }
 
   @override
@@ -696,17 +650,15 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
             (identical(other.description, description) ||
                 other.description == description) &&
             const DeepCollectionEquality().equals(
-              other._breakdownJson,
-              _breakdownJson,
+              other._breakdown,
+              _breakdown,
             ) &&
-            (identical(other.totalGhs, totalGhs) ||
-                other.totalGhs == totalGhs) &&
-            (identical(other.totalUsd, totalUsd) ||
-                other.totalUsd == totalUsd) &&
-            (identical(other.exchangeRate, exchangeRate) ||
-                other.exchangeRate == exchangeRate) &&
-            (identical(other.depositDeductedGhs, depositDeductedGhs) ||
-                other.depositDeductedGhs == depositDeductedGhs) &&
+            (identical(other.amountUsd, amountUsd) ||
+                other.amountUsd == amountUsd) &&
+            (identical(other.exchangeRateAtRequest, exchangeRateAtRequest) ||
+                other.exchangeRateAtRequest == exchangeRateAtRequest) &&
+            (identical(other.depositDeductedUsd, depositDeductedUsd) ||
+                other.depositDeductedUsd == depositDeductedUsd) &&
             (identical(other.timelineStageKey, timelineStageKey) ||
                 other.timelineStageKey == timelineStageKey) &&
             (identical(other.invoiceImageUrl, invoiceImageUrl) ||
@@ -724,7 +676,7 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hash(
     runtimeType,
     id,
     orderId,
@@ -732,11 +684,10 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
     paymentId,
     type,
     description,
-    const DeepCollectionEquality().hash(_breakdownJson),
-    totalGhs,
-    totalUsd,
-    exchangeRate,
-    depositDeductedGhs,
+    const DeepCollectionEquality().hash(_breakdown),
+    amountUsd,
+    exchangeRateAtRequest,
+    depositDeductedUsd,
     timelineStageKey,
     invoiceImageUrl,
     deadlineAt,
@@ -745,7 +696,7 @@ class _$PaymentRequestModelImpl implements _PaymentRequestModel {
     paidAt,
     expiredAt,
     cancelledAt,
-  ]);
+  );
 
   /// Create a copy of PaymentRequestModel
   /// with the given fields replaced by the non-null parameter values.
@@ -777,11 +728,10 @@ abstract class _PaymentRequestModel implements PaymentRequestModel {
     required final PaymentRequestType type,
     final String? description,
     @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
-    final List<BreakdownItem> breakdownJson,
-    required final double totalGhs,
-    final double? totalUsd,
-    final double? exchangeRate,
-    final double? depositDeductedGhs,
+    final List<BreakdownItem> breakdown,
+    required final double amountUsd,
+    final double? exchangeRateAtRequest,
+    final double? depositDeductedUsd,
     final String? timelineStageKey,
     final String? invoiceImageUrl,
     final DateTime? deadlineAt,
@@ -813,15 +763,13 @@ abstract class _PaymentRequestModel implements PaymentRequestModel {
   String? get description;
   @override
   @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
-  List<BreakdownItem> get breakdownJson;
+  List<BreakdownItem> get breakdown;
   @override
-  double get totalGhs;
+  double get amountUsd;
   @override
-  double? get totalUsd;
+  double? get exchangeRateAtRequest;
   @override
-  double? get exchangeRate;
-  @override
-  double? get depositDeductedGhs;
+  double? get depositDeductedUsd;
   @override
   String? get timelineStageKey;
   @override

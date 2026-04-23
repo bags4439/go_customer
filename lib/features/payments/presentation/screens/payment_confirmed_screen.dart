@@ -73,7 +73,7 @@ class PaymentConfirmedScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(
                           '${CurrencyFormatter.format(
-                            payment.amountGhs * currency.usdToRate,
+                            payment.amountUsd * currency.usdToRate,
                             currency,
                           )} received. $agentName has been notified.',
                           textAlign: TextAlign.center,
@@ -95,7 +95,7 @@ class PaymentConfirmedScreen extends ConsumerWidget {
                         _ReceiptRow(
                           'Amount paid',
                           CurrencyFormatter.format(
-                            payment.amountGhs * currency.usdToRate,
+                            payment.amountUsd * currency.usdToRate,
                             currency,
                           ),
                         ),
@@ -117,11 +117,11 @@ class PaymentConfirmedScreen extends ConsumerWidget {
                     ),
                   ),
                   if (payment.type == AppConstants.paymentRequestTypeVehicleBalanceAndShipping &&
-                      requestAsync.valueOrNull?.depositDeductedGhs != null) ...[
+                      requestAsync.valueOrNull?.depositDeductedUsd != null) ...[
                     const SizedBox(height: 16),
                     _DepositNote(
-                      depositDeductedGhs: requestAsync.valueOrNull!.depositDeductedGhs!,
-                      totalVehicleCost: payment.amountGhs + requestAsync.valueOrNull!.depositDeductedGhs!,
+                      depositDeductedUsd: requestAsync.valueOrNull!.depositDeductedUsd!,
+                      totalVehicleCost: payment.amountUsd + requestAsync.valueOrNull!.depositDeductedUsd!,
                     ),
                   ],
                   if (payment.type == AppConstants.paymentRequestTypeRepairFee) ...[
@@ -220,11 +220,11 @@ class _ReceiptRow extends StatelessWidget {
 }
 
 class _DepositNote extends ConsumerWidget {
-  final double depositDeductedGhs;
+  final double depositDeductedUsd;
   final double totalVehicleCost;
 
   const _DepositNote({
-    required this.depositDeductedGhs,
+    required this.depositDeductedUsd,
     required this.totalVehicleCost,
   });
 
@@ -232,7 +232,7 @@ class _DepositNote extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currency = ref.watch(preferredCurrencyProvider);
     final depositStr = CurrencyFormatter.format(
-      depositDeductedGhs * currency.usdToRate,
+      depositDeductedUsd * currency.usdToRate,
       currency,
     );
     final totalStr = CurrencyFormatter.format(

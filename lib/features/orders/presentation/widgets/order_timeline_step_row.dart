@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../delivery/presentation/providers/delivery_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../orders/data/models/buyer_review_model.dart';
@@ -526,12 +528,17 @@ class _SubActionArea extends StatelessWidget {
     switch (stage.stageKey) {
       case 'deposit_paid':
         if (order.firstPaymentMade) {
-          return _paidPill(OrderTimelineConstants.paidCheck);
+          return _PaidPill(
+            label: OrderTimelineConstants.paidCheck,
+            amountUsd: null,
+          );
         }
         break;
       case 'vehicle_balance':
         if (_isPostVehicleBalancePaid(order.status)) {
-          return _paidPill(OrderTimelineConstants.paidShippingArranged);
+          return const _PaidPill(
+            label: 'Paid \u2714 \u2014 shipping being arranged',
+          );
         }
         break;
       case 'shipping':
@@ -561,40 +568,6 @@ class _SubActionArea extends StatelessWidget {
     }
 
     return _chatFallback(context, stage.stageKey);
-  }
-
-  Widget _paidPill(String text) {
-    return Container(
-      margin: const EdgeInsets.only(top: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAF3DE),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(_kSuccess).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.check_circle_rounded,
-            size: 13,
-            color: Color(_kSuccess),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(_kSuccess),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _chooseClearance(BuildContext context) {
@@ -1447,6 +1420,69 @@ class _AgentCardShimmer extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
         ),
+      ),
+    );
+  }
+}
+
+/// Paid confirmation pill that shows the amount in the customer's
+/// preferred currency when [amountUsd] is provided.
+class _PaidPill extends ConsumerWidget {
+  final String label;
+  final double? amountUsd;
+
+  const _PaidPill({
+    required this.label,
+    this.amountUsd,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var displayText = label;
+
+    if (amountUsd != null && amountUsd! > 0) {
+      final currency = ref.watch(preferredCurrencyProvider);
+      final display = CurrencyFormatter.formatForDisplay(
+        usdAmount: amountUsd!,
+        preferredCurrency: currency,
+      );
+      displayText = 'Paid ${display.primary} ✓';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF3DE),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(_kSuccess).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 13,
+            color: Color(_kSuccess),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              displayText,
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: const Color(_kSuccess),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

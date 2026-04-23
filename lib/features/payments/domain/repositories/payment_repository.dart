@@ -10,9 +10,10 @@ abstract class PaymentRepository {
     required String paymentRequestId,
     required String type,
     String? description,
-    required double amountGhs,
     required double amountUsd,
-    required double exchangeRate,
+    required double exchangeRateAtPayment,
+    required String paidCurrency,
+    double paidAmount,
     required String method,
     required String providerRef,
   });

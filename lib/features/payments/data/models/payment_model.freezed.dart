@@ -28,10 +28,10 @@ mixin _$PaymentModel {
   String? get paymentRef => throw _privateConstructorUsedError;
   String get type => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
-  double get amountGhs => throw _privateConstructorUsedError;
-  double? get amountUsd => throw _privateConstructorUsedError;
-  double? get exchangeRate => throw _privateConstructorUsedError;
-  String get currency => throw _privateConstructorUsedError;
+  double get amountUsd => throw _privateConstructorUsedError;
+  double? get exchangeRateAtPayment => throw _privateConstructorUsedError;
+  String get paidCurrency => throw _privateConstructorUsedError;
+  double get paidAmount => throw _privateConstructorUsedError;
   String? get method => throw _privateConstructorUsedError;
   String? get provider => throw _privateConstructorUsedError;
   String? get providerRef => throw _privateConstructorUsedError;
@@ -66,10 +66,10 @@ abstract class $PaymentModelCopyWith<$Res> {
     String? paymentRef,
     String type,
     String? description,
-    double amountGhs,
-    double? amountUsd,
-    double? exchangeRate,
-    String currency,
+    double amountUsd,
+    double? exchangeRateAtPayment,
+    String paidCurrency,
+    double paidAmount,
     String? method,
     String? provider,
     String? providerRef,
@@ -103,10 +103,10 @@ class _$PaymentModelCopyWithImpl<$Res, $Val extends PaymentModel>
     Object? paymentRef = freezed,
     Object? type = null,
     Object? description = freezed,
-    Object? amountGhs = null,
-    Object? amountUsd = freezed,
-    Object? exchangeRate = freezed,
-    Object? currency = null,
+    Object? amountUsd = null,
+    Object? exchangeRateAtPayment = freezed,
+    Object? paidCurrency = null,
+    Object? paidAmount = null,
     Object? method = freezed,
     Object? provider = freezed,
     Object? providerRef = freezed,
@@ -146,22 +146,22 @@ class _$PaymentModelCopyWithImpl<$Res, $Val extends PaymentModel>
                 ? _value.description
                 : description // ignore: cast_nullable_to_non_nullable
                       as String?,
-            amountGhs: null == amountGhs
-                ? _value.amountGhs
-                : amountGhs // ignore: cast_nullable_to_non_nullable
-                      as double,
-            amountUsd: freezed == amountUsd
+            amountUsd: null == amountUsd
                 ? _value.amountUsd
                 : amountUsd // ignore: cast_nullable_to_non_nullable
+                      as double,
+            exchangeRateAtPayment: freezed == exchangeRateAtPayment
+                ? _value.exchangeRateAtPayment
+                : exchangeRateAtPayment // ignore: cast_nullable_to_non_nullable
                       as double?,
-            exchangeRate: freezed == exchangeRate
-                ? _value.exchangeRate
-                : exchangeRate // ignore: cast_nullable_to_non_nullable
-                      as double?,
-            currency: null == currency
-                ? _value.currency
-                : currency // ignore: cast_nullable_to_non_nullable
+            paidCurrency: null == paidCurrency
+                ? _value.paidCurrency
+                : paidCurrency // ignore: cast_nullable_to_non_nullable
                       as String,
+            paidAmount: null == paidAmount
+                ? _value.paidAmount
+                : paidAmount // ignore: cast_nullable_to_non_nullable
+                      as double,
             method: freezed == method
                 ? _value.method
                 : method // ignore: cast_nullable_to_non_nullable
@@ -217,10 +217,10 @@ abstract class _$$PaymentModelImplCopyWith<$Res>
     String? paymentRef,
     String type,
     String? description,
-    double amountGhs,
-    double? amountUsd,
-    double? exchangeRate,
-    String currency,
+    double amountUsd,
+    double? exchangeRateAtPayment,
+    String paidCurrency,
+    double paidAmount,
     String? method,
     String? provider,
     String? providerRef,
@@ -253,10 +253,10 @@ class __$$PaymentModelImplCopyWithImpl<$Res>
     Object? paymentRef = freezed,
     Object? type = null,
     Object? description = freezed,
-    Object? amountGhs = null,
-    Object? amountUsd = freezed,
-    Object? exchangeRate = freezed,
-    Object? currency = null,
+    Object? amountUsd = null,
+    Object? exchangeRateAtPayment = freezed,
+    Object? paidCurrency = null,
+    Object? paidAmount = null,
     Object? method = freezed,
     Object? provider = freezed,
     Object? providerRef = freezed,
@@ -296,22 +296,22 @@ class __$$PaymentModelImplCopyWithImpl<$Res>
             ? _value.description
             : description // ignore: cast_nullable_to_non_nullable
                   as String?,
-        amountGhs: null == amountGhs
-            ? _value.amountGhs
-            : amountGhs // ignore: cast_nullable_to_non_nullable
-                  as double,
-        amountUsd: freezed == amountUsd
+        amountUsd: null == amountUsd
             ? _value.amountUsd
             : amountUsd // ignore: cast_nullable_to_non_nullable
+                  as double,
+        exchangeRateAtPayment: freezed == exchangeRateAtPayment
+            ? _value.exchangeRateAtPayment
+            : exchangeRateAtPayment // ignore: cast_nullable_to_non_nullable
                   as double?,
-        exchangeRate: freezed == exchangeRate
-            ? _value.exchangeRate
-            : exchangeRate // ignore: cast_nullable_to_non_nullable
-                  as double?,
-        currency: null == currency
-            ? _value.currency
-            : currency // ignore: cast_nullable_to_non_nullable
+        paidCurrency: null == paidCurrency
+            ? _value.paidCurrency
+            : paidCurrency // ignore: cast_nullable_to_non_nullable
                   as String,
+        paidAmount: null == paidAmount
+            ? _value.paidAmount
+            : paidAmount // ignore: cast_nullable_to_non_nullable
+                  as double,
         method: freezed == method
             ? _value.method
             : method // ignore: cast_nullable_to_non_nullable
@@ -360,10 +360,10 @@ class _$PaymentModelImpl implements _PaymentModel {
     this.paymentRef,
     required this.type,
     this.description,
-    required this.amountGhs,
-    this.amountUsd,
-    this.exchangeRate,
-    this.currency = 'GHS',
+    required this.amountUsd,
+    this.exchangeRateAtPayment,
+    this.paidCurrency = 'GHS',
+    this.paidAmount = 0.0,
     this.method,
     this.provider,
     this.providerRef,
@@ -392,14 +392,15 @@ class _$PaymentModelImpl implements _PaymentModel {
   @override
   final String? description;
   @override
-  final double amountGhs;
+  final double amountUsd;
   @override
-  final double? amountUsd;
-  @override
-  final double? exchangeRate;
+  final double? exchangeRateAtPayment;
   @override
   @JsonKey()
-  final String currency;
+  final String paidCurrency;
+  @override
+  @JsonKey()
+  final double paidAmount;
   @override
   final String? method;
   @override
@@ -420,7 +421,7 @@ class _$PaymentModelImpl implements _PaymentModel {
 
   @override
   String toString() {
-    return 'PaymentModel(id: $id, orderId: $orderId, buyerId: $buyerId, paymentRequestId: $paymentRequestId, paymentRef: $paymentRef, type: $type, description: $description, amountGhs: $amountGhs, amountUsd: $amountUsd, exchangeRate: $exchangeRate, currency: $currency, method: $method, provider: $provider, providerRef: $providerRef, status: $status, failureReason: $failureReason, initiatedAt: $initiatedAt, confirmedAt: $confirmedAt, refundedAt: $refundedAt)';
+    return 'PaymentModel(id: $id, orderId: $orderId, buyerId: $buyerId, paymentRequestId: $paymentRequestId, paymentRef: $paymentRef, type: $type, description: $description, amountUsd: $amountUsd, exchangeRateAtPayment: $exchangeRateAtPayment, paidCurrency: $paidCurrency, paidAmount: $paidAmount, method: $method, provider: $provider, providerRef: $providerRef, status: $status, failureReason: $failureReason, initiatedAt: $initiatedAt, confirmedAt: $confirmedAt, refundedAt: $refundedAt)';
   }
 
   @override
@@ -438,14 +439,14 @@ class _$PaymentModelImpl implements _PaymentModel {
             (identical(other.type, type) || other.type == type) &&
             (identical(other.description, description) ||
                 other.description == description) &&
-            (identical(other.amountGhs, amountGhs) ||
-                other.amountGhs == amountGhs) &&
             (identical(other.amountUsd, amountUsd) ||
                 other.amountUsd == amountUsd) &&
-            (identical(other.exchangeRate, exchangeRate) ||
-                other.exchangeRate == exchangeRate) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
+            (identical(other.exchangeRateAtPayment, exchangeRateAtPayment) ||
+                other.exchangeRateAtPayment == exchangeRateAtPayment) &&
+            (identical(other.paidCurrency, paidCurrency) ||
+                other.paidCurrency == paidCurrency) &&
+            (identical(other.paidAmount, paidAmount) ||
+                other.paidAmount == paidAmount) &&
             (identical(other.method, method) || other.method == method) &&
             (identical(other.provider, provider) ||
                 other.provider == provider) &&
@@ -473,10 +474,10 @@ class _$PaymentModelImpl implements _PaymentModel {
     paymentRef,
     type,
     description,
-    amountGhs,
     amountUsd,
-    exchangeRate,
-    currency,
+    exchangeRateAtPayment,
+    paidCurrency,
+    paidAmount,
     method,
     provider,
     providerRef,
@@ -510,10 +511,10 @@ abstract class _PaymentModel implements PaymentModel {
     final String? paymentRef,
     required final String type,
     final String? description,
-    required final double amountGhs,
-    final double? amountUsd,
-    final double? exchangeRate,
-    final String currency,
+    required final double amountUsd,
+    final double? exchangeRateAtPayment,
+    final String paidCurrency,
+    final double paidAmount,
     final String? method,
     final String? provider,
     final String? providerRef,
@@ -542,13 +543,13 @@ abstract class _PaymentModel implements PaymentModel {
   @override
   String? get description;
   @override
-  double get amountGhs;
+  double get amountUsd;
   @override
-  double? get amountUsd;
+  double? get exchangeRateAtPayment;
   @override
-  double? get exchangeRate;
+  String get paidCurrency;
   @override
-  String get currency;
+  double get paidAmount;
   @override
   String? get method;
   @override

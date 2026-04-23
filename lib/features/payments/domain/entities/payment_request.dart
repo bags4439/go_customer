@@ -9,10 +9,9 @@ class PaymentRequest {
   final String type;
   final String? description;
   final List<BreakdownItem> breakdown;
-  final double totalGhs;
-  final double totalUsd;
-  final double exchangeRate;
-  final double? depositDeductedGhs;
+  final double amountUsd;
+  final double exchangeRateAtRequest;
+  final double? depositDeductedUsd;
   final DateTime? deadlineAt;
   final String status;
   final DateTime? sentAt;
@@ -28,10 +27,9 @@ class PaymentRequest {
     required this.type,
     this.description,
     required this.breakdown,
-    required this.totalGhs,
-    required this.totalUsd,
-    required this.exchangeRate,
-    this.depositDeductedGhs,
+    required this.amountUsd,
+    required this.exchangeRateAtRequest,
+    this.depositDeductedUsd,
     this.deadlineAt,
     required this.status,
     this.sentAt,

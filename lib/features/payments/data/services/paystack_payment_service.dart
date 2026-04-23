@@ -8,10 +8,11 @@ import '../../../../core/constants/app_constants.dart';
 /// Initiates Paystack popup (MoMo/card). Uses [reference] so the webhook can find the payment doc.
 /// Call after creating the payment document with this reference.
 /// Returns true if user completed successfully, false if cancelled/error or key not set.
+/// [chargeAmountGhs] is the charge amount in GHS (major units); pesewas = amount × 100.
 Future<bool> initiatePaystackCharge({
   required BuildContext context,
   required String reference,
-  required double amountGhs,
+  required double chargeAmountGhs,
   required String customerEmail,
 }) async {
   final key = AppConstants.paystackSecretKey;
@@ -20,7 +21,7 @@ Future<bool> initiatePaystackCharge({
   }
 
   final completer = Completer<bool>();
-  final amountInMinor = (amountGhs * 100).round();
+  final amountInMinor = (chargeAmountGhs * 100).round();
   try {
     unawaited(
       FlutterPaystackPlus.openPaystackPopup(

@@ -92,8 +92,7 @@ List<Map<String, dynamic>> _breakdownToJson(List<BreakdownItem> list) =>
 class BreakdownItem with _$BreakdownItem {
   const factory BreakdownItem({
     required String label,
-    required double amountGhs,
-    double? amountUsd,
+    required double amountUsd,
     @Default(false) bool isDeduction,
   }) = _BreakdownItem;
 
@@ -102,8 +101,7 @@ class BreakdownItem with _$BreakdownItem {
 
   factory BreakdownItem.fromMap(Map<String, dynamic> map) => BreakdownItem(
         label: map['label'] as String? ?? '',
-        amountGhs: (map['amountGhs'] as num?)?.toDouble() ?? 0,
-        amountUsd: (map['amountUsd'] as num?)?.toDouble(),
+        amountUsd: (map['amountUsd'] as num?)?.toDouble() ?? 0,
         isDeduction: map['isDeduction'] as bool? ?? false,
       );
 }
@@ -123,11 +121,10 @@ class PaymentRequestModel with _$PaymentRequestModel {
     String? description,
     @JsonKey(fromJson: _breakdownFromJson, toJson: _breakdownToJson)
     @Default([])
-    List<BreakdownItem> breakdownJson,
-    required double totalGhs,
-    double? totalUsd,
-    double? exchangeRate,
-    double? depositDeductedGhs,
+    List<BreakdownItem> breakdown,
+    required double amountUsd,
+    double? exchangeRateAtRequest,
+    double? depositDeductedUsd,
     String? timelineStageKey,
     String? invoiceImageUrl,
     DateTime? deadlineAt,
@@ -148,10 +145,10 @@ class PaymentRequestModel with _$PaymentRequestModel {
         id: doc.id,
         orderId: '',
         type: PaymentRequestType.initial,
-        totalGhs: 0,
+        amountUsd: 0,
       );
     }
-    final rawBreakdown = data['breakdownJson'] as List<dynamic>?;
+    final rawBreakdown = data['breakdown'] as List<dynamic>?;
     return PaymentRequestModel(
       id: doc.id,
       orderId: data['orderId'] as String? ?? '',
@@ -161,17 +158,17 @@ class PaymentRequestModel with _$PaymentRequestModel {
         data['type'] as String? ?? 'initial',
       ),
       description: data['description'] as String?,
-      breakdownJson: rawBreakdown
+      breakdown: rawBreakdown
               ?.map((e) => BreakdownItem.fromMap(
                     Map<String, dynamic>.from(e as Map),
                   ))
               .toList() ??
           [],
-      totalGhs: (data['totalGhs'] as num?)?.toDouble() ?? 0,
-      totalUsd: (data['totalUsd'] as num?)?.toDouble(),
-      exchangeRate: (data['exchangeRate'] as num?)?.toDouble(),
-      depositDeductedGhs:
-          (data['depositDeductedGhs'] as num?)?.toDouble(),
+      amountUsd: (data['amountUsd'] as num?)?.toDouble() ?? 0,
+      exchangeRateAtRequest:
+          (data['exchangeRateAtRequest'] as num?)?.toDouble(),
+      depositDeductedUsd:
+          (data['depositDeductedUsd'] as num?)?.toDouble(),
       timelineStageKey: data['timelineStageKey'] as String?,
       invoiceImageUrl: data['invoiceImageUrl'] as String?,
       deadlineAt: (data['deadlineAt'] as Timestamp?)?.toDate(),

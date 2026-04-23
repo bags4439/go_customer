@@ -134,10 +134,10 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
   Widget build(BuildContext context) {
     final currency = ref.watch(preferredCurrencyProvider);
     final display = CurrencyFormatter.formatForDisplay(
-      usdAmount: pr.totalGhs,
+      usdAmount: pr.amountUsd,
       preferredCurrency: currency,
     );
-    final hasBreakdown = pr.breakdownJson.isNotEmpty;
+    final hasBreakdown = pr.breakdown.isNotEmpty;
 
     return AnimatedOpacity(
       opacity: _opacity,
@@ -216,7 +216,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       child: Column(
-                        key: ValueKey(pr.totalGhs),
+                        key: ValueKey(pr.amountUsd),
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -279,7 +279,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   const Divider(height: 16),
-                                  ...pr.breakdownJson.map(
+                                  ...pr.breakdown.map(
                                     (b) => Padding(
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 4,
@@ -299,7 +299,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                           ),
                                           Text(
                                             CurrencyFormatter.format(
-                                              b.amountGhs * currency.usdToRate,
+                                              b.amountUsd * currency.usdToRate,
                                               currency,
                                             ),
                                             style: GoogleFonts.dmSans(

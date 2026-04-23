@@ -6,9 +6,10 @@ class Payment {
   final String paymentRequestId;
   final String type;
   final String? description;
-  final double amountGhs;
   final double amountUsd;
-  final double exchangeRate;
+  final double exchangeRateAtPayment;
+  final String paidCurrency;
+  final double paidAmount;
   final String method;
   final String provider;
   final String? providerRef;
@@ -24,9 +25,10 @@ class Payment {
     required this.paymentRequestId,
     required this.type,
     this.description,
-    required this.amountGhs,
     required this.amountUsd,
-    required this.exchangeRate,
+    required this.exchangeRateAtPayment,
+    required this.paidCurrency,
+    required this.paidAmount,
     required this.method,
     required this.provider,
     this.providerRef,

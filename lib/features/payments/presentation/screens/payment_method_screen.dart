@@ -48,7 +48,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
             selectedMethod == PaymentMethod.vodafoneCash ||
             selectedMethod == PaymentMethod.airteltigoMoney;
         final processingFee = 0.0;
-        final total = request.totalGhs + processingFee;
+        final totalUsd = request.amountUsd + processingFee;
         final canProceed = !isMomo || _isValidMomo(momoNumber);
 
         return Scaffold(
@@ -62,7 +62,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
             ),
             title: Text(
               '$typeLabel · ${CurrencyFormatter.formatForDisplay(
-                usdAmount: request.totalGhs,
+                usdAmount: request.amountUsd,
                 preferredCurrency: currency,
               ).primary}',
               style: const TextStyle(color: Colors.black87, fontSize: 16),
@@ -159,7 +159,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                       _SummaryRow(
                         'Amount',
                         CurrencyFormatter.format(
-                          request.totalGhs * currency.usdToRate,
+                          request.amountUsd * currency.usdToRate,
                           currency,
                         ),
                       ),
@@ -169,7 +169,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                       _SummaryRow(
                         'Total',
                         CurrencyFormatter.format(
-                          total * currency.usdToRate,
+                          totalUsd * currency.usdToRate,
                           currency,
                         ),
                         bold: true,
@@ -182,7 +182,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                   height: 52,
                   child: ElevatedButton(
                     onPressed: canProceed
-                        ? () => _onConfirmAndPay(ref, request, total)
+                        ? () => _onConfirmAndPay(ref, request, totalUsd)
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
@@ -191,7 +191,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                     ),
                     child: Text(
                       'Confirm & pay ${CurrencyFormatter.format(
-                        total * currency.usdToRate,
+                        totalUsd * currency.usdToRate,
                         currency,
                       )} →',
                     ),
@@ -218,7 +218,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
     return RegExp(r'^[0-9]{9}$').hasMatch(digits);
   }
 
-  Future<void> _onConfirmAndPay(WidgetRef ref, PaymentRequest request, double totalGhs) async {
+  Future<void> _onConfirmAndPay(WidgetRef ref, PaymentRequest request, double totalUsd) async {
     final method = ref.read(selectedPaymentMethodProvider);
     if (method == null) return;
     final buyerId = ref.read(authStateProvider).value;
@@ -232,9 +232,10 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
       paymentRequestId: widget.requestId,
       type: request.type,
       description: request.description,
-      amountGhs: totalGhs,
-      amountUsd: request.totalUsd,
-      exchangeRate: request.exchangeRate,
+      amountUsd: totalUsd,
+      exchangeRateAtPayment: request.exchangeRateAtRequest,
+      paidCurrency: 'GHS',
+      paidAmount: 0,
       method: _methodToString(method),
       providerRef: providerRef,
     );
@@ -257,10 +258,11 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
 
     if (!mounted) return;
     final email = ref.read(currentUserProvider).value?.email ?? 'buyer@autoimport.gh';
+    final chargeGhs = totalUsd * request.exchangeRateAtRequest;
     final launched = await initiatePaystackCharge(
       context: context,
       reference: payment.providerRef ?? generatePaystackReference(widget.orderId, widget.requestId),
-      amountGhs: totalGhs,
+      chargeAmountGhs: chargeGhs,
       customerEmail: email,
     );
 

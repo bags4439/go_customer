@@ -9,15 +9,13 @@ part of 'payment_request_model.dart';
 _$BreakdownItemImpl _$$BreakdownItemImplFromJson(Map<String, dynamic> json) =>
     _$BreakdownItemImpl(
       label: json['label'] as String,
-      amountGhs: (json['amountGhs'] as num).toDouble(),
-      amountUsd: (json['amountUsd'] as num?)?.toDouble(),
+      amountUsd: (json['amountUsd'] as num).toDouble(),
       isDeduction: json['isDeduction'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$BreakdownItemImplToJson(_$BreakdownItemImpl instance) =>
     <String, dynamic>{
       'label': instance.label,
-      'amountGhs': instance.amountGhs,
       'amountUsd': instance.amountUsd,
       'isDeduction': instance.isDeduction,
     };
@@ -31,13 +29,12 @@ _$PaymentRequestModelImpl _$$PaymentRequestModelImplFromJson(
   paymentId: json['paymentId'] as String?,
   type: _paymentRequestTypeFromJson(json['type']),
   description: json['description'] as String?,
-  breakdownJson: json['breakdownJson'] == null
+  breakdown: json['breakdown'] == null
       ? const []
-      : _breakdownFromJson(json['breakdownJson']),
-  totalGhs: (json['totalGhs'] as num).toDouble(),
-  totalUsd: (json['totalUsd'] as num?)?.toDouble(),
-  exchangeRate: (json['exchangeRate'] as num?)?.toDouble(),
-  depositDeductedGhs: (json['depositDeductedGhs'] as num?)?.toDouble(),
+      : _breakdownFromJson(json['breakdown']),
+  amountUsd: (json['amountUsd'] as num).toDouble(),
+  exchangeRateAtRequest: (json['exchangeRateAtRequest'] as num?)?.toDouble(),
+  depositDeductedUsd: (json['depositDeductedUsd'] as num?)?.toDouble(),
   timelineStageKey: json['timelineStageKey'] as String?,
   invoiceImageUrl: json['invoiceImageUrl'] as String?,
   deadlineAt: json['deadlineAt'] == null
@@ -67,11 +64,10 @@ Map<String, dynamic> _$$PaymentRequestModelImplToJson(
   'paymentId': instance.paymentId,
   'type': _paymentRequestTypeToJson(instance.type),
   'description': instance.description,
-  'breakdownJson': _breakdownToJson(instance.breakdownJson),
-  'totalGhs': instance.totalGhs,
-  'totalUsd': instance.totalUsd,
-  'exchangeRate': instance.exchangeRate,
-  'depositDeductedGhs': instance.depositDeductedGhs,
+  'breakdown': _breakdownToJson(instance.breakdown),
+  'amountUsd': instance.amountUsd,
+  'exchangeRateAtRequest': instance.exchangeRateAtRequest,
+  'depositDeductedUsd': instance.depositDeductedUsd,
   'timelineStageKey': instance.timelineStageKey,
   'invoiceImageUrl': instance.invoiceImageUrl,
   'deadlineAt': instance.deadlineAt?.toIso8601String(),

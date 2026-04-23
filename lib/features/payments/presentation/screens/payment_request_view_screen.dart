@@ -87,9 +87,9 @@ class PaymentRequestViewScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 _BreakdownSection(request: request),
                 if (request.type == AppConstants.paymentRequestTypeVehicleBalanceAndShipping &&
-                    request.depositDeductedGhs != null) ...[
+                    request.depositDeductedUsd != null) ...[
                   const SizedBox(height: 16),
-                  _DepositClarityNote(depositDeductedGhs: request.depositDeductedGhs!),
+                  _DepositClarityNote(depositDeductedUsd: request.depositDeductedUsd!),
                 ],
                 if (request.type == AppConstants.paymentRequestTypeRepairFee) ...[
                   const SizedBox(height: 16),
@@ -192,7 +192,7 @@ class _AmountHero extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currency = ref.watch(preferredCurrencyProvider);
     final display = CurrencyFormatter.formatForDisplay(
-      usdAmount: request.totalGhs,
+      usdAmount: request.amountUsd,
       preferredCurrency: currency,
     );
     final deadlineWidget = request.deadlineAt != null
@@ -310,7 +310,7 @@ class _BreakdownSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currency = ref.watch(preferredCurrencyProvider);
     final totalPrimary = CurrencyFormatter.formatForDisplay(
-      usdAmount: request.totalGhs,
+      usdAmount: request.amountUsd,
       preferredCurrency: currency,
     ).primary;
 
@@ -337,7 +337,7 @@ class _BreakdownSection extends ConsumerWidget {
                 ),
                 if (currency.code != 'USD')
                   Text(
-                    '≈ ${CurrencyFormatter.formatUsd(request.totalGhs)}',
+                    '≈ ${CurrencyFormatter.formatUsd(request.amountUsd)}',
                     style: const TextStyle(color: Colors.black54, fontSize: 12),
                   ),
               ],
@@ -360,7 +360,7 @@ class _BreakdownRow extends ConsumerWidget {
     final isDeduction = item.isDeduction;
     final color = isDeduction ? AppColors.success : Colors.black87;
 
-    final converted = item.amountGhs * currency.usdToRate;
+    final converted = item.amountUsd * currency.usdToRate;
     final formattedStr = isDeduction
         ? '−${CurrencyFormatter.format(converted, currency)}'
         : CurrencyFormatter.format(converted, currency);
@@ -387,15 +387,15 @@ class _BreakdownRow extends ConsumerWidget {
 }
 
 class _DepositClarityNote extends ConsumerWidget {
-  final double depositDeductedGhs;
+  final double depositDeductedUsd;
 
-  const _DepositClarityNote({required this.depositDeductedGhs});
+  const _DepositClarityNote({required this.depositDeductedUsd});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currency = ref.watch(preferredCurrencyProvider);
     final depositFormatted = CurrencyFormatter.format(
-      depositDeductedGhs * currency.usdToRate,
+      depositDeductedUsd * currency.usdToRate,
       currency,
     );
 

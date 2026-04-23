@@ -113,7 +113,7 @@ final activePaymentRequestProvider =
     if (snapshot.docs.isEmpty) return null;
     final doc = snapshot.docs.first;
     final data = doc.data();
-    final totalGhs = (data['totalGhs'] as num?)?.toDouble() ?? 0;
+    final amountUsd = (data['amountUsd'] as num?)?.toDouble() ?? 0;
     final deadlineRaw = data['deadlineAt'];
     DateTime? deadline;
     if (deadlineRaw is Timestamp) {
@@ -121,7 +121,7 @@ final activePaymentRequestProvider =
     }
     return PaymentRequestView(
       id: doc.id,
-      totalGhs: totalGhs,
+      amountUsd: amountUsd,
       type: (data['type'] as String?) ?? '',
       deadlineAt: deadline,
     );

@@ -41,7 +41,7 @@ class OrderDetailPaymentCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currency = ref.watch(preferredCurrencyProvider);
     final display = CurrencyFormatter.formatForDisplay(
-      usdAmount: payment.totalGhs,
+      usdAmount: payment.amountUsd,
       preferredCurrency: currency,
     );
 
