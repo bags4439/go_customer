@@ -11,6 +11,7 @@ enum ShippingScreenState {
   booked,
   inTransit,
   arrived,
+  released,
 }
 
 final shippingDataSourceProvider = Provider<ShippingFirestoreDataSource>((ref) {
@@ -59,8 +60,9 @@ final shippingScreenStateProvider =
     case 'in_transit':
       return ShippingScreenState.inTransit;
     case 'arrived':
-    case 'released':
       return ShippingScreenState.arrived;
+    case 'released':
+      return ShippingScreenState.released;
     default:
       return ShippingScreenState.booked;
   }

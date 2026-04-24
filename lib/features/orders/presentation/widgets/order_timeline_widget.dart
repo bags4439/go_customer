@@ -320,12 +320,16 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
                 if (visible.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _SummaryCard(
-                    stageNumber: widget.order.stageNumber,
-                    totalStages: visible.length,
+                    stageNumber:
+                        widget.order.stageNumber,
+                    totalStages:
+                        visible.length,
                     stageName: stageName,
                     statusLine: statusLine,
                     isComplete:
-                        activeStage?.isComplete ?? false,
+                        (activeStage?.stageNumber
+                            ?? 0) ==
+                        widget.order.stageNumber,
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -372,7 +376,26 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
             if (_showStageCoach &&
                 _stageCoachGuideKey != null &&
                 !widget.suppressStageCoachMarks)
-              _buildStageCoachOverlay(_stageCoachGuideKey!),
+              Positioned.fill(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return OverflowBox(
+                      minWidth: constraints.maxWidth,
+                      maxWidth: constraints.maxWidth,
+                      minHeight: MediaQuery.sizeOf(context).height,
+                      maxHeight: MediaQuery.sizeOf(context).height,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: constraints.maxWidth,
+                        height: MediaQuery.sizeOf(context).height,
+                        child: _buildStageCoachOverlay(
+                          _stageCoachGuideKey!,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         );
       },

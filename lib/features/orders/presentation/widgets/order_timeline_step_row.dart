@@ -82,10 +82,8 @@ class OrderTimelineStepRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stageNumber = stage.stageNumber;
     final orderStageNumber = order.stageNumber;
-    final isComplete =
-        stage.isComplete || stageNumber < orderStageNumber;
-    final isActive =
-        stage.isActive || stageNumber == orderStageNumber;
+    final isComplete = stageNumber < orderStageNumber;
+    final isActive = stageNumber == orderStageNumber;
 
     final lineColor = isComplete
         ? AppColors.success

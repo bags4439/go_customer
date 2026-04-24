@@ -73,6 +73,14 @@ class OrderTimelineConstants {
   static const String shippingArrivedTitle = '✅ Arrived at Tema port';
   static const String shippingArrivedSub =
       'Your vehicle is at port. Clearance is next.';
+  static const String shippingBookedTitle = 'Shipping booked';
+  static const String shippingBookedSub =
+      'Your agent has arranged ocean freight for your vehicle.';
+  static const String shippingReleasedTitle = '✅ Released from port';
+  static const String shippingReleasedSub =
+      'Your vehicle has been released from Tema port. Delivery is next.';
+  static const String shippingViewDetails = 'View shipping details →';
+  static const String agentNoteLabel = 'AGENT NOTE';
 
   static const String clearanceInProgressTitle = 'Clearance in progress';
   static const String clearanceInProgressSub =

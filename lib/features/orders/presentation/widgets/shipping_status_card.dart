@@ -3,18 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../shipping/data/models/shipping_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
 
-const _kSurface = 0xFFF5F4F0;
-const _kPrimary = 0xFF378ADD;
-const _kTextSecondary = 0xFF666666;
-const _kTextTertiary = 0xFFAAAAAA;
-const _kBorder = 0xFFE0DFD8;
-const _kSuccess = 0xFF1D9E75;
-
-/// Shipping step status when a shipping document exists (no pending payment).
+/// Inline shipping status card shown inside the active shipping timeline
+/// step. Tappable for all statuses — opens the full shipping tracker.
 class ShippingStatusCard extends StatelessWidget {
   final ShippingModel shipping;
   final String orderId;
@@ -27,205 +22,428 @@ class ShippingStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shouldOpenShippingScreen =
-        shipping.status == ShippingStatus.departed ||
-        shipping.status == ShippingStatus.inTransit;
-
     return GestureDetector(
-      onTap: shouldOpenShippingScreen
-          ? () => context.push('/order/$orderId/shipping')
-          : null,
+      onTap: () => context.push('/order/$orderId/shipping'),
       child: Container(
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(_kSurface),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: shouldOpenShippingScreen
-              ? const Color(0x66378ADD)
-              : Colors.transparent,
-          width: 0.8,
+        margin: const EdgeInsets.only(top: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.secondary.withValues(alpha: 0.25),
+            width: 1,
+          ),
         ),
-      ),
-      child: _buildByStatus(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: _buildBody(context),
+            ),
+            if (shipping.agentNotes != null &&
+                shipping.agentNotes!.trim().isNotEmpty)
+              _AgentNoteStrip(note: shipping.agentNotes!),
+            const _ViewDetailsRow(),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildByStatus(BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     switch (shipping.status) {
       case ShippingStatus.pending:
-      case ShippingStatus.booked:
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.directions_boat_outlined,
-                size: 16, color: Color(_kPrimary)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    OrderTimelineConstants.shippingArrangingTitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    OrderTimelineConstants.shippingArrangingSub,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      color: const Color(_kTextSecondary),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        return _StatusRow(
+          icon: Icons.directions_boat_outlined,
+          iconColor: AppColors.secondary,
+          title: OrderTimelineConstants.shippingArrangingTitle,
+          subtitle: OrderTimelineConstants.shippingArrangingSub,
+          titleColor: AppColors.textPrimary,
         );
+
+      case ShippingStatus.booked:
+        return _BookedBody(shipping: shipping);
+
       case ShippingStatus.departed:
       case ShippingStatus.inTransit:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (shipping.vesselName != null &&
-                shipping.vesselName!.isNotEmpty) ...[
-              Text(
-                shipping.vesselName!,
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-            ],
-            Text(
-              '${shipping.originPort ?? '—'} → ${shipping.destinationPort}',
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
-                color: const Color(_kTextSecondary),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${OrderTimelineConstants.shippingEtaPrefix}${DateFormatter.formatDate(shipping.estimatedArrival)}',
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: const Color(_kTextSecondary),
-              ),
-            ),
-            if (shipping.journeyProgressPct != null) ...[
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  value: (shipping.journeyProgressPct!.clamp(0, 100)) / 100,
-                  minHeight: 4,
-                  backgroundColor: const Color(_kBorder),
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(Color(_kPrimary)),
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  OrderTimelineConstants.shippingProgressComplete
-                      .replaceAll('[n]', '${shipping.journeyProgressPct!.round()}'),
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
-                    color: const Color(_kTextTertiary),
-                  ),
-                ),
-              ),
-            ],
-            if (shipping.trackingUrl != null &&
-                shipping.trackingUrl!.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () async {
-                    final uri = Uri.parse(shipping.trackingUrl!);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(_kPrimary),
-                    side: const BorderSide(color: Color(_kPrimary)),
-                    minimumSize: const Size(0, 48),
-                  ),
-                  child: Text(
-                    OrderTimelineConstants.trackShipment,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  'Open full shipping tracker',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(_kPrimary),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 14,
-                  color: Color(_kPrimary),
-                ),
-              ],
-            ),
-          ],
-        );
+        return _InTransitBody(shipping: shipping);
+
       case ShippingStatus.arrived:
+        return _StatusRow(
+          icon: Icons.anchor_rounded,
+          iconColor: AppColors.success,
+          title: OrderTimelineConstants.shippingArrivedTitle,
+          subtitle: shipping.actualArrival != null
+              ? 'Arrived ${DateFormatter.formatDate(shipping.actualArrival)}'
+              : OrderTimelineConstants.shippingArrivedSub,
+          titleColor: AppColors.success,
+        );
+
       case ShippingStatus.released:
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.anchor, size: 16, color: Color(_kSuccess)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    OrderTimelineConstants.shippingArrivedTitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(_kSuccess),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    OrderTimelineConstants.shippingArrivedSub,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      color: const Color(_kTextSecondary),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        return _StatusRow(
+          icon: Icons.check_circle_outline,
+          iconColor: AppColors.success,
+          title: OrderTimelineConstants.shippingReleasedTitle,
+          subtitle: OrderTimelineConstants.shippingReleasedSub,
+          titleColor: AppColors.success,
         );
     }
   }
 }
+
+class _StatusRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final Color titleColor;
+
+  const _StatusRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.titleColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: iconColor),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: titleColor,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BookedBody extends StatelessWidget {
+  final ShippingModel shipping;
+  const _BookedBody({required this.shipping});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasVessel =
+        shipping.vesselName != null && shipping.vesselName!.isNotEmpty;
+    final hasEta = shipping.estimatedArrival != null;
+    final hasLine =
+        shipping.shippingLine != null && shipping.shippingLine!.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.directions_boat_outlined,
+              size: 16,
+              color: AppColors.secondary,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    OrderTimelineConstants.shippingBookedTitle,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    OrderTimelineConstants.shippingBookedSub,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (hasVessel || hasEta || hasLine) ...[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.borderSolid,
+                width: 0.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (hasVessel)
+                  _InfoRow(label: 'Vessel', value: shipping.vesselName!),
+                if (hasLine)
+                  _InfoRow(label: 'Line', value: shipping.shippingLine!),
+                if (hasEta)
+                  _InfoRow(
+                    label: 'ETA Tema',
+                    value: DateFormatter.formatDate(shipping.estimatedArrival),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _InTransitBody extends StatelessWidget {
+  final ShippingModel shipping;
+  const _InTransitBody({required this.shipping});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasProg = shipping.journeyProgressPct != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (shipping.vesselName != null && shipping.vesselName!.isNotEmpty)
+          Text(
+            shipping.vesselName!,
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        if (shipping.vesselName != null && shipping.vesselName!.isNotEmpty)
+          const SizedBox(height: 4),
+        Text(
+          '${shipping.originPort ?? '—'} → ${shipping.destinationPort}',
+          style: GoogleFonts.dmSans(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${OrderTimelineConstants.shippingEtaPrefix}'
+          '${DateFormatter.formatDate(shipping.estimatedArrival)}',
+          style: GoogleFonts.dmSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        if (hasProg) ...[
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: (shipping.journeyProgressPct!.clamp(0, 100)) / 100,
+              minHeight: 5,
+              backgroundColor: AppColors.borderSolid,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.secondary),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              OrderTimelineConstants.shippingProgressComplete.replaceAll(
+                '[n]',
+                '${shipping.journeyProgressPct!.round()}',
+              ),
+              style: GoogleFonts.dmSans(
+                fontSize: 10,
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ),
+        ],
+        if (shipping.trackingUrl != null && shipping.trackingUrl!.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () async {
+                final uri = Uri.parse(shipping.trackingUrl!);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.secondary,
+                side: const BorderSide(color: AppColors.secondary, width: 1),
+                minimumSize: const Size(0, 44),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                OrderTimelineConstants.trackShipment,
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AgentNoteStrip extends StatelessWidget {
+  final String note;
+  const _AgentNoteStrip({required this.note});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: const Border(
+          left: BorderSide(
+            color: AppColors.secondary,
+            width: 3,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            OrderTimelineConstants.agentNoteLabel,
+            style: GoogleFonts.dmSans(
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textTertiary,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            note,
+            style: GoogleFonts.dmSans(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontStyle: FontStyle.italic,
+              height: 1.45,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ViewDetailsRow extends StatelessWidget {
+  const _ViewDetailsRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: AppColors.secondary.withValues(alpha: 0.15),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            OrderTimelineConstants.shippingViewDetails,
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(width: 2),
+          const Icon(
+            Icons.arrow_forward_rounded,
+            size: 13,
+            color: AppColors.secondary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 52,
+            child: Text(
+              label,
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
