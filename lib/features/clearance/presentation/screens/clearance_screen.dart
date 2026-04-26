@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../core/constants/clearance_constants.dart';
 import '../../domain/entities/duty_clearance.dart';
 import '../../../shipping/domain/entities/shipping.dart';
@@ -26,8 +29,6 @@ class ClearanceScreen extends ConsumerWidget {
     final shippingAsync = ref.watch(shippingProvider(orderId));
     final dutyAsync = ref.watch(dutyClearanceProvider(orderId));
 
-    print('clearance: ${screenState.name}');
-
     final isLoading = shippingAsync.isLoading || dutyAsync.isLoading;
     final hasError = shippingAsync.hasError || dutyAsync.hasError;
 
@@ -36,19 +37,23 @@ class ClearanceScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
-          style: IconButton.styleFrom(
-            minimumSize: const Size(48, 48),
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          color: AppColors.textPrimary,
+          onPressed: () => context.go('/home'),
         ),
         title: Text(
           'Clearance',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
+          style: GoogleFonts.dmSans(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
       body: hasError
@@ -60,13 +65,13 @@ class ClearanceScreen extends ConsumerWidget {
               },
             )
           : isLoading
-              ? const _ClearanceLoadingBody()
-              : _ClearanceBody(
-                  orderId: orderId,
-                  screenState: screenState,
-                  shipping: shippingAsync.valueOrNull,
-                  duty: dutyAsync.valueOrNull,
-                ),
+          ? const _ClearanceLoadingBody()
+          : _ClearanceBody(
+              orderId: orderId,
+              screenState: screenState,
+              shipping: shippingAsync.valueOrNull,
+              duty: dutyAsync.valueOrNull,
+            ),
     );
   }
 }
@@ -75,10 +80,7 @@ class _ClearanceErrorCard extends StatelessWidget {
   final String orderId;
   final VoidCallback onRetry;
 
-  const _ClearanceErrorCard({
-    required this.orderId,
-    required this.onRetry,
-  });
+  const _ClearanceErrorCard({required this.orderId, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -88,18 +90,15 @@ class _ClearanceErrorCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.danger,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: AppColors.danger),
             const SizedBox(height: 16),
             Text(
               ClearanceConstants.errorMessage,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.primary,
-                  ),
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -203,21 +202,24 @@ class _ClearanceBody extends StatelessWidget {
       case ClearanceScreenState.notAvailable:
         return _State0NotAvailable(orderId: orderId);
       case ClearanceScreenState.choicePending:
-        return _State1Choice(
-          orderId: orderId,
-          shipping: shipping!,
-        );
+        if (shipping == null) {
+          return _State0NotAvailable(orderId: orderId);
+        }
+        return _State1Choice(orderId: orderId, shipping: shipping!);
       case ClearanceScreenState.agentManaged:
+        if (duty == null || shipping == null) {
+          return const _ClearanceLoadingBody();
+        }
         return _State2AgentManaged(
           orderId: orderId,
           shipping: shipping!,
           duty: duty!,
         );
       case ClearanceScreenState.selfCleared:
-        return _State3SelfCleared(
-          orderId: orderId,
-          shipping: shipping!,
-        );
+        if (shipping == null) {
+          return _State0NotAvailable(orderId: orderId);
+        }
+        return _State3SelfCleared(orderId: orderId, shipping: shipping!);
     }
   }
 }
@@ -229,42 +231,57 @@ class _State0NotAvailable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.directions_boat_outlined,
-              size: 80,
-              color: Colors.grey.shade500,
+              size: 72,
+              color: AppColors.textTertiary,
             ),
             const SizedBox(height: 24),
             Text(
               ClearanceConstants.state0Heading,
               textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
+              style: GoogleFonts.dmSans(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
               ClearanceConstants.state0Body,
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 13,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
-                  ),
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.55,
+              ),
             ),
             const SizedBox(height: 32),
             SizedBox(
+              width: double.infinity,
               height: 48,
               child: OutlinedButton(
                 onPressed: () => context.go('/order/$orderId'),
-                child: const Text(ClearanceConstants.state0BackButton),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.borderSolid),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  ClearanceConstants.state0BackButton,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
             ),
           ],
@@ -305,17 +322,20 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
   }
 
   Future<void> _onConfirm() async {
-    final option = ref.read(selectedClearanceOptionProvider(widget.orderId).notifier).state;
+    final option = ref
+        .read(selectedClearanceOptionProvider(widget.orderId).notifier)
+        .state;
     if (option == null || _isSubmitting) return;
     final repo = ref.read(dutyClearanceRepositoryProvider);
-    final feeAsync = ref.read(clearanceServiceFeeProvider);
-    final fee = feeAsync.valueOrNull ?? ClearanceConstants.clearanceFeeFallbackGhs;
+    final feeUsdAsync = ref.read(clearanceServiceFeeProvider);
+    final feeUsd =
+        feeUsdAsync.valueOrNull ?? ClearanceConstants.clearanceFeeFallbackUsd;
 
     setState(() => _isSubmitting = true);
     final result = option == ClearanceOption.agentHandles
         ? await repo.confirmAgentClearance(
             orderId: widget.orderId,
-            clearanceFeeGhs: fee,
+            clearanceFeeUsd: feeUsd,
           )
         : await repo.confirmSelfClearance(widget.orderId);
     if (!mounted) return;
@@ -334,12 +354,19 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final option = ref.watch(selectedClearanceOptionProvider(widget.orderId));
     final feeAsync = ref.watch(clearanceServiceFeeProvider);
-    final agentName = ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ?? 'Your agent';
-    final fee = feeAsync.valueOrNull;
-    final feeFormatted = fee != null ? CurrencyFormatter.formatGhs(fee) : null;
+    final preferredCurrency = ref.watch(preferredCurrencyProvider);
+    final agentName =
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
+    final feeUsd = feeAsync.valueOrNull;
+    final feeFormatted = (feeUsd != null)
+        ? CurrencyFormatter.formatForDisplay(
+            usdAmount: feeUsd,
+            preferredCurrency: preferredCurrency,
+          ).primary
+        : null;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -354,15 +381,20 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
           const SizedBox(height: 24),
           Text(
             ClearanceConstants.state1Heading,
-            style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
+            style: GoogleFonts.dmSans(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             ClearanceConstants.state1Subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(fontSize: 12),
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 16),
           _OptionCard(
@@ -378,7 +410,7 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
               ClearanceConstants.optionAgentBullet3,
               ClearanceConstants.optionAgentBullet4,
             ],
-            iconBgColor: const Color(0xFFE6F1FB),
+            iconBgColor: AppColors.infoBackground,
             iconData: Icons.person,
           ),
           const SizedBox(height: 12),
@@ -409,7 +441,10 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
               children: [
                 Text(
                   ClearanceConstants.notSureHeading,
-                  style: theme.textTheme.bodySmall,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 InkWell(
@@ -419,10 +454,11 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Text(
                       ClearanceConstants.askAgentLink(agentName),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                            color: AppColors.secondary,
-                            decoration: TextDecoration.underline,
-                          ),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        color: AppColors.secondary,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ),
@@ -437,8 +473,8 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
             label: option == ClearanceOption.agentHandles
                 ? ClearanceConstants.confirmAgentButton
                 : option == ClearanceOption.selfClearance
-                    ? ClearanceConstants.confirmSelfButton
-                    : ClearanceConstants.confirmButtonSelectOption,
+                ? ClearanceConstants.confirmSelfButton
+                : ClearanceConstants.confirmButtonSelectOption,
           ),
           const SizedBox(height: 32),
         ],
@@ -455,7 +491,6 @@ class _ArrivalBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
@@ -470,13 +505,13 @@ class _ArrivalBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFEAF3DE),
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: const Color(0xFFC0DD97)),
+          color: AppColors.successMutedBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.successMutedBorder, width: 0.5),
         ),
         child: Row(
           children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 24),
+            const Icon(Icons.check_circle, color: AppColors.success, size: 22),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -484,20 +519,20 @@ class _ArrivalBar extends StatelessWidget {
                 children: [
                   Text(
                     ClearanceConstants.arrivalBarTitle,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12,
-                          color: const Color(0xFF27500A),
-                        ),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.successMutedForeground,
+                    ),
                   ),
                   if (arrivalDate != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       _arrivalDateFormat.format(arrivalDate!),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                            fontSize: 11,
-                            color: const Color(0xFF3B6D11),
-                          ),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 11,
+                        color: AppColors.success,
+                      ),
                     ),
                   ],
                 ],
@@ -535,8 +570,9 @@ class _OptionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final notifier = ref.read(selectedClearanceOptionProvider(orderId).notifier);
+    final notifier = ref.read(
+      selectedClearanceOptionProvider(orderId).notifier,
+    );
 
     return Material(
       color: Colors.transparent,
@@ -548,7 +584,7 @@ class _OptionCard extends ConsumerWidget {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFEBF4FD) : Colors.white,
+            color: isSelected ? AppColors.selectionTint : Colors.white,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: Border.all(
               color: isSelected ? AppColors.secondary : AppColors.border,
@@ -578,11 +614,13 @@ class _OptionCard extends ConsumerWidget {
                           type == ClearanceOption.agentHandles
                               ? ClearanceConstants.optionAgentTitle
                               : ClearanceConstants.optionSelfTitle,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 13,
-                                color: isSelected ? AppColors.secondary : null,
-                              ),
+                          style: GoogleFonts.dmSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? AppColors.secondary
+                                : AppColors.textPrimary,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -590,20 +628,21 @@ class _OptionCard extends ConsumerWidget {
                             if (priceLabel != null)
                               Text(
                                 priceLabel!,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 13,
-                                      color: type == ClearanceOption.selfClearance
-                                          ? AppColors.success
-                                          : null,
-                                    ),
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: type == ClearanceOption.selfClearance
+                                      ? AppColors.success
+                                      : AppColors.textPrimary,
+                                ),
                               ),
                             const SizedBox(width: 4),
                             Text(
                               priceSubLabel,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                    fontSize: 10,
-                                  ),
+                              style: GoogleFonts.dmSans(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -617,9 +656,13 @@ class _OptionCard extends ConsumerWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? AppColors.secondary : Colors.transparent,
+                      color: isSelected
+                          ? AppColors.secondary
+                          : Colors.transparent,
                       border: Border.all(
-                        color: isSelected ? AppColors.secondary : AppColors.border,
+                        color: isSelected
+                            ? AppColors.secondary
+                            : AppColors.border,
                         width: 1.5,
                       ),
                     ),
@@ -651,9 +694,21 @@ class _OptionCard extends ConsumerWidget {
                                 children: [
                                   Text(
                                     '• ',
-                                    style: theme.textTheme.bodySmall,
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 12,
+                                      color: AppColors.textTertiary,
+                                    ),
                                   ),
-                                  Expanded(child: Text(b, style: theme.textTheme.bodySmall)),
+                                  Expanded(
+                                    child: Text(
+                                      b,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -662,8 +717,9 @@ class _OptionCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                crossFadeState:
-                    isSelected ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                crossFadeState: isSelected
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
                 duration: const Duration(milliseconds: 200),
               ),
             ],
@@ -699,9 +755,15 @@ class _ConfirmButton extends StatelessWidget {
         onPressed: enabled ? onConfirm : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: enabled ? AppColors.secondary : AppColors.surface,
-          foregroundColor: enabled ? Colors.white : AppColors.primary.withValues(alpha: 0.6),
+          foregroundColor: enabled
+              ? Colors.white
+              : AppColors.primary.withValues(alpha: 0.6),
           disabledBackgroundColor: AppColors.surface,
           disabledForegroundColor: AppColors.primary.withValues(alpha: 0.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          elevation: 0,
         ),
         child: isSubmitting
             ? const SizedBox(
@@ -727,7 +789,8 @@ class _State2AgentManaged extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_State2AgentManaged> createState() => _State2AgentManagedState();
+  ConsumerState<_State2AgentManaged> createState() =>
+      _State2AgentManagedState();
 }
 
 class _State2AgentManagedState extends ConsumerState<_State2AgentManaged>
@@ -759,97 +822,145 @@ class _State2AgentManagedState extends ConsumerState<_State2AgentManaged>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final agentName = ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ?? 'Your agent';
+    final agentName =
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
     final graStatus = widget.duty.graStatus;
-    final hasDetails = widget.duty.icumsRef != null ||
+    final preferredCurrency = ref.watch(preferredCurrencyProvider);
+    final hasDetails =
+        widget.duty.icumsRef != null ||
         widget.duty.clearingAgentName != null ||
-        widget.duty.totalPayableGhs != null ||
+        widget.duty.totalPayableUsd != null ||
         (widget.duty.notes != null && widget.duty.notes!.isNotEmpty);
-    const activeColor = Color(0xFF185FA5);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 8),
-          _ArrivalBar(
-            animation: const _AlwaysOneAnimation(),
-            arrivalDate: widget.shipping.actualArrival,
-          ),
-          const SizedBox(height: 24),
-          _TimelineStageRow(
-            index: 0,
-            label: ClearanceConstants.stage2Arrived,
-            isDone: true,
-            isActive: false,
-            date: widget.shipping.actualArrival,
-            visible: _stageVisible[0],
-          ),
-          _TimelineStageRow(
-            index: 1,
-            label: ClearanceConstants.stage2Assessed,
-            isDone: graStatus == 'assessed' || graStatus == 'paid' || graStatus == 'cleared',
-            isActive: graStatus == 'submitted',
-            date: widget.duty.assessedAt,
-            visible: _stageVisible[1],
-            pulseAnimation: _pulseController,
-          ),
-          _TimelineStageRow(
-            index: 2,
-            label: ClearanceConstants.stage2DutyPaid,
-            isDone: graStatus == 'paid' || graStatus == 'cleared',
-            isActive: graStatus == 'assessed',
-            date: widget.duty.paidAt,
-            visible: _stageVisible[2],
-            pulseAnimation: _pulseController,
-          ),
-          _TimelineStageRow(
-            index: 3,
-            label: ClearanceConstants.stage2Cleared,
-            isDone: graStatus == 'cleared',
-            isActive: graStatus == 'paid',
-            date: widget.duty.clearedAt,
-            visible: _stageVisible[3],
-            pulseAnimation: _pulseController,
-          ),
-          if (hasDetails) ...[
-            const SizedBox(height: 20),
-            _DetailsCard(duty: widget.duty),
-          ],
-          if (graStatus == 'assessed') ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE6F1FB),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              ),
-              child: Text(
-                ClearanceConstants.state2AssessedNote,
-                style: theme.textTheme.bodySmall?.copyWith(
-                      color: activeColor,
-                      fontSize: 12,
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16),
+                _ArrivalBar(
+                  animation: const _AlwaysOneAnimation(),
+                  arrivalDate: widget.shipping.actualArrival,
+                ),
+                const SizedBox(height: 28),
+                _TimelineStageRow(
+                  index: 0,
+                  label: ClearanceConstants.stage2Arrived,
+                  isDone: true,
+                  isActive: false,
+                  date: widget.shipping.actualArrival,
+                  visible: _stageVisible[0],
+                ),
+                _TimelineStageRow(
+                  index: 1,
+                  label: ClearanceConstants.stage2Assessed,
+                  isDone:
+                      graStatus == 'assessed' ||
+                      graStatus == 'paid' ||
+                      graStatus == 'cleared',
+                  isActive: graStatus == 'submitted',
+                  date: widget.duty.assessedAt,
+                  visible: _stageVisible[1],
+                  pulseAnimation: _pulseController,
+                ),
+                _TimelineStageRow(
+                  index: 2,
+                  label: ClearanceConstants.stage2DutyPaid,
+                  isDone: graStatus == 'paid' || graStatus == 'cleared',
+                  isActive: graStatus == 'assessed',
+                  date: widget.duty.paidAt,
+                  visible: _stageVisible[2],
+                  pulseAnimation: _pulseController,
+                ),
+                _TimelineStageRow(
+                  index: 3,
+                  label: ClearanceConstants.stage2Cleared,
+                  isDone: graStatus == 'cleared',
+                  isActive: graStatus == 'paid',
+                  date: widget.duty.clearedAt,
+                  visible: _stageVisible[3],
+                  pulseAnimation: _pulseController,
+                  isLast: true,
+                ),
+                if (hasDetails) ...[
+                  const SizedBox(height: 24),
+                  _DetailsCard(
+                    duty: widget.duty,
+                    preferredCurrency: preferredCurrency,
+                  ),
+                ],
+                if (graStatus == 'assessed') ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.infoBackground,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 32),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () => context.go('/order/${widget.orderId}?tab=chat'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-              ),
-              child: Text(ClearanceConstants.askAgentButton(agentName)),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: AppColors.infoText,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            ClearanceConstants.state2AssessedNote,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              color: AppColors.infoText,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(height: 32),
-        ],
-      ),
+        ),
+        Container(
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            border: Border(
+              top: BorderSide(color: AppColors.borderSolid, width: 0.5),
+            ),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            14,
+            20,
+            14 + MediaQuery.paddingOf(context).bottom,
+          ),
+          child: ElevatedButton(
+            onPressed: () => context.go('/order/${widget.orderId}?tab=chat'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              ClearanceConstants.askAgentButton(agentName),
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -878,6 +989,7 @@ class _TimelineStageRow extends StatelessWidget {
   final DateTime? date;
   final bool visible;
   final Animation<double>? pulseAnimation;
+  final bool isLast;
 
   const _TimelineStageRow({
     required this.index,
@@ -887,83 +999,138 @@ class _TimelineStageRow extends StatelessWidget {
     required this.date,
     required this.visible,
     this.pulseAnimation,
+    this.isLast = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const activeColor = Color(0xFF185FA5);
+    const dotSize = 22.0;
+    const lineWidth = 1.5;
+
+    Widget dot;
+    if (isDone) {
+      dot = Container(
+        width: dotSize,
+        height: dotSize,
+        decoration: const BoxDecoration(
+          color: AppColors.success,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.check_rounded, size: 13, color: Colors.white),
+      );
+    } else if (isActive && pulseAnimation != null) {
+      dot = AnimatedBuilder(
+        animation: pulseAnimation!,
+        builder: (context, child) {
+          final t = Curves.easeInOut.transform(pulseAnimation!.value);
+          return Container(
+            width: dotSize,
+            height: dotSize,
+            decoration: BoxDecoration(
+              color: AppColors.secondary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.secondary.withValues(alpha: 0.3 + 0.2 * t),
+                  blurRadius: 6 + 4 * t,
+                  spreadRadius: 1 + 2 * t,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      dot = Container(
+        width: dotSize,
+        height: dotSize,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.borderSolid, width: 1.5),
+        ),
+        child: Center(
+          child: Text(
+            '${index + 1}',
+            style: GoogleFonts.dmSans(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textTertiary,
+            ),
+          ),
+        ),
+      );
+    }
 
     return AnimatedOpacity(
       opacity: visible ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 200),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+      child: IntrinsicHeight(
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (isDone)
-              const Icon(Icons.check_circle, color: AppColors.success, size: 20)
-            else if (isActive && pulseAnimation != null)
-              AnimatedBuilder(
-                animation: pulseAnimation!,
-                builder: (context, child) {
-                  final t = Curves.easeInOut.transform(pulseAnimation!.value);
-                  final scale = 1.0 + 0.4 * t;
-                  return Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: activeColor,
-                        shape: BoxShape.circle,
+            SizedBox(
+              width: dotSize,
+              child: Column(
+                children: [
+                  dot,
+                  if (!isLast)
+                    Expanded(
+                      child: Center(
+                        child: Container(
+                          width: lineWidth,
+                          color: isDone
+                              ? AppColors.success.withValues(alpha: 0.4)
+                              : AppColors.borderSolid,
+                        ),
                       ),
                     ),
-                  );
-                },
-              )
-            else
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                ),
-                child: Center(
-                  child: Text(
-                    '${index + 1}',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 10,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                  ),
-                ),
-              ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: isActive ? activeColor : (isDone ? null : theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                        ),
-                  ),
-                  if (date != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      _arrivalDateFormat.format(date!),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                            fontSize: 10,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
-                    ),
-                  ],
                 ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: isLast ? 0 : 20, top: 1),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: isDone || isActive
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                        color: isActive
+                            ? AppColors.secondary
+                            : isDone
+                            ? AppColors.textPrimary
+                            : AppColors.textTertiary,
+                      ),
+                    ),
+                    if (date != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        _arrivalDateFormat.format(date!),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -975,77 +1142,180 @@ class _TimelineStageRow extends StatelessWidget {
 
 class _DetailsCard extends StatelessWidget {
   final DutyClearance duty;
+  final CurrencyModel preferredCurrency;
 
-  const _DetailsCard({required this.duty});
+  const _DetailsCard({required this.duty, required this.preferredCurrency});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
+    final totalFormatted = duty.totalPayableUsd != null
+        ? CurrencyFormatter.formatForDisplay(
+            usdAmount: duty.totalPayableUsd!,
+            preferredCurrency: preferredCurrency,
+          )
+        : null;
+
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _DetailRow(
-            label: ClearanceConstants.detailsCardIcumsLabel,
-            value: duty.icumsRef ?? ClearanceConstants.detailsCardPending,
-            textTheme: textTheme,
-          ),
-          _DetailRow(
-            label: ClearanceConstants.detailsCardClearingAgentLabel,
-            value: duty.clearingAgentName ?? ClearanceConstants.detailsCardPending,
-            textTheme: textTheme,
-          ),
-          _DetailRow(
-            label: ClearanceConstants.detailsCardTotalDutyLabel,
-            value: duty.totalPayableGhs != null
-                ? CurrencyFormatter.formatGhs(duty.totalPayableGhs!)
-                : '—',
-            textTheme: textTheme,
-          ),
-          if (duty.notes != null && duty.notes!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              ClearanceConstants.detailsCardAgentNoteLabel,
-              style: textTheme.labelSmall,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+            child: Text(
+              'CLEARANCE DETAILS',
+              style: GoogleFonts.dmSans(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textTertiary,
+                letterSpacing: 0.8,
+              ),
             ),
-            const SizedBox(height: 2),
-            Text(duty.notes!, style: textTheme.bodySmall),
-          ],
+          ),
+          Container(height: 0.5, color: AppColors.borderSolid),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (duty.icumsRef != null) ...[
+                  _FieldRow(label: 'ICUMS ref', value: duty.icumsRef!),
+                  const SizedBox(height: 10),
+                ],
+                if (duty.clearingAgentName != null) ...[
+                  _FieldRow(
+                    label: 'Clearing agent',
+                    value: duty.clearingAgentName!,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                if (totalFormatted != null) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.borderSolid,
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Total duty',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 11,
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          totalFormatted.primary,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (totalFormatted.hasSecondary) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            totalFormatted.secondary!,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+                if (duty.notes != null && duty.notes!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        left: BorderSide(color: AppColors.secondary, width: 3),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AGENT NOTE',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textTertiary,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          duty.notes!,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                            fontStyle: FontStyle.italic,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _DetailRow extends StatelessWidget {
+class _FieldRow extends StatelessWidget {
   final String label;
   final String value;
-  final TextTheme textTheme;
 
-  const _DetailRow({
-    required this.label,
-    required this.value,
-    required this.textTheme,
-  });
+  const _FieldRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
-            child: Text(label, style: textTheme.bodySmall),
+            width: 110,
+            child: Text(
+              label,
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
-          Expanded(child: Text(value, style: textTheme.bodySmall)),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
         ],
       ),
     );
@@ -1077,11 +1347,17 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final agentName = ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ?? 'Your agent';
+    final agentName =
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
     final feeAsync = ref.watch(clearanceServiceFeeProvider);
-    final fee = feeAsync.valueOrNull ?? ClearanceConstants.clearanceFeeFallbackGhs;
-    final feeFormatted = CurrencyFormatter.formatGhs(fee);
+    final preferredCurrency = ref.watch(preferredCurrencyProvider);
+    final feeUsd =
+        feeAsync.valueOrNull ?? ClearanceConstants.clearanceFeeFallbackUsd;
+    final feeFormatted = CurrencyFormatter.formatForDisplay(
+      usdAmount: feeUsd,
+      preferredCurrency: preferredCurrency,
+    ).primary;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1108,19 +1384,21 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                 Text(
                   ClearanceConstants.state3Heading,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   ClearanceConstants.state3Body,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 13,
-                        height: 1.6,
-                      ),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    height: 1.6,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Divider(),
@@ -1129,19 +1407,16 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                   icon: '📋',
                   text: ClearanceConstants.state3Row1,
                   visible: _rowVisible[0],
-                  theme: theme,
                 ),
                 _InfoRow(
                   icon: '🏦',
                   text: ClearanceConstants.state3Row2,
                   visible: _rowVisible[1],
-                  theme: theme,
                 ),
                 _InfoRow(
                   icon: '🚢',
                   text: ClearanceConstants.state3Row3,
                   visible: _rowVisible[2],
-                  theme: theme,
                 ),
               ],
             ),
@@ -1150,7 +1425,7 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFE6F1FB),
+              color: AppColors.infoBackground,
               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             child: Column(
@@ -1158,35 +1433,41 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
               children: [
                 Text(
                   ClearanceConstants.state3NeedHelp,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 11,
-                        color: const Color(0xFF185FA5),
-                      ),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.infoText,
+                    letterSpacing: 0.4,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '$agentName ${ClearanceConstants.state3AgentHelpBodySuffix}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 12,
-                        color: const Color(0xFF185FA5),
-                        height: 1.5,
-                      ),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    color: AppColors.infoText,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 44,
                   child: ElevatedButton(
-                    onPressed: () => context.go('/order/${widget.orderId}?tab=chat'),
+                    onPressed: () =>
+                        context.go('/order/${widget.orderId}?tab=chat'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     child: Text(
                       ClearanceConstants.state3AskAgentButton(agentName),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 13,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -1196,16 +1477,17 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
           ),
           const SizedBox(height: 24),
           InkWell(
-            onTap: () => _showSwitchSheet(context, ref, widget.orderId, feeFormatted),
+            onTap: () =>
+                _showSwitchSheet(context, ref, widget.orderId, feeFormatted),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 ClearanceConstants.state3SwitchLink,
-                style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
-                      decoration: TextDecoration.underline,
-                    ),
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ),
@@ -1232,12 +1514,19 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
             children: [
               Text(
                 ClearanceConstants.switchSheetTitle,
-                style: Theme.of(ctx).textTheme.titleMedium,
+                style: GoogleFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 ClearanceConstants.switchSheetBody(feeFormatted),
-                style: Theme.of(ctx).textTheme.bodyMedium,
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -1254,19 +1543,22 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         final repo = ref.read(dutyClearanceRepositoryProvider);
-                        final fee = ref.read(clearanceServiceFeeProvider).valueOrNull ??
-                            ClearanceConstants.clearanceFeeFallbackGhs;
+                        final feeUsd =
+                            ref.read(clearanceServiceFeeProvider).valueOrNull ??
+                            ClearanceConstants.clearanceFeeFallbackUsd;
                         final result = await repo.switchToAgentClearance(
                           orderId: orderId,
-                          clearanceFeeGhs: fee,
+                          clearanceFeeUsd: feeUsd,
                         );
                         if (ctx.mounted) {
                           result.fold(
                             (_) => ScaffoldMessenger.of(ctx).showSnackBar(
-                                  SnackBar(
-                                    content: Text(ClearanceConstants.writeErrorMessage),
-                                  ),
+                              SnackBar(
+                                content: Text(
+                                  ClearanceConstants.writeErrorMessage,
                                 ),
+                              ),
+                            ),
                             (_) {},
                           );
                         }
@@ -1288,13 +1580,11 @@ class _InfoRow extends StatelessWidget {
   final String icon;
   final String text;
   final bool visible;
-  final ThemeData theme;
 
   const _InfoRow({
     required this.icon,
     required this.text,
     required this.visible,
-    required this.theme,
   });
 
   @override
@@ -1312,7 +1602,11 @@ class _InfoRow extends StatelessWidget {
             Expanded(
               child: Text(
                 text,
-                style: theme.textTheme.bodySmall?.copyWith(fontSize: 12),
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
               ),
             ),
           ],

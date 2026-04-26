@@ -20,7 +20,7 @@ class DutyClearanceRepositoryImpl implements DutyClearanceRepository {
   @override
   Future<Either<Failure, Unit>> confirmAgentClearance({
     required String orderId,
-    required double clearanceFeeGhs,
+    required double clearanceFeeUsd,
   }) async {
     try {
       final existing = await _dataSource.getDutyClearance(orderId);
@@ -29,7 +29,7 @@ class DutyClearanceRepositoryImpl implements DutyClearanceRepository {
       }
       await _dataSource.confirmAgentClearance(
         orderId: orderId,
-        clearanceFeeGhs: clearanceFeeGhs,
+        clearanceFeeUsd: clearanceFeeUsd,
       );
       try {
         await _functions.httpsCallable('notifyAgentClearanceChoice').call({
@@ -62,12 +62,12 @@ class DutyClearanceRepositoryImpl implements DutyClearanceRepository {
   @override
   Future<Either<Failure, Unit>> switchToAgentClearance({
     required String orderId,
-    required double clearanceFeeGhs,
+    required double clearanceFeeUsd,
   }) async {
     try {
       await _dataSource.switchToAgentClearance(
         orderId: orderId,
-        clearanceFeeGhs: clearanceFeeGhs,
+        clearanceFeeUsd: clearanceFeeUsd,
       );
       try {
         await _functions.httpsCallable('notifyAgentClearanceChoice').call({

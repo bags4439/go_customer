@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../../shared/providers/system_settings_provider.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
-import '../../../shipping/presentation/providers/shipping_providers.dart';
 import '../../data/datasources/clearance_firestore_data_source.dart';
 import '../../data/repositories/duty_clearance_repository_impl.dart';
 import '../../domain/entities/duty_clearance.dart';
@@ -44,10 +43,13 @@ final dutyClearanceProvider = StreamProvider.family<DutyClearance?, String>((
 
 final clearanceScreenStateProvider =
     Provider.family<ClearanceScreenState, String>((ref, orderId) {
-      final shipping = ref.watch(shippingProvider(orderId)).valueOrNull;
+      final order = ref.watch(orderProvider(orderId)).valueOrNull;
       final duty = ref.watch(dutyClearanceProvider(orderId)).valueOrNull;
 
-      if (shipping?.status != 'arrived') {
+      // Clearance is available when the order stage is at or past
+      // clearance (stageNumber >= 7). This is driven by orders.stageNumber
+      // set by the agent — not by the shipping document status.
+      if ((order?.stageNumber ?? 0) < 7) {
         return ClearanceScreenState.notAvailable;
       }
       if (duty == null) return ClearanceScreenState.choicePending;
@@ -55,11 +57,13 @@ final clearanceScreenStateProvider =
       return ClearanceScreenState.selfCleared;
     });
 
+/// Clearance service fee in USD. For display, convert to the user's
+/// preferred currency using `CurrencyFormatter.formatForDisplay`.
 final clearanceServiceFeeProvider = FutureProvider<double>((ref) async {
   final settings = await ref.watch(systemSettingsProvider.future);
   return ref
       .read(clearanceDataSourceProvider)
-      .getClearanceServiceFeeGhs(settings);
+      .getClearanceServiceFeeUsd(settings);
 });
 
 final selectedClearanceOptionProvider =

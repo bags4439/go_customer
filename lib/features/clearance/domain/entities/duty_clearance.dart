@@ -3,14 +3,14 @@ class DutyClearance {
   final String id;
   final String orderId;
   final String handledBy;
-  final double? clearanceFeeGhs;
+  final double? clearanceFeeUsd;
   final String? icumsRef;
   final String? clearingAgentName;
-  final double? dutyAmountGhs;
-  final double? vatGhs;
-  final double? nhilGhs;
-  final double? otherLeviesGhs;
-  final double? totalPayableGhs;
+  final double? dutyAmountUsd;
+  final double? vatUsd;
+  final double? nhilUsd;
+  final double? otherLeviesUsd;
+  final double? totalPayableUsd;
   final String graStatus;
   final DateTime? submittedAt;
   final DateTime? assessedAt;
@@ -23,14 +23,14 @@ class DutyClearance {
     required this.id,
     required this.orderId,
     required this.handledBy,
-    this.clearanceFeeGhs,
+    this.clearanceFeeUsd,
     this.icumsRef,
     this.clearingAgentName,
-    this.dutyAmountGhs,
-    this.vatGhs,
-    this.nhilGhs,
-    this.otherLeviesGhs,
-    this.totalPayableGhs,
+    this.dutyAmountUsd,
+    this.vatUsd,
+    this.nhilUsd,
+    this.otherLeviesUsd,
+    this.totalPayableUsd,
     required this.graStatus,
     this.submittedAt,
     this.assessedAt,

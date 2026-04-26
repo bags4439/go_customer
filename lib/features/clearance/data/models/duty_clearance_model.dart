@@ -49,14 +49,14 @@ class DutyClearanceModel with _$DutyClearanceModel {
     required String id,
     required String orderId,
     @Default('agent') String handledBy, // 'agent' | 'buyer'
-    double? clearanceFeeGhs,
+    double? clearanceFeeUsd,
     String? icumsRef,
     String? clearingAgentName,
-    double? dutyAmountGhs,
-    double? vatGhs,
-    double? nhilGhs,
-    double? otherLeviesGhs,
-    double? totalPayableGhs,
+    double? dutyAmountUsd,
+    double? vatUsd,
+    double? nhilUsd,
+    double? otherLeviesUsd,
+    double? totalPayableUsd,
     @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
     @Default(GraStatus.notStarted)
     GraStatus graStatus,
@@ -80,17 +80,17 @@ class DutyClearanceModel with _$DutyClearanceModel {
       id: doc.id,
       orderId: data['orderId'] as String? ?? '',
       handledBy: data['handledBy'] as String? ?? 'agent',
-      clearanceFeeGhs:
-          (data['clearanceFeeGhs'] as num?)?.toDouble(),
+      clearanceFeeUsd:
+          (data['clearanceFeeUsd'] as num?)?.toDouble(),
       icumsRef: data['icumsRef'] as String?,
       clearingAgentName: data['clearingAgentName'] as String?,
-      dutyAmountGhs: (data['dutyAmountGhs'] as num?)?.toDouble(),
-      vatGhs: (data['vatGhs'] as num?)?.toDouble(),
-      nhilGhs: (data['nhilGhs'] as num?)?.toDouble(),
-      otherLeviesGhs:
-          (data['otherLeviesGhs'] as num?)?.toDouble(),
-      totalPayableGhs:
-          (data['totalPayableGhs'] as num?)?.toDouble(),
+      dutyAmountUsd: (data['dutyAmountUsd'] as num?)?.toDouble(),
+      vatUsd: (data['vatUsd'] as num?)?.toDouble(),
+      nhilUsd: (data['nhilUsd'] as num?)?.toDouble(),
+      otherLeviesUsd:
+          (data['otherLeviesUsd'] as num?)?.toDouble(),
+      totalPayableUsd:
+          (data['totalPayableUsd'] as num?)?.toDouble(),
       graStatus: GraStatus.fromString(
         data['graStatus'] as String? ?? 'not_started',
       ),
@@ -110,14 +110,14 @@ DutyClearance dutyClearanceFromDoc(DocumentSnapshot doc) {
     id: m.id,
     orderId: m.orderId,
     handledBy: m.handledBy,
-    clearanceFeeGhs: m.clearanceFeeGhs,
+    clearanceFeeUsd: m.clearanceFeeUsd,
     icumsRef: m.icumsRef,
     clearingAgentName: m.clearingAgentName,
-    dutyAmountGhs: m.dutyAmountGhs,
-    vatGhs: m.vatGhs,
-    nhilGhs: m.nhilGhs,
-    otherLeviesGhs: m.otherLeviesGhs,
-    totalPayableGhs: m.totalPayableGhs,
+    dutyAmountUsd: m.dutyAmountUsd,
+    vatUsd: m.vatUsd,
+    nhilUsd: m.nhilUsd,
+    otherLeviesUsd: m.otherLeviesUsd,
+    totalPayableUsd: m.totalPayableUsd,
     graStatus: m.graStatus.firestoreValue,
     submittedAt: m.submittedAt,
     assessedAt: m.assessedAt,

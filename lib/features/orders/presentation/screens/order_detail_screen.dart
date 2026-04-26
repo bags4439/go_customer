@@ -156,182 +156,193 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
-        ),
-        titleSpacing: 0,
-        title: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          transitionBuilder: (child, anim) => FadeTransition(
-            opacity: anim,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.08),
-                end: Offset.zero,
-              ).animate(anim),
-              child: child,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/home');
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
             ),
+            onPressed: () =>
+              context.go('/home'),
           ),
-          child: _isChatTabActive
-              ? _AgentAppBarTitle(
-                  key: const ValueKey('agent'),
-                  orderId: widget.orderId,
-                )
-              : Padding(
-                  key: const ValueKey('order'),
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Text(
-                    ref
-                            .watch(orderProvider(widget.orderId))
-                            .valueOrNull
-                            ?.orderRef ??
-                        '--',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A1A18),
-                    ),
-                  ),
-                ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: const Color(0xFFE0DFD8)),
-        ),
-      ),
-      body: Builder(
-        builder: (context) {
-          final payment = ref
-              .watch(activePaymentRequestProvider(widget.orderId))
-              .valueOrNull;
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              Column(
-                children: [
-                  SegmentedTabBar(
-                    controller: _tabController,
-                    orderId: widget.orderId,
-                    chatTabKey: _chatTabKey,
-                    documentsTabKey: _docsTabKey,
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _OrderOverviewTab(
-                          orderId: widget.orderId,
-                          timelineKey: _timelineKey,
-                          paymentCardKey: _paymentCardKey,
-                          suppressTimelineStageCoaches:
-                              _showPaymentCoach || _guideStep != 0,
-                          onChatTap: _onSwitchToChat,
-                        ),
-                        OrderChatTab(orderId: widget.orderId),
-                        OrderDocumentsTab(orderId: widget.orderId),
-                      ],
-                    ),
-                  ),
-                ],
+          titleSpacing: 0,
+          title: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, anim) => FadeTransition(
+              opacity: anim,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.08),
+                  end: Offset.zero,
+                ).animate(anim),
+                child: child,
               ),
-              if (_showPaymentCoach && payment != null && _guideStep == 0)
-                CoachMarkOverlay(
-                  guideKey: GuideKeys.orderPaymentRequest,
-                  targetKey: _paymentCardKey,
-                  title: 'Payment request from your agent',
-                  body:
-                      'Your agent sent a payment request. '
-                      'Review the details carefully — '
-                      'no money leaves your account until '
-                      'you approve it here.',
-                  spotlightShape: SpotlightShape.roundedRect,
-                  cardPosition: CardPosition.below,
-                  onDismiss: () {
-                    setState(() => _showPaymentCoach = false);
-                    WidgetsBinding.instance.addPostFrameCallback(
-                      (_) => _maybeStartChainAfterPaymentCoach(),
-                    );
-                  },
-                  onFaqTap: () {
-                    setState(() => _showPaymentCoach = false);
-                    GuideFaqSheet.show(context);
-                    WidgetsBinding.instance.addPostFrameCallback(
-                      (_) => _maybeStartChainAfterPaymentCoach(),
-                    );
-                  },
+            ),
+            child: _isChatTabActive
+                ? _AgentAppBarTitle(
+                    key: const ValueKey('agent'),
+                    orderId: widget.orderId,
+                  )
+                : Padding(
+                    key: const ValueKey('order'),
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      ref
+                              .watch(orderProvider(widget.orderId))
+                              .valueOrNull
+                              ?.orderRef ??
+                          '--',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1A1A18),
+                      ),
+                    ),
+                  ),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(0.5),
+            child: Container(height: 0.5, color: const Color(0xFFE0DFD8)),
+          ),
+        ),
+        body: Builder(
+          builder: (context) {
+            final payment = ref
+                .watch(activePaymentRequestProvider(widget.orderId))
+                .valueOrNull;
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Column(
+                  children: [
+                    SegmentedTabBar(
+                      controller: _tabController,
+                      orderId: widget.orderId,
+                      chatTabKey: _chatTabKey,
+                      documentsTabKey: _docsTabKey,
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _OrderOverviewTab(
+                            orderId: widget.orderId,
+                            timelineKey: _timelineKey,
+                            paymentCardKey: _paymentCardKey,
+                            suppressTimelineStageCoaches:
+                                _showPaymentCoach || _guideStep != 0,
+                            onChatTap: _onSwitchToChat,
+                          ),
+                          OrderChatTab(orderId: widget.orderId),
+                          OrderDocumentsTab(orderId: widget.orderId),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              if (_guideStep == 1 && !_showPaymentCoach)
-                CoachMarkOverlay(
-                  guideKey: GuideKeys.orderTimeline,
-                  targetKey: _timelineKey,
-                  title: 'Your import journey',
-                  body:
-                      'This timeline tracks every stage '
-                      'from search to delivery. Tap any '
-                      'stage to see more details.',
-                  spotlightShape: SpotlightShape.roundedRect,
-                  onDismiss: () => setState(() => _guideStep = 0),
-                  onNext: () {
-                    setState(() {
-                      _guideStep = 2;
-                    });
-                    _tabController.animateTo(1);
-                  },
-                  onFaqTap: () {
-                    setState(() => _guideStep = 0);
-                    GuideFaqSheet.show(context);
-                  },
-                ),
-              if (_guideStep == 2 && !_showPaymentCoach)
-                CoachMarkOverlay(
-                  guideKey: GuideKeys.chat,
-                  targetKey: _chatTabKey,
-                  title: 'Chat with your agent',
-                  body:
-                      'Your dedicated agent is always '
-                      'available here. Ask anything — '
-                      'they handle everything for you.',
-                  spotlightShape: SpotlightShape.roundedRect,
-                  onDismiss: () => setState(() => _guideStep = 0),
-                  onNext: () {
-                    setState(() {
-                      _guideStep = 3;
-                    });
-                    _tabController.animateTo(2);
-                  },
-                  onFaqTap: () {
-                    setState(() => _guideStep = 0);
-                    GuideFaqSheet.show(context);
-                  },
-                ),
-              if (_guideStep == 3 && !_showPaymentCoach)
-                CoachMarkOverlay(
-                  guideKey: GuideKeys.documents,
-                  targetKey: _docsTabKey,
-                  title: 'Your documents',
-                  body:
-                      'All your import papers live here '
-                      '— receipts, vehicle title, clearance '
-                      'docs and more. Always accessible.',
-                  spotlightShape: SpotlightShape.roundedRect,
-                  onDismiss: () => setState(() => _guideStep = 0),
-                  onFaqTap: () {
-                    setState(() => _guideStep = 0);
-                    GuideFaqSheet.show(context);
-                  },
-                ),
-            ],
-          );
-        },
+                if (_showPaymentCoach && payment != null && _guideStep == 0)
+                  CoachMarkOverlay(
+                    guideKey: GuideKeys.orderPaymentRequest,
+                    targetKey: _paymentCardKey,
+                    title: 'Payment request from your agent',
+                    body:
+                        'Your agent sent a payment request. '
+                        'Review the details carefully — '
+                        'no money leaves your account until '
+                        'you approve it here.',
+                    spotlightShape: SpotlightShape.roundedRect,
+                    cardPosition: CardPosition.below,
+                    onDismiss: () {
+                      setState(() => _showPaymentCoach = false);
+                      WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => _maybeStartChainAfterPaymentCoach(),
+                      );
+                    },
+                    onFaqTap: () {
+                      setState(() => _showPaymentCoach = false);
+                      GuideFaqSheet.show(context);
+                      WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => _maybeStartChainAfterPaymentCoach(),
+                      );
+                    },
+                  ),
+                if (_guideStep == 1 && !_showPaymentCoach)
+                  CoachMarkOverlay(
+                    guideKey: GuideKeys.orderTimeline,
+                    targetKey: _timelineKey,
+                    title: 'Your import journey',
+                    body:
+                        'This timeline tracks every stage '
+                        'from search to delivery. Tap any '
+                        'stage to see more details.',
+                    spotlightShape: SpotlightShape.roundedRect,
+                    onDismiss: () => setState(() => _guideStep = 0),
+                    onNext: () {
+                      setState(() {
+                        _guideStep = 2;
+                      });
+                      _tabController.animateTo(1);
+                    },
+                    onFaqTap: () {
+                      setState(() => _guideStep = 0);
+                      GuideFaqSheet.show(context);
+                    },
+                  ),
+                if (_guideStep == 2 && !_showPaymentCoach)
+                  CoachMarkOverlay(
+                    guideKey: GuideKeys.chat,
+                    targetKey: _chatTabKey,
+                    title: 'Chat with your agent',
+                    body:
+                        'Your dedicated agent is always '
+                        'available here. Ask anything — '
+                        'they handle everything for you.',
+                    spotlightShape: SpotlightShape.roundedRect,
+                    onDismiss: () => setState(() => _guideStep = 0),
+                    onNext: () {
+                      setState(() {
+                        _guideStep = 3;
+                      });
+                      _tabController.animateTo(2);
+                    },
+                    onFaqTap: () {
+                      setState(() => _guideStep = 0);
+                      GuideFaqSheet.show(context);
+                    },
+                  ),
+                if (_guideStep == 3 && !_showPaymentCoach)
+                  CoachMarkOverlay(
+                    guideKey: GuideKeys.documents,
+                    targetKey: _docsTabKey,
+                    title: 'Your documents',
+                    body:
+                        'All your import papers live here '
+                        '— receipts, vehicle title, clearance '
+                        'docs and more. Always accessible.',
+                    spotlightShape: SpotlightShape.roundedRect,
+                    onDismiss: () => setState(() => _guideStep = 0),
+                    onFaqTap: () {
+                      setState(() => _guideStep = 0);
+                      GuideFaqSheet.show(context);
+                    },
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

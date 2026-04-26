@@ -2,8 +2,9 @@
 class ClearanceConstants {
   ClearanceConstants._();
 
-  static const String systemSettingsKeyClearanceFee = 'clearanceServiceFeeGhs';
-  static const double clearanceFeeFallbackGhs = 3200.0;
+  static const String systemSettingsKeyClearanceFee = 'clearanceServiceFee';
+  // Fallback in USD
+  static const double clearanceFeeFallbackUsd = 200.0;
 
   // State 0
   static const String state0Heading = 'Not available yet';

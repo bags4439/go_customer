@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/models/currency_model.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../clearance/data/models/duty_clearance_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
 
@@ -15,7 +18,7 @@ const _kWarn = 0xFFBA7517;
 const _kSuccess = 0xFF1D9E75;
 
 /// Clearance step when duty_clearance exists (no pending clearance payment).
-class ClearanceStatusCard extends StatelessWidget {
+class ClearanceStatusCard extends ConsumerWidget {
   final DutyClearanceModel clearance;
   final String orderId;
   final VoidCallback? onChatTap;
@@ -28,7 +31,8 @@ class ClearanceStatusCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final preferredCurrency = ref.watch(preferredCurrencyProvider);
     return GestureDetector(
       onTap: () => context.push('/order/$orderId/clearance'),
       behavior: HitTestBehavior.opaque,
@@ -43,7 +47,7 @@ class ClearanceStatusCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _statusBlock(),
+            _statusBlock(preferredCurrency),
             if (clearance.handledBy == 'agent') ...[
               const SizedBox(height: 8),
               Container(
@@ -93,7 +97,7 @@ class ClearanceStatusCard extends StatelessWidget {
     );
   }
 
-  Widget _statusBlock() {
+  Widget _statusBlock(CurrencyModel preferredCurrency) {
     switch (clearance.graStatus) {
       case GraStatus.notStarted:
         return _row(
@@ -119,10 +123,13 @@ class ClearanceStatusCard extends StatelessWidget {
               OrderTimelineConstants.clearanceAssessedTitle,
               OrderTimelineConstants.clearanceAssessedSub,
             ),
-            if (clearance.totalPayableGhs != null) ...[
+            if (clearance.totalPayableUsd != null) ...[
               const SizedBox(height: 8),
               Text(
-                '${OrderTimelineConstants.clearanceTotalDuty}${CurrencyFormatter.formatGhs(clearance.totalPayableGhs!)}',
+                '${OrderTimelineConstants.clearanceTotalDuty}${CurrencyFormatter.formatForDisplay(
+                  usdAmount: clearance.totalPayableUsd!,
+                  preferredCurrency: preferredCurrency,
+                ).primary}',
                 style: GoogleFonts.dmSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

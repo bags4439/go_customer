@@ -25,14 +25,14 @@ mixin _$DutyClearanceModel {
   String get orderId => throw _privateConstructorUsedError;
   String get handledBy =>
       throw _privateConstructorUsedError; // 'agent' | 'buyer'
-  double? get clearanceFeeGhs => throw _privateConstructorUsedError;
+  double? get clearanceFeeUsd => throw _privateConstructorUsedError;
   String? get icumsRef => throw _privateConstructorUsedError;
   String? get clearingAgentName => throw _privateConstructorUsedError;
-  double? get dutyAmountGhs => throw _privateConstructorUsedError;
-  double? get vatGhs => throw _privateConstructorUsedError;
-  double? get nhilGhs => throw _privateConstructorUsedError;
-  double? get otherLeviesGhs => throw _privateConstructorUsedError;
-  double? get totalPayableGhs => throw _privateConstructorUsedError;
+  double? get dutyAmountUsd => throw _privateConstructorUsedError;
+  double? get vatUsd => throw _privateConstructorUsedError;
+  double? get nhilUsd => throw _privateConstructorUsedError;
+  double? get otherLeviesUsd => throw _privateConstructorUsedError;
+  double? get totalPayableUsd => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
   GraStatus get graStatus => throw _privateConstructorUsedError;
   DateTime? get submittedAt => throw _privateConstructorUsedError;
@@ -63,14 +63,14 @@ abstract class $DutyClearanceModelCopyWith<$Res> {
     String id,
     String orderId,
     String handledBy,
-    double? clearanceFeeGhs,
+    double? clearanceFeeUsd,
     String? icumsRef,
     String? clearingAgentName,
-    double? dutyAmountGhs,
-    double? vatGhs,
-    double? nhilGhs,
-    double? otherLeviesGhs,
-    double? totalPayableGhs,
+    double? dutyAmountUsd,
+    double? vatUsd,
+    double? nhilUsd,
+    double? otherLeviesUsd,
+    double? totalPayableUsd,
     @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
     GraStatus graStatus,
     DateTime? submittedAt,
@@ -100,14 +100,14 @@ class _$DutyClearanceModelCopyWithImpl<$Res, $Val extends DutyClearanceModel>
     Object? id = null,
     Object? orderId = null,
     Object? handledBy = null,
-    Object? clearanceFeeGhs = freezed,
+    Object? clearanceFeeUsd = freezed,
     Object? icumsRef = freezed,
     Object? clearingAgentName = freezed,
-    Object? dutyAmountGhs = freezed,
-    Object? vatGhs = freezed,
-    Object? nhilGhs = freezed,
-    Object? otherLeviesGhs = freezed,
-    Object? totalPayableGhs = freezed,
+    Object? dutyAmountUsd = freezed,
+    Object? vatUsd = freezed,
+    Object? nhilUsd = freezed,
+    Object? otherLeviesUsd = freezed,
+    Object? totalPayableUsd = freezed,
     Object? graStatus = null,
     Object? submittedAt = freezed,
     Object? assessedAt = freezed,
@@ -130,9 +130,9 @@ class _$DutyClearanceModelCopyWithImpl<$Res, $Val extends DutyClearanceModel>
                 ? _value.handledBy
                 : handledBy // ignore: cast_nullable_to_non_nullable
                       as String,
-            clearanceFeeGhs: freezed == clearanceFeeGhs
-                ? _value.clearanceFeeGhs
-                : clearanceFeeGhs // ignore: cast_nullable_to_non_nullable
+            clearanceFeeUsd: freezed == clearanceFeeUsd
+                ? _value.clearanceFeeUsd
+                : clearanceFeeUsd // ignore: cast_nullable_to_non_nullable
                       as double?,
             icumsRef: freezed == icumsRef
                 ? _value.icumsRef
@@ -142,25 +142,25 @@ class _$DutyClearanceModelCopyWithImpl<$Res, $Val extends DutyClearanceModel>
                 ? _value.clearingAgentName
                 : clearingAgentName // ignore: cast_nullable_to_non_nullable
                       as String?,
-            dutyAmountGhs: freezed == dutyAmountGhs
-                ? _value.dutyAmountGhs
-                : dutyAmountGhs // ignore: cast_nullable_to_non_nullable
+            dutyAmountUsd: freezed == dutyAmountUsd
+                ? _value.dutyAmountUsd
+                : dutyAmountUsd // ignore: cast_nullable_to_non_nullable
                       as double?,
-            vatGhs: freezed == vatGhs
-                ? _value.vatGhs
-                : vatGhs // ignore: cast_nullable_to_non_nullable
+            vatUsd: freezed == vatUsd
+                ? _value.vatUsd
+                : vatUsd // ignore: cast_nullable_to_non_nullable
                       as double?,
-            nhilGhs: freezed == nhilGhs
-                ? _value.nhilGhs
-                : nhilGhs // ignore: cast_nullable_to_non_nullable
+            nhilUsd: freezed == nhilUsd
+                ? _value.nhilUsd
+                : nhilUsd // ignore: cast_nullable_to_non_nullable
                       as double?,
-            otherLeviesGhs: freezed == otherLeviesGhs
-                ? _value.otherLeviesGhs
-                : otherLeviesGhs // ignore: cast_nullable_to_non_nullable
+            otherLeviesUsd: freezed == otherLeviesUsd
+                ? _value.otherLeviesUsd
+                : otherLeviesUsd // ignore: cast_nullable_to_non_nullable
                       as double?,
-            totalPayableGhs: freezed == totalPayableGhs
-                ? _value.totalPayableGhs
-                : totalPayableGhs // ignore: cast_nullable_to_non_nullable
+            totalPayableUsd: freezed == totalPayableUsd
+                ? _value.totalPayableUsd
+                : totalPayableUsd // ignore: cast_nullable_to_non_nullable
                       as double?,
             graStatus: null == graStatus
                 ? _value.graStatus
@@ -209,14 +209,14 @@ abstract class _$$DutyClearanceModelImplCopyWith<$Res>
     String id,
     String orderId,
     String handledBy,
-    double? clearanceFeeGhs,
+    double? clearanceFeeUsd,
     String? icumsRef,
     String? clearingAgentName,
-    double? dutyAmountGhs,
-    double? vatGhs,
-    double? nhilGhs,
-    double? otherLeviesGhs,
-    double? totalPayableGhs,
+    double? dutyAmountUsd,
+    double? vatUsd,
+    double? nhilUsd,
+    double? otherLeviesUsd,
+    double? totalPayableUsd,
     @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
     GraStatus graStatus,
     DateTime? submittedAt,
@@ -245,14 +245,14 @@ class __$$DutyClearanceModelImplCopyWithImpl<$Res>
     Object? id = null,
     Object? orderId = null,
     Object? handledBy = null,
-    Object? clearanceFeeGhs = freezed,
+    Object? clearanceFeeUsd = freezed,
     Object? icumsRef = freezed,
     Object? clearingAgentName = freezed,
-    Object? dutyAmountGhs = freezed,
-    Object? vatGhs = freezed,
-    Object? nhilGhs = freezed,
-    Object? otherLeviesGhs = freezed,
-    Object? totalPayableGhs = freezed,
+    Object? dutyAmountUsd = freezed,
+    Object? vatUsd = freezed,
+    Object? nhilUsd = freezed,
+    Object? otherLeviesUsd = freezed,
+    Object? totalPayableUsd = freezed,
     Object? graStatus = null,
     Object? submittedAt = freezed,
     Object? assessedAt = freezed,
@@ -275,9 +275,9 @@ class __$$DutyClearanceModelImplCopyWithImpl<$Res>
             ? _value.handledBy
             : handledBy // ignore: cast_nullable_to_non_nullable
                   as String,
-        clearanceFeeGhs: freezed == clearanceFeeGhs
-            ? _value.clearanceFeeGhs
-            : clearanceFeeGhs // ignore: cast_nullable_to_non_nullable
+        clearanceFeeUsd: freezed == clearanceFeeUsd
+            ? _value.clearanceFeeUsd
+            : clearanceFeeUsd // ignore: cast_nullable_to_non_nullable
                   as double?,
         icumsRef: freezed == icumsRef
             ? _value.icumsRef
@@ -287,25 +287,25 @@ class __$$DutyClearanceModelImplCopyWithImpl<$Res>
             ? _value.clearingAgentName
             : clearingAgentName // ignore: cast_nullable_to_non_nullable
                   as String?,
-        dutyAmountGhs: freezed == dutyAmountGhs
-            ? _value.dutyAmountGhs
-            : dutyAmountGhs // ignore: cast_nullable_to_non_nullable
+        dutyAmountUsd: freezed == dutyAmountUsd
+            ? _value.dutyAmountUsd
+            : dutyAmountUsd // ignore: cast_nullable_to_non_nullable
                   as double?,
-        vatGhs: freezed == vatGhs
-            ? _value.vatGhs
-            : vatGhs // ignore: cast_nullable_to_non_nullable
+        vatUsd: freezed == vatUsd
+            ? _value.vatUsd
+            : vatUsd // ignore: cast_nullable_to_non_nullable
                   as double?,
-        nhilGhs: freezed == nhilGhs
-            ? _value.nhilGhs
-            : nhilGhs // ignore: cast_nullable_to_non_nullable
+        nhilUsd: freezed == nhilUsd
+            ? _value.nhilUsd
+            : nhilUsd // ignore: cast_nullable_to_non_nullable
                   as double?,
-        otherLeviesGhs: freezed == otherLeviesGhs
-            ? _value.otherLeviesGhs
-            : otherLeviesGhs // ignore: cast_nullable_to_non_nullable
+        otherLeviesUsd: freezed == otherLeviesUsd
+            ? _value.otherLeviesUsd
+            : otherLeviesUsd // ignore: cast_nullable_to_non_nullable
                   as double?,
-        totalPayableGhs: freezed == totalPayableGhs
-            ? _value.totalPayableGhs
-            : totalPayableGhs // ignore: cast_nullable_to_non_nullable
+        totalPayableUsd: freezed == totalPayableUsd
+            ? _value.totalPayableUsd
+            : totalPayableUsd // ignore: cast_nullable_to_non_nullable
                   as double?,
         graStatus: null == graStatus
             ? _value.graStatus
@@ -347,14 +347,14 @@ class _$DutyClearanceModelImpl implements _DutyClearanceModel {
     required this.id,
     required this.orderId,
     this.handledBy = 'agent',
-    this.clearanceFeeGhs,
+    this.clearanceFeeUsd,
     this.icumsRef,
     this.clearingAgentName,
-    this.dutyAmountGhs,
-    this.vatGhs,
-    this.nhilGhs,
-    this.otherLeviesGhs,
-    this.totalPayableGhs,
+    this.dutyAmountUsd,
+    this.vatUsd,
+    this.nhilUsd,
+    this.otherLeviesUsd,
+    this.totalPayableUsd,
     @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
     this.graStatus = GraStatus.notStarted,
     this.submittedAt,
@@ -377,21 +377,21 @@ class _$DutyClearanceModelImpl implements _DutyClearanceModel {
   final String handledBy;
   // 'agent' | 'buyer'
   @override
-  final double? clearanceFeeGhs;
+  final double? clearanceFeeUsd;
   @override
   final String? icumsRef;
   @override
   final String? clearingAgentName;
   @override
-  final double? dutyAmountGhs;
+  final double? dutyAmountUsd;
   @override
-  final double? vatGhs;
+  final double? vatUsd;
   @override
-  final double? nhilGhs;
+  final double? nhilUsd;
   @override
-  final double? otherLeviesGhs;
+  final double? otherLeviesUsd;
   @override
-  final double? totalPayableGhs;
+  final double? totalPayableUsd;
   @override
   @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
   final GraStatus graStatus;
@@ -410,7 +410,7 @@ class _$DutyClearanceModelImpl implements _DutyClearanceModel {
 
   @override
   String toString() {
-    return 'DutyClearanceModel(id: $id, orderId: $orderId, handledBy: $handledBy, clearanceFeeGhs: $clearanceFeeGhs, icumsRef: $icumsRef, clearingAgentName: $clearingAgentName, dutyAmountGhs: $dutyAmountGhs, vatGhs: $vatGhs, nhilGhs: $nhilGhs, otherLeviesGhs: $otherLeviesGhs, totalPayableGhs: $totalPayableGhs, graStatus: $graStatus, submittedAt: $submittedAt, assessedAt: $assessedAt, paidAt: $paidAt, clearedAt: $clearedAt, notes: $notes, createdAt: $createdAt)';
+    return 'DutyClearanceModel(id: $id, orderId: $orderId, handledBy: $handledBy, clearanceFeeUsd: $clearanceFeeUsd, icumsRef: $icumsRef, clearingAgentName: $clearingAgentName, dutyAmountUsd: $dutyAmountUsd, vatUsd: $vatUsd, nhilUsd: $nhilUsd, otherLeviesUsd: $otherLeviesUsd, totalPayableUsd: $totalPayableUsd, graStatus: $graStatus, submittedAt: $submittedAt, assessedAt: $assessedAt, paidAt: $paidAt, clearedAt: $clearedAt, notes: $notes, createdAt: $createdAt)';
   }
 
   @override
@@ -422,20 +422,20 @@ class _$DutyClearanceModelImpl implements _DutyClearanceModel {
             (identical(other.orderId, orderId) || other.orderId == orderId) &&
             (identical(other.handledBy, handledBy) ||
                 other.handledBy == handledBy) &&
-            (identical(other.clearanceFeeGhs, clearanceFeeGhs) ||
-                other.clearanceFeeGhs == clearanceFeeGhs) &&
+            (identical(other.clearanceFeeUsd, clearanceFeeUsd) ||
+                other.clearanceFeeUsd == clearanceFeeUsd) &&
             (identical(other.icumsRef, icumsRef) ||
                 other.icumsRef == icumsRef) &&
             (identical(other.clearingAgentName, clearingAgentName) ||
                 other.clearingAgentName == clearingAgentName) &&
-            (identical(other.dutyAmountGhs, dutyAmountGhs) ||
-                other.dutyAmountGhs == dutyAmountGhs) &&
-            (identical(other.vatGhs, vatGhs) || other.vatGhs == vatGhs) &&
-            (identical(other.nhilGhs, nhilGhs) || other.nhilGhs == nhilGhs) &&
-            (identical(other.otherLeviesGhs, otherLeviesGhs) ||
-                other.otherLeviesGhs == otherLeviesGhs) &&
-            (identical(other.totalPayableGhs, totalPayableGhs) ||
-                other.totalPayableGhs == totalPayableGhs) &&
+            (identical(other.dutyAmountUsd, dutyAmountUsd) ||
+                other.dutyAmountUsd == dutyAmountUsd) &&
+            (identical(other.vatUsd, vatUsd) || other.vatUsd == vatUsd) &&
+            (identical(other.nhilUsd, nhilUsd) || other.nhilUsd == nhilUsd) &&
+            (identical(other.otherLeviesUsd, otherLeviesUsd) ||
+                other.otherLeviesUsd == otherLeviesUsd) &&
+            (identical(other.totalPayableUsd, totalPayableUsd) ||
+                other.totalPayableUsd == totalPayableUsd) &&
             (identical(other.graStatus, graStatus) ||
                 other.graStatus == graStatus) &&
             (identical(other.submittedAt, submittedAt) ||
@@ -457,14 +457,14 @@ class _$DutyClearanceModelImpl implements _DutyClearanceModel {
     id,
     orderId,
     handledBy,
-    clearanceFeeGhs,
+    clearanceFeeUsd,
     icumsRef,
     clearingAgentName,
-    dutyAmountGhs,
-    vatGhs,
-    nhilGhs,
-    otherLeviesGhs,
-    totalPayableGhs,
+    dutyAmountUsd,
+    vatUsd,
+    nhilUsd,
+    otherLeviesUsd,
+    totalPayableUsd,
     graStatus,
     submittedAt,
     assessedAt,
@@ -496,14 +496,14 @@ abstract class _DutyClearanceModel implements DutyClearanceModel {
     required final String id,
     required final String orderId,
     final String handledBy,
-    final double? clearanceFeeGhs,
+    final double? clearanceFeeUsd,
     final String? icumsRef,
     final String? clearingAgentName,
-    final double? dutyAmountGhs,
-    final double? vatGhs,
-    final double? nhilGhs,
-    final double? otherLeviesGhs,
-    final double? totalPayableGhs,
+    final double? dutyAmountUsd,
+    final double? vatUsd,
+    final double? nhilUsd,
+    final double? otherLeviesUsd,
+    final double? totalPayableUsd,
     @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
     final GraStatus graStatus,
     final DateTime? submittedAt,
@@ -524,21 +524,21 @@ abstract class _DutyClearanceModel implements DutyClearanceModel {
   @override
   String get handledBy; // 'agent' | 'buyer'
   @override
-  double? get clearanceFeeGhs;
+  double? get clearanceFeeUsd;
   @override
   String? get icumsRef;
   @override
   String? get clearingAgentName;
   @override
-  double? get dutyAmountGhs;
+  double? get dutyAmountUsd;
   @override
-  double? get vatGhs;
+  double? get vatUsd;
   @override
-  double? get nhilGhs;
+  double? get nhilUsd;
   @override
-  double? get otherLeviesGhs;
+  double? get otherLeviesUsd;
   @override
-  double? get totalPayableGhs;
+  double? get totalPayableUsd;
   @override
   @JsonKey(fromJson: _graStatusFromJson, toJson: _graStatusToJson)
   GraStatus get graStatus;

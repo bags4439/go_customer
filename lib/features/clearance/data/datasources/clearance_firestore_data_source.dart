@@ -16,6 +16,7 @@ class ClearanceFirestoreDataSource {
     return _firestore
         .collection(FirestoreCollections.dutyClearance)
         .where('orderId', isEqualTo: orderId)
+        .orderBy('createdAt', descending: true)
         .limit(1)
         .snapshots()
         .map((snapshot) {
@@ -35,27 +36,28 @@ class ClearanceFirestoreDataSource {
     return dutyClearanceFromDoc(snapshot.docs.first);
   }
 
-  /// Resolves clearance fee from a pre-loaded `system_settings` map
-  /// (`systemSettingsProvider`). Fallback 3200.0 on missing/invalid.
-  double getClearanceServiceFeeGhs(Map<String, dynamic> settings) {
+  /// Resolves clearance fee in USD from a pre-loaded `system_settings` map.
+  /// Fallback is [ClearanceConstants.clearanceFeeFallbackUsd] if the key is
+  /// missing or invalid.
+  double getClearanceServiceFeeUsd(Map<String, dynamic> settings) {
     final v = settings[ClearanceConstants.systemSettingsKeyClearanceFee];
     if (v == null) {
-      return ClearanceConstants.clearanceFeeFallbackGhs;
+      return ClearanceConstants.clearanceFeeFallbackUsd;
     }
     if (v is num) return v.toDouble();
     return double.tryParse(v.toString()) ??
-        ClearanceConstants.clearanceFeeFallbackGhs;
+        ClearanceConstants.clearanceFeeFallbackUsd;
   }
 
   Future<void> createDutyClearanceAgent({
     required String orderId,
-    required double clearanceFeeGhs,
+    required double clearanceFeeUsd,
   }) async {
     final ref = _firestore.collection(FirestoreCollections.dutyClearance).doc();
     await ref.set({
       'orderId': orderId,
       'handledBy': FirestoreEnumValues.clearanceHandledByAgent,
-      'clearanceFeeGhs': clearanceFeeGhs,
+      'clearanceFeeUsd': clearanceFeeUsd,
       'graStatus': FirestoreEnumValues.graStatusNotStarted,
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -73,7 +75,7 @@ class ClearanceFirestoreDataSource {
 
   Future<void> updateDutyClearanceToAgent({
     required String orderId,
-    required double clearanceFeeGhs,
+    required double clearanceFeeUsd,
   }) async {
     final snapshot = await _firestore
         .collection(FirestoreCollections.dutyClearance)
@@ -83,7 +85,7 @@ class ClearanceFirestoreDataSource {
     if (snapshot.docs.isEmpty) return;
     await snapshot.docs.first.reference.update({
       'handledBy': FirestoreEnumValues.clearanceHandledByAgent,
-      'clearanceFeeGhs': clearanceFeeGhs,
+      'clearanceFeeUsd': clearanceFeeUsd,
     });
   }
 
@@ -116,11 +118,11 @@ class ClearanceFirestoreDataSource {
 
   Future<void> confirmAgentClearance({
     required String orderId,
-    required double clearanceFeeGhs,
+    required double clearanceFeeUsd,
   }) async {
     await createDutyClearanceAgent(
       orderId: orderId,
-      clearanceFeeGhs: clearanceFeeGhs,
+      clearanceFeeUsd: clearanceFeeUsd,
     );
     await _updateCarPreferencesClearanceOptedIn(orderId, true);
     await setClearanceTimelineActive(orderId);
@@ -134,11 +136,11 @@ class ClearanceFirestoreDataSource {
 
   Future<void> switchToAgentClearance({
     required String orderId,
-    required double clearanceFeeGhs,
+    required double clearanceFeeUsd,
   }) async {
     await updateDutyClearanceToAgent(
       orderId: orderId,
-      clearanceFeeGhs: clearanceFeeGhs,
+      clearanceFeeUsd: clearanceFeeUsd,
     );
     await _updateCarPreferencesClearanceOptedIn(orderId, true);
   }
