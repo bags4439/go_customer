@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -52,10 +52,7 @@ class OrderDetailPaymentCard extends ConsumerWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.secondary,
-            AppColors.infoText,
-          ],
+          colors: [AppColors.secondary, AppColors.infoText],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -82,8 +79,7 @@ class OrderDetailPaymentCard extends ConsumerWidget {
                 ),
                 child: Text(
                   'PAYMENT REQUIRED',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
+                  style: AppTextStyles.badgeText.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                     letterSpacing: 0.5,
@@ -95,8 +91,7 @@ class OrderDetailPaymentCard extends ConsumerWidget {
           const SizedBox(height: 12),
           Text(
             display.primary,
-            style: GoogleFonts.dmSans(
-              fontSize: 28,
+            style: AppTextStyles.amountLarge.copyWith(
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
@@ -105,8 +100,7 @@ class OrderDetailPaymentCard extends ConsumerWidget {
             const SizedBox(height: 2),
             Text(
               display.secondary!,
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
+              style: AppTextStyles.bodySmall.copyWith(
                 color: Colors.white.withValues(alpha: 0.70),
               ),
             ),
@@ -114,8 +108,7 @@ class OrderDetailPaymentCard extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             typeLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
+            style: AppTextStyles.bodySmall.copyWith(
               color: Colors.white.withValues(alpha: 0.85),
             ),
           ),
@@ -132,8 +125,7 @@ class OrderDetailPaymentCard extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     deadlineText!,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
+                    style: AppTextStyles.caption.copyWith(
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
@@ -157,9 +149,8 @@ class OrderDetailPaymentCard extends ConsumerWidget {
               ),
               child: Text(
                 'Pay now →',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.secondary,
                 ),
               ),
             ),

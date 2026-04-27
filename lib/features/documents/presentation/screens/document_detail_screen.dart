@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
@@ -14,6 +13,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../core/constants/document_constants.dart';
@@ -116,9 +116,7 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
         ),
         title: Text(
           doc.label,
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
+          style: AppTextStyles.appBarTitle.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
@@ -141,10 +139,11 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
                 ),
                 child: Text(
                   statusLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.badgeText.copyWith(
                     color: statusFg,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                    fontSize: 10,
                   ),
                 ),
               ),
@@ -227,7 +226,8 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
           SnackBar(
             content: Text(
               DocumentConstants.fileSavedToDownloads,
-              style: GoogleFonts.dmSans(fontSize: 13, color: Colors.white),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: Colors.white, height: 1.2),
             ),
             backgroundColor: const Color(0xFF1A1A18),
             behavior: SnackBarBehavior.floating,
@@ -385,9 +385,11 @@ class _PreviewAreaState extends State<_PreviewArea> {
           const SizedBox(height: 8),
           Text(
             DocumentConstants.previewNotAvailable,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            style: AppTextStyles.cardLabel.copyWith(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -414,9 +416,11 @@ class _PreviewAreaState extends State<_PreviewArea> {
           const SizedBox(height: 8),
           Text(
             widget.document.fileType?.toUpperCase() ?? 'FILE',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            style: AppTextStyles.cardLabel.copyWith(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -600,9 +604,11 @@ class _MetaRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            style: AppTextStyles.caption.copyWith(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(width: 12),
@@ -610,9 +616,7 @@ class _MetaRow extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.labelMedium.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
@@ -645,30 +649,23 @@ class _RejectionReasonCard extends StatelessWidget {
         children: [
           Text(
             DocumentConstants.rejectionReason.toUpperCase(),
-            style: GoogleFonts.dmSans(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
+            style: AppTextStyles.sectionLabel.copyWith(
               color: const Color(0xFFA32D2D),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             reason ?? DocumentConstants.notApplicable,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: const Color(0xFFA32D2D),
-            ),
+            style: AppTextStyles.labelMedium
+                .copyWith(color: const Color(0xFFA32D2D)),
           ),
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () => context.go('/order/$orderId?tab=chat'),
             child: Text(
               DocumentConstants.contactAgentForHelp,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.secondary,
-              ),
+              style: AppTextStyles.labelMedium
+                  .copyWith(color: AppColors.secondary, fontSize: 12.5),
             ),
           ),
         ],
@@ -717,10 +714,9 @@ class _ActionButton extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         label,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                        style: AppTextStyles.bodyMedium.copyWith(
                           color: Colors.white,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

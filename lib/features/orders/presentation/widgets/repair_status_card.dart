@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/utils/date_formatter.dart';
 import '../../../repairs/data/models/repair_job_model.dart';
@@ -73,17 +73,12 @@ class _RepairStatusCardState extends State<RepairStatusCard>
             children: [
               Text(
                 'Arrange repairs',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
               ),
               const SizedBox(height: 2),
               Text(
                 'Tap to confirm your repair preference',
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
+                style: AppTextStyles.caption.copyWith(
                   color: const Color(_kTextSecondary),
                 ),
               ),
@@ -127,7 +122,7 @@ class _RepairStatusCardState extends State<RepairStatusCard>
               ),
               child: Text(
                 OrderTimelineConstants.morePhotos.replaceAll('[n]', '$more'),
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.caption.copyWith(
                   fontSize: 10,
                   color: const Color(_kTextSecondary),
                 ),
@@ -162,9 +157,7 @@ class _RepairStatusCardState extends State<RepairStatusCard>
               style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
               child: Text(
                 OrderTimelineConstants.viewQuote,
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                style: AppTextStyles.labelSmall.copyWith(
                   color: const Color(_kPrimary),
                 ),
               ),
@@ -205,17 +198,14 @@ class _RepairStatusCardState extends State<RepairStatusCard>
                       children: [
                         Text(
                           OrderTimelineConstants.repairInProgressTitle,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.cardValue.copyWith(
                             color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${OrderTimelineConstants.repairGaragePrefix}${j.garageNameCustom ?? OrderTimelineConstants.partnerGarage}',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 11,
+                          style: AppTextStyles.caption.copyWith(
                             color: const Color(_kTextSecondary),
                           ),
                         ),
@@ -223,8 +213,7 @@ class _RepairStatusCardState extends State<RepairStatusCard>
                           const SizedBox(height: 4),
                           Text(
                             '${OrderTimelineConstants.repairEstCompletion}${DateFormatter.formatDate(j.estimatedCompletion)}',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 11,
+                            style: AppTextStyles.caption.copyWith(
                               color: const Color(_kTextSecondary),
                             ),
                           ),
@@ -254,9 +243,7 @@ class _RepairStatusCardState extends State<RepairStatusCard>
                 Expanded(
                   child: Text(
                     OrderTimelineConstants.repairCompleteTitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                    style: AppTextStyles.cardValue.copyWith(
                       color: const Color(_kSuccess),
                     ),
                   ),
@@ -275,17 +262,12 @@ class _RepairStatusCardState extends State<RepairStatusCard>
       children: [
         Text(
           title,
-          style: GoogleFonts.dmSans(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+          style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
         ),
         const SizedBox(height: 4),
         Text(
           sub,
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
+          style: AppTextStyles.caption.copyWith(
             color: const Color(_kTextSecondary),
           ),
         ),

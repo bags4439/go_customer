@@ -44,11 +44,10 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
               children: [
                 Text(
                   _timeGreeting(),
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
+                  style: AppTextStyles.sectionLabel.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: _C.textTertiary,
                     letterSpacing: 0.6,
+                    color: _C.textTertiary,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -56,17 +55,17 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                   widget.firstName != null
                       ? 'Hi ${widget.firstName}'
                       : 'Welcome',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.displaySmall.copyWith(
                     fontSize: 26,
                     fontWeight: FontWeight.w600,
-                    color: _C.textPrimary,
                     height: 1.15,
+                    color: _C.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   'Ready to buy your first car?',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontSize: 13.5,
                     color: _C.textSecondary,
                     height: 1.4,
@@ -80,10 +79,7 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                   decoration: BoxDecoration(
                     color: _C.bgPrimary,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: _C.border,
-                      width: 0.5,
-                    ),
+                    border: Border.all(color: _C.border, width: 0.5),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.04),
@@ -105,11 +101,10 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
 
                             Text(
                               'Buy your car from the US, Dubai or China',
-                              style: GoogleFonts.dmSans(
+                              style: AppTextStyles.titleMedium.copyWith(
                                 fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: _C.textPrimary,
                                 height: 1.25,
+                                color: _C.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -117,8 +112,7 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                             Text(
                               'Tell us what you want — we handle everything '
                               'from auction to your driveway.',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 13,
+                              style: AppTextStyles.bodySmall.copyWith(
                                 color: _C.textSecondary,
                                 height: 1.5,
                               ),
@@ -130,8 +124,9 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                               width: double.infinity,
                               height: 52,
                               child: ElevatedButton(
-                                onPressed: () => GoRouter.of(context)
-                                    .push('/preferences/new'),
+                                onPressed: () => GoRouter.of(
+                                  context,
+                                ).push('/preferences/new'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _C.primary,
                                   foregroundColor: Colors.white,
@@ -145,11 +140,7 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                                   children: [
                                     Text(
                                       'Get started',
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
+                                      style: AppTextStyles.buttonLarge,
                                     ),
                                     const SizedBox(width: 10),
                                     Container(
@@ -188,10 +179,7 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                             bottomRight: Radius.circular(17),
                           ),
                           border: Border(
-                            top: BorderSide(
-                              color: _C.border,
-                              width: 0.5,
-                            ),
+                            top: BorderSide(color: _C.border, width: 0.5),
                           ),
                         ),
                         child: Row(
@@ -205,8 +193,7 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                             const SizedBox(width: 6),
                             Text(
                               'No payment until your agent sends a request',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 11,
+                              style: AppTextStyles.caption.copyWith(
                                 color: _C.primary,
                               ),
                             ),
@@ -221,11 +208,9 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
 
                 Text(
                   'HOW IT WORKS',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
+                  style: AppTextStyles.sectionLabel.copyWith(
                     fontWeight: FontWeight.w600,
                     color: _C.textTertiary,
-                    letterSpacing: 0.8,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -242,33 +227,26 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
                       iconBg: _C.infoBg,
                       title: 'Dedicated agent',
                       subtitle: 'Matched to you\nwithin minutes',
-                      iconWidget: CustomPaint(
-                        painter: _AgentIconPainter(),
-                      ),
+                      iconWidget: CustomPaint(painter: _AgentIconPainter()),
                     ),
                     _FeatureItem(
                       iconBg: _C.successBg,
                       title: 'Every step tracked',
-                      subtitle: 'Live updates from\nauction/purchase to delivery',
-                      iconWidget: CustomPaint(
-                        painter: _TrackingIconPainter(),
-                      ),
+                      subtitle:
+                          'Live updates from\nauction/purchase to delivery',
+                      iconWidget: CustomPaint(painter: _TrackingIconPainter()),
                     ),
                     _FeatureItem(
                       iconBg: _C.warningBg,
                       title: 'Duty & clearance',
                       subtitle: 'GRA paperwork\nfully managed',
-                      iconWidget: CustomPaint(
-                        painter: _ClearanceIconPainter(),
-                      ),
+                      iconWidget: CustomPaint(painter: _ClearanceIconPainter()),
                     ),
                     _FeatureItem(
                       iconBg: _C.infoBg,
                       title: 'Door delivery',
                       subtitle: 'Straight to your\nhome in Ghana',
-                      iconWidget: CustomPaint(
-                        painter: _DeliveryIconPainter(),
-                      ),
+                      iconWidget: CustomPaint(painter: _DeliveryIconPainter()),
                     ),
                   ],
                 ),
@@ -285,7 +263,8 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
             guideKey: GuideKeys.homeEmpty,
             targetKey: _importButtonKey,
             title: 'Import your first car',
-            body: 'Tap here to tell us exactly what '
+            body:
+                'Tap here to tell us exactly what '
                 'car you want. No payment is ever '
                 'taken until your agent sends a '
                 'payment request.',
@@ -322,10 +301,7 @@ class _FeatureItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: _C.bgPrimary,
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(
-          color: _C.border,
-          width: 0.5,
-        ),
+        border: Border.all(color: _C.border, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,22 +317,11 @@ class _FeatureItem extends StatelessWidget {
             child: iconWidget,
           ),
           const SizedBox(height: 9),
-          Text(
-            title,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _C.textPrimary,
-            ),
-          ),
+          Text(title, style: AppTextStyles.cardValue),
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 10.5,
-              color: _C.textTertiary,
-              height: 1.4,
-            ),
+            style: AppTextStyles.caption.copyWith(fontSize: 10.5, height: 1.4),
           ),
         ],
       ),
@@ -378,9 +343,7 @@ class _CtaIllustration extends StatelessWidget {
         color: _C.infoBg,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: CustomPaint(
-        painter: _CtaIllustrationPainter(),
-      ),
+      child: CustomPaint(painter: _CtaIllustrationPainter()),
     );
   }
 }
@@ -456,11 +419,7 @@ class _CtaIllustrationPainter extends CustomPainter {
     var x = startX;
     while (x < endX) {
       final next = (x + 4).clamp(x, endX).toDouble();
-      canvas.drawLine(
-        Offset(x, cy),
-        Offset(next, cy),
-        dashPaint,
-      );
+      canvas.drawLine(Offset(x, cy), Offset(next, cy), dashPaint);
       x += 7;
     }
 
@@ -508,10 +467,10 @@ class _CtaIllustrationPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: label,
-          style: GoogleFonts.dmSans(
-            fontSize: 9,
+          style: AppTextStyles.badgeText.copyWith(
             fontWeight: FontWeight.w600,
             color: textCol,
+            letterSpacing: 0,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -554,25 +513,11 @@ class _AgentIconPainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height / 2;
 
-    canvas.drawCircle(
-      Offset(cx, cy - 4),
-      3.2,
-      p,
-    );
+    canvas.drawCircle(Offset(cx, cy - 4), 3.2, p);
     final bodyPath = Path()
       ..moveTo(cx - 6, cy + 7)
-      ..quadraticBezierTo(
-        cx - 6,
-        cy + 2,
-        cx,
-        cy + 1,
-      )
-      ..quadraticBezierTo(
-        cx + 6,
-        cy + 2,
-        cx + 6,
-        cy + 7,
-      );
+      ..quadraticBezierTo(cx - 6, cy + 2, cx, cy + 1)
+      ..quadraticBezierTo(cx + 6, cy + 2, cx + 6, cy + 7);
     canvas.drawPath(bodyPath, p);
 
     final ap = Paint()
@@ -581,11 +526,7 @@ class _AgentIconPainter extends CustomPainter {
       ..strokeWidth = 1
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    canvas.drawLine(
-      Offset(cx + 7, cy - 6),
-      Offset(cx + 11, cy - 6),
-      ap,
-    );
+    canvas.drawLine(Offset(cx + 7, cy - 6), Offset(cx + 11, cy - 6), ap);
     final arrowPath = Path()
       ..moveTo(cx + 9.5, cy - 7.5)
       ..lineTo(cx + 11, cy - 6)
@@ -618,11 +559,7 @@ class _TrackingIconPainter extends CustomPainter {
     final cy = size.height / 2;
 
     final rrect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(cx, cy),
-        width: 14,
-        height: 13,
-      ),
+      Rect.fromCenter(center: Offset(cx, cy), width: 14, height: 13),
       const Radius.circular(2),
     );
     canvas.drawRRect(rrect, p);
@@ -658,11 +595,7 @@ class _ClearanceIconPainter extends CustomPainter {
     final cy = size.height / 2;
 
     final bodyRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(cx, cy + 2),
-        width: 13,
-        height: 10,
-      ),
+      Rect.fromCenter(center: Offset(cx, cy + 2), width: 13, height: 10),
       const Radius.circular(2),
     );
     canvas.drawRRect(bodyRect, p);
@@ -742,11 +675,7 @@ class _DeliveryIconPainter extends CustomPainter {
       ..lineTo(cx + 6, cy - 3)
       ..close();
     canvas.drawPath(truckPath, p);
-    canvas.drawLine(
-      Offset(cx + 6, cy - 3),
-      Offset(cx + 6, cy + 2),
-      p,
-    );
+    canvas.drawLine(Offset(cx + 6, cy - 3), Offset(cx + 6, cy + 2), p);
     final cabPath = Path()
       ..moveTo(cx + 6, cy - 3)
       ..lineTo(cx + 6, cy - 1)
@@ -785,17 +714,11 @@ class _CompactReferralRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 13,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
         color: _C.bgPrimary,
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(
-          color: _C.border,
-          width: 0.5,
-        ),
+        border: Border.all(color: _C.border, width: 0.5),
       ),
       child: Row(
         children: [
@@ -819,20 +742,13 @@ class _CompactReferralRow extends StatelessWidget {
               children: [
                 Text(
                   'Invite friends, earn rewards',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.labelLarge.copyWith(
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
                     color: _C.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 1),
-                Text(
-                  'Share your referral code',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    color: _C.textTertiary,
-                  ),
-                ),
+                Text('Share your referral code', style: AppTextStyles.caption),
               ],
             ),
           ),

@@ -14,7 +14,8 @@ enum PaymentRequestType {
   clearanceFee,
   repairFee,
   repairBalance,
-  deliveryFee;
+  deliveryFee,
+  towingFee;
 
   static PaymentRequestType fromString(String v) {
     const map = <String, PaymentRequestType>{
@@ -27,6 +28,7 @@ enum PaymentRequestType {
       'repair_fee': PaymentRequestType.repairFee,
       'repair_balance': PaymentRequestType.repairBalance,
       'delivery_fee': PaymentRequestType.deliveryFee,
+      'towing_fee': PaymentRequestType.towingFee,
     };
     return map[v] ?? PaymentRequestType.initial;
   }
@@ -42,6 +44,7 @@ enum PaymentRequestType {
       PaymentRequestType.repairFee: 'repair_fee',
       PaymentRequestType.repairBalance: 'repair_balance',
       PaymentRequestType.deliveryFee: 'delivery_fee',
+      PaymentRequestType.towingFee: 'towing_fee',
     };
     return map[this] ?? 'initial';
   }
@@ -57,6 +60,7 @@ enum PaymentRequestType {
       PaymentRequestType.repairFee: 'Repair deposit',
       PaymentRequestType.repairBalance: 'Repair balance',
       PaymentRequestType.deliveryFee: 'Delivery fee',
+      PaymentRequestType.towingFee: 'Towing fee',
     };
     return map[this] ?? '';
   }

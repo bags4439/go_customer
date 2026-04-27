@@ -23,6 +23,8 @@ DeliveryModel _$DeliveryModelFromJson(Map<String, dynamic> json) {
 mixin _$DeliveryModel {
   String get id => throw _privateConstructorUsedError;
   String get orderId => throw _privateConstructorUsedError;
+  String? get handledBy => throw _privateConstructorUsedError;
+  bool get paymentsCleared => throw _privateConstructorUsedError;
   String? get deliveryAddress => throw _privateConstructorUsedError;
   String? get deliveryCity => throw _privateConstructorUsedError;
   double? get latitude => throw _privateConstructorUsedError;
@@ -41,6 +43,10 @@ mixin _$DeliveryModel {
   bool get paymentConfirmed => throw _privateConstructorUsedError;
   DateTime? get paymentConfirmedAt => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
+  String? get collectionAddress => throw _privateConstructorUsedError;
+  double? get collectionLatitude => throw _privateConstructorUsedError;
+  double? get collectionLongitude => throw _privateConstructorUsedError;
+  String? get collectionNotes => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this DeliveryModel to a JSON map.
@@ -63,6 +69,8 @@ abstract class $DeliveryModelCopyWith<$Res> {
   $Res call({
     String id,
     String orderId,
+    String? handledBy,
+    bool paymentsCleared,
     String? deliveryAddress,
     String? deliveryCity,
     double? latitude,
@@ -81,6 +89,10 @@ abstract class $DeliveryModelCopyWith<$Res> {
     bool paymentConfirmed,
     DateTime? paymentConfirmedAt,
     String? notes,
+    String? collectionAddress,
+    double? collectionLatitude,
+    double? collectionLongitude,
+    String? collectionNotes,
     DateTime? createdAt,
   });
 }
@@ -102,6 +114,8 @@ class _$DeliveryModelCopyWithImpl<$Res, $Val extends DeliveryModel>
   $Res call({
     Object? id = null,
     Object? orderId = null,
+    Object? handledBy = freezed,
+    Object? paymentsCleared = null,
     Object? deliveryAddress = freezed,
     Object? deliveryCity = freezed,
     Object? latitude = freezed,
@@ -120,6 +134,10 @@ class _$DeliveryModelCopyWithImpl<$Res, $Val extends DeliveryModel>
     Object? paymentConfirmed = null,
     Object? paymentConfirmedAt = freezed,
     Object? notes = freezed,
+    Object? collectionAddress = freezed,
+    Object? collectionLatitude = freezed,
+    Object? collectionLongitude = freezed,
+    Object? collectionNotes = freezed,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -132,6 +150,14 @@ class _$DeliveryModelCopyWithImpl<$Res, $Val extends DeliveryModel>
                 ? _value.orderId
                 : orderId // ignore: cast_nullable_to_non_nullable
                       as String,
+            handledBy: freezed == handledBy
+                ? _value.handledBy
+                : handledBy // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            paymentsCleared: null == paymentsCleared
+                ? _value.paymentsCleared
+                : paymentsCleared // ignore: cast_nullable_to_non_nullable
+                      as bool,
             deliveryAddress: freezed == deliveryAddress
                 ? _value.deliveryAddress
                 : deliveryAddress // ignore: cast_nullable_to_non_nullable
@@ -204,6 +230,22 @@ class _$DeliveryModelCopyWithImpl<$Res, $Val extends DeliveryModel>
                 ? _value.notes
                 : notes // ignore: cast_nullable_to_non_nullable
                       as String?,
+            collectionAddress: freezed == collectionAddress
+                ? _value.collectionAddress
+                : collectionAddress // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            collectionLatitude: freezed == collectionLatitude
+                ? _value.collectionLatitude
+                : collectionLatitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            collectionLongitude: freezed == collectionLongitude
+                ? _value.collectionLongitude
+                : collectionLongitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            collectionNotes: freezed == collectionNotes
+                ? _value.collectionNotes
+                : collectionNotes // ignore: cast_nullable_to_non_nullable
+                      as String?,
             createdAt: freezed == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -226,6 +268,8 @@ abstract class _$$DeliveryModelImplCopyWith<$Res>
   $Res call({
     String id,
     String orderId,
+    String? handledBy,
+    bool paymentsCleared,
     String? deliveryAddress,
     String? deliveryCity,
     double? latitude,
@@ -244,6 +288,10 @@ abstract class _$$DeliveryModelImplCopyWith<$Res>
     bool paymentConfirmed,
     DateTime? paymentConfirmedAt,
     String? notes,
+    String? collectionAddress,
+    double? collectionLatitude,
+    double? collectionLongitude,
+    String? collectionNotes,
     DateTime? createdAt,
   });
 }
@@ -264,6 +312,8 @@ class __$$DeliveryModelImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? orderId = null,
+    Object? handledBy = freezed,
+    Object? paymentsCleared = null,
     Object? deliveryAddress = freezed,
     Object? deliveryCity = freezed,
     Object? latitude = freezed,
@@ -282,6 +332,10 @@ class __$$DeliveryModelImplCopyWithImpl<$Res>
     Object? paymentConfirmed = null,
     Object? paymentConfirmedAt = freezed,
     Object? notes = freezed,
+    Object? collectionAddress = freezed,
+    Object? collectionLatitude = freezed,
+    Object? collectionLongitude = freezed,
+    Object? collectionNotes = freezed,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -294,6 +348,14 @@ class __$$DeliveryModelImplCopyWithImpl<$Res>
             ? _value.orderId
             : orderId // ignore: cast_nullable_to_non_nullable
                   as String,
+        handledBy: freezed == handledBy
+            ? _value.handledBy
+            : handledBy // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        paymentsCleared: null == paymentsCleared
+            ? _value.paymentsCleared
+            : paymentsCleared // ignore: cast_nullable_to_non_nullable
+                  as bool,
         deliveryAddress: freezed == deliveryAddress
             ? _value.deliveryAddress
             : deliveryAddress // ignore: cast_nullable_to_non_nullable
@@ -366,6 +428,22 @@ class __$$DeliveryModelImplCopyWithImpl<$Res>
             ? _value.notes
             : notes // ignore: cast_nullable_to_non_nullable
                   as String?,
+        collectionAddress: freezed == collectionAddress
+            ? _value.collectionAddress
+            : collectionAddress // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        collectionLatitude: freezed == collectionLatitude
+            ? _value.collectionLatitude
+            : collectionLatitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        collectionLongitude: freezed == collectionLongitude
+            ? _value.collectionLongitude
+            : collectionLongitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        collectionNotes: freezed == collectionNotes
+            ? _value.collectionNotes
+            : collectionNotes // ignore: cast_nullable_to_non_nullable
+                  as String?,
         createdAt: freezed == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -381,6 +459,8 @@ class _$DeliveryModelImpl implements _DeliveryModel {
   const _$DeliveryModelImpl({
     required this.id,
     required this.orderId,
+    this.handledBy,
+    this.paymentsCleared = false,
     this.deliveryAddress,
     this.deliveryCity,
     this.latitude,
@@ -399,6 +479,10 @@ class _$DeliveryModelImpl implements _DeliveryModel {
     this.paymentConfirmed = false,
     this.paymentConfirmedAt,
     this.notes,
+    this.collectionAddress,
+    this.collectionLatitude,
+    this.collectionLongitude,
+    this.collectionNotes,
     this.createdAt,
   });
 
@@ -409,6 +493,11 @@ class _$DeliveryModelImpl implements _DeliveryModel {
   final String id;
   @override
   final String orderId;
+  @override
+  final String? handledBy;
+  @override
+  @JsonKey()
+  final bool paymentsCleared;
   @override
   final String? deliveryAddress;
   @override
@@ -449,11 +538,19 @@ class _$DeliveryModelImpl implements _DeliveryModel {
   @override
   final String? notes;
   @override
+  final String? collectionAddress;
+  @override
+  final double? collectionLatitude;
+  @override
+  final double? collectionLongitude;
+  @override
+  final String? collectionNotes;
+  @override
   final DateTime? createdAt;
 
   @override
   String toString() {
-    return 'DeliveryModel(id: $id, orderId: $orderId, deliveryAddress: $deliveryAddress, deliveryCity: $deliveryCity, latitude: $latitude, longitude: $longitude, locationLabel: $locationLabel, locationSource: $locationSource, recipientName: $recipientName, recipientPhone: $recipientPhone, scheduledDate: $scheduledDate, actualDeliveryDate: $actualDeliveryDate, deliveredBy: $deliveredBy, proofOfDeliveryUrl: $proofOfDeliveryUrl, buyerConfirmed: $buyerConfirmed, buyerConfirmedAt: $buyerConfirmedAt, status: $status, paymentConfirmed: $paymentConfirmed, paymentConfirmedAt: $paymentConfirmedAt, notes: $notes, createdAt: $createdAt)';
+    return 'DeliveryModel(id: $id, orderId: $orderId, handledBy: $handledBy, paymentsCleared: $paymentsCleared, deliveryAddress: $deliveryAddress, deliveryCity: $deliveryCity, latitude: $latitude, longitude: $longitude, locationLabel: $locationLabel, locationSource: $locationSource, recipientName: $recipientName, recipientPhone: $recipientPhone, scheduledDate: $scheduledDate, actualDeliveryDate: $actualDeliveryDate, deliveredBy: $deliveredBy, proofOfDeliveryUrl: $proofOfDeliveryUrl, buyerConfirmed: $buyerConfirmed, buyerConfirmedAt: $buyerConfirmedAt, status: $status, paymentConfirmed: $paymentConfirmed, paymentConfirmedAt: $paymentConfirmedAt, notes: $notes, collectionAddress: $collectionAddress, collectionLatitude: $collectionLatitude, collectionLongitude: $collectionLongitude, collectionNotes: $collectionNotes, createdAt: $createdAt)';
   }
 
   @override
@@ -463,6 +560,10 @@ class _$DeliveryModelImpl implements _DeliveryModel {
             other is _$DeliveryModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.orderId, orderId) || other.orderId == orderId) &&
+            (identical(other.handledBy, handledBy) ||
+                other.handledBy == handledBy) &&
+            (identical(other.paymentsCleared, paymentsCleared) ||
+                other.paymentsCleared == paymentsCleared) &&
             (identical(other.deliveryAddress, deliveryAddress) ||
                 other.deliveryAddress == deliveryAddress) &&
             (identical(other.deliveryCity, deliveryCity) ||
@@ -497,6 +598,14 @@ class _$DeliveryModelImpl implements _DeliveryModel {
             (identical(other.paymentConfirmedAt, paymentConfirmedAt) ||
                 other.paymentConfirmedAt == paymentConfirmedAt) &&
             (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.collectionAddress, collectionAddress) ||
+                other.collectionAddress == collectionAddress) &&
+            (identical(other.collectionLatitude, collectionLatitude) ||
+                other.collectionLatitude == collectionLatitude) &&
+            (identical(other.collectionLongitude, collectionLongitude) ||
+                other.collectionLongitude == collectionLongitude) &&
+            (identical(other.collectionNotes, collectionNotes) ||
+                other.collectionNotes == collectionNotes) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -507,6 +616,8 @@ class _$DeliveryModelImpl implements _DeliveryModel {
     runtimeType,
     id,
     orderId,
+    handledBy,
+    paymentsCleared,
     deliveryAddress,
     deliveryCity,
     latitude,
@@ -525,6 +636,10 @@ class _$DeliveryModelImpl implements _DeliveryModel {
     paymentConfirmed,
     paymentConfirmedAt,
     notes,
+    collectionAddress,
+    collectionLatitude,
+    collectionLongitude,
+    collectionNotes,
     createdAt,
   ]);
 
@@ -546,6 +661,8 @@ abstract class _DeliveryModel implements DeliveryModel {
   const factory _DeliveryModel({
     required final String id,
     required final String orderId,
+    final String? handledBy,
+    final bool paymentsCleared,
     final String? deliveryAddress,
     final String? deliveryCity,
     final double? latitude,
@@ -564,6 +681,10 @@ abstract class _DeliveryModel implements DeliveryModel {
     final bool paymentConfirmed,
     final DateTime? paymentConfirmedAt,
     final String? notes,
+    final String? collectionAddress,
+    final double? collectionLatitude,
+    final double? collectionLongitude,
+    final String? collectionNotes,
     final DateTime? createdAt,
   }) = _$DeliveryModelImpl;
 
@@ -574,6 +695,10 @@ abstract class _DeliveryModel implements DeliveryModel {
   String get id;
   @override
   String get orderId;
+  @override
+  String? get handledBy;
+  @override
+  bool get paymentsCleared;
   @override
   String? get deliveryAddress;
   @override
@@ -610,6 +735,14 @@ abstract class _DeliveryModel implements DeliveryModel {
   DateTime? get paymentConfirmedAt;
   @override
   String? get notes;
+  @override
+  String? get collectionAddress;
+  @override
+  double? get collectionLatitude;
+  @override
+  double? get collectionLongitude;
+  @override
+  String? get collectionNotes;
   @override
   DateTime? get createdAt;
 

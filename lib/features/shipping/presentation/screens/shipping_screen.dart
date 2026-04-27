@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/features/shipping/data/models/shipping_model.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../orders/core/constants/order_timeline_constants.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
@@ -44,11 +44,7 @@ class ShippingScreen extends ConsumerWidget {
         ),
         title: Text(
           'Shipping tracker',
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.appBarTitle,
         ),
         centerTitle: false,
         actions: [
@@ -57,10 +53,8 @@ class ShippingScreen extends ConsumerWidget {
             child: Center(
               child: Text(
                 orderRef,
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  color: AppColors.textTertiary,
-                ),
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: AppColors.textTertiary),
               ),
             ),
           ),
@@ -122,19 +116,14 @@ class _NotArranged extends StatelessWidget {
             Text(
               'Shipping not yet arranged',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: 10),
             Text(
               'Your agent will update this screen once your vehicle has '
               'been booked for shipping.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
+              style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.55,
               ),
@@ -144,9 +133,9 @@ class _NotArranged extends StatelessWidget {
               onPressed: () => context.pop(),
               child: Text(
                 '← Back to order',
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.secondary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -415,9 +404,8 @@ class _HeroBanner extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.titleSmall.copyWith(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
                     color: textColor,
                     height: 1.3,
                   ),
@@ -425,8 +413,7 @@ class _HeroBanner extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: textColor.withValues(alpha: 0.75),
                     height: 1.5,
                   ),
@@ -449,12 +436,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: GoogleFonts.dmSans(
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textTertiary,
-        letterSpacing: 0.8,
-      ),
+      style: AppTextStyles.sectionLabel,
     );
   }
 }
@@ -483,12 +465,7 @@ class _VesselDetailsCard extends StatelessWidget {
             children: [
               Text(
                 'Vessel details',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                  letterSpacing: 0.2,
-                ),
+                style: AppTextStyles.cardValue.copyWith(letterSpacing: 0.2),
               ),
               const Spacer(),
               if (hasTracking)
@@ -504,11 +481,8 @@ class _VesselDetailsCard extends StatelessWidget {
                   },
                   child: Text(
                     'Track live →',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.secondary,
-                    ),
+                    style: AppTextStyles.cardValue
+                        .copyWith(color: AppColors.secondary),
                   ),
                 ),
             ],
@@ -564,20 +538,13 @@ class _DetailRow extends StatelessWidget {
             width: 110,
             child: Text(
               label,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.cardLabel,
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.cardValue,
               textAlign: TextAlign.right,
             ),
           ),
@@ -658,8 +625,7 @@ class _RouteVisualState extends State<_RouteVisual>
                 const SizedBox(height: 6),
                 Text(
                   origin,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
+                  style: AppTextStyles.labelSmall.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
@@ -669,10 +635,7 @@ class _RouteVisualState extends State<_RouteVisual>
                 const SizedBox(height: 2),
                 Text(
                   departed != null ? 'Dep. ${_dateFmt.format(departed)}' : '—',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
-                    color: AppColors.textTertiary,
-                  ),
+                  style: AppTextStyles.caption.copyWith(fontSize: 10),
                 ),
               ],
             ),
@@ -757,8 +720,7 @@ class _RouteVisualState extends State<_RouteVisual>
                 const SizedBox(height: 6),
                 Text(
                   widget.isArrived ? '$dest ✓' : dest,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
+                  style: AppTextStyles.labelSmall.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
@@ -773,10 +735,7 @@ class _RouteVisualState extends State<_RouteVisual>
                       : eta != null
                           ? 'ETA ${_dateFmt.format(eta)}'
                           : '—',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
-                    color: AppColors.textTertiary,
-                  ),
+                  style: AppTextStyles.caption.copyWith(fontSize: 10),
                   textAlign: TextAlign.right,
                 ),
               ],
@@ -821,11 +780,7 @@ class _ShippingTimeline extends ConsumerWidget {
         children: [
           Text(
             'Shipping stages',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTextStyles.cardValue,
           ),
           const SizedBox(height: 14),
           _TimelineItem(
@@ -974,8 +929,7 @@ class _TimelineItemState extends State<_TimelineItem>
                 children: [
                   Text(
                     widget.label,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
+                    style: AppTextStyles.bodySmall.copyWith(
                       fontWeight: widget.isActive
                           ? FontWeight.w600
                           : FontWeight.w400,
@@ -990,10 +944,7 @@ class _TimelineItemState extends State<_TimelineItem>
                     const SizedBox(height: 2),
                     Text(
                       widget.detail!,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        color: AppColors.textTertiary,
-                      ),
+                      style: AppTextStyles.caption,
                     ),
                   ],
                 ],
@@ -1027,18 +978,12 @@ class _AgentNoteCard extends StatelessWidget {
         children: [
           Text(
             OrderTimelineConstants.agentNoteLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textTertiary,
-              letterSpacing: 0.7,
-            ),
+            style: AppTextStyles.badgeText.copyWith(letterSpacing: 0.7),
           ),
           const SizedBox(height: 6),
           Text(
             note,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
+            style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
               fontStyle: FontStyle.italic,
               height: 1.55,
@@ -1102,10 +1047,8 @@ class _ErrorState extends StatelessWidget {
             Text(
               'Could not load shipping details.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 15,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.titleSmall
+                  .copyWith(fontWeight: FontWeight.w400),
             ),
             if (kDebugMode && message.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -1114,10 +1057,7 @@ class _ErrorState extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
-                  color: AppColors.textTertiary,
-                ),
+                style: AppTextStyles.caption,
               ),
             ],
             const SizedBox(height: 20),
@@ -1125,9 +1065,9 @@ class _ErrorState extends StatelessWidget {
               onPressed: () => context.pop(),
               child: Text(
                 '← Back to order',
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.secondary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

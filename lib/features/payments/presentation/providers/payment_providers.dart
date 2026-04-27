@@ -104,7 +104,7 @@ class PaymentTimeoutNotifier extends StateNotifier<PaymentTimeoutState> {
 
 // --- Helpers: payment type label (never hardcode in UI) ---
 String paymentRequestTypeLabel(String type) {
-  return AppConstants.paymentRequestTypeLabels[type] ?? type;
+  return FirestoreEnumValues.paymentRequestTypeLabels[type] ?? type;
 }
 
 String paymentMethodLabel(PaymentMethod method) {

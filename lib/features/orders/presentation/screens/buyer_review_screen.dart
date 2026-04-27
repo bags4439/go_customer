@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
@@ -47,7 +47,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
       SnackBar(
         content: Text(
           message,
-          style: GoogleFonts.dmSans(color: Colors.white, fontSize: 14),
+          style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
         ),
         backgroundColor: AppColors.textPrimary,
         behavior: SnackBarBehavior.floating,
@@ -102,9 +102,8 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
           ),
           title: Text(
             'Rate your experience',
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.titleMedium.copyWith(
               fontSize: 18,
-              fontWeight: FontWeight.w600,
               color: AppColors.primary,
             ),
           ),
@@ -148,9 +147,8 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                         Text(
                           'Your vehicle has been delivered!',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.dmSans(
+                          style: AppTextStyles.titleSmall.copyWith(
                             fontSize: 16,
-                            fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A4731),
                           ),
                         ),
@@ -158,8 +156,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                         Text(
                           'Please rate your experience to complete your order.',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
+                          style: AppTextStyles.bodySmall.copyWith(
                             color: const Color(0xFF2D6A4F),
                             height: 1.4,
                           ),
@@ -199,12 +196,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'ADDITIONAL COMMENTS (OPTIONAL)',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textTertiary,
-                      letterSpacing: 0.5,
-                    ),
+                    style: AppTextStyles.labelSmall,
                   ),
                   const SizedBox(height: 8),
                   TextField(
@@ -212,12 +204,11 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                     maxLines: 4,
                     minLines: 3,
                     maxLength: 500,
-                    style: GoogleFonts.dmSans(fontSize: 14),
+                    style: AppTextStyles.bodyMedium,
                     decoration: InputDecoration(
                       hintText: 'Share your experience...',
-                      hintStyle: GoogleFonts.dmSans(
+                      hintStyle: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textTertiary,
-                        fontSize: 13,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -249,8 +240,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
                         'Please rate all categories to submit.',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
+                        style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.textTertiary,
                         ),
                       ),
@@ -283,10 +273,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                             )
                           : Text(
                               'Submit & complete order →',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppTextStyles.buttonLarge,
                             ),
                     ),
                   ),
@@ -346,19 +333,12 @@ class _RatingRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.primary,
-          ),
+          style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary),
         ),
         const SizedBox(height: 2),
         Text(
           description,
-          style: GoogleFonts.dmSans(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTextStyles.cardLabel,
         ),
         const SizedBox(height: 10),
         Row(
@@ -438,9 +418,8 @@ class _SubmittedScreen extends StatelessWidget {
         ),
         title: Text(
           'Your review',
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.titleMedium.copyWith(
             fontSize: 18,
-            fontWeight: FontWeight.w600,
             color: AppColors.primary,
           ),
         ),
@@ -496,10 +475,7 @@ class _SubmittedScreen extends StatelessWidget {
                   Text(
                     'Thank you for your\nfeedback!',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                    style: AppTextStyles.amountMedium.copyWith(
                       height: 1.25,
                     ),
                   ),
@@ -508,11 +484,7 @@ class _SubmittedScreen extends StatelessWidget {
                     'Your review has been submitted\n'
                     'and helps us improve.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
+                    style: AppTextStyles.bodySmall.copyWith(height: 1.5),
                   ),
                 ],
               ),
@@ -523,20 +495,12 @@ class _SubmittedScreen extends StatelessWidget {
               children: [
                 Text(
                   'YOUR RATING',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textTertiary,
-                    letterSpacing: 0.5,
-                  ),
+                  style: AppTextStyles.labelSmall,
                 ),
                 if (review.createdAt != null)
                   Text(
                     _SubmittedScreen._formatDate(review.createdAt!),
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      color: AppColors.textTertiary,
-                    ),
+                    style: AppTextStyles.caption,
                   ),
               ],
             ),
@@ -575,12 +539,7 @@ class _SubmittedScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Text(
                 'YOUR COMMENT',
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textTertiary,
-                  letterSpacing: 0.5,
-                ),
+                style: AppTextStyles.labelSmall,
               ),
               const SizedBox(height: 10),
               Container(
@@ -596,11 +555,7 @@ class _SubmittedScreen extends StatelessWidget {
                 ),
                 child: Text(
                   review.comment!,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    color: AppColors.textPrimary,
-                    height: 1.5,
-                  ),
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                 ),
               ),
             ],
@@ -619,10 +574,7 @@ class _SubmittedScreen extends StatelessWidget {
                 ),
                 child: Text(
                   'Back to order',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.buttonLarge,
                 ),
               ),
             ),
@@ -652,10 +604,7 @@ class _ReadOnlyRatingRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 13.5,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTextStyles.bodySmall.copyWith(fontSize: 13.5),
           ),
         ),
         Row(

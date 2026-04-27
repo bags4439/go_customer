@@ -10,6 +10,8 @@ _$DeliveryModelImpl _$$DeliveryModelImplFromJson(Map<String, dynamic> json) =>
     _$DeliveryModelImpl(
       id: json['id'] as String,
       orderId: json['orderId'] as String,
+      handledBy: json['handledBy'] as String?,
+      paymentsCleared: json['paymentsCleared'] as bool? ?? false,
       deliveryAddress: json['deliveryAddress'] as String?,
       deliveryCity: json['deliveryCity'] as String?,
       latitude: (json['latitude'] as num?)?.toDouble(),
@@ -36,6 +38,10 @@ _$DeliveryModelImpl _$$DeliveryModelImplFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['paymentConfirmedAt'] as String),
       notes: json['notes'] as String?,
+      collectionAddress: json['collectionAddress'] as String?,
+      collectionLatitude: (json['collectionLatitude'] as num?)?.toDouble(),
+      collectionLongitude: (json['collectionLongitude'] as num?)?.toDouble(),
+      collectionNotes: json['collectionNotes'] as String?,
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -45,6 +51,8 @@ Map<String, dynamic> _$$DeliveryModelImplToJson(_$DeliveryModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'orderId': instance.orderId,
+      'handledBy': instance.handledBy,
+      'paymentsCleared': instance.paymentsCleared,
       'deliveryAddress': instance.deliveryAddress,
       'deliveryCity': instance.deliveryCity,
       'latitude': instance.latitude,
@@ -63,5 +71,9 @@ Map<String, dynamic> _$$DeliveryModelImplToJson(_$DeliveryModelImpl instance) =>
       'paymentConfirmed': instance.paymentConfirmed,
       'paymentConfirmedAt': instance.paymentConfirmedAt?.toIso8601String(),
       'notes': instance.notes,
+      'collectionAddress': instance.collectionAddress,
+      'collectionLatitude': instance.collectionLatitude,
+      'collectionLongitude': instance.collectionLongitude,
+      'collectionNotes': instance.collectionNotes,
       'createdAt': instance.createdAt?.toIso8601String(),
     };

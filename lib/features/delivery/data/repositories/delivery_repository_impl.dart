@@ -103,6 +103,42 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> confirmAgentDelivery(String orderId) async {
+    try {
+      await _ds.confirmAgentDelivery(orderId: orderId);
+      return const Right(unit);
+    } catch (e) {
+      return Left(
+        FirestoreFailure(message: e.toString(), cause: e),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> confirmSelfPickup(String orderId) async {
+    try {
+      await _ds.confirmSelfPickup(orderId: orderId);
+      return const Right(unit);
+    } catch (e) {
+      return Left(
+        FirestoreFailure(message: e.toString(), cause: e),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> confirmSelfCollection(String orderId) async {
+    try {
+      await _ds.confirmSelfCollection(orderId);
+      return const Right(unit);
+    } catch (e) {
+      return Left(
+        FirestoreFailure(message: e.toString(), cause: e),
+      );
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> submitReviewAndClose({
     required String orderId,
     required String buyerId,

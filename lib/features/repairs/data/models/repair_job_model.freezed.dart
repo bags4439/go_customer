@@ -23,6 +23,7 @@ RepairJobModel _$RepairJobModelFromJson(Map<String, dynamic> json) {
 mixin _$RepairJobModel {
   String get id => throw _privateConstructorUsedError;
   String get orderId => throw _privateConstructorUsedError;
+  bool get optedIn => throw _privateConstructorUsedError;
   String? get garageId => throw _privateConstructorUsedError;
   String? get garageNameCustom => throw _privateConstructorUsedError;
   String? get garageLocation => throw _privateConstructorUsedError;
@@ -78,6 +79,7 @@ abstract class $RepairJobModelCopyWith<$Res> {
   $Res call({
     String id,
     String orderId,
+    bool optedIn,
     String? garageId,
     String? garageNameCustom,
     String? garageLocation,
@@ -132,6 +134,7 @@ class _$RepairJobModelCopyWithImpl<$Res, $Val extends RepairJobModel>
   $Res call({
     Object? id = null,
     Object? orderId = null,
+    Object? optedIn = null,
     Object? garageId = freezed,
     Object? garageNameCustom = freezed,
     Object? garageLocation = freezed,
@@ -173,6 +176,10 @@ class _$RepairJobModelCopyWithImpl<$Res, $Val extends RepairJobModel>
                 ? _value.orderId
                 : orderId // ignore: cast_nullable_to_non_nullable
                       as String,
+            optedIn: null == optedIn
+                ? _value.optedIn
+                : optedIn // ignore: cast_nullable_to_non_nullable
+                      as bool,
             garageId: freezed == garageId
                 ? _value.garageId
                 : garageId // ignore: cast_nullable_to_non_nullable
@@ -311,6 +318,7 @@ abstract class _$$RepairJobModelImplCopyWith<$Res>
   $Res call({
     String id,
     String orderId,
+    bool optedIn,
     String? garageId,
     String? garageNameCustom,
     String? garageLocation,
@@ -364,6 +372,7 @@ class __$$RepairJobModelImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? orderId = null,
+    Object? optedIn = null,
     Object? garageId = freezed,
     Object? garageNameCustom = freezed,
     Object? garageLocation = freezed,
@@ -405,6 +414,10 @@ class __$$RepairJobModelImplCopyWithImpl<$Res>
             ? _value.orderId
             : orderId // ignore: cast_nullable_to_non_nullable
                   as String,
+        optedIn: null == optedIn
+            ? _value.optedIn
+            : optedIn // ignore: cast_nullable_to_non_nullable
+                  as bool,
         garageId: freezed == garageId
             ? _value.garageId
             : garageId // ignore: cast_nullable_to_non_nullable
@@ -536,6 +549,7 @@ class _$RepairJobModelImpl implements _RepairJobModel {
   const _$RepairJobModelImpl({
     required this.id,
     required this.orderId,
+    this.optedIn = true,
     this.garageId,
     this.garageNameCustom,
     this.garageLocation,
@@ -580,6 +594,9 @@ class _$RepairJobModelImpl implements _RepairJobModel {
   final String id;
   @override
   final String orderId;
+  @override
+  @JsonKey()
+  final bool optedIn;
   @override
   final String? garageId;
   @override
@@ -668,7 +685,7 @@ class _$RepairJobModelImpl implements _RepairJobModel {
 
   @override
   String toString() {
-    return 'RepairJobModel(id: $id, orderId: $orderId, garageId: $garageId, garageNameCustom: $garageNameCustom, garageLocation: $garageLocation, workDescription: $workDescription, invoiceImageUrl: $invoiceImageUrl, invoiceRefNumber: $invoiceRefNumber, invoiceDate: $invoiceDate, totalInvoiceGhs: $totalInvoiceGhs, partsDepositGhs: $partsDepositGhs, workmanshipBalanceGhs: $workmanshipBalanceGhs, platformFeeGhs: $platformFeeGhs, quoteGhs: $quoteGhs, platformServiceFeeGhs: $platformServiceFeeGhs, totalQuotedGhs: $totalQuotedGhs, finalCostGhs: $finalCostGhs, quoteApprovedByBuyer: $quoteApprovedByBuyer, quoteApprovedAt: $quoteApprovedAt, quoteDeclinedAt: $quoteDeclinedAt, depositPaymentRequestId: $depositPaymentRequestId, balancePaymentRequestId: $balancePaymentRequestId, depositPaid: $depositPaid, balancePaid: $balancePaid, status: $status, startDate: $startDate, estimatedCompletion: $estimatedCompletion, actualCompletion: $actualCompletion, beforePhotoUrlsJson: $beforePhotoUrlsJson, afterPhotoUrlsJson: $afterPhotoUrlsJson, notes: $notes, createdAt: $createdAt)';
+    return 'RepairJobModel(id: $id, orderId: $orderId, optedIn: $optedIn, garageId: $garageId, garageNameCustom: $garageNameCustom, garageLocation: $garageLocation, workDescription: $workDescription, invoiceImageUrl: $invoiceImageUrl, invoiceRefNumber: $invoiceRefNumber, invoiceDate: $invoiceDate, totalInvoiceGhs: $totalInvoiceGhs, partsDepositGhs: $partsDepositGhs, workmanshipBalanceGhs: $workmanshipBalanceGhs, platformFeeGhs: $platformFeeGhs, quoteGhs: $quoteGhs, platformServiceFeeGhs: $platformServiceFeeGhs, totalQuotedGhs: $totalQuotedGhs, finalCostGhs: $finalCostGhs, quoteApprovedByBuyer: $quoteApprovedByBuyer, quoteApprovedAt: $quoteApprovedAt, quoteDeclinedAt: $quoteDeclinedAt, depositPaymentRequestId: $depositPaymentRequestId, balancePaymentRequestId: $balancePaymentRequestId, depositPaid: $depositPaid, balancePaid: $balancePaid, status: $status, startDate: $startDate, estimatedCompletion: $estimatedCompletion, actualCompletion: $actualCompletion, beforePhotoUrlsJson: $beforePhotoUrlsJson, afterPhotoUrlsJson: $afterPhotoUrlsJson, notes: $notes, createdAt: $createdAt)';
   }
 
   @override
@@ -678,6 +695,7 @@ class _$RepairJobModelImpl implements _RepairJobModel {
             other is _$RepairJobModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.orderId, orderId) || other.orderId == orderId) &&
+            (identical(other.optedIn, optedIn) || other.optedIn == optedIn) &&
             (identical(other.garageId, garageId) ||
                 other.garageId == garageId) &&
             (identical(other.garageNameCustom, garageNameCustom) ||
@@ -754,6 +772,7 @@ class _$RepairJobModelImpl implements _RepairJobModel {
     runtimeType,
     id,
     orderId,
+    optedIn,
     garageId,
     garageNameCustom,
     garageLocation,
@@ -807,6 +826,7 @@ abstract class _RepairJobModel implements RepairJobModel {
   const factory _RepairJobModel({
     required final String id,
     required final String orderId,
+    final bool optedIn,
     final String? garageId,
     final String? garageNameCustom,
     final String? garageLocation,
@@ -850,6 +870,8 @@ abstract class _RepairJobModel implements RepairJobModel {
   String get id;
   @override
   String get orderId;
+  @override
+  bool get optedIn;
   @override
   String? get garageId;
   @override

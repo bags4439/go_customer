@@ -1,8 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
+
 import '../../../../core/utils/cross_platform_image.dart';
 
 class GhanaCardPhotoField extends StatelessWidget {
@@ -83,8 +84,7 @@ class GhanaCardPhotoField extends StatelessWidget {
                             child: Text(
                               'Tap to change',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 11,
+                              style: AppTextStyles.caption.copyWith(
                                 color: Colors.white,
                               ),
                             ),
@@ -114,18 +114,14 @@ class GhanaCardPhotoField extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         'Tap to upload photo',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 13,
+                        style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Camera or gallery',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          color: AppColors.textTertiary,
-                        ),
+                        style: AppTextStyles.caption,
                       ),
                     ],
                   ),

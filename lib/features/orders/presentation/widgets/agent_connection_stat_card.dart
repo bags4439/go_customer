@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -27,8 +27,7 @@ class AgentConnectionStatCard extends StatelessWidget {
         children: [
           Text(
             value,
-            style: GoogleFonts.dmSans(
-              fontSize: 20,
+            style: AppTextStyles.amountMedium.copyWith(
               fontWeight: FontWeight.w600,
               color: color,
             ),
@@ -36,9 +35,7 @@ class AgentConnectionStatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
+            style: AppTextStyles.caption.copyWith(
               color: AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,

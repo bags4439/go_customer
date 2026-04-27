@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_layout.dart';
 
 class AgentConnectionNotFoundView extends StatelessWidget {
@@ -25,21 +24,19 @@ class AgentConnectionNotFoundView extends StatelessWidget {
             Text(
               'Order not found',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.titleSmall
+                  .copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 16, height: 1.2, letterSpacing: 0.0),
             ),
             const SizedBox(height: 8),
             Text(
               'This order may have been removed or the link is invalid.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
+              style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.45,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0.0,
               ),
             ),
           ],

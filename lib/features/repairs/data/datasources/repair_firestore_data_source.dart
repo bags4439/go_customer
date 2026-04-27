@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import '../../domain/entities/garage.dart';
 import '../models/repair_job_model.dart';
@@ -59,19 +60,25 @@ class RepairFirestoreDataSource {
     return null;
   }
 
-  Future<bool?> getCarPreferencesRepairOptedIn(String orderId) async {
-    final snapshot = await _firestore
-        .collection(FirestoreCollections.carPreferences)
-        .where('orderId', isEqualTo: orderId)
-        .limit(1)
-        .get();
-    if (snapshot.docs.isEmpty) return null;
-    return snapshot.docs.first.data()['repairOptedIn'] as bool?;
+  /// Resolves repair coordination fee in USD from a pre-loaded
+  /// system_settings map. Fallback is [RepairConstants.repairFeeFallbackUsd]
+  /// if the key is missing or invalid.
+  double getRepairServiceFeeUsd(Map<String, dynamic> settings) {
+    final v = settings[RepairConstants.systemSettingsKeyRepairFee];
+    if (v == null) {
+      return RepairConstants.repairFeeFallbackUsd;
+    }
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString()) ?? RepairConstants.repairFeeFallbackUsd;
   }
 
-  Future<void> createRepairJob(String orderId) async {
+  Future<void> createRepairJob(
+    String orderId, {
+    required bool optedIn,
+  }) async {
     await _firestore.collection(FirestoreCollections.repairJobs).add({
       'orderId': orderId,
+      'optedIn': optedIn,
       'status': FirestoreEnumValues.repairStatusNotStarted,
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -87,45 +94,6 @@ class RepairFirestoreDataSource {
     await snapshot.docs.first.reference.update({'repairOptedIn': optedIn});
   }
 
-  Future<void> _setRepairTimelineActive(String orderId) async {
-    final snapshot = await _firestore
-        .collection(FirestoreCollections.orderTimeline)
-        .where('orderId', isEqualTo: orderId)
-        .where('stageKey', isEqualTo: 'repairs')
-        .limit(1)
-        .get();
-    if (snapshot.docs.isEmpty) return;
-    await snapshot.docs.first.reference.update({
-      'isActive': true,
-      'activatedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
-  Future<void> _setRepairCompleteAndDeliveryActive(String orderId) async {
-    final timelineSnapshot = await _firestore
-        .collection(FirestoreCollections.orderTimeline)
-        .where('orderId', isEqualTo: orderId)
-        .get();
-    final now = FieldValue.serverTimestamp();
-    final batch = _firestore.batch();
-    for (final doc in timelineSnapshot.docs) {
-      final data = doc.data();
-      final stageKey = data['stageKey'] as String?;
-      if (stageKey == 'repair') {
-        batch.update(doc.reference, {
-          'isComplete': true,
-          'completedAt': now,
-        });
-      } else if (stageKey == 'delivery') {
-        batch.update(doc.reference, {
-          'isActive': true,
-          'activatedAt': now,
-        });
-      }
-    }
-    await batch.commit();
-  }
-
   Future<void> updateOrderStatus(String orderId, String status) async {
     await _firestore.collection(FirestoreCollections.orders).doc(orderId).update({
       'status': status,
@@ -133,15 +101,19 @@ class RepairFirestoreDataSource {
     });
   }
 
-  Future<void> confirmRepairsOptIn(String orderId, bool optedIn) async {
-    await createRepairJob(orderId);
-    await _updateCarPreferencesRepairOptedIn(orderId, optedIn);
-    if (optedIn) {
-      await _setRepairTimelineActive(orderId);
-    } else {
-      await updateOrderStatus(orderId, FirestoreEnumValues.orderStatusRepairComplete);
-      await _setRepairCompleteAndDeliveryActive(orderId);
-    }
+  /// Creates the repair job document.
+  /// Stage advancement is manual only
+  /// via Override order stage in the
+  /// agent app. No order status or
+  /// timeline changes are made here.
+  Future<void> confirmRepairsOptIn(
+    String orderId,
+    bool optedIn,
+  ) async {
+    await createRepairJob(
+      orderId,
+      optedIn: optedIn,
+    );
   }
 
   Future<void> acceptQuote(String orderId) async {

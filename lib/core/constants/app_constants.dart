@@ -22,18 +22,6 @@ class AppConstants {
       'vehicle_balance_and_shipping';
   static const String paymentRequestTypeRepairFee = 'repair_fee';
 
-  /// Human-readable labels for payment_requests.type — never hardcode in UI.
-  static const Map<String, String> paymentRequestTypeLabels = {
-    'initial': 'Deposit & service fee',
-    'vehicle_balance': 'Vehicle balance',
-    'vehicle_balance_and_shipping': 'Vehicle balance + shipping (legacy)',
-    'shipping_fee': 'Shipping fee',
-    'clearance_fee': 'Port clearance fee',
-    'repair_fee': 'Repair deposit',
-    'repair_balance': 'Repair balance',
-    'delivery_fee': 'Delivery fee',
-  };
-
   static const String purchaseOriginAny = 'any';
   static const String purchaseOriginUsCanada = 'us_canada';
   static const String purchaseOriginDubai = 'dubai';
@@ -291,6 +279,8 @@ class FirestoreEnumValues {
       'vehicle_balance_and_shipping';
   static const String paymentTypeClearanceFee = 'clearance_fee';
   static const String paymentTypeRepairFee = 'repair_fee';
+  static const String paymentTypeDeliveryFee = 'delivery_fee';
+  static const String paymentTypeTowingFee = 'towing_fee';
 
   // payments.method
   static const String paymentMethodMtnMomo = 'mtn_momo';
@@ -316,6 +306,7 @@ class FirestoreEnumValues {
   static const String paymentRequestTypeShippingFee = 'shipping_fee';
   static const String paymentRequestTypeRepairBalance = 'repair_balance';
   static const String paymentRequestTypeDeliveryFee = 'delivery_fee';
+  static const String paymentRequestTypeTowingFee = 'towing_fee';
 
   /// Human-readable labels for payment_requests.type — never hardcode in UI.
   static const Map<String, String> paymentRequestTypeLabels = {
@@ -328,6 +319,7 @@ class FirestoreEnumValues {
     paymentRequestTypeRepairFee: 'Repair deposit',
     paymentRequestTypeRepairBalance: 'Repair balance',
     paymentRequestTypeDeliveryFee: 'Delivery fee',
+    'towing_fee': 'Towing fee',
   };
 
   // payment_requests.status

@@ -33,7 +33,7 @@ TextStyle _ts({
   Color color = _C.textPrimary,
   double height = 1.4,
 }) =>
-    GoogleFonts.dmSans(
+    AppTextStyles.bodySmall.copyWith(
       fontSize: size,
       fontWeight: weight,
       color: color,
@@ -64,19 +64,11 @@ class _AppLogo extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           'AutoImport',
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: _C.textPrimary,
-          ),
+          style: AppTextStyles.appBarTitle.copyWith(color: _C.textPrimary),
         ),
         Text(
           ' GH',
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: _C.primary,
-          ),
+          style: AppTextStyles.appBarTitle.copyWith(color: _C.primary),
         ),
       ],
     );
@@ -104,11 +96,7 @@ class _FeaturePill extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: _C.infoText,
-            ),
+            style: AppTextStyles.labelSmall.copyWith(color: _C.infoText),
           ),
         ],
       ),

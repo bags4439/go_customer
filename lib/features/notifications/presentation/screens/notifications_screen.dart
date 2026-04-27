@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -89,19 +89,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
           children: [
             Text(
               NotificationConstants.appBarTitle,
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
+              style: AppTextStyles.appBarTitle.copyWith(color: AppColors.primary),
             ),
             const SizedBox(height: 2),
             Text(
               unreadCount > 0
                   ? '$unreadCount ${NotificationConstants.unreadSuffix}'
                   : NotificationConstants.allCaughtUp,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
+              style: AppTextStyles.cardLabel.copyWith(
                 color: unreadCount > 0
                     ? Theme.of(
                         context,
@@ -177,10 +172,8 @@ class _MarkAllReadButton extends ConsumerWidget {
               )
             : Text(
                 NotificationConstants.markAllRead,
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  color: AppColors.secondary,
-                ),
+                style: AppTextStyles.labelMedium
+                    .copyWith(color: AppColors.secondary, fontSize: 12, letterSpacing: 0.0, fontWeight: FontWeight.w500),
               ),
       ),
     );
@@ -463,14 +456,14 @@ class _FilterPill extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.bodySmall.copyWith(
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
                   color: isActive
                       ? const Color(0xFF185FA5)
                       : Theme.of(
                           context,
                         ).colorScheme.onSurface.withValues(alpha: 0.75),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               if (hasUnread) ...[
@@ -624,8 +617,7 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     NotificationConstants.noMoreNotifications,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
+                    style: AppTextStyles.caption.copyWith(
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withValues(alpha: 0.5),
@@ -646,11 +638,7 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
               padding: const EdgeInsets.only(top: 12, bottom: 6),
               child: Text(
                 item.label,
-                style: GoogleFonts.dmSans(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFFAAAAAA),
-                ),
+                style: AppTextStyles.sectionLabel,
               ),
             ),
           );
@@ -842,7 +830,7 @@ class _NotificationItemCard extends StatelessWidget {
                   children: [
                     Text(
                       notification.title,
-                      style: GoogleFonts.dmSans(
+                      style: AppTextStyles.labelLarge.copyWith(
                         fontSize: 13,
                         fontWeight: isUnread
                             ? FontWeight.w600
@@ -852,16 +840,18 @@ class _NotificationItemCard extends StatelessWidget {
                             : Theme.of(
                                 context,
                               ).colorScheme.onSurface.withValues(alpha: 0.85),
+                        letterSpacing: 0.1,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       notification.body,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                      style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(
                           context,
                         ).colorScheme.onSurface.withValues(alpha: 0.75),
+                        fontWeight: FontWeight.w400,
+                        height: 1.35,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -879,10 +869,11 @@ class _NotificationItemCard extends StatelessWidget {
                         ),
                         child: Text(
                           notification.orderId!,
-                          style: GoogleFonts.dmSans(
+                          style: AppTextStyles.badgeText.copyWith(
+                            color: const Color(0xFF185FA5),
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF185FA5),
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ),
@@ -907,11 +898,8 @@ class _NotificationItemCard extends StatelessWidget {
                             child: Center(
                               child: Text(
                                 actionLabel,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                ),
+                                style: AppTextStyles.labelSmall
+                                    .copyWith(color: Colors.white, fontSize: 11, letterSpacing: 0.0, fontWeight: FontWeight.w500, height: 1.0),
                               ),
                             ),
                           ),
@@ -942,7 +930,7 @@ class _NotificationItemCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     formatNotificationTimestamp(notification.sentAt),
-                    style: GoogleFonts.dmSans(
+                    style: AppTextStyles.caption.copyWith(
                       fontSize: 10,
                       color: Theme.of(
                         context,
@@ -995,11 +983,8 @@ class _NotificationIcon extends StatelessWidget {
         bgColor = const Color(0xFFE6F1FB);
         content = Text(
           'GHS',
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF185FA5),
-          ),
+          style: AppTextStyles.caption
+              .copyWith(color: const Color(0xFF185FA5), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.0, height: 1.0),
         );
         break;
       case 'bid_won':
@@ -1047,10 +1032,11 @@ class _NotificationIcon extends StatelessWidget {
         bgColor = const Color(0xFFFAEEDA);
         content = Text(
           '!',
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.labelLarge.copyWith(
             fontSize: 13,
-            fontWeight: FontWeight.w700,
             color: AppColors.warning,
+            fontWeight: FontWeight.w700,
+            height: 1.0,
           ),
         );
         break;
@@ -1123,10 +1109,8 @@ class _EmptyState extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: GoogleFonts.dmSans(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.titleSmall
+                    .copyWith(fontWeight: FontWeight.w500, height: 1.2),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -1134,11 +1118,11 @@ class _EmptyState extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
                   body,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.75),
+                    height: 1.45,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1178,20 +1162,18 @@ class _NotificationsError extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               NotificationConstants.errorTitle,
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.bodyLarge
+                  .copyWith(fontWeight: FontWeight.w600, height: 1.2),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               NotificationConstants.errorBody,
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
+              style: AppTextStyles.bodyMedium.copyWith(
                 color: Theme.of(
                   context,
                 ).colorScheme.onSurface.withValues(alpha: 0.75),
+                height: 1.45,
               ),
               textAlign: TextAlign.center,
             ),

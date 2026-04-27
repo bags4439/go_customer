@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -67,15 +67,8 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
     final screenState = ref.watch(repairScreenStateProvider(widget.orderId));
     final jobAsync = ref.watch(repairJobProvider(widget.orderId));
     final dutyAsync = ref.watch(dutyClearanceProvider(widget.orderId));
-    final repairOptedInAsync = ref.watch(
-      carPreferencesRepairOptedInProvider(widget.orderId),
-    );
 
-    final isLoading =
-        jobAsync.isLoading ||
-        dutyAsync.isLoading ||
-        (screenState == RepairScreenState.choice &&
-            repairOptedInAsync.isLoading);
+    final isLoading = jobAsync.isLoading || dutyAsync.isLoading;
     final hasError = jobAsync.hasError || dutyAsync.hasError;
 
     return Scaffold(
@@ -90,9 +83,8 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
         ),
         title: Text(
           'Repairs',
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.titleMedium.copyWith(
             fontSize: 18,
-            fontWeight: FontWeight.w600,
             color: AppColors.primary,
           ),
         ),
@@ -108,8 +100,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
                   .when(
                     data: (order) => Text(
                       order?.orderRef ?? widget.orderId,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
+                      style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.primary.withValues(alpha: 0.7),
                       ),
                     ),
@@ -131,9 +122,6 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
                     onRetry: () {
                       ref.invalidate(repairJobProvider(widget.orderId));
                       ref.invalidate(dutyClearanceProvider(widget.orderId));
-                      ref.invalidate(
-                        carPreferencesRepairOptedInProvider(widget.orderId),
-                      );
                     },
                   )
                 : isLoading
@@ -146,7 +134,6 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
                           screenState: screenState,
                           job: jobAsync.valueOrNull,
                           dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
-                          repairOptedIn: repairOptedInAsync.valueOrNull,
                           currency: currency,
                         ),
                       ),
@@ -191,7 +178,7 @@ class _RepairErrorCard extends StatelessWidget {
             Text(
               RepairConstants.errorMessage,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(fontSize: 16, color: AppColors.primary),
+              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primary),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -281,7 +268,6 @@ class _RepairBody extends StatelessWidget {
   final RepairScreenState screenState;
   final RepairJob? job;
   final DateTime? dutyClearedAt;
-  final bool? repairOptedIn;
   final CurrencyModel currency;
 
   const _RepairBody({
@@ -290,7 +276,6 @@ class _RepairBody extends StatelessWidget {
     required this.screenState,
     required this.job,
     required this.dutyClearedAt,
-    required this.repairOptedIn,
     required this.currency,
   });
 
@@ -303,7 +288,6 @@ class _RepairBody extends StatelessWidget {
         return _State1Choice(
           orderId: orderId,
           dutyClearedAt: dutyClearedAt,
-          repairOptedIn: repairOptedIn,
           currency: currency,
         );
       case RepairScreenState.awaitingQuote:
@@ -347,34 +331,40 @@ class _State0NotAvailable extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.build_outlined, size: 80, color: Colors.grey.shade500),
+            const Icon(
+              Icons.build_outlined,
+              size: 72,
+              color: AppColors.textTertiary,
+            ),
             const SizedBox(height: 24),
             Text(
               RepairConstants.state0Heading,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: 12),
             Text(
               RepairConstants.state0Body,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.75),
-              ),
+              style: AppTextStyles.bodySmall.copyWith(height: 1.55),
             ),
             const SizedBox(height: 32),
             SizedBox(
               height: 48,
               child: OutlinedButton(
                 onPressed: () => context.go('/order/$orderId'),
-                child: const Text(RepairConstants.state0BackButton),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.borderSolid),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  RepairConstants.state0BackButton,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ),
           ],
@@ -387,13 +377,11 @@ class _State0NotAvailable extends StatelessWidget {
 class _State1Choice extends ConsumerStatefulWidget {
   final String orderId;
   final DateTime? dutyClearedAt;
-  final bool? repairOptedIn;
   final CurrencyModel currency;
 
   const _State1Choice({
     required this.orderId,
     required this.dutyClearedAt,
-    required this.repairOptedIn,
     required this.currency,
   });
 
@@ -404,7 +392,6 @@ class _State1Choice extends ConsumerStatefulWidget {
 class _State1ChoiceState extends ConsumerState<_State1Choice>
     with SingleTickerProviderStateMixin {
   late AnimationController _clearedBarController;
-  bool _choiceInitialized = false;
 
   @override
   void initState() {
@@ -413,18 +400,6 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     )..forward();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_choiceInitialized && widget.repairOptedIn != null) {
-      _choiceInitialized = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(repairChoiceProvider(widget.orderId).notifier).state =
-            widget.repairOptedIn;
-      });
-    }
   }
 
   @override
@@ -470,6 +445,15 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
             widget.currency,
           )}'
         : RepairConstants.estVaries;
+    final repairFeeAsync = ref.watch(repairServiceFeeProvider);
+    final repairFeeUsd =
+        repairFeeAsync.valueOrNull ?? RepairConstants.repairFeeFallbackUsd;
+    final repairFeeDisplay = repairFeeUsd > 0
+        ? CurrencyFormatter.formatForDisplay(
+            usdAmount: repairFeeUsd,
+            preferredCurrency: widget.currency,
+          )
+        : null;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -481,15 +465,10 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
             animation: _clearedBarController,
             clearedAt: widget.dutyClearedAt,
           ),
-          if (widget.repairOptedIn != null) ...[
-            const SizedBox(height: 16),
-            _PreferenceReminder(repairOptedIn: widget.repairOptedIn!),
-          ],
           const SizedBox(height: 20),
           Text(
             RepairConstants.state1Heading,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
+            style: AppTextStyles.bodySmall.copyWith(
               fontWeight: FontWeight.w500,
               color: AppColors.primary,
             ),
@@ -501,6 +480,7 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
             isSelected: choice == true,
             estimateLabel: estimateStr,
             agentFirstName: agentName,
+            coordinationFeeDisplay: repairFeeDisplay,
           ),
           const SizedBox(height: 12),
           _RepairOptionCard(
@@ -522,26 +502,9 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
               children: [
                 Text(
                   '${RepairConstants.infoNote} ${RepairConstants.infoNoteSuffix(agentName)}',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.75),
-                  ),
+                  style: AppTextStyles.cardLabel.copyWith(height: 1.5),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          InkWell(
-            onTap: () {},
-            child: Text(
-              RepairConstants.seeGaragePartners,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                color: AppColors.secondary,
-                decoration: TextDecoration.underline,
-              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -579,9 +542,12 @@ class _ClearedBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFEAF3DE),
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: const Color(0xFFC0DD97)),
+          color: AppColors.successMutedBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.successMutedBorder,
+            width: 0.5,
+          ),
         ),
         child: Row(
           children: [
@@ -593,27 +559,24 @@ class _ClearedBar extends StatelessWidget {
                 children: [
                   Text(
                     RepairConstants.clearedBarTitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF27500A),
+                    style: AppTextStyles.labelLarge.copyWith(
+                      fontSize: 13,
+                      color: AppColors.successMutedForeground,
                     ),
                   ),
                   if (clearedAt != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       _dateFormat.format(clearedAt!),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        color: const Color(0xFF3B6D11),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.success,
                       ),
                     ),
                   ] else
                     Text(
                       RepairConstants.clearedBarSubtitle,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        color: const Color(0xFF3B6D11),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.success,
                       ),
                     ),
                 ],
@@ -626,40 +589,13 @@ class _ClearedBar extends StatelessWidget {
   }
 }
 
-class _PreferenceReminder extends StatelessWidget {
-  final bool repairOptedIn;
-
-  const _PreferenceReminder({required this.repairOptedIn});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: repairOptedIn ? const Color(0xFFE6F1FB) : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-      ),
-      child: Text(
-        repairOptedIn
-            ? RepairConstants.reminderOptedIn
-            : RepairConstants.reminderOptedOut,
-        style: GoogleFonts.dmSans(
-          fontSize: 12,
-          color: repairOptedIn
-              ? const Color(0xFF185FA5)
-              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
-        ),
-      ),
-    );
-  }
-}
-
 class _RepairOptionCard extends ConsumerWidget {
   final String orderId;
   final bool isYes;
   final bool isSelected;
   final String? estimateLabel;
   final String agentFirstName;
+  final CurrencyDisplay? coordinationFeeDisplay;
 
   const _RepairOptionCard({
     required this.orderId,
@@ -667,6 +603,7 @@ class _RepairOptionCard extends ConsumerWidget {
     required this.isSelected,
     required this.estimateLabel,
     required this.agentFirstName,
+    this.coordinationFeeDisplay,
   });
 
   @override
@@ -719,7 +656,7 @@ class _RepairOptionCard extends ConsumerWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       color: isYes
-                          ? const Color(0xFFE6F1FB)
+                          ? AppColors.infoBackground
                           : AppColors.surface,
                       shape: BoxShape.circle,
                     ),
@@ -738,8 +675,7 @@ class _RepairOptionCard extends ConsumerWidget {
                           isYes
                               ? RepairConstants.optionYesTitle
                               : RepairConstants.optionNoTitle,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
+                          style: AppTextStyles.bodySmall.copyWith(
                             fontWeight: FontWeight.w500,
                             color: isSelected
                                 ? AppColors.secondary
@@ -747,39 +683,51 @@ class _RepairOptionCard extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            if (estimateLabel != null)
+                        if (isYes && coordinationFeeDisplay != null) ...[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
-                                estimateLabel!,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              )
-                            else
-                              Text(
-                                RepairConstants.optionNoPrice,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.success,
+                                coordinationFeeDisplay!.primary,
+                                style: AppTextStyles.labelLarge.copyWith(
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            const SizedBox(width: 4),
-                            Text(
-                              isYes
-                                  ? RepairConstants.optionYesPriceLabel
-                                  : RepairConstants.optionNoPriceLabel,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 10,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.75),
+                              if (coordinationFeeDisplay!.hasSecondary)
+                                Text(
+                                  coordinationFeeDisplay!.secondary!,
+                                  style: AppTextStyles.caption.copyWith(
+                                    fontSize: 10,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                ),
+                              Text(
+                                RepairConstants.optionYesPriceLabel,
+                                style: AppTextStyles.sectionLabel.copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  letterSpacing: 0,
+                                  fontSize: 10,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
+                            ],
+                          ),
+                        ] else if (isYes) ...[
+                          Text(
+                            RepairConstants.estVaries,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
                             ),
-                          ],
-                        ),
+                          ),
+                        ] else ...[
+                          Text(
+                            RepairConstants.optionNoPriceLabel,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -833,23 +781,19 @@ class _RepairOptionCard extends ConsumerWidget {
                                       children: [
                                         Text(
                                           '• ',
-                                          style: GoogleFonts.dmSans(
-                                            fontSize: 12,
+                                          style: AppTextStyles.cardLabel
+                                              .copyWith(
                                             color: isYes
                                                 ? AppColors.success
-                                                : null,
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
                                           ),
                                         ),
                                         Expanded(
                                           child: Text(
                                             b,
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 12,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withValues(alpha: 0.85),
-                                            ),
+                                            style: AppTextStyles.cardLabel,
                                           ),
                                         ),
                                       ],
@@ -899,10 +843,15 @@ class _RepairConfirmButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: enabled
               ? AppColors.secondary
-              : const Color(0xFFE0DFD8),
-          foregroundColor: enabled ? Colors.white : const Color(0xFFAAAAAA),
-          disabledBackgroundColor: const Color(0xFFE0DFD8),
-          disabledForegroundColor: const Color(0xFFAAAAAA),
+              : AppColors.surface,
+          foregroundColor: enabled ? Colors.white : AppColors.textTertiary,
+          disabledBackgroundColor: AppColors.surface,
+          disabledForegroundColor: AppColors.textTertiary,
+          elevation: 0,
+          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: isSubmitting
             ? const SizedBox(
@@ -913,7 +862,10 @@ class _RepairConfirmButton extends StatelessWidget {
                   color: Colors.white,
                 ),
               )
-            : Text(label),
+            : Text(
+                label,
+                style: AppTextStyles.buttonLarge,
+              ),
       ),
     );
   }
@@ -957,8 +909,7 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
           const SizedBox(height: 8),
           Text(
             RepairConstants.state2Heading(agentName),
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
+            style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w500,
               color: AppColors.primary,
             ),
@@ -966,8 +917,7 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
           const SizedBox(height: 4),
           Text(
             RepairConstants.state2Subtitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
+            style: AppTextStyles.cardLabel.copyWith(
               color: Theme.of(
                 context,
               ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -1000,16 +950,15 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                         children: [
                           Text(
                             garageName,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 13,
+                            style: AppTextStyles.bodySmall.copyWith(
                               fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             garageLocation,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 11,
+                            style: AppTextStyles.caption.copyWith(
                               color: Theme.of(
                                 context,
                               ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -1029,8 +978,9 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                       ),
                       child: Text(
                         RepairConstants.quoteBadge,
-                        style: GoogleFonts.dmSans(
+                        style: AppTextStyles.badgeText.copyWith(
                           fontSize: 10,
+                          letterSpacing: 0,
                           color: const Color(0xFF633806),
                         ),
                       ),
@@ -1044,7 +994,9 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                     children: [
                       Text(
                         widget.job.workDescription!,
-                        style: GoogleFonts.dmSans(fontSize: 13),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       SizedBox(height: 8,)
                     ],
@@ -1067,10 +1019,7 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                   children: [
                     Text(
                       RepairConstants.totalLabel,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.labelLarge,
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -1083,9 +1032,7 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                                   widget.currency,
                                 )
                               : '—',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.labelLarge.copyWith(
                             color: AppColors.secondary,
                           ),
                         ),
@@ -1096,8 +1043,7 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                             '≈ ${CurrencyFormatter.formatUsd(
                               widget.job.totalQuotedGhs!,
                             )}',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 11,
+                            style: AppTextStyles.caption.copyWith(
                               color: AppColors.textSecondary,
                             ),
                           ),
@@ -1213,9 +1159,10 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                     ),
                     child: Text(
                       RepairConstants.vettedBadge,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 10,
+                      style: AppTextStyles.sectionLabel.copyWith(
                         fontWeight: FontWeight.w500,
+                        letterSpacing: 0.2,
+                        fontSize: 10,
                         color: AppColors.success,
                       ),
                     ),
@@ -1225,14 +1172,14 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                   const SizedBox(height: 6),
                   Text(
                     '★ ${garage!.rating!.toStringAsFixed(1)}',
-                    style: GoogleFonts.dmSans(fontSize: 12),
+                    style: AppTextStyles.cardLabel,
                   ),
                 ],
                 if (widget.job.estimatedCompletion != null) ...[
                   const SizedBox(height: 6),
                   Text(
                     '${RepairConstants.estCompletionLabel}: ${_dateFormat.format(widget.job.estimatedCompletion!)}',
-                    style: GoogleFonts.dmSans(fontSize: 12),
+                    style: AppTextStyles.cardLabel,
                   ),
                 ],
                 const SizedBox(height: 8),
@@ -1240,11 +1187,7 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                   onTap: () => context.go('/order/${widget.orderId}?tab=chat'),
                   child: Text(
                     RepairConstants.askSecondQuote(agentName),
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      color: AppColors.secondary,
-                      decoration: TextDecoration.underline,
-                    ),
+                    style: AppTextStyles.link.copyWith(fontSize: 12),
                   ),
                 ),
               ],
@@ -1269,9 +1212,9 @@ class _QuoteLineRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.dmSans(fontSize: 12)),
+        Text(label, style: AppTextStyles.cardLabel),
         SizedBox(width: 16),
-        Flexible(child: Text(value, style: GoogleFonts.dmSans(fontSize: 12))),
+        Flexible(child: Text(value, style: AppTextStyles.cardLabel)),
       ],
     );
   }
@@ -1294,15 +1237,19 @@ class _GarageInfoRow extends StatelessWidget {
             width: 90,
             child: Text(
               label,
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
+              style: AppTextStyles.caption.copyWith(
                 color: Theme.of(
                   context,
                 ).colorScheme.onSurface.withValues(alpha: 0.75),
               ),
             ),
           ),
-          Expanded(child: Text(value, style: GoogleFonts.dmSans(fontSize: 11))),
+          Expanded(
+            child: Text(
+              value,
+              style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+            ),
+          ),
         ],
       ),
     );
@@ -1336,16 +1283,12 @@ class _State2BQuoteDeclined extends ConsumerWidget {
               children: [
                 Text(
                   RepairConstants.state2BHeading,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.titleSmall.copyWith(fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   RepairConstants.state2BBody(agentName),
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -1503,9 +1446,7 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
                     children: [
                       Text(
                         RepairConstants.state3HeroTitle,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                        style: AppTextStyles.titleSmall.copyWith(
                           color: activeColor,
                         ),
                       ),
@@ -1516,8 +1457,7 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
                                   ? '${RepairConstants.state3EstCompletionPrefix} ${_dateFormat.format(estCompletion)} · $daysLeft ${RepairConstants.state3DaysLeft}'
                                   : RepairConstants.state3FinishingUp)
                             : '—',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
+                        style: AppTextStyles.cardLabel.copyWith(
                           color: activeColor,
                         ),
                       ),
@@ -1546,9 +1486,10 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
               children: [
                 Text(
                   RepairConstants.garageDetailsLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 10,
+                  style: AppTextStyles.sectionLabel.copyWith(
                     fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                    fontSize: 10,
                     color: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -1639,8 +1580,7 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
             ),
             child: Text(
               RepairConstants.state3PhotoNote,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
+              style: AppTextStyles.cardLabel.copyWith(
                 color: Theme.of(
                   context,
                 ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -1806,8 +1746,7 @@ class _State4HeroState extends State<_State4Hero>
           const SizedBox(height: 12),
           Text(
             RepairConstants.state4HeroTitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 20,
+            style: AppTextStyles.amountMedium.copyWith(
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
@@ -1815,8 +1754,7 @@ class _State4HeroState extends State<_State4Hero>
           const SizedBox(height: 4),
           Text(
             RepairConstants.state4HeroSubtitle(widget.makeModel),
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
+            style: AppTextStyles.cardLabel.copyWith(
               color: Colors.white.withValues(alpha: 0.85),
             ),
           ),
@@ -1824,8 +1762,7 @@ class _State4HeroState extends State<_State4Hero>
             const SizedBox(height: 4),
             Text(
               _dateFormat.format(widget.actualCompletion!),
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
+              style: AppTextStyles.caption.copyWith(
                 color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
@@ -1863,8 +1800,7 @@ class _State4PhotosRow extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               RepairConstants.state4PhotosPlaceholder,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
+              style: AppTextStyles.cardLabel.copyWith(
                 color: Theme.of(
                   context,
                 ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -1924,7 +1860,7 @@ class _State4PhotosRow extends StatelessWidget {
                             item.isBefore
                                 ? RepairConstants.beforeLabel
                                 : RepairConstants.afterLabel,
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.caption.copyWith(
                               fontSize: 10,
                               color: item.isBefore
                                   ? const Color(0xFF666666)
@@ -2073,9 +2009,10 @@ class _State4WorkCard extends StatelessWidget {
         children: [
           Text(
             RepairConstants.workCompletedLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 10,
+            style: AppTextStyles.sectionLabel.copyWith(
               fontWeight: FontWeight.w500,
+              letterSpacing: 0.2,
+              fontSize: 10,
               color: Theme.of(
                 context,
               ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -2099,10 +2036,7 @@ class _State4WorkCard extends StatelessWidget {
             children: [
               Text(
                 RepairConstants.totalPaidLabel,
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -2114,17 +2048,13 @@ class _State4WorkCard extends StatelessWidget {
                             currency,
                           )
                         : '—',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
                   ),
                   if (currency.code != 'USD' && totalPaid != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       '≈ ${CurrencyFormatter.formatUsd(totalPaid)}',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
+                      style: AppTextStyles.caption.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
@@ -2154,15 +2084,13 @@ class _DoneRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.dmSans(fontSize: 12),
+              style: AppTextStyles.cardLabel,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Text(
             RepairConstants.doneLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+            style: AppTextStyles.labelMedium.copyWith(
               color: AppColors.success,
             ),
           ),
@@ -2193,17 +2121,12 @@ class _State4DeliveryCard extends StatelessWidget {
         children: [
           Text(
             RepairConstants.readyForDeliveryLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: activeColor,
-            ),
+            style: AppTextStyles.labelSmall.copyWith(color: activeColor),
           ),
           const SizedBox(height: 8),
           Text(
             RepairConstants.state4DeliveryBody(agentName),
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
+            style: AppTextStyles.cardLabel.copyWith(
               color: activeColor,
               height: 1.5,
             ),
@@ -2219,8 +2142,7 @@ class _State4DeliveryCard extends StatelessWidget {
               ),
               child: Text(
                 RepairConstants.confirmDeliveryButton,
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                style: AppTextStyles.buttonMedium.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -2269,17 +2191,13 @@ class _State5NoRepair extends ConsumerWidget {
                 Text(
                   RepairConstants.state5Heading,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.titleSmall,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   RepairConstants.state5Body,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -2289,8 +2207,7 @@ class _State5NoRepair extends ConsumerWidget {
                 Text(
                   RepairConstants.state5AgentNote(agentName),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
+                  style: AppTextStyles.cardLabel.copyWith(
                     color: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -2318,8 +2235,7 @@ class _State5NoRepair extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 RepairConstants.state5SwitchLink,
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
+                style: AppTextStyles.cardLabel.copyWith(
                   color: Theme.of(
                     context,
                   ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -2346,15 +2262,12 @@ class _State5NoRepair extends ConsumerWidget {
             children: [
               Text(
                 RepairConstants.switchSheetTitle,
-                style: GoogleFonts.dmSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
               ),
               const SizedBox(height: 8),
               Text(
                 RepairConstants.switchSheetBody,
-                style: GoogleFonts.dmSans(fontSize: 14),
+                style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: 24),
               Row(
@@ -2463,7 +2376,7 @@ class _RepairTimelineStage extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '${index + 1}',
-                    style: GoogleFonts.dmSans(
+                    style: AppTextStyles.caption.copyWith(
                       fontSize: 10,
                       color: Theme.of(
                         context,
@@ -2479,13 +2392,12 @@ class _RepairTimelineStage extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
+                    style: AppTextStyles.bodySmall.copyWith(
                       fontWeight: FontWeight.w500,
                       color: isActive
                           ? activeColor
                           : isDone
-                          ? null
+                          ? AppColors.textPrimary
                           : Theme.of(
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -2495,7 +2407,7 @@ class _RepairTimelineStage extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       _dateFormat.format(date!),
-                      style: GoogleFonts.dmSans(
+                      style: AppTextStyles.caption.copyWith(
                         fontSize: 10,
                         color: Theme.of(
                           context,
@@ -2546,9 +2458,7 @@ class _StateAwaitingQuote extends ConsumerWidget {
                 Text(
                   'Waiting for garage quote',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.titleSmall.copyWith(
                     color: const Color(0xFF185FA5),
                   ),
                 ),
@@ -2558,8 +2468,7 @@ class _StateAwaitingQuote extends ConsumerWidget {
                   'you a garage quote shortly. You will be '
                   'notified when it arrives.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: const Color(0xFF185FA5),
                     height: 1.5,
                   ),
@@ -2578,8 +2487,7 @@ class _StateAwaitingQuote extends ConsumerWidget {
               ),
               child: Text(
                 'Chat with $agentName →',
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                style: AppTextStyles.buttonMedium.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),

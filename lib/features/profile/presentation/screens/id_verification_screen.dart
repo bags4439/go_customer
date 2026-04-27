@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/styled_snackbar.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/widgets/styled_snackbar.dart';
+
 import '../../core/constants/profile_constants.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../providers/profile_providers.dart';
@@ -83,12 +84,18 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: Text('Take a photo', style: GoogleFonts.dmSans()),
+              title: Text(
+                'Take a photo',
+                style: AppTextStyles.bodyMedium,
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: Text('Choose from gallery', style: GoogleFonts.dmSans()),
+              title: Text(
+                'Choose from gallery',
+                style: AppTextStyles.bodyMedium,
+              ),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
             const SizedBox(height: 8),
@@ -159,9 +166,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
         ),
         title: Text(
           appBarDocLabel,
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
+          style: AppTextStyles.appBarTitle.copyWith(
             color: AppColors.textPrimary,
           ),
         ),
@@ -205,28 +210,20 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
               children: [
                 Text(
                   headingText,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.titleLarge,
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Your ${docLabel.toLowerCase()} details are kept private '
                   'and used only to verify your identity.',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
+                  style: AppTextStyles.bodySmall.copyWith(
                     height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 28),
                 Text(
                   numberLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: AppColors.textTertiary,
                     letterSpacing: 0.5,
                   ),
@@ -241,17 +238,12 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                 const SizedBox(height: 6),
                 Text(
                   numberFormatHint,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    color: AppColors.textTertiary,
-                  ),
+                  style: AppTextStyles.caption,
                 ),
                 const SizedBox(height: 24),
                 Text(
                   photoLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: AppColors.textTertiary,
                     letterSpacing: 0.5,
                   ),
@@ -300,9 +292,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                           )
                         : Text(
                             buttonText,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                            style: AppTextStyles.titleSmall.copyWith(
+                              color: Colors.white,
                             ),
                           ),
                   ),
@@ -320,14 +311,14 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             children: [
               Text(
                 ProfileConstants.errorLoadProfile,
-                style: GoogleFonts.dmSans(),
+                style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () => ref.invalidate(currentUserProfileProvider),
                 child: Text(
                   ProfileConstants.retry,
-                  style: GoogleFonts.dmSans(),
+                  style: AppTextStyles.bodyMedium,
                 ),
               ),
             ],

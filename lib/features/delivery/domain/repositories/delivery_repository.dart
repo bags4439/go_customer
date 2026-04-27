@@ -33,6 +33,12 @@ abstract class DeliveryRepository {
   /// Sets buyerConfirmed=true and status='delivery_confirmed'.
   Future<Either<Failure, Unit>> confirmDelivery(String orderId);
 
+  Future<Either<Failure, Unit>> confirmAgentDelivery(String orderId);
+
+  Future<Either<Failure, Unit>> confirmSelfPickup(String orderId);
+
+  Future<Either<Failure, Unit>> confirmSelfCollection(String orderId);
+
   /// Submit buyer review and close the order.
   /// Writes buyer_reviews document and sets
   /// orders.status='delivered'.

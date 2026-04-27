@@ -69,6 +69,7 @@ class RepairJobModel with _$RepairJobModel {
   const factory RepairJobModel({
     required String id,
     required String orderId,
+    @Default(true) bool optedIn,
     String? garageId,
     String? garageNameCustom,
     String? garageLocation,
@@ -125,6 +126,7 @@ class RepairJobModel with _$RepairJobModel {
     return RepairJobModel(
       id: doc.id,
       orderId: data['orderId'] as String? ?? '',
+      optedIn: data['optedIn'] as bool? ?? false,
       garageId: data['garageId'] as String?,
       garageNameCustom: data['garageNameCustom'] as String?,
       garageLocation: data['garageLocation'] as String?,
@@ -182,6 +184,7 @@ RepairJob repairJobFromDoc(DocumentSnapshot doc) {
   return RepairJob(
     id: m.id,
     orderId: m.orderId,
+    optedIn: m.optedIn,
     garageId: m.garageId,
     garageNameCustom: m.garageNameCustom,
     garageLocation: m.garageLocation,

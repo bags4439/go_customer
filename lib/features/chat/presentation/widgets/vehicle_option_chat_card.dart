@@ -3,8 +3,8 @@ import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -262,20 +262,15 @@ class _VehicleHeader extends StatelessWidget {
         children: [
           Text(
             title.isEmpty ? '—' : title,
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.titleSmall.copyWith(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
               color: _kTextPrimary,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             sub,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: _kTextSecondary,
-            ),
+            style: AppTextStyles.cardLabel,
           ),
           const SizedBox(height: 8),
           SingleChildScrollView(
@@ -339,11 +334,7 @@ class _VehicleHeader extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: fg,
-        ),
+        style: AppTextStyles.labelSmall.copyWith(color: fg),
       ),
     );
   }
@@ -358,11 +349,7 @@ class _VehicleHeader extends StatelessWidget {
       ),
       child: Text(
         '${NumberFormat.decimalPattern().format(mileage)}${VehicleChatCardConstants.mileageSuffix}',
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: _kTextPrimary,
-        ),
+        style: AppTextStyles.labelSmall.copyWith(color: _kTextPrimary),
       ),
     );
   }
@@ -377,11 +364,7 @@ class _VehicleHeader extends StatelessWidget {
       ),
       child: Text(
         'Buy It Now',
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: _kBinPillFg,
-        ),
+        style: AppTextStyles.labelSmall.copyWith(color: _kBinPillFg),
       ),
     );
   }
@@ -419,9 +402,7 @@ class _DamageSection extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 6),
                       child: Text(
                         VehicleChatCardConstants.cleanVehicle,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        style: AppTextStyles.labelMedium.copyWith(
                           color: _kSuccess,
                         ),
                       ),
@@ -457,11 +438,11 @@ class _ExpandableDamageText extends StatelessWidget {
       children: [
         Text(
           VehicleChatCardConstants.damageLabel,
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.badgeText.copyWith(
             fontSize: 10,
             fontWeight: FontWeight.w500,
-            color: _kTextTertiary,
             letterSpacing: 0.6,
+            color: _kTextTertiary,
           ),
         ),
         const SizedBox(height: 4),
@@ -470,10 +451,7 @@ class _ExpandableDamageText extends StatelessWidget {
           curve: Curves.easeInOut,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final style = GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: _kTextSecondary,
+              final style = AppTextStyles.cardLabel.copyWith(
                 height: 1.5,
               );
               final textPainter = TextPainter(
@@ -506,8 +484,7 @@ class _ExpandableDamageText extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             VehicleChatCardConstants.showMore,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 11,
+                            style: AppTextStyles.caption.copyWith(
                               fontWeight: FontWeight.w500,
                               color: _kNoteAccent,
                             ),
@@ -569,21 +546,19 @@ class _AgentNoteBlock extends ConsumerWidget {
           children: [
             Text(
               title,
-              style: GoogleFonts.dmSans(
+              style: AppTextStyles.badgeText.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
                 color: _kNoteAccent,
+                letterSpacing: 0.6,
               ),
             ),
             const SizedBox(height: 3),
             Text(
               note,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: _kTextSecondary,
-                height: 1.5,
+              style: AppTextStyles.bodySmall.copyWith(
                 fontStyle: FontStyle.italic,
+                height: 1.5,
               ),
             ),
           ],
@@ -695,10 +670,7 @@ class _PricingSummarySection extends ConsumerWidget {
       children: [
         Text(
           '≈ ${CurrencyFormatter.formatUsd(usdAmount)}',
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
-            color: _kTextTertiary,
-          ),
+          style: AppTextStyles.caption.copyWith(color: _kTextTertiary),
         ),
       ],
     );
@@ -714,16 +686,12 @@ class _PricingSummarySection extends ConsumerWidget {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.dmSans(fontSize: 12, color: _kTextSecondary),
+                style: AppTextStyles.cardLabel.copyWith(color: _kTextSecondary),
               ),
             ),
             Text(
               amount,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: _kTextPrimary,
-              ),
+              style: AppTextStyles.labelMedium.copyWith(color: _kTextPrimary),
             ),
           ],
         ),
@@ -731,7 +699,10 @@ class _PricingSummarySection extends ConsumerWidget {
           const SizedBox(height: 2),
           Text(
             subLabel,
-            style: GoogleFonts.dmSans(fontSize: 10, color: _kTextTertiary),
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 10,
+              color: _kTextTertiary,
+            ),
           ),
         ],
       ],
@@ -745,18 +716,15 @@ class _PricingSummarySection extends ConsumerWidget {
         Expanded(
           child: Text(
             label,
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.labelLarge.copyWith(
               fontSize: 13,
-              fontWeight: FontWeight.w600,
               color: _kTextPrimary,
             ),
           ),
         ),
         Text(
           amount,
-          style: GoogleFonts.dmSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+          style: AppTextStyles.titleSmall.copyWith(
             color: _kSuccess,
           ),
         ),
@@ -780,9 +748,8 @@ class _PricingSummarySection extends ConsumerWidget {
               padding: const EdgeInsets.only(left: 6),
               child: Text(
                 VehicleDetailConstants.finalBidDisclaimer,
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.caption.copyWith(
                   fontSize: 10,
-                  fontWeight: FontWeight.w400,
                   color: _kAmberText,
                   height: 1.35,
                 ),
@@ -818,7 +785,8 @@ class _ChatLinkSection extends StatelessWidget {
               ),
               child: Text(
                 VehicleDetailConstants.chatWithAgentCta,
-                style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500),
+                style: AppTextStyles.bodySmall
+                    .copyWith(fontWeight: FontWeight.w500),
               ),
             ),
           ),

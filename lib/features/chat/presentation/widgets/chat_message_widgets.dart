@@ -4,7 +4,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shimmer/shimmer.dart';
@@ -55,8 +55,7 @@ Widget _sentMeta(DateTime sentAt, String statusKey) {
     children: [
       Text(
         DateFormat.Hm().format(sentAt),
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
+        style: AppTextStyles.caption.copyWith(
           color: _kSentTimestamp,
           height: 1,
         ),
@@ -71,8 +70,7 @@ Widget _sentMeta(DateTime sentAt, String statusKey) {
 Widget _receivedMeta(DateTime sentAt) {
   return Text(
     DateFormat.Hm().format(sentAt),
-    style: GoogleFonts.dmSans(
-      fontSize: 11,
+    style: AppTextStyles.caption.copyWith(
       color: _kReceivedTimestamp,
       height: 1,
     ),
@@ -265,8 +263,7 @@ class _ReplyBlock extends StatelessWidget {
         body,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.dmSans(
-          fontSize: 12,
+        style: AppTextStyles.cardLabel.copyWith(
           color: isMe ? const Color(0xFF185FA5) : const Color(0xFF555555),
           height: 1.4,
         ),
@@ -580,7 +577,7 @@ class _MessageWithInlineMeta extends StatelessWidget {
           children: [
             Text(
               body,
-              style: GoogleFonts.dmSans(
+              style: AppTextStyles.bodyMedium.copyWith(
                 fontSize: 14.5,
                 color: isMe ? _kSentFg : _kReceivedFg,
                 height: 1.45,
@@ -905,9 +902,10 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble>
                         const SizedBox(height: 4),
                         Text(
                           durationLabel,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 11,
-                            color: isMe ? _kSentTimestamp : _kReceivedTimestamp,
+                          style: AppTextStyles.caption.copyWith(
+                            color: isMe
+                                ? _kSentTimestamp
+                                : _kReceivedTimestamp,
                           ),
                         ),
                       ],
@@ -1367,7 +1365,7 @@ class _FileBubble extends StatelessWidget {
                     Flexible(
                       child: Text(
                         message.mediaFileName ?? 'File',
-                        style: GoogleFonts.dmSans(
+                        style: AppTextStyles.bodySmall.copyWith(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w500,
                           color: isMe ? _kSentFg : _kReceivedFg,
@@ -1559,7 +1557,7 @@ class _DeletedBubble extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 'This message was deleted',
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.bodySmall.copyWith(
                   fontSize: 13.5,
                   color: const Color(0xFFAAAAAA),
                   fontStyle: FontStyle.italic,
@@ -1602,7 +1600,7 @@ class _SystemPill extends StatelessWidget {
           child: Text(
             icon != null && icon!.isNotEmpty ? '$icon  $text' : text,
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.caption.copyWith(
               fontSize: 11.5,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF888888),

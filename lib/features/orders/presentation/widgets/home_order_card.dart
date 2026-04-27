@@ -22,11 +22,7 @@ class _OriginPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.dmSans(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: text,
-        ),
+        style: AppTextStyles.labelMedium.copyWith(fontSize: 10, color: text),
       ),
     );
   }
@@ -45,8 +41,8 @@ class _OrderCard extends ConsumerWidget {
     final accentColor = order.needsPayment
         ? _C.danger
         : order.isCompleted
-            ? _C.success
-            : _C.primary;
+        ? _C.success
+        : _C.primary;
 
     final progress = (order.stageNumber.clamp(1, 9)) / 9.0;
     const radius = 14.0;
@@ -120,11 +116,7 @@ class _OrderCard extends ConsumerWidget {
                                             .trim(),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: _C.textPrimary,
-                                        ),
+                                        style: AppTextStyles.labelLarge,
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
@@ -136,7 +128,9 @@ class _OrderCard extends ConsumerWidget {
                                       ),
                                       if (order.purchaseOrigin != 'any') ...[
                                         const SizedBox(height: 4),
-                                        _OriginPill(origin: order.purchaseOrigin),
+                                        _OriginPill(
+                                          origin: order.purchaseOrigin,
+                                        ),
                                       ],
                                     ],
                                   ),
@@ -186,9 +180,7 @@ class _OrderCard extends ConsumerWidget {
                                 const SizedBox(width: 10),
                                 Text(
                                   'Step ${order.stageNumber} of 9',
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
+                                  style: AppTextStyles.labelSmall.copyWith(
                                     color: _C.textTertiary,
                                   ),
                                 ),
@@ -402,10 +394,7 @@ class _PaymentInlineCta extends ConsumerWidget {
   final PaymentRequestView payment;
   final String orderId;
 
-  const _PaymentInlineCta({
-    required this.payment,
-    required this.orderId,
-  });
+  const _PaymentInlineCta({required this.payment, required this.orderId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -447,7 +436,7 @@ class _PaymentInlineCta extends ConsumerWidget {
                 ],
                 const SizedBox(height: 2),
                 Text(
-                  AppConstants.paymentRequestTypeLabels[payment.type] ??
+                  FirestoreEnumValues.paymentRequestTypeLabels[payment.type] ??
                       payment.type,
                   style: _ts(
                     size: 11,
@@ -458,8 +447,9 @@ class _PaymentInlineCta extends ConsumerWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => GoRouter.of(context)
-                .push('/order/$orderId/payment-request/${payment.id}'),
+            onTap: () => GoRouter.of(
+              context,
+            ).push('/order/$orderId/payment-request/${payment.id}'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(

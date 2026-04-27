@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -120,20 +120,15 @@ class _StatusRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.labelLarge.copyWith(
                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
                   color: titleColor,
                 ),
               ),
               const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
+                style: AppTextStyles.cardLabel.copyWith(height: 1.4),
               ),
             ],
           ),
@@ -173,20 +168,12 @@ class _BookedBody extends StatelessWidget {
                 children: [
                   Text(
                     OrderTimelineConstants.shippingBookedTitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     OrderTimelineConstants.shippingBookedSub,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                      height: 1.4,
-                    ),
+                    style: AppTextStyles.cardLabel.copyWith(height: 1.4),
                   ),
                 ],
               ),
@@ -200,10 +187,7 @@ class _BookedBody extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.background,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: AppColors.borderSolid,
-                width: 0.5,
-              ),
+              border: Border.all(color: AppColors.borderSolid, width: 0.5),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,28 +224,19 @@ class _InTransitBody extends StatelessWidget {
         if (shipping.vesselName != null && shipping.vesselName!.isNotEmpty)
           Text(
             shipping.vesselName!,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
           ),
         if (shipping.vesselName != null && shipping.vesselName!.isNotEmpty)
           const SizedBox(height: 4),
         Text(
           '${shipping.originPort ?? '—'} → ${shipping.destinationPort}',
-          style: GoogleFonts.dmSans(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTextStyles.cardLabel,
         ),
         const SizedBox(height: 4),
         Text(
           '${OrderTimelineConstants.shippingEtaPrefix}'
           '${DateFormatter.formatDate(shipping.estimatedArrival)}',
-          style: GoogleFonts.dmSans(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+          style: AppTextStyles.labelMedium.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -273,7 +248,9 @@ class _InTransitBody extends StatelessWidget {
               value: (shipping.journeyProgressPct!.clamp(0, 100)) / 100,
               minHeight: 5,
               backgroundColor: AppColors.borderSolid,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.secondary),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.secondary,
+              ),
             ),
           ),
           const SizedBox(height: 4),
@@ -284,14 +261,12 @@ class _InTransitBody extends StatelessWidget {
                 '[n]',
                 '${shipping.journeyProgressPct!.round()}',
               ),
-              style: GoogleFonts.dmSans(
-                fontSize: 10,
-                color: AppColors.textTertiary,
-              ),
+              style: AppTextStyles.caption.copyWith(fontSize: 10),
             ),
           ),
         ],
-        if (shipping.trackingUrl != null && shipping.trackingUrl!.isNotEmpty) ...[
+        if (shipping.trackingUrl != null &&
+            shipping.trackingUrl!.isNotEmpty) ...[
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
@@ -312,10 +287,7 @@ class _InTransitBody extends StatelessWidget {
               ),
               child: Text(
                 OrderTimelineConstants.trackShipment,
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.labelMedium,
               ),
             ),
           ),
@@ -338,10 +310,7 @@ class _AgentNoteStrip extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
         border: const Border(
-          left: BorderSide(
-            color: AppColors.secondary,
-            width: 3,
-          ),
+          left: BorderSide(color: AppColors.secondary, width: 3),
         ),
       ),
       child: Column(
@@ -349,19 +318,15 @@ class _AgentNoteStrip extends StatelessWidget {
         children: [
           Text(
             OrderTimelineConstants.agentNoteLabel,
-            style: GoogleFonts.dmSans(
-              fontSize: 9,
+            style: AppTextStyles.badgeText.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppColors.textTertiary,
               letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 3),
           Text(
             note,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: AppColors.textSecondary,
+            style: AppTextStyles.cardLabel.copyWith(
               fontStyle: FontStyle.italic,
               height: 1.45,
             ),
@@ -392,8 +357,7 @@ class _ViewDetailsRow extends StatelessWidget {
         children: [
           Text(
             OrderTimelineConstants.shippingViewDetails,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
+            style: AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.secondary,
             ),
@@ -421,22 +385,11 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          SizedBox(
-            width: 52,
-            child: Text(
-              label,
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
-                color: AppColors.textTertiary,
-              ),
-            ),
-          ),
+          SizedBox(width: 52, child: Text(label, style: AppTextStyles.caption)),
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.labelSmall.copyWith(
                 color: AppColors.textPrimary,
               ),
             ),
@@ -446,4 +399,3 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
-

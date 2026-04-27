@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
-import '../../../clearance/presentation/providers/clearance_providers.dart';
+import '../../../../shared/providers/system_settings_provider.dart';
+import '../../../orders/presentation/providers/order_providers.dart';
 import '../../data/datasources/repair_firestore_data_source.dart';
 import '../../data/repositories/repair_repository_impl.dart';
 import '../../domain/entities/garage.dart';
@@ -36,21 +37,30 @@ final repairJobProvider =
   return ref.watch(repairRepositoryProvider).watchRepairJob(orderId);
 });
 
-final carPreferencesRepairOptedInProvider =
-    FutureProvider.family<bool?, String>((ref, orderId) {
-  return ref.watch(repairDataSourceProvider).getCarPreferencesRepairOptedIn(orderId);
-});
-
 final repairScreenStateProvider =
     Provider.family<RepairScreenState, String>((ref, orderId) {
-  final duty = ref.watch(dutyClearanceProvider(orderId)).valueOrNull;
+  final order = ref.watch(orderProvider(orderId)).valueOrNull;
   final job = ref.watch(repairJobProvider(orderId)).valueOrNull;
-  final repairOptedIn = ref.watch(carPreferencesRepairOptedInProvider(orderId)).valueOrNull;
 
-  if (duty?.graStatus != 'cleared') return RepairScreenState.notAvailable;
+  // Repairs is available when the
+  // order stage is at or past
+  // repairs (stageNumber >= 8).
+  // Driven by orders.stageNumber
+  // set by the agent — not by
+  // duty_clearance.graStatus.
+  if ((order?.stageNumber ?? 0) < 8) return RepairScreenState.notAvailable;
   if (job == null) return RepairScreenState.choice;
-  if (job.isNotStarted && repairOptedIn == false) return RepairScreenState.noRepair;
-  if (job.isNotStarted && repairOptedIn == true) return RepairScreenState.awaitingQuote;
+
+  // Use optedIn stored on the job
+  // document — no race condition
+  // since it is written atomically
+  // with the job creation.
+  if (job.isNotStarted && !job.optedIn) {
+    return RepairScreenState.noRepair;
+  }
+  if (job.isNotStarted) {
+    return RepairScreenState.awaitingQuote;
+  }
   if (job.isQuoteSent) return RepairScreenState.quoteSent;
   if (job.isQuoteDeclined) return RepairScreenState.quoteDeclined;
   if (job.isQuoteApproved || job.isInProgress) return RepairScreenState.inProgress;
@@ -72,3 +82,12 @@ final garageDetailsProvider =
 /// true = Option A (arrange repairs), false = Option B (deliver as-is), null = nothing selected.
 /// Pre-populate from car_preferences.repairOptedIn when choice screen loads.
 final repairChoiceProvider = StateProvider.family<bool?, String>((ref, orderId) => null);
+
+/// Repair coordination fee in USD.
+/// Convert to preferred currency for display using
+/// CurrencyFormatter.formatForDisplay.
+/// Returns 0.0 if not set in system_settings.
+final repairServiceFeeProvider = FutureProvider<double>((ref) async {
+  final settings = await ref.watch(systemSettingsProvider.future);
+  return ref.read(repairDataSourceProvider).getRepairServiceFeeUsd(settings);
+});

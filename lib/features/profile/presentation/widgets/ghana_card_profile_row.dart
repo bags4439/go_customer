@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/route_constants.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../auth/domain/entities/app_user.dart';
 
 /// Tappable row linking to identity document add/update from profile.
@@ -52,16 +53,14 @@ class GhanaCardProfileRow extends StatelessWidget {
                   children: [
                     Text(
                       _label,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w500,
                         color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       _valueLabel,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         color: _hasValue
                             ? AppColors.textSecondary
                             : AppColors.textTertiary,

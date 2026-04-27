@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
@@ -125,33 +125,21 @@ class _ReferralPromoCardBody extends StatelessWidget {
               children: [
                 Text(
                   ReferralUiConstants.cardTitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
+                  style: AppTextStyles.titleLarge
+                      .copyWith(color: Colors.white, height: 1.2, fontWeight: FontWeight.w600, fontSize: 22, letterSpacing: 0.0),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   _bodyText(),
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white.withValues(alpha: 0.92),
-                    height: 1.5,
-                  ),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: Colors.white.withValues(alpha: 0.92), height: 1.5, fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 0.0),
                 ),
                 if (s.hasAnyLink) ...[
                   const SizedBox(height: 14),
                   Text(
                     ReferralUiConstants.quickLinksHeading,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.85),
-                      letterSpacing: 0.4,
-                    ),
+                    style: AppTextStyles.caption
+                        .copyWith(color: Colors.white.withValues(alpha: 0.85), fontWeight: FontWeight.w600, fontSize: 12, height: 1.0, letterSpacing: 0.0),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -183,12 +171,8 @@ class _ReferralPromoCardBody extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     ReferralUiConstants.yourCodeLabel.toUpperCase(),
-                    style: GoogleFonts.dmSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.8),
-                      letterSpacing: 0.6,
-                    ),
+                    style: AppTextStyles.sectionLabel
+                        .copyWith(color: Colors.white.withValues(alpha: 0.8)),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -208,12 +192,8 @@ class _ReferralPromoCardBody extends StatelessWidget {
                           ),
                           child: Text(
                             referralCode.trim(),
-                            style: GoogleFonts.dmSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              letterSpacing: 1.0,
-                            ),
+                            style: AppTextStyles.bodyLarge
+                                .copyWith(color: Colors.white, fontWeight: FontWeight.w600, letterSpacing: 1.0, height: 1.0),
                           ),
                         ),
                       ),
@@ -254,11 +234,8 @@ class _ReferralPromoCardBody extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     ReferralUiConstants.codeMissingHint,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.78),
-                      height: 1.4,
-                    ),
+                    style: AppTextStyles.caption
+                        .copyWith(color: Colors.white.withValues(alpha: 0.78), fontSize: 12, fontWeight: FontWeight.w400, height: 1.4, letterSpacing: 0.0),
                   ),
                 ],
                 const SizedBox(height: 20),
@@ -286,11 +263,8 @@ class _ReferralPromoCardBody extends StatelessWidget {
                       ),
                       child: Text(
                         ReferralUiConstants.inviteFriendsCta,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.referralCtaLabel,
-                        ),
+                        style: AppTextStyles.titleSmall
+                            .copyWith(color: AppColors.referralCtaLabel, fontWeight: FontWeight.w600, fontSize: 15, height: 1.0, letterSpacing: 0.0),
                       ),
                     ),
                   ),
@@ -340,11 +314,8 @@ class _GhostLinkChip extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.95),
-                ),
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: Colors.white.withValues(alpha: 0.95), fontSize: 12, fontWeight: FontWeight.w600, height: 1.0, letterSpacing: 0.0),
               ),
             ],
           ),

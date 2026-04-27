@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/route_constants.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../auth/domain/entities/app_user.dart';
 
 /// Profile home banner when the user has not added identity document data.
@@ -57,17 +58,15 @@ class IdVerificationBanner extends StatelessWidget {
                     children: [
                       Text(
                         'Add your $docLabel',
-                        style: GoogleFonts.dmSans(
+                        style: AppTextStyles.cardValue.copyWith(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
                           color: AppColors.amberText,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Tap to upload your card number or photo',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
+                        style: AppTextStyles.caption.copyWith(
                           color: AppColors.warning,
                         ),
                       ),

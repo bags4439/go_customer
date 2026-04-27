@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../../domain/entities/order_view.dart';
 import 'agent_connection_assign_step.dart';
@@ -92,20 +91,15 @@ class _AgentConnectionSearchingViewState
                   Text(
                     'Finding your agent',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTextStyles.displaySmall
+                        .copyWith(color: AppColors.textPrimary, fontSize: 26, fontWeight: FontWeight.w600, height: 1.0, letterSpacing: 0.0),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Your preferences have been submitted.\n'
                     "We're assigning your dedicated agent now.",
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                       height: 1.5,
                     ),
@@ -173,10 +167,10 @@ class _AgentConnectionSearchingViewState
                                   child: Text(
                                     'Taking longer than expected. '
                                     "We'll notify you when assigned.",
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
+                                    style: AppTextStyles.labelMedium
+                                        .copyWith(
                                       color: AppColors.amberText,
+                                      fontWeight: FontWeight.w400,
                                       height: 1.4,
                                     ),
                                   ),
@@ -200,9 +194,8 @@ class _AgentConnectionSearchingViewState
                               const SizedBox(width: 6),
                               Text(
                                 'Usually takes a few minutes',
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
+                                style: AppTextStyles.bodySmall
+                                    .copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                               ),
@@ -254,10 +247,8 @@ class _SupportPrompt extends StatelessWidget {
         children: [
           Text(
             'Taking longer than expected?',
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: AppColors.textTertiary,
-            ),
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textTertiary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.2, letterSpacing: 0.0),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
@@ -273,11 +264,8 @@ class _SupportPrompt extends StatelessWidget {
               ),
               label: Text(
                 'Contact support',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.secondary,
-                ),
+                style: AppTextStyles.labelLarge
+                    .copyWith(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w500, height: 1.0, letterSpacing: 0.0),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.secondary,

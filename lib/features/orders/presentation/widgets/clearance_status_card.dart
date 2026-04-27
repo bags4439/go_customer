@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -61,9 +61,8 @@ class ClearanceStatusCard extends ConsumerWidget {
                 ),
                 child: Text(
                   OrderTimelineConstants.managedByAgent,
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.labelSmall.copyWith(
                     fontSize: 9,
-                    fontWeight: FontWeight.w500,
                     color: const Color(_kPrimaryText),
                   ),
                 ),
@@ -83,9 +82,7 @@ class ClearanceStatusCard extends ConsumerWidget {
                 ),
                 child: Text(
                   OrderTimelineConstants.questionsChat,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: const Color(_kPrimary),
                   ),
                 ),
@@ -126,15 +123,8 @@ class ClearanceStatusCard extends ConsumerWidget {
             if (clearance.totalPayableUsd != null) ...[
               const SizedBox(height: 8),
               Text(
-                '${OrderTimelineConstants.clearanceTotalDuty}${CurrencyFormatter.formatForDisplay(
-                  usdAmount: clearance.totalPayableUsd!,
-                  preferredCurrency: preferredCurrency,
-                ).primary}',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                '${OrderTimelineConstants.clearanceTotalDuty}${CurrencyFormatter.formatForDisplay(usdAmount: clearance.totalPayableUsd!, preferredCurrency: preferredCurrency).primary}',
+                style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
               ),
             ],
           ],
@@ -168,17 +158,12 @@ class ClearanceStatusCard extends ConsumerWidget {
             children: [
               Text(
                 title,
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
               ),
               const SizedBox(height: 4),
               Text(
                 sub,
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
+                style: AppTextStyles.caption.copyWith(
                   color: const Color(_kTextSecondary),
                 ),
               ),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../core/constants/document_constants.dart';
@@ -141,12 +141,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: GoogleFonts.dmSans(
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textTertiary,
-        letterSpacing: 0.8,
-      ),
+      style: AppTextStyles.sectionLabel,
     );
   }
 }
@@ -204,8 +199,7 @@ class _IdDocumentRow extends StatelessWidget {
                       hasId
                           ? DocumentConstants.idDocProvided(docLabel)
                           : DocumentConstants.idDocMissing(docLabel),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
+                      style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w500,
                         color: AppColors.textPrimary,
                       ),
@@ -215,8 +209,7 @@ class _IdDocumentRow extends StatelessWidget {
                       hasId
                           ? DocumentConstants.idDocProvidedSub()
                           : DocumentConstants.idDocMissingSub(docLabel),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                      style: AppTextStyles.cardLabel.copyWith(
                         color: hasId
                             ? AppColors.textSecondary
                             : AppColors.warning,
@@ -263,21 +256,15 @@ class _NoAgentDocuments extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             DocumentConstants.noAgentDocuments,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTextStyles.bodySmall
+                .copyWith(fontWeight: FontWeight.w500, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 4),
           Text(
             DocumentConstants.noAgentDocumentsBody,
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: AppColors.textTertiary,
-              height: 1.5,
-            ),
+            style: AppTextStyles.labelMedium
+                .copyWith(color: AppColors.textTertiary, height: 1.5, fontWeight: FontWeight.w400, letterSpacing: 0.0),
           ),
         ],
       ),
@@ -403,21 +390,14 @@ class _AgentDocumentTile extends StatelessWidget {
                             children: [
                               Text(
                                 _primaryTitle,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
+                                style: AppTextStyles.labelLarge,
                               ),
                               if (doc.label.trim().isNotEmpty &&
                                   _typeLabel != _primaryTitle) ...[
                                 const SizedBox(height: 2),
                                 Text(
                                   _typeLabel,
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
+                                  style: AppTextStyles.cardLabel,
                                 ),
                               ],
                               if (doc.notes != null &&
@@ -425,10 +405,7 @@ class _AgentDocumentTile extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   doc.notes!.trim(),
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: 13,
-                                    color: AppColors.textSecondary,
-                                  ),
+                                  style: AppTextStyles.bodySmall,
                                 ),
                               ],
                               if (doc.uploadedAt != null) ...[
@@ -436,10 +413,8 @@ class _AgentDocumentTile extends StatelessWidget {
                                 Text(
                                   DateFormat('d MMM yyyy')
                                       .format(doc.uploadedAt!),
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: 11,
-                                    color: AppColors.textTertiary,
-                                  ),
+                                  style: AppTextStyles.caption
+                                      .copyWith(color: AppColors.textTertiary, fontSize: 12),
                                 ),
                               ],
                             ],
@@ -503,11 +478,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.dmSans(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: fg,
-        ),
+        style: AppTextStyles.badgeText
+            .copyWith(color: fg, fontSize: 10, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -540,21 +512,13 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               DocumentConstants.noDocumentsYet,
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
               DocumentConstants.noDocumentsBody,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-                height: 1.6,
-              ),
+              style: AppTextStyles.bodySmall.copyWith(height: 1.6),
             ),
           ],
         ),
@@ -576,20 +540,16 @@ class _ErrorState extends StatelessWidget {
         children: [
           Text(
             DocumentConstants.errorLoadDocuments,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: onRetry,
             child: Text(
               DocumentConstants.retry,
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w500,
-                color: AppColors.secondary,
-              ),
+              style: AppTextStyles.labelLarge
+                  .copyWith(color: AppColors.secondary, fontWeight: FontWeight.w500, fontSize: 14, letterSpacing: 0.1),
             ),
           ),
         ],

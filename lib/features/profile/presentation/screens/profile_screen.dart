@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -62,10 +62,7 @@ Future<void> _resetGuide(
       content: Text(
         'Guide reset — revisit any screen to '
         'see the walkthrough again.',
-        style: GoogleFonts.dmSans(
-          color: Colors.white,
-          fontSize: 13,
-        ),
+        style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
       ),
       backgroundColor: AppColors.textPrimary,
       behavior: SnackBarBehavior.floating,
@@ -163,11 +160,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           appBar: AppBar(
             title: Text(
               ProfileConstants.appBarTitle,
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
+              style: AppTextStyles.appBarTitle.copyWith(color: Colors.black),
             ),
             backgroundColor: Colors.white,
             elevation: 0,
@@ -286,8 +279,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           Center(
                             child: Text(
                               appVersionLabel,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 11,
+                              style: AppTextStyles.caption.copyWith(
                                 color: _kTextTertiary,
                               ),
                             ),
@@ -305,11 +297,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         appBar: AppBar(
           title: Text(
             ProfileConstants.appBarTitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
+            style: AppTextStyles.appBarTitle.copyWith(color: Colors.black),
           ),
           backgroundColor: Colors.white,
           elevation: 0,
@@ -321,11 +309,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         appBar: AppBar(
           title: Text(
             ProfileConstants.appBarTitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
+            style: AppTextStyles.appBarTitle.copyWith(color: Colors.black),
           ),
           backgroundColor: Colors.white,
           elevation: 0,
@@ -394,18 +378,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       builder: (ctx) => AlertDialog(
         title: Text(
           ProfileConstants.logOutConfirmTitle,
-          style: GoogleFonts.dmSans(fontWeight: FontWeight.w600),
+          style: AppTextStyles.titleMedium,
         ),
         content: Text(
           ProfileConstants.logOutConfirmBody,
-          style: GoogleFonts.dmSans(),
+          style: AppTextStyles.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
               ProfileConstants.stayLoggedInAction,
-              style: GoogleFonts.dmSans(color: _kPrimary),
+              style: AppTextStyles.bodyMedium.copyWith(color: _kPrimary),
             ),
           ),
           TextButton(
@@ -415,7 +399,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             },
             child: Text(
               ProfileConstants.logOutConfirmAction,
-              style: GoogleFonts.dmSans(
+              style: AppTextStyles.bodyMedium.copyWith(
                 color: _kDanger,
                 fontWeight: FontWeight.w500,
               ),
@@ -521,17 +505,15 @@ class _AnimatedHeaderCard extends StatelessWidget {
                   children: [
                     Text(
                       user.fullName,
-                      style: GoogleFonts.dmSans(
+                      style: AppTextStyles.titleSmall.copyWith(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       user.phone,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.black54,
                       ),
                     ),
@@ -581,9 +563,8 @@ class _AvatarCircle extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               _initials,
-              style: GoogleFonts.dmSans(
+              style: AppTextStyles.amountMedium.copyWith(
                 fontSize: 20,
-                fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
             ),
@@ -687,7 +668,7 @@ class _SummaryBox extends StatelessWidget {
         children: [
           Text(
             value,
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.titleLarge.copyWith(
               fontSize: valueSize,
               fontWeight: FontWeight.w600,
               color: valueColor,
@@ -696,7 +677,10 @@ class _SummaryBox extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.dmSans(fontSize: 10, color: Colors.black54),
+            style: AppTextStyles.bodySmall.copyWith(
+              fontSize: 10,
+              color: Colors.black54,
+            ),
           ),
         ],
       ),
@@ -781,10 +765,8 @@ class _AnimatedSection extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 10,
+                    style: AppTextStyles.sectionLabel.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: _kTextTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -937,8 +919,7 @@ class _EditRow extends StatelessWidget {
                       children: [
                         Text(
                           label,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
+                          style: AppTextStyles.bodySmall.copyWith(
                             fontWeight: FontWeight.w500,
                             color: Colors.black87,
                           ),
@@ -946,8 +927,7 @@ class _EditRow extends StatelessWidget {
                         if (!expanded)
                           Text(
                             value,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 13,
+                            style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.black54,
                             ),
                           ),
@@ -984,8 +964,7 @@ class _EditRow extends StatelessWidget {
                           hintText: isPhone ? '+233 XX XXX XXXX' : null,
                           isDense: true,
                           errorText: errorMessage,
-                          errorStyle: GoogleFonts.dmSans(
-                            fontSize: 11,
+                          errorStyle: AppTextStyles.caption.copyWith(
                             color: _kDanger,
                           ),
                         ),
@@ -996,8 +975,7 @@ class _EditRow extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           subtitle!,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 11,
+                          style: AppTextStyles.caption.copyWith(
                             color: _kTextTertiary,
                           ),
                         ),
@@ -1010,7 +988,7 @@ class _EditRow extends StatelessWidget {
                             onPressed: onCancel,
                             child: Text(
                               ProfileConstants.cancel,
-                              style: GoogleFonts.dmSans(color: _kTextTertiary),
+                              style: AppTextStyles.bodyMedium.copyWith(color: _kTextTertiary),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -1028,8 +1006,9 @@ class _EditRow extends StatelessWidget {
                             ),
                             child: Text(
                               'Save',
-                              style: GoogleFonts.dmSans(
+                              style: AppTextStyles.titleSmall.copyWith(
                                 fontWeight: FontWeight.w500,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -1048,7 +1027,7 @@ class _EditRow extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
               child: Text(
                 errorMessage!,
-                style: GoogleFonts.dmSans(fontSize: 11, color: _kDanger),
+                style: AppTextStyles.caption.copyWith(color: _kDanger),
               ),
             ),
           ),
@@ -1077,16 +1056,14 @@ class _ReadOnlyRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                 ),
                 Text(
                   value,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.black54,
                   ),
                 ),
@@ -1225,16 +1202,14 @@ class _ToggleRowState extends ConsumerState<_ToggleRow> {
               children: [
                 Text(
                   widget.label,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                 ),
                 Text(
                   widget.subtitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
+                  style: AppTextStyles.cardLabel.copyWith(
                     color: Colors.black54,
                   ),
                 ),
@@ -1308,15 +1283,14 @@ class _LanguageRow extends StatelessWidget {
                 children: [
                   Text(
                     ProfileConstants.languageLabel,
-                    style: GoogleFonts.dmSans(
+                    style: AppTextStyles.titleSmall.copyWith(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   ListTile(
                     title: Text(
                       ProfileConstants.languageEnglish,
-                      style: GoogleFonts.dmSans(),
+                      style: AppTextStyles.bodyMedium,
                     ),
                     onTap: () => Navigator.pop(ctx),
                   ),
@@ -1333,8 +1307,7 @@ class _LanguageRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   ProfileConstants.languageLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -1342,7 +1315,7 @@ class _LanguageRow extends StatelessWidget {
               ),
               Text(
                 ProfileConstants.languageEnglish,
-                style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black54),
+                style: AppTextStyles.bodySmall.copyWith(color: Colors.black54),
               ),
               const Icon(Icons.chevron_right, color: _kTextTertiary, size: 24),
             ],
@@ -1433,8 +1406,7 @@ class _CurrencyRow extends ConsumerWidget {
                   children: [
                     Text(
                       ProfileConstants.displayCurrencyLabel,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
@@ -1444,8 +1416,7 @@ class _CurrencyRow extends ConsumerWidget {
                         currentCurrency,
                         currenciesAsync.valueOrNull,
                       ),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.black54,
                       ),
                     ),
@@ -1532,19 +1503,14 @@ class _CurrencyPickerSheet extends StatelessWidget {
                         children: [
                           Text(
                             'Display currency',
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.titleMedium.copyWith(
                               fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             'Prices will display in this currency.',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTextStyles.bodySmall,
                           ),
                         ],
                       ),
@@ -1602,9 +1568,8 @@ class _CurrencyPickerSheet extends StatelessWidget {
                                 alignment: Alignment.center,
                                 child: Text(
                                   currency.symbol,
-                                  style: GoogleFonts.dmSans(
+                                  style: AppTextStyles.titleSmall.copyWith(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.w600,
                                     color: isSelected
                                         ? AppColors.secondary
                                         : AppColors.textSecondary,
@@ -1618,8 +1583,7 @@ class _CurrencyPickerSheet extends StatelessWidget {
                                   children: [
                                     Text(
                                       currency.name,
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 14,
+                                      style: AppTextStyles.bodyMedium.copyWith(
                                         fontWeight: isSelected
                                             ? FontWeight.w600
                                             : FontWeight.w500,
@@ -1630,10 +1594,7 @@ class _CurrencyPickerSheet extends StatelessWidget {
                                     ),
                                     Text(
                                       currency.code,
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 12,
-                                        color: AppColors.textSecondary,
-                                      ),
+                                      style: AppTextStyles.cardLabel,
                                     ),
                                   ],
                                 ),
@@ -1724,8 +1685,7 @@ class _CountryRow extends ConsumerWidget {
                   children: [
                     Text(
                       'Country',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
@@ -1736,8 +1696,7 @@ class _CountryRow extends ConsumerWidget {
                           : currentIsoCode.isNotEmpty
                               ? currentIsoCode
                               : 'Not set',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.black54,
                       ),
                     ),
@@ -1795,8 +1754,7 @@ class _ProfileMenuTile extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
@@ -1804,9 +1762,7 @@ class _ProfileMenuTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       sublabel,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                      style: AppTextStyles.cardLabel.copyWith(
                         color: _kTextTertiary,
                       ),
                     ),
@@ -1907,8 +1863,7 @@ class _SupportRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -2028,16 +1983,14 @@ class _StayLoggedInRowState extends ConsumerState<_StayLoggedInRow> {
               children: [
                 Text(
                   ProfileConstants.stayLoggedIn,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                 ),
                 Text(
                   ProfileConstants.stayLoggedInSubtitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
+                  style: AppTextStyles.cardLabel.copyWith(
                     color: Colors.black54,
                   ),
                 ),
@@ -2099,8 +2052,7 @@ class _ActiveSessionsRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   ProfileConstants.activeSessions,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -2108,7 +2060,7 @@ class _ActiveSessionsRow extends StatelessWidget {
               ),
               Text(
                 '$count ${ProfileConstants.devicesCount}',
-                style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black54),
+                style: AppTextStyles.bodySmall.copyWith(color: Colors.black54),
               ),
               const Icon(Icons.chevron_right, color: _kTextTertiary, size: 24),
             ],
@@ -2135,9 +2087,8 @@ class _SessionsBottomSheet extends StatelessWidget {
         children: [
           Text(
             ProfileConstants.activeSessions,
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.titleMedium.copyWith(
               fontSize: 18,
-              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 16),
@@ -2159,14 +2110,13 @@ class _SessionsBottomSheet extends StatelessWidget {
                       children: [
                         Text(
                           'Device ${i + 1}',
-                          style: GoogleFonts.dmSans(
+                          style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         Text(
                           date,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
+                          style: AppTextStyles.cardLabel.copyWith(
                             color: _kTextTertiary,
                           ),
                         ),
@@ -2180,7 +2130,7 @@ class _SessionsBottomSheet extends StatelessWidget {
                     },
                     child: Text(
                       'Sign out of this session',
-                      style: GoogleFonts.dmSans(fontSize: 12, color: _kDanger),
+                      style: AppTextStyles.cardLabel.copyWith(color: _kDanger),
                     ),
                   ),
                 ],
@@ -2210,7 +2160,7 @@ class _LogOutButton extends StatelessWidget {
         ),
         child: Text(
           ProfileConstants.logOut,
-          style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w500),
+          style: AppTextStyles.labelLarge,
         ),
       ),
     );
@@ -2229,8 +2179,7 @@ class _DeleteAccountLink extends StatelessWidget {
         onTap: onPressed,
         child: Text(
           ProfileConstants.deleteAccount,
-          style: GoogleFonts.dmSans(
-            fontSize: 12,
+          style: AppTextStyles.cardLabel.copyWith(
             color: _kDanger,
             decoration: TextDecoration.underline,
           ),
@@ -2292,15 +2241,14 @@ class _DeleteAccountBottomSheetState
         children: [
           Text(
             ProfileConstants.deleteConfirmHeading,
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.titleSmall.copyWith(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 12),
           Text(
             ProfileConstants.deleteConfirmWarning,
-            style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black87),
+            style: AppTextStyles.bodySmall.copyWith(color: Colors.black87),
           ),
           const SizedBox(height: 16),
           Container(
@@ -2319,7 +2267,7 @@ class _DeleteAccountBottomSheetState
                 Expanded(
                   child: Text(
                     ProfileConstants.deleteConfirmWarning,
-                    style: GoogleFonts.dmSans(fontSize: 12, color: _kDarkBrown),
+                    style: AppTextStyles.cardLabel.copyWith(color: _kDarkBrown),
                   ),
                 ),
               ],
@@ -2354,7 +2302,7 @@ class _DeleteAccountBottomSheetState
                   ),
                   child: Text(
                     ProfileConstants.deleteConfirmButton,
-                    style: GoogleFonts.dmSans(
+                    style: AppTextStyles.titleSmall.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
@@ -2600,19 +2548,13 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
           if (_step == 0) ...[
             Text(
               'Change phone number',
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.appBarTitle,
             ),
             const SizedBox(height: 4),
             Text(
               'Enter your new phone number. '
               'We will send a verification code.',
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
-                color: AppColors.textSecondary,
+              style: AppTextStyles.bodySmall.copyWith(
                 height: 1.5,
               ),
             ),
@@ -2635,10 +2577,8 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
                     ),
                     child: Text(
                       dialCode,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 15,
+                      style: AppTextStyles.titleSmall.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -2652,15 +2592,17 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
                       controller: _phoneCtrl,
                       autofocus: true,
                       keyboardType: TextInputType.phone,
-                      style: GoogleFonts.dmSans(
+                      style: AppTextStyles.bodyLarge.copyWith(
                         fontSize: 15,
                         color: AppColors.textPrimary,
+                        height: null,
                       ),
                       decoration: InputDecoration(
                         hintText: 'Phone number',
-                        hintStyle: GoogleFonts.dmSans(
+                        hintStyle: AppTextStyles.bodyLarge.copyWith(
                           fontSize: 15,
                           color: AppColors.textTertiary,
+                          height: null,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
@@ -2697,9 +2639,8 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
                       )
                     : Text(
                         'Send code',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: Colors.white,
                         ),
                       ),
               ),
@@ -2722,21 +2663,14 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
                 const SizedBox(width: 10),
                 Text(
                   'Enter verification code',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.appBarTitle,
                 ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               'Code sent to $_newPhone',
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.bodySmall,
             ),
             const SizedBox(height: 20),
             TextField(
@@ -2745,17 +2679,17 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
               keyboardType: TextInputType.number,
               maxLength: 6,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
+              style: AppTextStyles.titleLarge.copyWith(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 12,
-                color: AppColors.textPrimary,
               ),
               decoration: InputDecoration(
                 counterText: '',
                 hintText: '------',
-                hintStyle: GoogleFonts.dmSans(
+                hintStyle: AppTextStyles.titleLarge.copyWith(
                   fontSize: 24,
+                  fontWeight: FontWeight.w400,
                   letterSpacing: 12,
                   color: AppColors.textTertiary,
                 ),
@@ -2796,8 +2730,7 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
                     ? 'Resend code in ${_countdown}s'
                     : 'Resend code',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                style: AppTextStyles.bodySmall.copyWith(
                   color: _countdown > 0
                       ? AppColors.textTertiary
                       : AppColors.secondary,
@@ -2833,9 +2766,8 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
                       )
                     : Text(
                         'Verify & update',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: Colors.white,
                         ),
                       ),
               ),
@@ -2910,7 +2842,7 @@ class _ProfileError extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.black87),
+              style: AppTextStyles.bodyMedium.copyWith(color: Colors.black87),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -2918,7 +2850,7 @@ class _ProfileError extends StatelessWidget {
               style: ElevatedButton.styleFrom(backgroundColor: _kPrimary),
               child: Text(
                 ProfileConstants.retry,
-                style: GoogleFonts.dmSans(color: Colors.white),
+                style: AppTextStyles.titleSmall.copyWith(color: Colors.white),
               ),
             ),
           ],

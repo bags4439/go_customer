@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -68,8 +68,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
     if (!diff.isNegative && diff.inHours < 24) {
       text = Text(
         OrderTimelineConstants.dueToday,
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
+        style: AppTextStyles.caption.copyWith(
           fontWeight: FontWeight.w600,
           color: const Color(_kDanger),
         ),
@@ -77,17 +76,14 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
     } else if (days >= 0 && days < 5) {
       text = Text(
         OrderTimelineConstants.daysLeft.replaceAll('[n]', '$days'),
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
+        style: AppTextStyles.labelSmall.copyWith(
           color: const Color(_kWarn),
         ),
       );
     } else {
       text = Text(
         DateFormatter.formatDateTime(deadline),
-        style: GoogleFonts.dmSans(
-          fontSize: 11,
+        style: AppTextStyles.caption.copyWith(
           color: const Color(_kTextTertiary),
         ),
       );
@@ -176,9 +172,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                         Expanded(
                           child: Text(
                             OrderTimelineConstants.paymentRequestLabel,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                            style: AppTextStyles.labelSmall.copyWith(
                               color: const Color(_kTextTertiary),
                             ),
                           ),
@@ -194,9 +188,8 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                           ),
                           child: Text(
                             OrderTimelineConstants.awaitingPayment,
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.labelSmall.copyWith(
                               fontSize: 10,
-                              fontWeight: FontWeight.w500,
                               color: const Color(_kAmberText),
                             ),
                           ),
@@ -206,9 +199,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                     const SizedBox(height: 6),
                     Text(
                       _typeLabel,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.labelLarge.copyWith(
                         color: Colors.black87,
                       ),
                     ),
@@ -221,9 +212,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                         children: [
                           Text(
                             display.primary,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
+                            style: AppTextStyles.titleLarge.copyWith(
                               color: const Color(_kPrimary),
                             ),
                           ),
@@ -231,10 +220,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                             const SizedBox(height: 2),
                             Text(
                               display.secondary!,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 12,
-                                color: const Color(_kTextTertiary),
-                              ),
+                              style: AppTextStyles.amountSmall,
                             ),
                           ],
                         ],
@@ -255,8 +241,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                 _breakdownExpanded
                                     ? OrderTimelineConstants.hideBreakdown
                                     : OrderTimelineConstants.seeBreakdown,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 12,
+                                style: AppTextStyles.labelMedium.copyWith(
                                   color: const Color(_kPrimary),
                                 ),
                               ),
@@ -289,8 +274,8 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                           Expanded(
                                             child: Text(
                                               b.label,
-                                              style: GoogleFonts.dmSans(
-                                                fontSize: 12,
+                                              style: AppTextStyles.cardLabel
+                                                  .copyWith(
                                                 color: const Color(
                                                   _kTextSecondary,
                                                 ),
@@ -302,9 +287,8 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                               b.amountUsd * currency.usdToRate,
                                               currency,
                                             ),
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
+                                            style: AppTextStyles.labelMedium
+                                                .copyWith(
                                               color: b.isDeduction
                                                   ? const Color(_kSuccess)
                                                   : Colors.black87,
@@ -321,17 +305,11 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                     children: [
                                       Text(
                                         'Total',
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                        style: AppTextStyles.cardValue,
                                       ),
                                       Text(
                                         display.primary,
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                        style: AppTextStyles.cardValue,
                                       ),
                                     ],
                                   ),
@@ -356,16 +334,14 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                             Expanded(
                               child: Text(
                                 OrderTimelineConstants.invoiceAttached,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 11,
+                                style: AppTextStyles.caption.copyWith(
                                   color: const Color(_kTextSecondary),
                                 ),
                               ),
                             ),
                             Text(
                               OrderTimelineConstants.viewInvoice,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 11,
+                              style: AppTextStyles.caption.copyWith(
                                 fontWeight: FontWeight.w500,
                                 color: const Color(_kPrimary),
                               ),
@@ -409,10 +385,8 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                 OrderTimelineConstants.payNowButton
                                     .replaceAll('[label]', _typeLabel)
                                     .replaceAll('[amount]', display.primary),
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppTextStyles.buttonLarge
+                                    .copyWith(color: Colors.white),
                                 textAlign: TextAlign.center,
                               ),
                       ),

@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -205,9 +205,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                               .valueOrNull
                               ?.orderRef ??
                           '--',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.titleMedium.copyWith(
                         color: const Color(0xFF1A1A18),
                       ),
                     ),
@@ -375,8 +373,7 @@ class _OrderOverviewTab extends ConsumerWidget {
           return Center(
             child: Text(
               'Order not found',
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
+              style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
@@ -389,7 +386,7 @@ class _OrderOverviewTab extends ConsumerWidget {
               data: (p) {
                 if (p == null) return const SizedBox.shrink();
                 final typeLabel =
-                    AppConstants.paymentRequestTypeLabels[p.type
+                    FirestoreEnumValues.paymentRequestTypeLabels[p.type
                             is PaymentRequestType
                         ? (p.type as PaymentRequestType).firestoreValue
                         : p.type.toString()] ??
@@ -422,11 +419,7 @@ class _OrderOverviewTab extends ConsumerWidget {
             const SizedBox(height: 14),
             Text(
               OrderTimelineConstants.journeyTitle,
-              style: GoogleFonts.dmSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
             ),
             const SizedBox(height: 14),
             KeyedSubtree(
@@ -452,8 +445,7 @@ class _OrderOverviewTab extends ConsumerWidget {
       error: (_, __) => Center(
         child: Text(
           'Unable to load order',
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
+          style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
         ),
@@ -550,9 +542,7 @@ class _AgentAppBarTitle extends ConsumerWidget {
                                 agent.fullName.isNotEmpty
                                     ? agent.fullName[0].toUpperCase()
                                     : '?',
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                                style: AppTextStyles.labelLarge.copyWith(
                                   color: const Color(0xFF378ADD),
                                 ),
                               ),
@@ -570,9 +560,7 @@ class _AgentAppBarTitle extends ConsumerWidget {
                 children: [
                   Text(
                     agent.fullName,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                    style: AppTextStyles.titleSmall.copyWith(
                       color: const Color(0xFF1A1A18),
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -580,8 +568,7 @@ class _AgentAppBarTitle extends ConsumerWidget {
                   Text(
                     '${agent.totalOrdersCompleted} orders · '
                     '${agent.rating.toStringAsFixed(1)} ★',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
+                    style: AppTextStyles.caption.copyWith(
                       color: const Color(0xFF999999),
                     ),
                   ),
@@ -717,9 +704,8 @@ class _AgentPhotoViewer extends StatelessWidget {
                   Expanded(
                     child: Text(
                       agentName,
-                      style: GoogleFonts.dmSans(
+                      style: AppTextStyles.titleSmall.copyWith(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                       overflow: TextOverflow.ellipsis,

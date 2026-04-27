@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
@@ -250,8 +251,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                     const SizedBox(width: 8),
                     Text(
                       'Agent is typing…',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                      style: AppTextStyles.cardLabel.copyWith(
                         color: const Color(0xFF999999),
                         fontStyle: FontStyle.italic,
                       ),
@@ -304,9 +304,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                               Text(
                                 'Your conversation\nis private',
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
+                                style: AppTextStyles.titleSmall.copyWith(
                                   color: const Color(0xFF1A1A18),
                                   height: 1.35,
                                 ),
@@ -316,7 +314,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                 'Only you and your agent\n'
                                 'can see these messages.',
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.dmSans(
+                                style: AppTextStyles.bodySmall.copyWith(
                                   fontSize: 12.5,
                                   color: const Color(0xFF999999),
                                   height: 1.6,
@@ -378,10 +376,8 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                     child: Center(
                                       child: Text(
                                         'Beginning of conversation',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(color: Colors.grey),
+                                        style: AppTextStyles.bodySmall
+                                            .copyWith(color: Colors.grey),
                                       ),
                                     ),
                                   );
@@ -424,7 +420,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                       ),
                                       child: Text(
                                         item.label,
-                                        style: GoogleFonts.dmSans(
+                                        style: AppTextStyles.caption.copyWith(
                                           fontSize: 11.5,
                                           fontWeight: FontWeight.w500,
                                           color: const Color(0xFF888888),
@@ -623,9 +619,8 @@ class _ImagePreviewStrip extends ConsumerWidget {
                 Text(
                   '${images.length} '
                   '${images.length == 1 ? 'photo' : 'photos'} selected',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.labelLarge.copyWith(
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF1A1A18),
                   ),
                 ),
@@ -649,8 +644,7 @@ class _ImagePreviewStrip extends ConsumerWidget {
                     ),
                     child: Text(
                       'Clear all',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                      style: AppTextStyles.cardLabel.copyWith(
                         color: const Color(0xFF888888),
                       ),
                     ),
@@ -701,10 +695,8 @@ class _ImagePreviewStrip extends ConsumerWidget {
                     Text(
                       'Send ${images.length} '
                       '${images.length == 1 ? 'photo' : 'photos'}',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.buttonLarge
+                          .copyWith(color: Colors.white),
                     ),
                   ],
                 ),
@@ -931,8 +923,7 @@ class _ImagePreviewScreenState extends ConsumerState<_ImagePreviewScreen> {
                   const Spacer(),
                   Text(
                     '${_currentIndex + 1} of ${images.length}',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 14,
+                    style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
                     ),
@@ -1014,7 +1005,7 @@ class _VideoPreviewBar extends ConsumerWidget {
           Expanded(
             child: Text(
               'Video ready',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: AppTextStyles.bodySmall,
             ),
           ),
           TextButton(
@@ -1327,15 +1318,13 @@ class _InputBarState extends ConsumerState<_InputBar> {
                           controller: _textController,
                           minLines: 1,
                           maxLines: 5,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 14,
+                          style: AppTextStyles.bodyMedium.copyWith(
                             color: const Color(0xFF1A1A18),
                             height: 1.4,
                           ),
                           decoration: InputDecoration(
                             hintText: 'Message…',
-                            hintStyle: GoogleFonts.dmSans(
-                              fontSize: 14,
+                            hintStyle: AppTextStyles.bodyMedium.copyWith(
                               color: const Color(0xFFBBBBBB),
                             ),
                             border: InputBorder.none,
@@ -1592,10 +1581,8 @@ class _RecordingIndicatorState extends State<_RecordingIndicator>
           const SizedBox(width: 10),
           Text(
             'Recording…',
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
+            style: AppTextStyles.bodyMedium.copyWith(
               color: const Color(0xFFE24B4A),
-              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -1641,9 +1628,8 @@ class _AttachTile extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             label,
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.caption.copyWith(
               fontSize: 11.5,
-              fontWeight: FontWeight.w500,
               color: const Color(0xFF888888),
             ),
           ),
@@ -1697,7 +1683,7 @@ class _AttachTileDisabled extends StatelessWidget {
                         children: [
                           Text(
                             'File sharing coming soon',
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.bodySmall.copyWith(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -1708,7 +1694,7 @@ class _AttachTileDisabled extends StatelessWidget {
                             'For now, you can access all '
                             'files sent to you via the '
                             'Documents tab.',
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.caption.copyWith(
                               fontSize: 11.5,
                               color: Colors.white
                                   .withValues(alpha: 0.8),
@@ -1783,9 +1769,8 @@ class _AttachTileDisabled extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: GoogleFonts.dmSans(
+              style: AppTextStyles.caption.copyWith(
                 fontSize: 11.5,
-                fontWeight: FontWeight.w500,
                 color: const Color(0xFF888888),
               ),
             ),
@@ -1829,7 +1814,7 @@ class _ReplyPreviewBar extends StatelessWidget {
               children: [
                 Text(
                   'Replying to message',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.caption.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF378ADD),
@@ -1840,7 +1825,7 @@ class _ReplyPreviewBar extends StatelessWidget {
                   replyBody,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontSize: 12.5,
                     color: const Color(0xFF888888),
                     height: 1.3,
@@ -1898,8 +1883,7 @@ class _ActionTile extends StatelessWidget {
             const SizedBox(width: 14),
             Text(
               label,
-              style: GoogleFonts.dmSans(
-                fontSize: 15,
+              style: AppTextStyles.bodyLarge.copyWith(
                 color: fg,
                 fontWeight: FontWeight.w400,
               ),
@@ -1952,11 +1936,7 @@ class _DeleteConfirmSheet extends StatelessWidget {
             const SizedBox(height: 14),
             Text(
               'Delete message?',
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1A1A18),
-              ),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: 6),
             Text(
@@ -1964,8 +1944,7 @@ class _DeleteConfirmSheet extends StatelessWidget {
               ' for everyone in this'
               ' conversation.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
+              style: AppTextStyles.bodySmall.copyWith(
                 color: const Color(0xFF888888),
                 height: 1.5,
               ),
@@ -1986,10 +1965,8 @@ class _DeleteConfirmSheet extends StatelessWidget {
                 ),
                 child: Text(
                   'Delete for everyone',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.buttonLarge
+                      .copyWith(color: Colors.white),
                 ),
               ),
             ),
@@ -2007,10 +1984,8 @@ class _DeleteConfirmSheet extends StatelessWidget {
                 ),
                 child: Text(
                   'Cancel',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextStyles.titleSmall
+                      .copyWith(fontWeight: FontWeight.w500),
                 ),
               ),
             ),

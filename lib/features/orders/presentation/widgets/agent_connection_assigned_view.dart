@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
@@ -70,10 +70,8 @@ class _AgentConnectionAssignedViewState
           SnackBar(
             content: Text(
               'Could not launch call.',
-              style: GoogleFonts.dmSans(
-                color: Colors.white,
-                fontSize: 13,
-              ),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: Colors.white, height: 1.2),
             ),
             backgroundColor: AppColors.textPrimary,
             behavior: SnackBarBehavior.floating,
@@ -120,10 +118,13 @@ class _AgentConnectionAssignedViewState
                       const SizedBox(width: 6),
                       Text(
                         'Agent assigned',
-                        style: GoogleFonts.dmSans(
+                        style: AppTextStyles.labelLarge
+                            .copyWith(
                           fontSize: 13,
-                          fontWeight: FontWeight.w500,
                           color: AppColors.success,
+                          fontWeight: FontWeight.w500,
+                          height: 1.0,
+                          letterSpacing: 0.0,
                         ),
                       ),
                     ],
@@ -166,20 +167,17 @@ class _AgentConnectionAssignedViewState
                             children: [
                               Text(
                                 agent.fullName,
-                                style: GoogleFonts.dmSans(
+                                style: AppTextStyles.titleSmall
+                                    .copyWith(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 'Import Agent',
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.textSecondary,
-                                ),
+                                style: AppTextStyles.bodySmall,
                               ),
                             ],
                           ),
@@ -233,9 +231,7 @@ class _AgentConnectionAssignedViewState
                         children: [
                           Text(
                             '"${agent.introMessage}"',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
+                            style: AppTextStyles.bodyMedium.copyWith(
                               color: AppColors.textPrimary,
                               height: 1.5,
                               fontStyle: FontStyle.italic,
@@ -244,10 +240,14 @@ class _AgentConnectionAssignedViewState
                           const SizedBox(height: 6),
                           Text(
                             '— $_firstName',
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.caption
+                                .copyWith(
+                              color: AppColors.textSecondary,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
+                              fontStyle: FontStyle.normal,
+                              height: 1.0,
+                              letterSpacing: 0.0,
                             ),
                           ),
                         ],
@@ -270,11 +270,7 @@ class _AgentConnectionAssignedViewState
                 children: [
                   Text(
                     'What happens next',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTextStyles.titleSmall,
                   ),
                   const SizedBox(height: 14),
                   AgentConnectionNextStep(
@@ -319,11 +315,7 @@ class _AgentConnectionAssignedViewState
                     Expanded(
                       child: Text(
                         'Sourcing from: ${order.purchaseOriginLabel}',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.bodySmall,
                       ),
                     ),
                   ],
@@ -350,10 +342,13 @@ class _AgentConnectionAssignedViewState
                       ),
                       label: Text(
                         'Chat with $_firstName',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        style: AppTextStyles.labelLarge
+                            .copyWith(
                           color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          height: 1.0,
+                          letterSpacing: 0.0,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(

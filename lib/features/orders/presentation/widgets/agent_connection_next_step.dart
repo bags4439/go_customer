@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 class AgentConnectionNextStep extends StatelessWidget {
   const AgentConnectionNextStep({
@@ -32,11 +31,8 @@ class AgentConnectionNextStep extends StatelessWidget {
             child: Center(
               child: Text(
                 '$number',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.infoText,
-                ),
+                style: AppTextStyles.labelMedium
+                    .copyWith(color: AppColors.infoText, fontWeight: FontWeight.w600, fontSize: 12, height: 1.0, letterSpacing: 0.0),
               ),
             ),
           ),
@@ -46,9 +42,7 @@ class AgentConnectionNextStep extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 text,
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
+                style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.5,
                 ),

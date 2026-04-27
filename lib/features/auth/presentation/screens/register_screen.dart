@@ -2,8 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/error/error_handler.dart';
@@ -187,7 +188,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                         children: [
                           Text(
                             'Create your account',
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.titleLarge.copyWith(
                               fontSize: 24,
                               fontWeight: FontWeight.w600,
                               color: _textPrimary,
@@ -196,9 +197,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                           const SizedBox(height: 6),
                           Text(
                             'Join thousands importing cars from the US',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
+                            style: AppTextStyles.bodyMedium.copyWith(
                               color: _textSecondary,
                             ),
                           ),
@@ -261,8 +260,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                         color: _textSecondary,
                                         size: 20,
                                       ),
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 15,
+                                      style: AppTextStyles.titleSmall.copyWith(
                                         fontWeight: FontWeight.w500,
                                         color: _textPrimary,
                                       ),
@@ -291,8 +289,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                         }
                                       },
                                       selectedItemBuilder: (context) {
-                                        final t = GoogleFonts.dmSans(
-                                          fontSize: 15,
+                                        final t = AppTextStyles.titleSmall
+                                            .copyWith(
                                           fontWeight: FontWeight.w500,
                                           color: _textPrimary,
                                         );
@@ -311,18 +309,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                     controller: _phoneController,
                                     focusNode: _phoneFocus,
                                     keyboardType: TextInputType.phone,
-                                    style: GoogleFonts.dmSans(
+                                    style: AppTextStyles.bodyLarge.copyWith(
                                       fontSize: 15,
-                                      fontWeight: FontWeight.w400,
                                       color: _textPrimary,
+                                      height: null,
                                     ),
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
                                       hintText: '24 000 0000',
-                                      hintStyle: GoogleFonts.dmSans(
+                                      hintStyle: AppTextStyles.bodyLarge
+                                          .copyWith(
                                         fontSize: 15,
-                                        fontWeight: FontWeight.w400,
                                         color: _textTertiary,
+                                        height: null,
                                       ),
                                       isDense: true,
                                       contentPadding:
@@ -389,10 +388,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                   Icons.expand_more,
                                   color: _textSecondary,
                                 ),
-                                style: GoogleFonts.dmSans(
+                                style: AppTextStyles.bodyLarge.copyWith(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w400,
                                   color: _textPrimary,
+                                  height: null,
                                 ),
                                 items: const [
                                   DropdownMenuItem(
@@ -444,7 +443,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 )
                               : Text(
                                   'Send verification code',
-                                  style: GoogleFonts.dmSans(
+                                  style: AppTextStyles.titleSmall.copyWith(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white,
@@ -471,9 +470,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                           children: [
                             Text(
                               'Already have an account? ',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
+                              style: AppTextStyles.bodyMedium.copyWith(
                                 color: _textSecondary,
                               ),
                             ),
@@ -496,8 +493,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                     child: Center(
                                       child: Text(
                                         'Sign in',
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 14,
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
                                           fontWeight: FontWeight.w500,
                                           color: _primary,
                                         ),
@@ -561,34 +558,24 @@ class _RegisterTermsTextState extends State<_RegisterTermsText> {
         children: [
           TextSpan(
             text: 'By creating an account you agree to our ',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: _textTertiary,
-            ),
+            style: AppTextStyles.cardLabel.copyWith(color: _textTertiary),
           ),
           TextSpan(
             text: 'Terms of Service',
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.labelMedium.copyWith(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
               color: _primary,
             ),
             recognizer: _termsTap,
           ),
           TextSpan(
             text: ' and ',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: _textTertiary,
-            ),
+            style: AppTextStyles.cardLabel.copyWith(color: _textTertiary),
           ),
           TextSpan(
             text: 'Privacy Policy',
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.labelMedium.copyWith(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
               color: _primary,
             ),
             recognizer: _privacyTap,

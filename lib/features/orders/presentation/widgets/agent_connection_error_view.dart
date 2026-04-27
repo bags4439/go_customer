@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_layout.dart';
 
 class AgentConnectionErrorView extends StatelessWidget {
@@ -36,9 +35,7 @@ class AgentConnectionErrorView extends StatelessWidget {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.45,
                 ),
@@ -58,10 +55,8 @@ class AgentConnectionErrorView extends StatelessWidget {
                   ),
                   child: Text(
                     'Try again',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(fontWeight: FontWeight.w500, color: AppColors.secondary, letterSpacing: 0.0),
                   ),
                 ),
               ),

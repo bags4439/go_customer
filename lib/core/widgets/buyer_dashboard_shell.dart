@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 import '../utils/responsive_layout.dart';
 
 class BuyerDashboardShell extends ConsumerWidget {
@@ -601,10 +602,7 @@ class _RailNotificationIcon
         unreadCount > 99
             ? '99+'
             : '$unreadCount',
-        style: GoogleFonts.dmSans(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTextStyles.caption,
       ),
       child: icon,
     );

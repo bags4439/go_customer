@@ -2,6 +2,10 @@
 class RepairConstants {
   RepairConstants._();
 
+  static const String systemSettingsKeyRepairFee = 'repairsServiceFee';
+  static const double repairFeeFallbackUsd = 0.0;
+  static const String repairFeeLabel = 'Coordination fee';
+
   // State 0
   static const String state0Heading = 'Not available yet';
   static const String state0Body =
@@ -21,19 +25,20 @@ class RepairConstants {
   // State 1 – choice
   static const String state1Heading = 'Would you like us to arrange repairs?';
   static const String optionYesTitle = 'Yes — arrange repairs for me';
-  static const String optionYesPriceLabel = 'Est. · quote first';
+  static const String optionYesPriceLabel =
+      'Coordination fee · excludes garage quote';
   static const String optionYesBullet1 = 'A garage quote is sent to you before any work starts';
   static const String optionYesBullet2 = 'You review and approve the quote — no surprises';
   static const String optionYesBullet3 = 'Car delivered to you once repairs are complete';
   static const String optionYesBullet4 = 'Before and after photos sent to you in chat';
 
   static const String optionNoTitle = 'No — deliver as-is';
-  static const String optionNoPrice = 'Free';
-  static const String optionNoPriceLabel = 'No extra charge';
-  static const String optionNoBullet1 = 'Car delivered in its current condition';
-  static const String optionNoBullet2 = 'You arrange and pay for repairs independently';
+  static const String optionNoPriceLabel = 'No coordination fee';
+  static const String optionNoBullet1 =
+      'Your car proceeds to delivery without repairs';
+  static const String optionNoBullet2 = 'No coordination fee applies';
   static String optionNoBullet3(String agentFirstName) =>
-      '$agentFirstName can recommend garages if needed';
+      '$agentFirstName is still available to answer questions';
 
   static const String infoNote =
       'You will only be charged after you review and approve the garage quote. You can ask';

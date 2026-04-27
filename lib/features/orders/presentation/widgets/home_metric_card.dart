@@ -51,19 +51,14 @@ class _MetricCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             value,
-            style: GoogleFonts.dmSans(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: valueColor,
-            ),
+            style: AppTextStyles.displaySmall
+                .copyWith(color: valueColor, fontSize: 24, fontWeight: FontWeight.w600, height: 1.0, letterSpacing: 0.0),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              color: _C.textSecondary,
-            ),
+            style: AppTextStyles.caption
+                .copyWith(color: _C.textSecondary, fontSize: 12, fontWeight: FontWeight.w400, height: 1.0, letterSpacing: 0.0),
           ),
         ],
       ),

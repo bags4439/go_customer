@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
@@ -114,7 +114,7 @@ class _OrderCancelScreenState extends ConsumerState<OrderCancelScreen>
       ),
       title: Text(
         OrderEditConstants.cancelOrderTitle,
-        style: GoogleFonts.dmSans(fontSize: 17, fontWeight: FontWeight.w600),
+        style: AppTextStyles.titleMedium,
       ),
       elevation: 0,
       bottom: PreferredSize(
@@ -143,7 +143,7 @@ class _AccessDeniedScreen extends StatelessWidget {
         ),
         title: Text(
           OrderEditConstants.cancelOrderTitle,
-          style: GoogleFonts.dmSans(fontSize: 17, fontWeight: FontWeight.w600),
+          style: AppTextStyles.titleMedium,
         ),
         elevation: 0,
         bottom: PreferredSize(
@@ -171,9 +171,7 @@ class _AccessDeniedScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   OrderEditConstants.notAvailable,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.titleSmall.copyWith(
                     color: Colors.black87,
                   ),
                 ),
@@ -181,8 +179,7 @@ class _AccessDeniedScreen extends StatelessWidget {
                 Text(
                   OrderEditConstants.accessDeniedMessage,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: const Color(_kTextSecondary),
                   ),
                 ),
@@ -260,7 +257,7 @@ class _CancelContent extends ConsumerWidget {
         ),
         title: Text(
           OrderEditConstants.cancelOrderTitle,
-          style: GoogleFonts.dmSans(fontSize: 17, fontWeight: FontWeight.w600),
+          style: AppTextStyles.titleMedium,
         ),
         elevation: 0,
         bottom: PreferredSize(
@@ -294,8 +291,9 @@ class _CancelContent extends ConsumerWidget {
                       child: Text(
                         OrderEditConstants.vehicleOptionsWarningCancel
                             .replaceAll('[agentFirstName]', agentName),
-                        style: GoogleFonts.dmSans(
-                            fontSize: 12, color: const Color(_kAmberText)),
+                        style: AppTextStyles.cardLabel.copyWith(
+                          color: const Color(_kAmberText),
+                        ),
                       ),
                     ),
                   ],
@@ -358,8 +356,9 @@ class _CancelContent extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       OrderEditConstants.noChargeNote,
-                      style: GoogleFonts.dmSans(
-                          fontSize: 11, color: const Color(_kSuccessText)),
+                      style: AppTextStyles.caption.copyWith(
+                        color: const Color(_kSuccessText),
+                      ),
                     ),
                   ),
                 ],
@@ -392,8 +391,7 @@ class _CancelContent extends ConsumerWidget {
                             )
                           : Text(
                               OrderEditConstants.yesCancelButton,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 14,
+                              style: AppTextStyles.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -410,8 +408,7 @@ class _CancelContent extends ConsumerWidget {
                       ),
                       child: Text(
                         OrderEditConstants.noKeepOrderButton,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 14,
+                        style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -480,17 +477,12 @@ class _OrderSummaryCard extends StatelessWidget {
         children: [
           Text(
             OrderEditConstants.cancelThisOrderHeading,
-            style: GoogleFonts.dmSans(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            style: AppTextStyles.titleSmall.copyWith(color: Colors.black87),
           ),
           const SizedBox(height: 4),
           Text(
             OrderEditConstants.cancelSubtitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
+            style: AppTextStyles.bodySmall.copyWith(
               color: const Color(_kTextSecondary),
             ),
           ),
@@ -537,18 +529,13 @@ class _SummaryRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
+            style: AppTextStyles.cardLabel.copyWith(
               color: const Color(_kTextSecondary),
             ),
           ),
           Text(
             value,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: valueColor,
-            ),
+            style: AppTextStyles.labelMedium.copyWith(color: valueColor),
           ),
         ],
       ),

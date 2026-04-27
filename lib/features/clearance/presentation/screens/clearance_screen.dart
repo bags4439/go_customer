@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
@@ -45,11 +45,7 @@ class ClearanceScreen extends ConsumerWidget {
         ),
         title: Text(
           'Clearance',
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.appBarTitle,
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
@@ -95,10 +91,7 @@ class _ClearanceErrorCard extends StatelessWidget {
             Text(
               ClearanceConstants.errorMessage,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -246,21 +239,13 @@ class _State0NotAvailable extends StatelessWidget {
             Text(
               ClearanceConstants.state0Heading,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: 12),
             Text(
               ClearanceConstants.state0Body,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-                height: 1.55,
-              ),
+              style: AppTextStyles.bodySmall.copyWith(height: 1.55),
             ),
             const SizedBox(height: 32),
             SizedBox(
@@ -276,11 +261,8 @@ class _State0NotAvailable extends StatelessWidget {
                 ),
                 child: Text(
                   ClearanceConstants.state0BackButton,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -381,20 +363,12 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
           const SizedBox(height: 24),
           Text(
             ClearanceConstants.state1Heading,
-            style: GoogleFonts.dmSans(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTextStyles.titleSmall,
           ),
           const SizedBox(height: 4),
           Text(
             ClearanceConstants.state1Subtitle,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
+            style: AppTextStyles.bodySmall,
           ),
           const SizedBox(height: 16),
           _OptionCard(
@@ -441,10 +415,7 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
               children: [
                 Text(
                   ClearanceConstants.notSureHeading,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppTextStyles.cardLabel,
                 ),
                 const SizedBox(height: 4),
                 InkWell(
@@ -454,11 +425,7 @@ class _State1ChoiceState extends ConsumerState<_State1Choice>
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Text(
                       ClearanceConstants.askAgentLink(agentName),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
-                        color: AppColors.secondary,
-                        decoration: TextDecoration.underline,
-                      ),
+                      style: AppTextStyles.link,
                     ),
                   ),
                 ),
@@ -519,9 +486,8 @@ class _ArrivalBar extends StatelessWidget {
                 children: [
                   Text(
                     ClearanceConstants.arrivalBarTitle,
-                    style: GoogleFonts.dmSans(
+                    style: AppTextStyles.labelLarge.copyWith(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
                       color: AppColors.successMutedForeground,
                     ),
                   ),
@@ -529,10 +495,8 @@ class _ArrivalBar extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       _arrivalDateFormat.format(arrivalDate!),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        color: AppColors.success,
-                      ),
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.success),
                     ),
                   ],
                 ],
@@ -614,9 +578,7 @@ class _OptionCard extends ConsumerWidget {
                           type == ClearanceOption.agentHandles
                               ? ClearanceConstants.optionAgentTitle
                               : ClearanceConstants.optionSelfTitle,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.labelLarge.copyWith(
                             color: isSelected
                                 ? AppColors.secondary
                                 : AppColors.textPrimary,
@@ -628,8 +590,7 @@ class _OptionCard extends ConsumerWidget {
                             if (priceLabel != null)
                               Text(
                                 priceLabel!,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 13,
+                                style: AppTextStyles.bodySmall.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: type == ClearanceOption.selfClearance
                                       ? AppColors.success
@@ -639,8 +600,7 @@ class _OptionCard extends ConsumerWidget {
                             const SizedBox(width: 4),
                             Text(
                               priceSubLabel,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 11,
+                              style: AppTextStyles.caption.copyWith(
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -694,19 +654,14 @@ class _OptionCard extends ConsumerWidget {
                                 children: [
                                   Text(
                                     '• ',
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 12,
-                                      color: AppColors.textTertiary,
-                                    ),
+                                    style: AppTextStyles.labelMedium
+                                        .copyWith(color: AppColors.textTertiary),
                                   ),
                                   Expanded(
                                     child: Text(
                                       b,
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 12,
-                                        color: AppColors.textSecondary,
-                                        height: 1.5,
-                                      ),
+                                      style: AppTextStyles.cardLabel
+                                          .copyWith(height: 1.5),
                                     ),
                                   ),
                                 ],
@@ -912,8 +867,7 @@ class _State2AgentManagedState extends ConsumerState<_State2AgentManaged>
                         Expanded(
                           child: Text(
                             ClearanceConstants.state2AssessedNote,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 12,
+                            style: AppTextStyles.cardLabel.copyWith(
                               color: AppColors.infoText,
                               height: 1.5,
                             ),
@@ -953,10 +907,7 @@ class _State2AgentManagedState extends ConsumerState<_State2AgentManaged>
             ),
             child: Text(
               ClearanceConstants.askAgentButton(agentName),
-              style: GoogleFonts.dmSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.buttonLarge,
             ),
           ),
         ),
@@ -1062,10 +1013,11 @@ class _TimelineStageRow extends StatelessWidget {
         child: Center(
           child: Text(
             '${index + 1}',
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.labelSmall.copyWith(
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: AppColors.textTertiary,
+              letterSpacing: 0,
             ),
           ),
         ),
@@ -1107,26 +1059,22 @@ class _TimelineStageRow extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
+                      style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: isDone || isActive
                             ? FontWeight.w600
                             : FontWeight.w400,
                         color: isActive
                             ? AppColors.secondary
                             : isDone
-                            ? AppColors.textPrimary
-                            : AppColors.textTertiary,
+                                ? AppColors.textPrimary
+                                : AppColors.textTertiary,
                       ),
                     ),
                     if (date != null) ...[
                       const SizedBox(height: 3),
                       Text(
                         _arrivalDateFormat.format(date!),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          color: AppColors.textTertiary,
-                        ),
+                        style: AppTextStyles.caption,
                       ),
                     ],
                   ],
@@ -1168,12 +1116,7 @@ class _DetailsCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             child: Text(
               'CLEARANCE DETAILS',
-              style: GoogleFonts.dmSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textTertiary,
-                letterSpacing: 0.8,
-              ),
+              style: AppTextStyles.sectionLabel,
             ),
           ),
           Container(height: 0.5, color: AppColors.borderSolid),
@@ -1210,28 +1153,21 @@ class _DetailsCard extends StatelessWidget {
                       children: [
                         Text(
                           'Total duty',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 11,
-                            color: AppColors.textTertiary,
-                          ),
+                          style: AppTextStyles.caption,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           totalFormatted.primary,
-                          style: GoogleFonts.dmSans(
+                          style: AppTextStyles.amountMedium.copyWith(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
                           ),
                         ),
                         if (totalFormatted.hasSecondary) ...[
                           const SizedBox(height: 2),
                           Text(
                             totalFormatted.secondary!,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 12,
-                              color: AppColors.textTertiary,
-                            ),
+                            style: AppTextStyles.amountSmall,
                           ),
                         ],
                       ],
@@ -1252,19 +1188,12 @@ class _DetailsCard extends StatelessWidget {
                       children: [
                         Text(
                           'AGENT NOTE',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textTertiary,
-                            letterSpacing: 0.6,
-                          ),
+                          style: AppTextStyles.badgeText,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           duty.notes!,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
+                          style: AppTextStyles.bodySmall.copyWith(
                             fontStyle: FontStyle.italic,
                             height: 1.5,
                           ),
@@ -1299,20 +1228,13 @@ class _FieldRow extends StatelessWidget {
             width: 110,
             child: Text(
               label,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.cardLabel,
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTextStyles.cardValue,
               textAlign: TextAlign.right,
             ),
           ),
@@ -1384,21 +1306,13 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                 Text(
                   ClearanceConstants.state3Heading,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.titleSmall.copyWith(fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   ClearanceConstants.state3Body,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    height: 1.6,
-                  ),
+                  style: AppTextStyles.bodySmall.copyWith(height: 1.6),
                 ),
                 const SizedBox(height: 16),
                 const Divider(),
@@ -1433,8 +1347,7 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
               children: [
                 Text(
                   ClearanceConstants.state3NeedHelp,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
+                  style: AppTextStyles.caption.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.infoText,
                     letterSpacing: 0.4,
@@ -1443,8 +1356,7 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                 const SizedBox(height: 4),
                 Text(
                   '$agentName ${ClearanceConstants.state3AgentHelpBodySuffix}',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.infoText,
                     height: 1.5,
                   ),
@@ -1465,10 +1377,7 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                     ),
                     child: Text(
                       ClearanceConstants.state3AskAgentButton(agentName),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.buttonLarge.copyWith(fontSize: 14),
                     ),
                   ),
                 ),
@@ -1483,10 +1392,10 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 ClearanceConstants.state3SwitchLink,
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.link.copyWith(
                   fontSize: 12,
                   color: AppColors.textSecondary,
-                  decoration: TextDecoration.underline,
+                  decorationColor: AppColors.textSecondary,
                 ),
               ),
             ),
@@ -1514,19 +1423,12 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
             children: [
               Text(
                 ClearanceConstants.switchSheetTitle,
-                style: GoogleFonts.dmSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
+                style: AppTextStyles.titleSmall.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 8),
               Text(
                 ClearanceConstants.switchSheetBody(feeFormatted),
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.bodySmall,
               ),
               const SizedBox(height: 24),
               Row(
@@ -1602,11 +1504,7 @@ class _InfoRow extends StatelessWidget {
             Expanded(
               child: Text(
                 text,
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
+                style: AppTextStyles.bodySmall.copyWith(height: 1.5),
               ),
             ),
           ],

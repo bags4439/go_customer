@@ -56,6 +56,8 @@ class DeliveryFirestoreDataSource {
     return Delivery(
       id: m.id,
       orderId: m.orderId,
+      handledBy: m.handledBy,
+      paymentsCleared: m.paymentsCleared,
       deliveryAddress: m.deliveryAddress,
       deliveryCity: m.deliveryCity,
       latitude: m.latitude,
@@ -69,6 +71,10 @@ class DeliveryFirestoreDataSource {
       status: m.status,
       paymentConfirmed: m.paymentConfirmed,
       notes: m.notes,
+      collectionAddress: m.collectionAddress,
+      collectionLatitude: m.collectionLatitude,
+      collectionLongitude: m.collectionLongitude,
+      collectionNotes: m.collectionNotes,
       createdAt: m.createdAt,
     );
   }
@@ -109,6 +115,106 @@ class DeliveryFirestoreDataSource {
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
+  }
+
+  /// Called when customer confirms
+  /// agent-coordinated delivery.
+  /// Creates or updates the delivery
+  /// doc with handledBy: 'agent'.
+  Future<void> confirmAgentDelivery({
+    required String orderId,
+  }) async {
+    final snap = await _delivery
+        .where('orderId', isEqualTo: orderId)
+        .limit(1)
+        .get();
+
+    final payload = <String, dynamic>{
+      'orderId': orderId,
+      'handledBy': 'agent',
+      'paymentsCleared': false,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (snap.docs.isNotEmpty) {
+      await snap.docs.first.reference.update(payload);
+    } else {
+      await _delivery.add({
+        ...payload,
+        'buyerConfirmed': false,
+        'paymentConfirmed': false,
+        'status': 'pending_payment',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// Called when customer confirms
+  /// self-pickup. Creates or updates
+  /// the delivery doc with
+  /// handledBy: 'self'.
+  Future<void> confirmSelfPickup({
+    required String orderId,
+  }) async {
+    final snap = await _delivery
+        .where('orderId', isEqualTo: orderId)
+        .limit(1)
+        .get();
+
+    final payload = <String, dynamic>{
+      'orderId': orderId,
+      'handledBy': 'self',
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (snap.docs.isNotEmpty) {
+      await snap.docs.first.reference.update(payload);
+    } else {
+      await _delivery.add({
+        ...payload,
+        'buyerConfirmed': false,
+        'paymentConfirmed': false,
+        'paymentsCleared': false,
+        'status': 'pending_payment',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// Called when customer confirms
+  /// they have collected their
+  /// vehicle from the self-pickup
+  /// point. Marks buyerConfirmed
+  /// and updates order status.
+  Future<void> confirmSelfCollection(String orderId) async {
+    final snap = await _delivery
+        .where('orderId', isEqualTo: orderId)
+        .limit(1)
+        .get();
+
+    final batch = _firestore.batch();
+
+    if (snap.docs.isNotEmpty) {
+      batch.update(
+        snap.docs.first.reference,
+        {
+          'buyerConfirmed': true,
+          'buyerConfirmedAt': FieldValue.serverTimestamp(),
+          'status': 'delivery_confirmed',
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+      );
+    }
+
+    batch.update(
+      _orders.doc(orderId),
+      {
+        'status': AppConstants.statusDeliveryConfirmed,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+    );
+
+    await batch.commit();
   }
 
   Future<void> confirmDelivery(String orderId) async {
@@ -190,8 +296,6 @@ class DeliveryFirestoreDataSource {
       batch.update(
         timelineSnap.docs.first.reference,
         {
-          'isComplete': true,
-          'isActive': false,
           'completedAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         },

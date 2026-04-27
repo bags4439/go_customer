@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -88,8 +88,8 @@ class OrderTimelineStepRow extends ConsumerWidget {
     final lineColor = isComplete
         ? AppColors.success
         : isActive
-            ? AppColors.secondary.withValues(alpha: 0.3)
-            : AppColors.borderSolid;
+        ? AppColors.secondary.withValues(alpha: 0.3)
+        : AppColors.borderSolid;
 
     const dotTopOffset = 12.0;
     const dotSize = 22.0;
@@ -102,10 +102,7 @@ class OrderTimelineStepRow extends ConsumerWidget {
             left: 21,
             top: lineStart,
             bottom: 0,
-            child: Container(
-              width: 1.5,
-              color: lineColor,
-            ),
+            child: Container(width: 1.5, color: lineColor),
           ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,37 +114,28 @@ class OrderTimelineStepRow extends ConsumerWidget {
                 child: isComplete
                     ? const _CompletedDot()
                     : isActive
-                        ? const _PulsingActiveDot()
-                        : _UpcomingDot(number: stageNumber),
+                    ? const _PulsingActiveDot()
+                    : _UpcomingDot(number: stageNumber),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(
-                  right: 16,
-                  bottom: 8,
-                ),
+                padding: const EdgeInsets.only(right: 16, bottom: 8),
                 child: isComplete
-                    ? _CompletedRow(
-                        stage: stage,
-                        isLast: isLast,
-                      )
+                    ? _CompletedRow(stage: stage, isLast: isLast)
                     : isActive
-                        ? _ActiveStageContent(
-                            stage: stage,
-                            orderId: orderId,
-                            order: order,
-                            isLast: isLast,
-                            pendingPayments: pendingPayments,
-                            shipping: shipping,
-                            clearance: clearance,
-                            repairJob: repairJob,
-                            onChatTap: onChatTap,
-                          )
-                        : _UpcomingRow(
-                            stage: stage,
-                            isLast: isLast,
-                          ),
+                    ? _ActiveStageContent(
+                        stage: stage,
+                        orderId: orderId,
+                        order: order,
+                        isLast: isLast,
+                        pendingPayments: pendingPayments,
+                        shipping: shipping,
+                        clearance: clearance,
+                        repairJob: repairJob,
+                        onChatTap: onChatTap,
+                      )
+                    : _UpcomingRow(stage: stage, isLast: isLast),
               ),
             ),
           ],
@@ -170,11 +158,7 @@ class _CompletedDot extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: const Center(
-        child: Icon(
-          Icons.check_rounded,
-          size: 12,
-          color: Colors.white,
-        ),
+        child: Icon(Icons.check_rounded, size: 12, color: Colors.white),
       ),
     );
   }
@@ -202,10 +186,7 @@ class _PulsingActiveDotState extends State<_PulsingActiveDot>
     _scale = Tween<double>(
       begin: 0.88,
       end: 1.12,
-    ).animate(CurvedAnimation(
-      parent: _ctrl,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -264,10 +245,7 @@ class _UpcomingDot extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: AppColors.borderSolid,
-          width: 1.5,
-        ),
+        border: Border.all(color: AppColors.borderSolid, width: 1.5),
       ),
     );
   }
@@ -277,10 +255,7 @@ class _CompletedRow extends StatelessWidget {
   final OrderTimelineModel stage;
   final bool isLast;
 
-  const _CompletedRow({
-    required this.stage,
-    required this.isLast,
-  });
+  const _CompletedRow({required this.stage, required this.isLast});
 
   String _formatDate(DateTime? dt) {
     if (dt == null) return '';
@@ -306,30 +281,19 @@ class _CompletedRow extends StatelessWidget {
     final dateStr = _formatDate(stage.completedAt);
 
     return Padding(
-      padding: EdgeInsets.only(
-        top: 10,
-        bottom: isLast ? 4 : 0,
-      ),
+      padding: EdgeInsets.only(top: 10, bottom: isLast ? 4 : 0),
       child: Row(
         children: [
           Expanded(
             child: Text(
               stage.label,
-              style: GoogleFonts.dmSans(
-                fontSize: 13.5,
+              style: AppTextStyles.bodySmall.copyWith(
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
               ),
             ),
           ),
-          if (dateStr.isNotEmpty)
-            Text(
-              dateStr,
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
-                color: AppColors.textTertiary,
-              ),
-            ),
+          if (dateStr.isNotEmpty) Text(dateStr, style: AppTextStyles.caption),
         ],
       ),
     );
@@ -340,25 +304,15 @@ class _UpcomingRow extends StatelessWidget {
   final OrderTimelineModel stage;
   final bool isLast;
 
-  const _UpcomingRow({
-    required this.stage,
-    required this.isLast,
-  });
+  const _UpcomingRow({required this.stage, required this.isLast});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        top: 10,
-        bottom: isLast ? 4 : 0,
-      ),
+      padding: EdgeInsets.only(top: 10, bottom: isLast ? 4 : 0),
       child: Text(
         stage.label,
-        style: GoogleFonts.dmSans(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textTertiary,
-        ),
+        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
       ),
     );
   }
@@ -391,10 +345,7 @@ class _ActiveStageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(
-        top: 8,
-        bottom: 12,
-      ),
+      margin: const EdgeInsets.only(top: 8, bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
@@ -418,32 +369,35 @@ class _ActiveStageContent extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    stage.label,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                  child: Text(stage.label, style: AppTextStyles.titleSmall),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.infoBackground,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'In progress',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.infoText,
-                    ),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final isNoRepairs =
+                        stage.stageKey == 'repair' &&
+                        repairJob != null &&
+                        !repairJob!.optedIn;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isNoRepairs
+                            ? AppColors.surface
+                            : AppColors.infoBackground,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        isNoRepairs ? 'No repairs' : 'In progress',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: isNoRepairs
+                              ? AppColors.textSecondary
+                              : AppColors.infoText,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -453,10 +407,8 @@ class _ActiveStageContent extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
               child: Text(
                 stage.detail!,
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
+                style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -512,10 +464,7 @@ class _SubActionArea extends StatelessWidget {
     }
 
     if (stage.stageKey == 'agent_assigned') {
-      return _AgentAssignedCard(
-        order: order,
-        onChatTap: onChatTap,
-      );
+      return _AgentAssignedCard(order: order, onChatTap: onChatTap);
     }
 
     final pay = resolvePendingPaymentForStage(stage.stageKey, pendingPayments);
@@ -557,6 +506,37 @@ class _SubActionArea extends StatelessWidget {
         return _chooseClearance(context);
       case 'repair':
         final job = repairJob;
+        if (job != null &&
+            job.status == RepairStatus.notStarted &&
+            !job.optedIn) {
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: AppColors.borderSolid,
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.directions_car_rounded,
+                  size: 16,
+                  color: AppColors.textTertiary,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'No repairs — delivering as-is',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
         return RepairStatusCard(orderId: orderId, repairJob: job);
       case 'delivery':
         if (order.status == FirestoreEnumValues.orderStatusDelivered) {
@@ -580,8 +560,7 @@ class _SubActionArea extends StatelessWidget {
         ),
         label: Text(
           OrderTimelineConstants.chooseClearance,
-          style: GoogleFonts.dmSans(
-            fontSize: 13,
+          style: AppTextStyles.bodySmall.copyWith(
             fontWeight: FontWeight.w500,
             color: const Color(_kPrimary),
           ),
@@ -615,8 +594,7 @@ class _SubActionArea extends StatelessWidget {
         if (sub != null) ...[
           Text(
             sub,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
+            style: AppTextStyles.caption.copyWith(
               color: const Color(_kTextSecondary),
               height: 1.4,
             ),
@@ -630,13 +608,25 @@ class _SubActionArea extends StatelessWidget {
 }
 
 class _DeliveryActionCard extends ConsumerWidget {
-  const _DeliveryActionCard({required this.orderId});
+  const _DeliveryActionCard({
+    required this.orderId,
+  });
 
   final String orderId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final deliveryAsync = ref.watch(deliveryProvider(orderId));
+  Widget build(
+    BuildContext context,
+    WidgetRef ref,
+  ) {
+    final screenState = ref.watch(
+      deliveryScreenStateProvider(
+        orderId,
+      ),
+    );
+    final deliveryAsync = ref.watch(
+      deliveryProvider(orderId),
+    );
 
     return deliveryAsync.when(
       loading: () => const SizedBox(
@@ -645,137 +635,363 @@ class _DeliveryActionCard extends ConsumerWidget {
           child: SizedBox(
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child:
+                CircularProgressIndicator(
+              strokeWidth: 2,
+            ),
           ),
         ),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, __) =>
+          const SizedBox.shrink(),
       data: (delivery) {
-        if (delivery?.isConfirmed == true) {
-          return _DeliveredCard(orderId: orderId);
-        }
+        switch (screenState) {
+          // Should not appear on
+          // timeline when not available
+          case DeliveryScreenState
+                .notAvailable:
+            return const SizedBox
+                .shrink();
 
-        if (delivery?.hasLocation == true) {
-          final d = delivery!;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.successMutedBackground,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_rounded,
-                      size: 18,
-                      color: AppColors.success,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        d.locationLabel ??
-                            d.deliveryAddress ??
-                            'Location saved',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          color: const Color(0xFF1A4731),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+          // Customer has not yet
+          // chosen delivery method
+          case DeliveryScreenState
+                .choice:
+            return _deliveryCard(
+              context: context,
+              icon: Icons
+                  .local_shipping_outlined,
+              iconColor:
+                  AppColors.secondary,
+              backgroundColor:
+                  AppColors.infoBackground,
+              borderColor:
+                  AppColors.secondary
+                      .withValues(alpha: 0.3),
+              message:
+                  'Choose how you would '
+                  'like to receive your '
+                  'vehicle.',
+              buttonLabel:
+                  'Choose delivery '
+                  'option →',
+              buttonColor:
+                  AppColors.secondary,
+              onTap: () => context.push(
+                '/order/$orderId'
+                '/delivery',
               ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () => context.push('/order/$orderId/delivery'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+            );
+
+          // Waiting for payment
+          // clearance from agent
+          case DeliveryScreenState
+                .awaitingPaymentClearance:
+            final hasPending =
+                delivery != null;
+            return _deliveryCard(
+              context: context,
+              icon: Icons
+                  .hourglass_top_rounded,
+              iconColor:
+                  AppColors.infoText,
+              backgroundColor:
+                  AppColors.infoBackground,
+              borderColor:
+                  AppColors.infoText
+                      .withValues(alpha: 0.3),
+              message: hasPending
+                  ? 'Complete your pending'
+                        ' payments to proceed '
+                        'with delivery.'
+                  : 'Your agent is '
+                        'reviewing your '
+                        'payments. You will '
+                        'be notified once '
+                        'cleared.',
+              buttonLabel:
+                  'View payment details →',
+              buttonColor:
+                  AppColors.secondary,
+              onTap: () => context.push(
+                '/order/$orderId'
+                '/delivery',
+              ),
+            );
+
+          // Payments cleared — needs
+          // delivery address
+          case DeliveryScreenState
+                .addressEntry:
+            return _deliveryCard(
+              context: context,
+              icon: Icons
+                  .location_off_outlined,
+              iconColor:
+                  AppColors.warning,
+              backgroundColor:
+                  AppColors.amberBackground,
+              borderColor:
+                  AppColors.warning
+                      .withValues(alpha: 0.4),
+              message:
+                  'Set your delivery '
+                  'address so your agent '
+                  'can arrange delivery.',
+              buttonLabel:
+                  'Set delivery address →',
+              buttonColor:
+                  AppColors.secondary,
+              onTap: () => context.push(
+                '/order/$orderId'
+                '/delivery',
+              ),
+            );
+
+          // Address set — waiting
+          // for delivery
+          case DeliveryScreenState
+                .locationSet:
+            final d = delivery;
+            return Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets
+                          .all(12),
+                  decoration:
+                      BoxDecoration(
+                    color: AppColors
+                        .successMutedBackground,
+                    borderRadius:
+                        BorderRadius
+                            .circular(10),
+                    border: Border.all(
+                      color: AppColors
+                          .successMutedBorder,
+                      width: 0.5,
                     ),
                   ),
-                  child: Text(
-                    'Confirm vehicle receipt →',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons
+                            .location_on_rounded,
+                        size: 16,
+                        color:
+                            AppColors.success,
+                      ),
+                      const SizedBox(
+                          width: 8),
+                      Expanded(
+                        child: Text(
+                          d?.locationLabel
+                              ?? d?.deliveryAddress
+                              ?? 'Location saved',
+                          style:
+                              AppTextStyles
+                                  .cardLabel
+                                  .copyWith(
+                            color: AppColors
+                                .successMutedForeground,
+                          ),
+                          maxLines: 2,
+                          overflow:
+                              TextOverflow
+                                  .ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        context.push(
+                      '/order/$orderId'
+                      '/delivery',
                     ),
+                    style:
+                        ElevatedButton
+                            .styleFrom(
+                      backgroundColor:
+                          AppColors
+                              .secondary,
+                      foregroundColor:
+                          Colors.white,
+                      elevation: 0,
+                      minimumSize:
+                          const Size(
+                        double.infinity,
+                        48,
+                      ),
+                      shape:
+                          RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius
+                                .circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Track delivery →',
+                      style: AppTextStyles
+                          .buttonMedium,
+                    ),
+                  ),
+                ),
+              ],
+            );
+
+          // Self pickup — waiting
+          // for collection details
+          case DeliveryScreenState
+                .selfPickup:
+            final hasDetails =
+                delivery
+                    ?.hasCollectionDetails
+                ?? false;
+            return _deliveryCard(
+              context: context,
+              icon: hasDetails
+                  ? Icons
+                        .location_on_rounded
+                  : Icons
+                        .hourglass_top_rounded,
+              iconColor: hasDetails
+                  ? AppColors.secondary
+                  : AppColors.textTertiary,
+              backgroundColor:
+                  hasDetails
+                  ? AppColors
+                        .infoBackground
+                  : AppColors.surface,
+              borderColor: hasDetails
+                  ? AppColors.secondary
+                        .withValues(
+                          alpha: 0.3,
+                        )
+                  : AppColors.borderSolid,
+              message: hasDetails
+                  ? 'Collection point is '
+                        'ready. Tap to get '
+                        'directions.'
+                  : 'Your agent is '
+                        'preparing the '
+                        'collection point '
+                        'details.',
+              buttonLabel: hasDetails
+                  ? 'View collection '
+                        'point →'
+                  : 'View details →',
+              buttonColor:
+                  AppColors.secondary,
+              onTap: () => context.push(
+                '/order/$orderId'
+                '/delivery',
+              ),
+            );
+
+          // Delivery confirmed
+          case DeliveryScreenState
+                .confirmed:
+            return _DeliveredCard(
+              orderId: orderId,
+            );
+        }
+      },
+    );
+  }
+
+  Widget _deliveryCard({
+    required BuildContext context,
+    required IconData icon,
+    required Color iconColor,
+    required Color backgroundColor,
+    required Color borderColor,
+    required String message,
+    required String buttonLabel,
+    required Color buttonColor,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding:
+              const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius:
+                BorderRadius.circular(10),
+            border: Border(
+              left: BorderSide(
+                color: borderColor,
+                width: 3,
+              ),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: iconColor,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message,
+                  style: AppTextStyles
+                      .cardLabel
+                      .copyWith(
+                    color: iconColor,
+                    height: 1.4,
                   ),
                 ),
               ),
             ],
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.amberBackground,
-                borderRadius: BorderRadius.circular(10),
-                border: const Border(
-                  left: BorderSide(color: AppColors.warning, width: 3),
-                ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: onTap,
+            style:
+                ElevatedButton.styleFrom(
+              backgroundColor:
+                  buttonColor,
+              foregroundColor:
+                  Colors.white,
+              elevation: 0,
+              minimumSize: const Size(
+                double.infinity,
+                48,
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.location_off_outlined,
-                    size: 18,
-                    color: AppColors.amberText,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Your agent needs your delivery location to proceed.',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        color: AppColors.amberText,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                ],
+              shape:
+                  RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius
+                        .circular(10),
               ),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () => context.push('/order/$orderId/delivery'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(
-                  'Set delivery location →',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+            child: Text(
+              buttonLabel,
+              style:
+                  AppTextStyles.buttonMedium,
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -796,8 +1012,7 @@ Widget _buildChatButton(
       ),
       label: Text(
         OrderTimelineConstants.chatWithAgent,
-        style: GoogleFonts.dmSans(
-          fontSize: 13,
+        style: AppTextStyles.bodySmall.copyWith(
           fontWeight: FontWeight.w500,
           color: const Color(_kPrimary),
         ),
@@ -819,10 +1034,7 @@ class _DeliveredCard extends ConsumerWidget {
   const _DeliveredCard({required this.orderId});
 
   @override
-  Widget build(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(16),
@@ -859,17 +1071,14 @@ class _DeliveredCard extends ConsumerWidget {
                   children: [
                     Text(
                       OrderTimelineConstants.deliveredTitle,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.labelLarge.copyWith(
                         color: const Color(_kDeliveredGreen),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       OrderTimelineConstants.deliveredThanks,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                      style: AppTextStyles.cardLabel.copyWith(
                         color: const Color(_kDeliveredSub),
                       ),
                     ),
@@ -886,18 +1095,12 @@ class _DeliveredCard extends ConsumerWidget {
                 return const SizedBox.shrink();
               }
               final reviewAsync = ref.watch(
-                buyerReviewProvider((
-                  orderId: orderId,
-                  buyerId: userId,
-                )),
+                buyerReviewProvider((orderId: orderId, buyerId: userId)),
               );
               final review = reviewAsync.valueOrNull;
 
               if (review != null) {
-                return _SubmittedReviewCard(
-                  review: review,
-                  orderId: orderId,
-                );
+                return _SubmittedReviewCard(review: review, orderId: orderId);
               }
 
               return SizedBox(
@@ -911,10 +1114,8 @@ class _DeliveredCard extends ConsumerWidget {
                   ),
                   label: Text(
                     OrderTimelineConstants.rateExperience,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
+                    style: AppTextStyles.buttonMedium.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -940,32 +1141,22 @@ class _SubmittedReviewCard extends StatelessWidget {
   final BuyerReviewModel review;
   final String orderId;
 
-  const _SubmittedReviewCard({
-    required this.review,
-    required this.orderId,
-  });
+  const _SubmittedReviewCard({required this.review, required this.orderId});
 
   @override
   Widget build(BuildContext context) {
-    final stars =
-        review.overallRating.round().clamp(1, 5);
+    final stars = review.overallRating.round().clamp(1, 5);
 
     return InkWell(
       onTap: () => context.push('/order/$orderId/review'),
       borderRadius: BorderRadius.circular(10),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.successMutedBackground,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: AppColors.successMutedBorder,
-            width: 0.5,
-          ),
+          border: Border.all(color: AppColors.successMutedBorder, width: 0.5),
         ),
         child: Row(
           children: [
@@ -978,8 +1169,7 @@ class _SubmittedReviewCard extends StatelessWidget {
             Expanded(
               child: Text(
                 'You rated this experience',
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                style: AppTextStyles.bodySmall.copyWith(
                   fontWeight: FontWeight.w500,
                   color: AppColors.successMutedForeground,
                 ),
@@ -990,9 +1180,7 @@ class _SubmittedReviewCard extends StatelessWidget {
               children: List.generate(
                 5,
                 (i) => Icon(
-                  i < stars
-                      ? Icons.star_rounded
-                      : Icons.star_outline_rounded,
+                  i < stars ? Icons.star_rounded : Icons.star_outline_rounded,
                   size: 14,
                   color: i < stars
                       ? const Color(0xFFFFB800)
@@ -1003,9 +1191,7 @@ class _SubmittedReviewCard extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               'View →',
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.labelMedium.copyWith(
                 color: AppColors.success,
               ),
             ),
@@ -1020,10 +1206,7 @@ class _AgentAssignedCard extends ConsumerWidget {
   final OrderView order;
   final VoidCallback? onChatTap;
 
-  const _AgentAssignedCard({
-    required this.order,
-    this.onChatTap,
-  });
+  const _AgentAssignedCard({required this.order, this.onChatTap});
 
   Future<void> _call(String? phone) async {
     if (phone == null || phone.isEmpty) {
@@ -1040,14 +1223,10 @@ class _AgentAssignedCard extends ConsumerWidget {
     final agentId = order.agentId;
 
     if (agentId == null) {
-      return _AgentPendingCard(
-        orderId: order.id,
-      );
+      return _AgentPendingCard(orderId: order.id);
     }
 
-    final agentAsync = ref.watch(
-      agentDetailProvider(agentId),
-    );
+    final agentAsync = ref.watch(agentDetailProvider(agentId));
 
     return agentAsync.when(
       loading: () => const _AgentCardShimmer(),
@@ -1060,9 +1239,7 @@ class _AgentAssignedCard extends ConsumerWidget {
         return _AgentDetailCard(
           agent: agent,
           onChatTap: onChatTap,
-          onCallTap: agent.phone != null
-              ? () => _call(agent.phone)
-              : null,
+          onCallTap: agent.phone != null ? () => _call(agent.phone) : null,
         );
       },
     );
@@ -1111,17 +1288,15 @@ class _AgentPendingCard extends StatelessWidget {
                   children: [
                     Text(
                       'Finding your agent',
-                      style: GoogleFonts.dmSans(
+                      style: AppTextStyles.labelLarge.copyWith(
                         fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
                         color: AppColors.infoText,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'This usually takes a few minutes.',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                      style: AppTextStyles.cardLabel.copyWith(
                         color: AppColors.infoText.withValues(alpha: 0.7),
                       ),
                     ),
@@ -1143,18 +1318,14 @@ class _AgentPendingCard extends StatelessWidget {
               ),
               label: Text(
                 'Contact support',
-                style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                style: AppTextStyles.bodySmall.copyWith(
                   fontWeight: FontWeight.w500,
                   color: AppColors.secondary,
                 ),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.secondary,
-                side: const BorderSide(
-                  color: AppColors.secondary,
-                  width: 0.5,
-                ),
+                side: const BorderSide(color: AppColors.secondary, width: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -1172,11 +1343,7 @@ class _AgentDetailCard extends StatelessWidget {
   final VoidCallback? onChatTap;
   final VoidCallback? onCallTap;
 
-  const _AgentDetailCard({
-    required this.agent,
-    this.onChatTap,
-    this.onCallTap,
-  });
+  const _AgentDetailCard({required this.agent, this.onChatTap, this.onCallTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1207,26 +1374,19 @@ class _AgentDetailCard extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.borderSolid,
-                    width: 0.5,
-                  ),
+                  border: Border.all(color: AppColors.borderSolid, width: 0.5),
                 ),
                 child: ClipOval(
                   child: agent.photoUrl != null && agent.photoUrl!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: agent.photoUrl!,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => _AgentInitials(
-                            name: agent.fullName,
-                          ),
-                          errorWidget: (_, __, ___) => _AgentInitials(
-                            name: agent.fullName,
-                          ),
+                          placeholder: (_, __) =>
+                              _AgentInitials(name: agent.fullName),
+                          errorWidget: (_, __, ___) =>
+                              _AgentInitials(name: agent.fullName),
                         )
-                      : _AgentInitials(
-                          name: agent.fullName,
-                        ),
+                      : _AgentInitials(name: agent.fullName),
                 ),
               ),
               const SizedBox(width: 12),
@@ -1236,11 +1396,7 @@ class _AgentDetailCard extends StatelessWidget {
                   children: [
                     Text(
                       agent.fullName,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
+                      style: AppTextStyles.labelLarge,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1255,9 +1411,7 @@ class _AgentDetailCard extends StatelessWidget {
                         const SizedBox(width: 3),
                         Text(
                           agent.rating.toStringAsFixed(1),
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                          style: AppTextStyles.labelMedium.copyWith(
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -1273,8 +1427,7 @@ class _AgentDetailCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           '${agent.totalOrdersCompleted} orders',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
+                          style: AppTextStyles.cardLabel.copyWith(
                             color: AppColors.textTertiary,
                           ),
                         ),
@@ -1296,7 +1449,7 @@ class _AgentDetailCard extends StatelessWidget {
               ),
               child: Text(
                 '"${agent.introMessage}"',
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: 12.5,
                   color: AppColors.textSecondary,
                   fontStyle: FontStyle.italic,
@@ -1320,11 +1473,7 @@ class _AgentDetailCard extends StatelessWidget {
                     ),
                     label: Text(
                       'Chat',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                      style: AppTextStyles.buttonLarge.copyWith(fontSize: 13.5),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
@@ -1351,7 +1500,7 @@ class _AgentDetailCard extends StatelessWidget {
                       ),
                       label: Text(
                         'Call',
-                        style: GoogleFonts.dmSans(
+                        style: AppTextStyles.bodySmall.copyWith(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w500,
                           color: AppColors.secondary,
@@ -1386,16 +1535,14 @@ class _AgentInitials extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial =
-        name.isNotEmpty ? name[0].toUpperCase() : '?';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
     return Container(
       color: AppColors.infoBackground,
       child: Center(
         child: Text(
           initial,
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.titleSmall.copyWith(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
             color: AppColors.secondary,
           ),
         ),
@@ -1429,10 +1576,7 @@ class _PaidPill extends ConsumerWidget {
   final String label;
   final double? amountUsd;
 
-  const _PaidPill({
-    required this.label,
-    this.amountUsd,
-  });
+  const _PaidPill({required this.label, this.amountUsd});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1449,10 +1593,7 @@ class _PaidPill extends ConsumerWidget {
 
     return Container(
       margin: const EdgeInsets.only(top: 6),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFEAF3DE),
         borderRadius: BorderRadius.circular(20),
@@ -1473,9 +1614,7 @@ class _PaidPill extends ConsumerWidget {
           Flexible(
             child: Text(
               displayText,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.cardValue.copyWith(
                 color: const Color(_kSuccess),
               ),
             ),

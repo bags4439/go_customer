@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../core/constants/order_edit_constants.dart';
 import '../providers/order_providers.dart';
@@ -98,11 +98,7 @@ class _OrderCancelledContent extends ConsumerWidget {
           const SizedBox(height: 20),
           Text(
             OrderEditConstants.orderCancelledHeading,
-            style: GoogleFonts.dmSans(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            style: AppTextStyles.amountMedium,
           ),
           const SizedBox(height: 8),
           Container(
@@ -113,18 +109,13 @@ class _OrderCancelledContent extends ConsumerWidget {
             ),
             child: Text(
               orderRef,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF666666),
-              ),
+              style: AppTextStyles.labelMedium,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             OrderEditConstants.noChargesMade,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
+            style: AppTextStyles.bodySmall.copyWith(
               color: const Color(_kTextSecondary),
             ),
             textAlign: TextAlign.center,
@@ -137,8 +128,7 @@ class _OrderCancelledContent extends ConsumerWidget {
           const SizedBox(height: 20),
           Text(
             OrderEditConstants.wantToImportDifferent,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
+            style: AppTextStyles.bodySmall.copyWith(
               color: const Color(_kTextSecondary),
             ),
             textAlign: TextAlign.center,
@@ -155,8 +145,7 @@ class _OrderCancelledContent extends ConsumerWidget {
               ),
               child: Text(
                 OrderEditConstants.startNewOrder,
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
+                style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -174,8 +163,7 @@ class _OrderCancelledContent extends ConsumerWidget {
               ),
               child: Text(
                 OrderEditConstants.backToHome,
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
+                style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),

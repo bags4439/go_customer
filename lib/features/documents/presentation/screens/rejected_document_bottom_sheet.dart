@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../../domain/entities/document_entity.dart';
 import '../../core/constants/document_constants.dart';
@@ -106,11 +106,8 @@ class _RejectedSheetContentState extends State<_RejectedSheetContent>
               children: [
                 Text(
                   DocumentConstants.documentRejected,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+                  style: AppTextStyles.titleSmall
+                      .copyWith(color: Theme.of(context).colorScheme.onSurface),
                 ),
                 const SizedBox(height: 16),
                 Container(
@@ -127,19 +124,14 @@ class _RejectedSheetContentState extends State<_RejectedSheetContent>
                     children: [
                       Text(
                         DocumentConstants.rejectionReason.toUpperCase(),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFA32D2D),
-                        ),
+                        style: AppTextStyles.sectionLabel
+                            .copyWith(color: const Color(0xFFA32D2D)),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         document.rejectionReason ?? DocumentConstants.notApplicable,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          color: const Color(0xFFA32D2D),
-                        ),
+                        style: AppTextStyles.labelMedium
+                            .copyWith(color: const Color(0xFFA32D2D), fontSize: 12, letterSpacing: 0.0),
                       ),
                     ],
                   ),
@@ -147,19 +139,19 @@ class _RejectedSheetContentState extends State<_RejectedSheetContent>
                 const SizedBox(height: 20),
                 Text(
                   DocumentConstants.whatToDoNext,
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.labelLarge
+                      .copyWith(
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
                     color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.1,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   DocumentConstants.contactAgentHelp,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-                  ),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8), height: 1.45),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -176,11 +168,8 @@ class _RejectedSheetContentState extends State<_RejectedSheetContent>
                       child: Center(
                         child: Text(
                           '${DocumentConstants.askAgent} $agentName →',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+                          style: AppTextStyles.labelLarge
+                              .copyWith(color: Colors.white, height: 1.0),
                         ),
                       ),
                     ),

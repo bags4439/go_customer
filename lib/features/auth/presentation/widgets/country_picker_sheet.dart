@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
+
 import '../../domain/entities/country.dart';
 import '../providers/countries_providers.dart';
 
@@ -135,17 +136,14 @@ class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
                           children: [
                             Text(
                               'Where are you based?',
-                              style: GoogleFonts.dmSans(
+                              style: AppTextStyles.titleMedium.copyWith(
                                 fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 3),
                             Text(
                               'This helps us show prices in your currency.',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 13,
+                              style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -185,16 +183,19 @@ class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
                           child: TextField(
                             controller: _searchCtrl,
                             focusNode: _searchFocus,
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.bodyLarge.copyWith(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
                               color: AppColors.textPrimary,
+                              height: null,
                             ),
                             decoration: InputDecoration(
                               hintText: 'Search countries',
-                              hintStyle: GoogleFonts.dmSans(
+                              hintStyle: AppTextStyles.bodyLarge.copyWith(
                                 fontSize: 15,
+                                fontWeight: FontWeight.w400,
                                 color: AppColors.textTertiary,
+                                height: null,
                               ),
                               border: InputBorder.none,
                               isDense: true,
@@ -249,8 +250,7 @@ class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
                     error: (_, __) => Center(
                       child: Text(
                         'Could not load countries.',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 13,
+                        style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -261,8 +261,7 @@ class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
                         return Center(
                           child: Text(
                             'No countries found.',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 13,
+                            style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                             ),
                           ),
@@ -338,9 +337,10 @@ class _CountryTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     country.name,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 15,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    style: AppTextStyles.titleSmall.copyWith(
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                       color: isSelected
                           ? AppColors.secondary
                           : AppColors.textPrimary,

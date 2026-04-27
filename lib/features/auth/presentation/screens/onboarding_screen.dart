@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/route_constants.dart';
 import '../widgets/auth_visual_widgets.dart';
@@ -119,8 +120,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         child: Text(
                           'Sign in',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 14,
+                          style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w500,
                             color: const Color(0xFF378ADD),
                           ),
@@ -156,9 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
+                                style: AppTextStyles.displaySmall.copyWith(
                                   color: const Color(0xFF1A1A18),
                                   height: 1.2,
                                 ),
@@ -174,11 +172,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 textAlign: TextAlign.center,
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
+                                style: AppTextStyles.bodyLarge.copyWith(
                                   color: const Color(0xFF666666),
-                                  height: 1.55,
                                 ),
                               ),
                             ),
@@ -226,7 +221,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             _index == _slides.length - 1
                                 ? 'Create account'
                                 : 'Continue',
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.titleSmall.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
@@ -247,9 +242,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             _index == _slides.length - 1
                                 ? 'Already have an account? Sign in'
                                 : 'Skip for now',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
+                            style: AppTextStyles.bodyMedium.copyWith(
                               color: const Color(0xFF666666),
                             ),
                           ),

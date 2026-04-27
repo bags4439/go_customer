@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 class GuideFaqItem {
   const GuideFaqItem({required this.question, required this.answer});
@@ -159,19 +158,19 @@ class _GuideFaqSheetState extends State<GuideFaqSheet> {
                         children: [
                           Text(
                             'Help & FAQ',
-                            style: GoogleFonts.dmSans(
+                            style: AppTextStyles.titleSmall
+                                .copyWith(
                               fontSize: 18,
-                              fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              height: 1.1,
+                              letterSpacing: 0.0,
                             ),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             'Common questions answered.',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTextStyles.bodySmall,
                           ),
                         ],
                       ),
@@ -309,13 +308,17 @@ class _FaqAccordionTileState extends State<_FaqAccordionTile>
                                   Expanded(
                                     child: Text(
                                       widget.item.question,
-                                      style: GoogleFonts.dmSans(
+                                      style: (widget.isOpen
+                                              ? AppTextStyles.labelLarge
+                                              : AppTextStyles.bodyMedium)
+                                          .copyWith(
+                                        color: AppColors.textPrimary,
+                                        height: 1.3,
                                         fontSize: 14,
                                         fontWeight: widget.isOpen
                                             ? FontWeight.w600
                                             : FontWeight.w500,
-                                        color: AppColors.textPrimary,
-                                        height: 1.3,
+                                        letterSpacing: 0.0,
                                       ),
                                     ),
                                   ),
@@ -352,11 +355,8 @@ class _FaqAccordionTileState extends State<_FaqAccordionTile>
                                       const SizedBox(height: 12),
                                       Text(
                                         widget.item.answer,
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 13,
-                                          color: AppColors.textSecondary,
-                                          height: 1.65,
-                                        ),
+                                        style: AppTextStyles.bodySmall
+                                            .copyWith(height: 1.65),
                                       ),
                                     ],
                                   ),

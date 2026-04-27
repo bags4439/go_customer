@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 /// Step row with dot, optional connector, and label (searching journey).
 class AgentConnectionAssignStep extends StatelessWidget {
@@ -66,13 +65,16 @@ class AgentConnectionAssignStep extends StatelessWidget {
               padding: const EdgeInsets.only(top: 3),
               child: Text(
                 text,
-                style: GoogleFonts.dmSans(
+                style: (active
+                        ? AppTextStyles.labelLarge
+                        : AppTextStyles.bodyMedium)
+                    .copyWith(
                   fontSize: 14,
-                  fontWeight:
-                      active ? FontWeight.w600 : FontWeight.w400,
                   color: done || active
                       ? AppColors.textPrimary
                       : AppColors.textTertiary,
+                  fontWeight:
+                      active ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             ),

@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -10,6 +9,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../core/constants/vehicle_detail_constants.dart';
 import '../../domain/entities/vehicle_option_entity.dart';
@@ -81,7 +81,7 @@ PreferredSizeWidget _buildAppBar(
     ),
     title: Text(
       VehicleDetailConstants.screenTitle,
-      style: GoogleFonts.dmSans(fontSize: 17, fontWeight: FontWeight.w600),
+      style: AppTextStyles.appBarTitle,
     ),
     elevation: 0,
     backgroundColor: Colors.white,
@@ -98,11 +98,8 @@ PreferredSizeWidget _buildAppBar(
             ),
             child: Text(
               '${VehicleDetailConstants.lotPillPrefix}$lotNumber',
-              style: GoogleFonts.dmSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: const Color(_kTextSecondary),
-              ),
+              style: AppTextStyles.badgeText
+                  .copyWith(color: const Color(_kTextSecondary), fontWeight: FontWeight.w500, fontSize: 10, letterSpacing: 0.0),
             ),
           ),
         )
@@ -203,19 +200,14 @@ class _NotFoundState extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   VehicleDetailConstants.vehicleNotFound,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.titleSmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   VehicleDetailConstants.vehicleNotFoundSub,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: const Color(_kTextSecondary),
-                  ),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: const Color(_kTextSecondary), height: 1.3),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
@@ -342,10 +334,8 @@ class _VehicleDetailScaffoldState
                             ),
                             child: Text(
                               VehicleDetailConstants.chatWithAgentCta,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(fontWeight: FontWeight.w500, color: const Color(_kPrimary), letterSpacing: 0.0),
                             ),
                           ),
                         ),
@@ -373,7 +363,8 @@ class _VehicleDetailScaffoldState
     final title = parts.where((e) => e.isNotEmpty).join(' ');
     return Text(
       title.isEmpty ? 'Vehicle' : title,
-      style: GoogleFonts.dmSans(fontSize: 20, fontWeight: FontWeight.w600),
+      style: AppTextStyles.titleLarge
+          .copyWith(fontSize: 20, fontWeight: FontWeight.w600, height: 1.1, letterSpacing: 0.0),
     );
   }
 
@@ -393,10 +384,8 @@ class _VehicleDetailScaffoldState
     ];
     return Text(
       parts.join(' · '),
-      style: GoogleFonts.dmSans(
-        fontSize: 13,
-        color: const Color(_kTextSecondary),
-      ),
+      style: AppTextStyles.bodySmall
+          .copyWith(color: const Color(_kTextSecondary), height: 1.3),
     );
   }
 }
@@ -426,10 +415,8 @@ class _RejectedBanner extends StatelessWidget {
           Expanded(
             child: Text(
               VehicleDetailConstants.rejectedBanner,
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                color: const Color(_kAmberText),
-              ),
+              style: AppTextStyles.labelMedium
+                  .copyWith(color: const Color(_kAmberText), letterSpacing: 0.0, fontSize: 12, fontWeight: FontWeight.w400, height: 1.3),
             ),
           ),
         ],
@@ -625,7 +612,8 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
                 ),
                 child: Text(
                   '${_index + 1} / ${widget.urls.length}',
-                  style: GoogleFonts.dmSans(fontSize: 12, color: Colors.white),
+                  style: AppTextStyles.labelMedium
+                      .copyWith(color: Colors.white, fontSize: 12, letterSpacing: 0.0, fontWeight: FontWeight.w500, height: 1.0),
                 ),
               ),
             ),
@@ -655,10 +643,8 @@ class _PhotoPlaceholder extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             VehicleDetailConstants.photoNotAvailable,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
-              color: const Color(_kTextTertiary),
-            ),
+            style: AppTextStyles.caption
+                .copyWith(color: const Color(_kTextTertiary), fontSize: 12, height: 1.0, letterSpacing: 0.0, fontWeight: FontWeight.w400),
           ),
         ],
       ),
@@ -754,11 +740,8 @@ class _Pill extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.dmSans(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: textColor ?? const Color(_kTextSecondary),
-        ),
+        style: AppTextStyles.labelMedium
+            .copyWith(color: textColor ?? const Color(_kTextSecondary), letterSpacing: 0.0, fontSize: 12, fontWeight: FontWeight.w500, height: 1.0),
       ),
     );
   }
@@ -792,11 +775,8 @@ class _DamageBlock extends StatelessWidget {
               padding: const EdgeInsets.only(left: 6),
               child: Text(
                 'Clean vehicle — no significant damage',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(_kSuccess),
-                ),
+                style: AppTextStyles.labelMedium
+                    .copyWith(color: const Color(_kSuccess), fontSize: 12, fontWeight: FontWeight.w500, height: 1.0, letterSpacing: 0.0),
               ),
             ),
           ),
@@ -810,11 +790,7 @@ class _DamageBlock extends StatelessWidget {
       children: [
         Text(
           VehicleDetailConstants.damageDescriptionLabel.toUpperCase(),
-          style: GoogleFonts.dmSans(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: const Color(_kTextTertiary),
-          ),
+          style: AppTextStyles.sectionLabel,
         ),
         const SizedBox(height: 4),
         AnimatedSize(
@@ -835,11 +811,8 @@ class _DamageBlock extends StatelessWidget {
                   overflow: expanded
                       ? TextOverflow.visible
                       : TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: const Color(_kTextSecondary),
-                    height: 1.5,
-                  ),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: const Color(_kTextSecondary), height: 1.5),
                 ),
                 if (desc.length > 120 && !expanded)
                   GestureDetector(
@@ -848,11 +821,8 @@ class _DamageBlock extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         'Show more →',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(_kPrimaryText),
-                        ),
+                        style: AppTextStyles.labelSmall
+                            .copyWith(color: const Color(_kPrimaryText), fontWeight: FontWeight.w500, fontSize: 12, letterSpacing: 0.0, height: 1.0),
                       ),
                     ),
                   ),
@@ -896,11 +866,8 @@ class _AgentNote extends ConsumerWidget {
             alignment: Alignment.center,
             child: Text(
               'AG',
-              style: GoogleFonts.dmSans(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: const Color(_kPrimaryText),
-              ),
+              style: AppTextStyles.caption
+                  .copyWith(color: const Color(_kPrimaryText), fontSize: 12, fontWeight: FontWeight.w600, height: 1.0, letterSpacing: 0.0),
             ),
           ),
         const SizedBox(width: 10),
@@ -910,11 +877,8 @@ class _AgentNote extends ConsumerWidget {
             children: [
               Text(
                 "${agent?.firstName ?? 'Agent'}${VehicleDetailConstants.agentNoteSuffix}",
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(_kPrimaryText),
-                ),
+                style: AppTextStyles.caption
+                    .copyWith(color: const Color(_kPrimaryText), fontWeight: FontWeight.w500, fontSize: 12, height: 1.0, letterSpacing: 0.0),
               ),
               const SizedBox(height: 4),
               Container(
@@ -933,11 +897,8 @@ class _AgentNote extends ConsumerWidget {
                 ),
                 child: Text(
                   note,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    color: const Color(_kTextSecondary),
-                    height: 1.5,
-                  ),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: const Color(_kTextSecondary), height: 1.5, letterSpacing: 0.0, fontSize: 13, fontWeight: FontWeight.w400),
                 ),
               ),
             ],
@@ -1011,11 +972,8 @@ class _ReadOnlyCostCard extends ConsumerWidget {
               Expanded(
                 child: Text(
                   VehicleDetailConstants.estTotalLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
+                  style: AppTextStyles.labelLarge
+                      .copyWith(fontWeight: FontWeight.w700, color: Colors.black87, fontSize: 15, height: 1.0, letterSpacing: 0.1),
                 ),
               ),
               Column(
@@ -1026,20 +984,15 @@ class _ReadOnlyCostCard extends ConsumerWidget {
                       cost.totalUsd * currency.usdToRate,
                       currency,
                     ),
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(_kSuccess),
-                    ),
+                    style: AppTextStyles.bodyLarge
+                        .copyWith(fontWeight: FontWeight.w600, color: const Color(_kSuccess), height: 1.0, fontSize: 16),
                   ),
                   if (currency.code != 'USD') ...[
                     const SizedBox(height: 2),
                     Text(
                       '≈ ${CurrencyFormatter.formatUsd(cost.totalUsd)}',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        color: const Color(_kTextTertiary),
-                      ),
+                      style: AppTextStyles.caption
+                          .copyWith(color: const Color(_kTextTertiary), fontSize: 12, height: 1.0, fontWeight: FontWeight.w400, letterSpacing: 0.0),
                     ),
                   ],
                 ],
@@ -1066,12 +1019,8 @@ class _ReadOnlyCostCard extends ConsumerWidget {
                     padding: const EdgeInsets.only(left: 6),
                     child: Text(
                       VehicleDetailConstants.finalBidDisclaimer,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(_kAmberText),
-                        height: 1.35,
-                      ),
+                      style: AppTextStyles.caption
+                          .copyWith(color: const Color(_kAmberText), height: 1.35, fontSize: 10, fontWeight: FontWeight.w400, letterSpacing: 0.0),
                     ),
                   ),
                 ),
@@ -1095,10 +1044,8 @@ class _ReadOnlyCostCard extends ConsumerWidget {
         Expanded(
           child: Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              color: const Color(_kTextSecondary),
-            ),
+            style: AppTextStyles.cardLabel
+                .copyWith(color: const Color(_kTextSecondary), height: 1.0, fontSize: 12, fontWeight: FontWeight.w400, letterSpacing: 0.0),
           ),
         ),
         Column(
@@ -1106,19 +1053,14 @@ class _ReadOnlyCostCard extends ConsumerWidget {
           children: [
             Text(
               CurrencyFormatter.format(converted, currency),
-              style: GoogleFonts.dmSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
+              style: AppTextStyles.labelMedium
+                  .copyWith(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500, height: 1.0, letterSpacing: 0.0),
             ),
             if (currency.code != 'USD')
               Text(
                 '≈ ${CurrencyFormatter.formatUsd(usdAmount)}',
-                style: GoogleFonts.dmSans(
-                  fontSize: 11,
-                  color: const Color(_kTextTertiary),
-                ),
+                style: AppTextStyles.caption
+                    .copyWith(color: const Color(_kTextTertiary), fontSize: 12, height: 1.0, fontWeight: FontWeight.w400, letterSpacing: 0.0),
               ),
           ],
         ),

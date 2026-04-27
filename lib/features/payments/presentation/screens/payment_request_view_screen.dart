@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -204,30 +204,18 @@ class _AmountHero extends ConsumerWidget {
       children: [
         Text(
           'AMOUNT DUE',
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textTertiary,
-            letterSpacing: 0.5,
-          ),
+          style: AppTextStyles.labelSmall,
         ),
         const SizedBox(height: 6),
         Text(
           display.primary,
-          style: GoogleFonts.dmSans(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.displaySmall.copyWith(fontSize: 32),
         ),
         if (display.hasSecondary) ...[
           const SizedBox(height: 4),
           Text(
             display.secondary!,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: AppTextStyles.bodySmall,
           ),
         ],
         const SizedBox(height: 8),

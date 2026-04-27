@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../providers/order_providers.dart';
 import '../widgets/agent_connection_assigned_view.dart';
 import '../widgets/agent_connection_error_view.dart';
@@ -76,11 +75,8 @@ class _AgentConnectionScreenState extends ConsumerState<AgentConnectionScreen>
           ),
           title: Text(
             'Finding your agent',
-            style: GoogleFonts.dmSans(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTextStyles.appBarTitle
+                .copyWith(color: AppColors.textPrimary, height: 1.0),
           ),
           backgroundColor: AppColors.background,
           foregroundColor: AppColors.textPrimary,

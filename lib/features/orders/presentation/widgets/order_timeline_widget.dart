@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -75,14 +75,11 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          Future.delayed(
-            const Duration(milliseconds: 300),
-            () {
-              if (mounted) {
-                _scrollToActiveStage();
-              }
-            },
-          );
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              _scrollToActiveStage();
+            }
+          });
         }
       });
     }
@@ -103,14 +100,13 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
 
   List<OrderTimelineModel> _visibleStages(
     List<OrderTimelineModel> raw,
-    bool repairOptedIn,
   ) {
-    return raw.where((s) {
-      if (s.stageKey == 'repair') {
-        return repairOptedIn;
-      }
-      return true;
-    }).toList();
+    // All stages are always visible.
+    // The repair stage is shown
+    // regardless of repairOptedIn —
+    // the agent controls stage
+    // advancement manually.
+    return raw;
   }
 
   void _ensureEntranceStarted(int count) {
@@ -119,12 +115,9 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     _entrance.duration = Duration(milliseconds: 40 * (count - 1) + 200);
     _entrance.forward(from: 0);
 
-    Future.delayed(
-      const Duration(milliseconds: 420),
-      () {
-        if (mounted) _scrollToActiveStage();
-      },
-    );
+    Future.delayed(const Duration(milliseconds: 420), () {
+      if (mounted) _scrollToActiveStage();
+    });
   }
 
   String? _guideKeyForStageNumber(int stageNumber) {
@@ -143,9 +136,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
   }
 
   Future<void> _checkStageCoach(String? guideKey) async {
-    if (guideKey == null ||
-        widget.suppressStageCoachMarks ||
-        !mounted) {
+    if (guideKey == null || widget.suppressStageCoachMarks || !mounted) {
       return;
     }
     final seen = await ref.read(hasSeenGuideProvider(guideKey).future);
@@ -199,25 +190,29 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     switch (guideKey) {
       case GuideKeys.stageSearching:
         title = 'Your agent is searching now';
-        body = 'Your agent is actively searching '
+        body =
+            'Your agent is actively searching '
             'auctions for your vehicle. You\'ll '
             'get notified the moment options arrive.';
         break;
       case GuideKeys.stageBid:
         title = 'Vehicle secured';
-        body = 'Your agent secured your vehicle. '
+        body =
+            'Your agent secured your vehicle. '
             'Review the payment request to '
             'move to the next step.';
         break;
       case GuideKeys.stageShipping:
         title = 'Your car is on its way';
-        body = 'Your vehicle is being shipped to '
+        body =
+            'Your vehicle is being shipped to '
             'Ghana. Tap the shipping stage to '
             'track its journey.';
         break;
       case GuideKeys.stageClearance:
         title = 'Port clearance in progress';
-        body = 'Your agent is handling all GRA '
+        body =
+            'Your agent is handling all GRA '
             'paperwork and duty on your behalf. '
             'We\'ll keep you updated at every step.';
         break;
@@ -251,8 +246,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
 
     return timelineAsync.when(
       data: (stages) {
-        final repairOptedIn = widget.order.repairOptedIn;
-        final visible = _visibleStages(stages, repairOptedIn);
+        final visible = _visibleStages(stages);
 
         if (pendingAsync.isLoading ||
             shippingAsync.isLoading ||
@@ -284,9 +278,9 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
         final statusLine = activeStage == null
             ? ''
             : (activeStage.detail?.isNotEmpty == true
-                ? activeStage.detail!
-                : 'Step ${widget.order.stageNumber} '
-                    'of ${visible.length}');
+                  ? activeStage.detail!
+                  : 'Step ${widget.order.stageNumber} '
+                        'of ${visible.length}');
 
         Widget rowContent(OrderTimelineModel s, bool isLast) {
           final row = OrderTimelineStepRow(
@@ -303,10 +297,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
           );
           final isActive = s.stageNumber == widget.order.stageNumber;
           if (isActive) {
-            return KeyedSubtree(
-              key: _activeStageKey,
-              child: row,
-            );
+            return KeyedSubtree(key: _activeStageKey, child: row);
           }
           return row;
         }
@@ -320,15 +311,12 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
                 if (visible.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _SummaryCard(
-                    stageNumber:
-                        widget.order.stageNumber,
-                    totalStages:
-                        visible.length,
+                    stageNumber: widget.order.stageNumber,
+                    totalStages: visible.length,
                     stageName: stageName,
                     statusLine: statusLine,
                     isComplete:
-                        (activeStage?.stageNumber
-                            ?? 0) ==
+                        (activeStage?.stageNumber ?? 0) ==
                         widget.order.stageNumber,
                   ),
                   const SizedBox(height: 12),
@@ -336,8 +324,10 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
                 AnimatedBuilder(
                   animation: _entrance,
                   builder: (context, _) {
-                    final totalMs =
-                        (40 * (visible.length - 1) + 200).clamp(200, 10000);
+                    final totalMs = (40 * (visible.length - 1) + 200).clamp(
+                      200,
+                      10000,
+                    );
                     final tGlobal = _entrance.value;
 
                     return Container(
@@ -353,8 +343,10 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
                           if (end <= start) {
                             local = tGlobal >= 1 ? 1 : 0;
                           } else {
-                            local = ((tGlobal - start) / (end - start))
-                                .clamp(0.0, 1.0);
+                            local = ((tGlobal - start) / (end - start)).clamp(
+                              0.0,
+                              1.0,
+                            );
                           }
                           local = Curves.easeOut.transform(local);
                           final isLast = i == visible.length - 1;
@@ -388,9 +380,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
                       child: SizedBox(
                         width: constraints.maxWidth,
                         height: MediaQuery.sizeOf(context).height,
-                        child: _buildStageCoachOverlay(
-                          _stageCoachGuideKey!,
-                        ),
+                        child: _buildStageCoachOverlay(_stageCoachGuideKey!),
                       ),
                     );
                   },
@@ -453,9 +443,7 @@ class _TimelineShimmer extends StatelessWidget {
                           width: 1.5,
                           height: 32,
                           color: Colors.white,
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 2,
-                          ),
+                          margin: const EdgeInsets.symmetric(vertical: 2),
                         ),
                     ],
                   ),
@@ -523,7 +511,7 @@ class _TimelineError extends StatelessWidget {
           children: [
             Text(
               OrderTimelineConstants.loadError,
-              style: GoogleFonts.dmSans(fontSize: 14),
+              style: AppTextStyles.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
@@ -531,8 +519,7 @@ class _TimelineError extends StatelessWidget {
               onPressed: onRetry,
               child: Text(
                 OrderTimelineConstants.retry,
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w600,
+                style: AppTextStyles.labelLarge.copyWith(
                   color: const Color(0xFF378ADD),
                 ),
               ),
@@ -578,10 +565,7 @@ class _SummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.borderSolid,
-          width: 0.5,
-        ),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -599,14 +583,7 @@ class _SummaryCard extends StatelessWidget {
                     isComplete: isComplete,
                   ),
                   child: Center(
-                    child: Text(
-                      pctLabel,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
+                    child: Text(pctLabel, style: AppTextStyles.labelLarge),
                   ),
                 ),
               ),
@@ -615,29 +592,17 @@ class _SummaryCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Import progress',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 11,
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
+                    Text('Import progress', style: AppTextStyles.caption),
                     const SizedBox(height: 3),
                     Text(
                       stageName,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
+                      style: AppTextStyles.titleSmall.copyWith(fontSize: 16),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       statusLine,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                      style: AppTextStyles.labelMedium.copyWith(
                         color: AppColors.secondary,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -647,33 +612,27 @@ class _SummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Row(
-            children: List.generate(
-              totalStages,
-              (i) {
-                final n = i + 1;
-                Color fill;
-                if (n < stageNumber ||
-                    (n == stageNumber && isComplete)) {
-                  fill = AppColors.success;
-                } else if (n == stageNumber) {
-                  fill = AppColors.secondary;
-                } else {
-                  fill = AppColors.borderSolid;
-                }
-                return Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(
-                      right: i < totalStages - 1 ? 2 : 0,
-                    ),
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: fill,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+            children: List.generate(totalStages, (i) {
+              final n = i + 1;
+              Color fill;
+              if (n < stageNumber || (n == stageNumber && isComplete)) {
+                fill = AppColors.success;
+              } else if (n == stageNumber) {
+                fill = AppColors.secondary;
+              } else {
+                fill = AppColors.borderSolid;
+              }
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(right: i < totalStages - 1 ? 2 : 0),
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: fill,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            }),
           ),
         ],
       ),
@@ -711,17 +670,12 @@ class _RingPainter extends CustomPainter {
     if (progress <= 0) return;
 
     canvas.drawArc(
-      Rect.fromCircle(
-        center: Offset(cx, cy),
-        radius: radius,
-      ),
+      Rect.fromCircle(center: Offset(cx, cy), radius: radius),
       -math.pi / 2,
       2 * math.pi * progress,
       false,
       Paint()
-        ..color = isComplete
-            ? AppColors.success
-            : AppColors.secondary
+        ..color = isComplete ? AppColors.success : AppColors.secondary
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
         ..strokeCap = StrokeCap.round,
@@ -730,6 +684,5 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress ||
-      old.isComplete != isComplete;
+      old.progress != progress || old.isComplete != isComplete;
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 enum CardPosition { above, below, auto }
 
@@ -59,21 +58,13 @@ class CoachMarkCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.dmSans(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-              height: 1.3,
-            ),
+            style: AppTextStyles.titleSmall
+                .copyWith(height: 1.3, color: AppColors.textPrimary, letterSpacing: 0.0),
           ),
           const SizedBox(height: 8),
           Text(
             body,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
+            style: AppTextStyles.bodySmall.copyWith(height: 1.5),
           ),
           const SizedBox(height: 16),
           Row(
@@ -102,10 +93,13 @@ class CoachMarkCard extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 'View FAQ →',
-                                style: GoogleFonts.dmSans(
+                                style: AppTextStyles.labelMedium
+                                    .copyWith(
+                                  color: AppColors.secondary,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.secondary,
+                                  height: 1.0,
+                                  letterSpacing: 0.0,
                                 ),
                               ),
                             ),
@@ -135,10 +129,13 @@ class CoachMarkCard extends StatelessWidget {
                       child: Center(
                         child: Text(
                           gotItLabel,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                          style: AppTextStyles.labelLarge
+                              .copyWith(
                             color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                            height: 1.0,
+                            letterSpacing: 0.0,
                           ),
                         ),
                       ),
@@ -167,10 +164,13 @@ class CoachMarkCard extends StatelessWidget {
                         child: Center(
                           child: Text(
                             'Next →',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            style: AppTextStyles.labelLarge
+                                .copyWith(
                               color: AppColors.background,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              height: 1.0,
+                              letterSpacing: 0.0,
                             ),
                           ),
                         ),

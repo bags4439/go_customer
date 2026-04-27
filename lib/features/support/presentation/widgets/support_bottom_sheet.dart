@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../providers/support_providers.dart';
 
 class SupportBottomSheet extends ConsumerWidget {
@@ -37,7 +37,7 @@ class SupportBottomSheet extends ConsumerWidget {
       SnackBar(
         content: Text(
           'Could not open. Please try again.',
-          style: GoogleFonts.dmSans(color: Colors.white, fontSize: 13),
+          style: AppTextStyles.bodySmall.copyWith(color: Colors.white, height: 1.2),
         ),
         backgroundColor: AppColors.textPrimary,
         behavior: SnackBarBehavior.floating,
@@ -105,19 +105,14 @@ class SupportBottomSheet extends ConsumerWidget {
                       children: [
                         Text(
                           'Customer Support',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
+                          style: AppTextStyles.titleSmall
+                              .copyWith(fontSize: 18, fontWeight: FontWeight.w600, height: 1.1, color: AppColors.textPrimary, letterSpacing: 0.0),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           "We're here to help.",
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppTextStyles.bodySmall
+                              .copyWith(color: AppColors.textSecondary, height: 1.2, fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 0.0),
                         ),
                       ],
                     ),
@@ -148,12 +143,8 @@ class SupportBottomSheet extends ConsumerWidget {
                         const SizedBox(width: 5),
                         Text(
                           'SUPPORT HOURS',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                            letterSpacing: 0.6,
-                          ),
+                          style: AppTextStyles.badgeText
+                              .copyWith(color: AppColors.secondary, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.6),
                         ),
                       ],
                     ),
@@ -262,17 +253,18 @@ class _HoursRow extends StatelessWidget {
       children: [
         Text(
           day,
-          style: GoogleFonts.dmSans(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTextStyles.bodySmall
+              .copyWith(color: AppColors.textSecondary, height: 1.0, fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 0.0),
         ),
         Text(
           hours,
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.labelLarge
+              .copyWith(
             fontSize: 13,
-            fontWeight: isClosed ? FontWeight.w400 : FontWeight.w500,
             color: isClosed ? AppColors.textTertiary : AppColors.textPrimary,
+            fontWeight: isClosed ? FontWeight.w400 : FontWeight.w500,
+            letterSpacing: 0.0,
+            height: 1.0,
           ),
         ),
       ],
@@ -334,19 +326,12 @@ class _ContactTile extends StatelessWidget {
                     children: [
                       Text(
                         label,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
+                        style: AppTextStyles.titleSmall,
                       ),
                       const SizedBox(height: 1),
                       Text(
                         number,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.cardLabel,
                       ),
                     ],
                   ),
@@ -403,11 +388,7 @@ class _UnavailableNote extends StatelessWidget {
         'Support contact details are temporarily '
         'unavailable. Please try again shortly.',
         textAlign: TextAlign.center,
-        style: GoogleFonts.dmSans(
-          fontSize: 13,
-          color: AppColors.textSecondary,
-          height: 1.5,
-        ),
+        style: AppTextStyles.bodySmall.copyWith(height: 1.5, color: AppColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 0.0),
       ),
     );
   }

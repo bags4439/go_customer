@@ -2,6 +2,9 @@
 class RepairJob {
   final String id;
   final String orderId;
+
+  /// Buyer repair choice at job creation (mirrors Firestore `optedIn`).
+  final bool optedIn;
   final String? garageId;
   final String? garageNameCustom;
   final String? garageLocation;
@@ -25,6 +28,7 @@ class RepairJob {
   const RepairJob({
     required this.id,
     required this.orderId,
+    this.optedIn = true,
     this.garageId,
     this.garageNameCustom,
     this.garageLocation,

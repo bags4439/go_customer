@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 /// Text-based logo for auth flows (DM Sans; primary mark per design spec).
 class AuthAppLogo extends StatelessWidget {
@@ -32,7 +32,7 @@ class AuthAppLogo extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           'AutoImport',
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.titleLarge.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
             color: _textPrimary,
@@ -40,7 +40,7 @@ class AuthAppLogo extends StatelessWidget {
         ),
         Text(
           ' GH',
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.titleLarge.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
             color: _primary,
@@ -60,9 +60,7 @@ class AuthFormFieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: GoogleFonts.dmSans(
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
+      style: AppTextStyles.labelSmall.copyWith(
         color: const Color(0xFFAAAAAA),
         letterSpacing: 11 * 0.08,
       ),
@@ -120,17 +118,19 @@ class StyledAuthTextField extends StatelessWidget {
         keyboardType: keyboardType,
         textCapitalization: textCapitalization,
         textInputAction: textInputAction,
-        style: GoogleFonts.dmSans(
+        style: AppTextStyles.bodyLarge.copyWith(
           fontSize: 15,
           fontWeight: FontWeight.w400,
           color: const Color(0xFF1A1A18),
+          height: null,
         ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: GoogleFonts.dmSans(
+          hintStyle: AppTextStyles.bodyLarge.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.w400,
             color: const Color(0xFFAAAAAA),
+            height: null,
           ),
           border: InputBorder.none,
           isDense: true,
@@ -150,11 +150,7 @@ void showAuthSnackBar(BuildContext context, String message) {
       duration: const Duration(seconds: 3),
       content: Text(
         message,
-        style: GoogleFonts.dmSans(
-          fontSize: 13,
-          fontWeight: FontWeight.w400,
-          color: Colors.white,
-        ),
+        style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
       ),
     ),
   );

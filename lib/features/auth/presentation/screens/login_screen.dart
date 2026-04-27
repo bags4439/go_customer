@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/utils/cross_platform_image.dart';
@@ -138,7 +139,7 @@ class _AppLogo extends StatelessWidget {
         SizedBox(width: fontSize * 0.36),
         Text(
           'AutoImport',
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.titleLarge.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1A1A18),
@@ -146,7 +147,7 @@ class _AppLogo extends StatelessWidget {
         ),
         Text(
           ' GH',
-          style: GoogleFonts.dmSans(
+          style: AppTextStyles.titleLarge.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF378ADD),
@@ -217,8 +218,7 @@ class _AuthPrimaryButton extends StatelessWidget {
                     : Text(
                         label,
                         key: ValueKey<String>(label),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 15,
+                        style: AppTextStyles.titleSmall.copyWith(
                           fontWeight: FontWeight.w500,
                           color: canTap
                               ? Colors.white
@@ -302,16 +302,17 @@ class _StyledTextFieldState extends State<_StyledTextField> {
         textInputAction: widget.textInputAction,
         inputFormatters: widget.inputFormatters,
         onFieldSubmitted: (_) => widget.onSubmit?.call(),
-        style: GoogleFonts.dmSans(
+        style: AppTextStyles.bodyLarge.copyWith(
           fontSize: 15,
-          fontWeight: FontWeight.w400,
           color: const Color(0xFF1A1A18),
+          height: null,
         ),
         decoration: InputDecoration(
           hintText: widget.hintText,
-          hintStyle: GoogleFonts.dmSans(
+          hintStyle: AppTextStyles.bodyLarge.copyWith(
             fontSize: 15,
             color: const Color(0xFFAAAAAA),
+            height: null,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -381,12 +382,12 @@ class _CountryPickerField extends StatelessWidget {
                     hasSelection
                         ? selectedCountry!.name
                         : 'Select your country',
-                    style: GoogleFonts.dmSans(
+                    style: AppTextStyles.bodyLarge.copyWith(
                       fontSize: 15,
-                      fontWeight: FontWeight.w400,
                       color: hasSelection
                           ? const Color(0xFF1A1A18)
                           : const Color(0xFFAAAAAA),
+                      height: null,
                     ),
                   ),
                 ),
@@ -491,9 +492,7 @@ class _InlineError extends StatelessWidget {
                   Flexible(
                     child: Text(
                       error!,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                      style: AppTextStyles.cardLabel.copyWith(
                         color: const Color(0xFFE24B4A),
                       ),
                     ),
@@ -677,8 +676,7 @@ class _OtpBox extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style: GoogleFonts.dmSans(
-            fontSize: 22,
+          style: AppTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.w600,
             color: hasError
                 ? const Color(0xFFE24B4A)
@@ -719,9 +717,9 @@ class _GhanaCardPhotoField extends StatelessWidget {
               leading: const Icon(Icons.camera_alt_outlined),
               title: Text(
                 'Take a photo',
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: 15,
-                  fontWeight: FontWeight.w400,
+                  height: null,
                 ),
               ),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
@@ -730,9 +728,9 @@ class _GhanaCardPhotoField extends StatelessWidget {
               leading: const Icon(Icons.photo_library_outlined),
               title: Text(
                 'Choose from gallery',
-                style: GoogleFonts.dmSans(
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: 15,
-                  fontWeight: FontWeight.w400,
+                  height: null,
                 ),
               ),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
@@ -805,17 +803,13 @@ class _GhanaCardPhotoField extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         'Tap to upload',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
+                        style: AppTextStyles.bodySmall.copyWith(
                           color: const Color(0xFF666666),
                         ),
                       ),
                       Text(
                         'Camera or gallery',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w400,
+                        style: AppTextStyles.caption.copyWith(
                           color: const Color(0xFFAAAAAA),
                         ),
                       ),
@@ -895,34 +889,28 @@ class _PhoneTermsRichTextState extends State<_PhoneTermsRichText> {
         children: [
           TextSpan(
             text: 'By continuing you agree to our ',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+            style: AppTextStyles.cardLabel.copyWith(
               color: const Color(0xFFAAAAAA),
             ),
           ),
           TextSpan(
             text: 'Terms of Service',
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.labelMedium.copyWith(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
               color: const Color(0xFF378ADD),
             ),
             recognizer: _termsTap,
           ),
           TextSpan(
             text: ' and ',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+            style: AppTextStyles.cardLabel.copyWith(
               color: const Color(0xFFAAAAAA),
             ),
           ),
           TextSpan(
             text: 'Privacy Policy',
-            style: GoogleFonts.dmSans(
+            style: AppTextStyles.labelMedium.copyWith(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
               color: const Color(0xFF378ADD),
             ),
             recognizer: _privacyTap,
@@ -1007,8 +995,7 @@ class _PhoneInputFieldState extends State<_PhoneInputField> {
                 const SizedBox(width: 6),
                 Text(
                   '+233',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
+                  style: AppTextStyles.titleSmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF1A1A18),
                   ),
@@ -1034,17 +1021,12 @@ class _PhoneInputFieldState extends State<_PhoneInputField> {
               ],
               onFieldSubmitted: (_) => widget.onSubmit(),
               textInputAction: TextInputAction.done,
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF1A1A18),
-              ),
+              style: AppTextStyles.bodyLarge,
               decoration: InputDecoration(
                 hintText: 'XX XXX XXXX',
-                hintStyle: GoogleFonts.dmSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
+                hintStyle: AppTextStyles.bodyLarge.copyWith(
                   color: const Color(0xFFAAAAAA),
+                  height: null,
                 ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14),
@@ -1180,18 +1162,15 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
               children: [
                 Text(
                   'Enter your phone number',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A18),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'We\'ll send a 6-digit verification code',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
+                  style: AppTextStyles.bodyMedium.copyWith(
                     color: const Color(0xFF666666),
                   ),
                 ),
@@ -1207,9 +1186,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
               children: [
                 Text(
                   'PHONE NUMBER',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: const Color(0xFFAAAAAA),
                     letterSpacing: 0.5,
                   ),
@@ -1227,9 +1204,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                     state.phone.length == 9
                         ? 'Sending to +233 ${state.phone}'
                         : 'We\'ll send a code to this number',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
+                    style: AppTextStyles.cardLabel.copyWith(
                       color: const Color(0xFFAAAAAA),
                     ),
                   ),
@@ -1389,26 +1364,22 @@ class _OtpStepState extends ConsumerState<_OtpStep>
               children: [
                 Text(
                   'Enter verification code',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A18),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text.rich(
                   TextSpan(
-                    style: GoogleFonts.dmSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: const Color(0xFF666666),
                     ),
                     children: [
                       const TextSpan(text: 'Sent to '),
                       TextSpan(
                         text: '+233 ${state.phone}',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 14,
+                        style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF1A1A18),
                         ),
@@ -1421,8 +1392,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                           onTap: notifier.goBackToPhone,
                           child: Text(
                             'Change',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 14,
+                            style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF378ADD),
                             ),
@@ -1478,16 +1448,13 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                                   children: [
                                     TextSpan(
                                       text: 'Didn\'t receive a code? ',
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
+                                      style: AppTextStyles.bodySmall.copyWith(
                                         color: const Color(0xFF666666),
                                       ),
                                     ),
                                     TextSpan(
                                       text: 'Resend',
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 13,
+                                      style: AppTextStyles.bodySmall.copyWith(
                                         fontWeight: FontWeight.w500,
                                         color: const Color(0xFF378ADD),
                                       ),
@@ -1503,9 +1470,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                             child: Text(
                               _resendLabel(state),
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.dmSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
+                              style: AppTextStyles.bodySmall.copyWith(
                                 color: const Color(0xFFAAAAAA),
                               ),
                             ),
@@ -1728,18 +1693,15 @@ class _NameStepState extends ConsumerState<_NameStep>
               children: [
                 Text(
                   'What should we call you?',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A18),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Your agent will use your name to address you.',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
+                  style: AppTextStyles.bodyMedium.copyWith(
                     color: const Color(0xFF666666),
                   ),
                 ),
@@ -1755,9 +1717,7 @@ class _NameStepState extends ConsumerState<_NameStep>
               children: [
                 Text(
                   'FULL NAME',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: const Color(0xFFAAAAAA),
                     letterSpacing: 0.5,
                   ),
@@ -1785,9 +1745,7 @@ class _NameStepState extends ConsumerState<_NameStep>
               children: [
                 Text(
                   'COUNTRY',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: const Color(0xFFAAAAAA),
                     letterSpacing: 0.5,
                   ),
@@ -1956,18 +1914,15 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
               children: [
                 Text(
                   'Do you have a referral code?',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A18),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Enter a friend\'s code — they\'ll get a reward when you join.',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
+                  style: AppTextStyles.bodyMedium.copyWith(
                     color: const Color(0xFF666666),
                   ),
                 ),
@@ -1983,9 +1938,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
               children: [
                 Text(
                   'REFERRAL CODE (OPTIONAL)',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: const Color(0xFFAAAAAA),
                     letterSpacing: 0.5,
                   ),
@@ -2009,9 +1962,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                 const SizedBox(height: 6),
                 Text(
                   '6 characters — letters and numbers only',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
+                  style: AppTextStyles.cardLabel.copyWith(
                     color: const Color(0xFFAAAAAA),
                   ),
                 ),
@@ -2041,9 +1992,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                     ),
                     child: Text(
                       'Skip',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
+                      style: AppTextStyles.bodyMedium.copyWith(
                         color: const Color(0xFFAAAAAA),
                       ),
                     ),
@@ -2212,10 +2161,9 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
               children: [
                 Text(
                   'Verify your identity',
-                  style: GoogleFonts.dmSans(
+                  style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A18),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -2223,9 +2171,7 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
                   'Add your $docLabel to help your agent verify your '
                   'identity. Optional — you can do this from your profile '
                   'anytime.',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
+                  style: AppTextStyles.bodyMedium.copyWith(
                     color: const Color(0xFF666666),
                   ),
                 ),
@@ -2241,9 +2187,7 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
               children: [
                 Text(
                   numberLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: const Color(0xFFAAAAAA),
                     letterSpacing: 0.5,
                   ),
@@ -2258,9 +2202,7 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
                 const SizedBox(height: 20),
                 Text(
                   photoLabel,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelSmall.copyWith(
                     color: const Color(0xFFAAAAAA),
                     letterSpacing: 0.5,
                   ),
@@ -2302,9 +2244,7 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
                     ),
                     child: Text(
                       'Skip for now',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
+                      style: AppTextStyles.bodyMedium.copyWith(
                         color: const Color(0xFFAAAAAA),
                       ),
                     ),

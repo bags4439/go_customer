@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/order_view.dart';
@@ -47,9 +47,8 @@ class OrderDetailPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.dmSans(
+        style: AppTextStyles.labelMedium.copyWith(
           fontSize: 10,
-          fontWeight: FontWeight.w500,
           color: textColor,
         ),
       ),
@@ -60,27 +59,17 @@ class OrderDetailPill extends StatelessWidget {
 class OrderDetailCarCard extends StatelessWidget {
   final OrderView order;
 
-  const OrderDetailCarCard({
-    super.key,
-    required this.order,
-  });
+  const OrderDetailCarCard({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
-    final carName =
-        '${order.make ?? 'Vehicle'} ${order.model ?? ''}'.trim();
+    final carName = '${order.make ?? 'Vehicle'} ${order.model ?? ''}'.trim();
 
     final chips = <String>[];
     if (order.purchaseOrigin != 'any') {
-      chips.add(
-        orderDetailOriginLabel(
-          order.purchaseOrigin,
-        ),
-      );
+      chips.add(orderDetailOriginLabel(order.purchaseOrigin));
     }
-    if (order.trim != null &&
-        order.trim!.isNotEmpty &&
-        order.trim != 'Other') {
+    if (order.trim != null && order.trim!.isNotEmpty && order.trim != 'Other') {
       chips.add(order.trim!);
     }
     if (order.isNewVehicle) {
@@ -91,17 +80,11 @@ class OrderDetailCarCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 10,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.borderSolid,
-          width: 0.5,
-        ),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
       ),
       child: Row(
         children: [
@@ -112,14 +95,9 @@ class OrderDetailCarCard extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  AppColors.secondary,
-                  AppColors.infoText,
-                ],
+                colors: [AppColors.secondary, AppColors.infoText],
               ),
-              borderRadius: BorderRadius.all(
-                Radius.circular(9),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(9)),
             ),
             child: const Icon(
               Icons.directions_car_filled,
@@ -135,21 +113,14 @@ class OrderDetailCarCard extends StatelessWidget {
               children: [
                 Text(
                   carName,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTextStyles.labelLarge,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (subtitle != null)
                   Text(
                     subtitle,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      color: AppColors.textTertiary,
-                    ),
+                    style: AppTextStyles.caption,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -159,10 +130,8 @@ class OrderDetailCarCard extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             order.orderRef,
-            style: GoogleFonts.dmSans(
-              fontSize: 11,
+            style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.textTertiary,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],

@@ -28,15 +28,13 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
-      textTheme: AppTextStyles.textTheme(colorScheme),
+      textTheme: AppTextStyles.textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.primary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        titleTextStyle: AppTextStyles.textTheme(colorScheme).titleLarge?.copyWith(
-              color: AppColors.primary,
-            ),
+        titleTextStyle: AppTextStyles.appBarTitle,
       ),
       cardTheme: CardThemeData(
         color: AppColors.background,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../chat/presentation/providers/chat_providers.dart';
@@ -192,11 +192,11 @@ class _TabLabel extends StatelessWidget {
       children: [
         AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 220),
-          style: GoogleFonts.dmSans(
-            fontSize: 13,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
-          ),
+          style: isActive
+              ? AppTextStyles.labelLarge.copyWith(fontSize: 13)
+              : AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
           child: Text(label),
         ),
         if (badgeCount > 0) ...[
@@ -209,7 +209,7 @@ class _TabLabel extends StatelessWidget {
             ),
             child: Text(
               badgeCount > 99 ? '99+' : '$badgeCount',
-              style: GoogleFonts.dmSans(
+              style: AppTextStyles.caption.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.background,

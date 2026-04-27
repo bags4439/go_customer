@@ -11,6 +11,7 @@ _$RepairJobModelImpl _$$RepairJobModelImplFromJson(
 ) => _$RepairJobModelImpl(
   id: json['id'] as String,
   orderId: json['orderId'] as String,
+  optedIn: json['optedIn'] as bool? ?? true,
   garageId: json['garageId'] as String?,
   garageNameCustom: json['garageNameCustom'] as String?,
   garageLocation: json['garageLocation'] as String?,
@@ -62,6 +63,7 @@ Map<String, dynamic> _$$RepairJobModelImplToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'orderId': instance.orderId,
+  'optedIn': instance.optedIn,
   'garageId': instance.garageId,
   'garageNameCustom': instance.garageNameCustom,
   'garageLocation': instance.garageLocation,
