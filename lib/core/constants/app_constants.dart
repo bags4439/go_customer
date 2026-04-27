@@ -116,6 +116,7 @@ class FirestoreEnumValues {
   static const String orderStatusRepairPending = 'repairPending';
   static const String orderStatusRepairInProgress = 'repairInProgress';
   static const String orderStatusRepairComplete = 'repairComplete';
+  static const String orderStatusDeliveryInProgress = 'delivery_in_progress';
   static const String orderStatusDeliveryConfirmed = 'delivery_confirmed';
   static const String orderStatusDelivered = 'delivered';
   static const String orderStatusCancelled = 'cancelled';

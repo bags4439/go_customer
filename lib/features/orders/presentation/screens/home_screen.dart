@@ -67,6 +67,9 @@ class HomeScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(buyerOrdersProvider);
     final currentUserAsync = ref.watch(currentUserProfileProvider);
     final pendingPayments = ref.watch(pendingPaymentCountProvider);
+    final pendingReviews = ref.watch(
+      pendingReviewCountProvider,
+    );
 
     ordersAsync.whenOrNull(
       error: (error, stack) {
@@ -90,6 +93,7 @@ class HomeScreen extends ConsumerWidget {
               : _MultiOrderHome(
                   orders: orders,
                   pendingPayments: pendingPayments,
+                  pendingReviews: pendingReviews,
                   currentUserName: currentUserAsync.value?.fullName,
                 ),
         ),

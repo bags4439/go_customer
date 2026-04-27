@@ -3,11 +3,13 @@ part of '../screens/home_screen.dart';
 class _MultiOrderHome extends ConsumerStatefulWidget {
   final List<OrderView> orders;
   final int pendingPayments;
+  final int pendingReviews;
   final String? currentUserName;
 
   const _MultiOrderHome({
     required this.orders,
     required this.pendingPayments,
+    required this.pendingReviews,
     required this.currentUserName,
   });
 
@@ -37,7 +39,8 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
     final completed = widget.orders.where((o) => o.isCompleted).length;
     final needsAction =
         widget.orders.where((o) => o.needsPayment).length +
-        widget.pendingPayments;
+        widget.pendingPayments +
+        widget.pendingReviews;
 
     final sorted = [...widget.orders]
       ..sort((a, b) {

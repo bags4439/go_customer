@@ -152,6 +152,26 @@ final pendingPaymentCountProvider = Provider<int>((ref) {
   );
 });
 
+/// Count of orders where the
+/// customer confirmed delivery
+/// but has not yet submitted
+/// a review. These require
+/// action to close the order.
+final pendingReviewCountProvider =
+    Provider<int>((ref) {
+  final orders = ref.watch(
+    buyerOrdersProvider,
+  ).valueOrNull ?? [];
+  return orders
+      .where(
+        (o) =>
+            o.status ==
+            AppConstants
+                .statusDeliveryConfirmed,
+      )
+      .length;
+});
+
 final canEditOrderProvider =
     Provider.family<bool, String>((ref, orderId) {
   final orderAsync = ref.watch(orderProvider(orderId));

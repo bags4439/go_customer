@@ -252,6 +252,12 @@ String _homeStatusDescription(OrderView order) {
       return 'Repairs in progress';
     case FirestoreEnumValues.orderStatusRepairComplete:
       return 'Repairs complete · delivery next';
+    case FirestoreEnumValues.orderStatusDeliveryInProgress:
+      return 'Delivery in progress · tap to view';
+    case AppConstants.statusDeliveryConfirmed:
+      return '🎉 Vehicle received · please rate your experience';
+    case AppConstants.statusDelivered:
+      return 'Order complete · thank you for choosing AutoImport GH';
     case FirestoreEnumValues.orderStatusDormant:
     default:
       return 'No recent activity · open chat if needed';
@@ -363,6 +369,21 @@ class _StatusBadge extends StatelessWidget {
           label = 'Cancelled';
           bg = _C.dangerBg;
           text = _C.danger;
+          break;
+        case FirestoreEnumValues.orderStatusDeliveryInProgress:
+          label = 'Delivery';
+          bg = _C.infoBg;
+          text = _C.infoText;
+          break;
+        case AppConstants.statusDeliveryConfirmed:
+          label = 'Rate us ⭐';
+          bg = _C.successBg;
+          text = _C.success;
+          break;
+        case AppConstants.statusDelivered:
+          label = 'Complete';
+          bg = _C.successBg;
+          text = _C.success;
           break;
         case FirestoreEnumValues.orderStatusDormant:
           label = 'On hold';
