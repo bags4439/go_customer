@@ -12,14 +12,20 @@ class CountryPickerSheet extends ConsumerStatefulWidget {
     super.key,
     required this.selectedIsoCode,
     required this.onSelected,
+    this.sheetTitle,
+    this.sheetSubtitle,
   });
 
   final String selectedIsoCode;
   final void Function(Country) onSelected;
+  final String? sheetTitle;
+  final String? sheetSubtitle;
 
   static Future<Country?> show(
     BuildContext context, {
     required String selectedIsoCode,
+    String? sheetTitle,
+    String? sheetSubtitle,
   }) async {
     Country? result;
     await showModalBottomSheet<void>(
@@ -28,6 +34,8 @@ class CountryPickerSheet extends ConsumerStatefulWidget {
       isScrollControlled: true,
       builder: (_) => CountryPickerSheet(
         selectedIsoCode: selectedIsoCode,
+        sheetTitle: sheetTitle,
+        sheetSubtitle: sheetSubtitle,
         onSelected: (country) {
           result = country;
           Navigator.of(context).pop();
@@ -38,8 +46,7 @@ class CountryPickerSheet extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<CountryPickerSheet> createState() =>
-      _CountryPickerSheetState();
+  ConsumerState<CountryPickerSheet> createState() => _CountryPickerSheetState();
 }
 
 class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
@@ -71,7 +78,8 @@ class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
         .where(
           (c) =>
               c.name.toLowerCase().contains(_query) ||
-              c.isoCode.toLowerCase().contains(_query),
+              c.isoCode.toLowerCase().contains(_query) ||
+              c.dialCode.toLowerCase().contains(_query),
         )
         .toList();
   }
@@ -90,9 +98,7 @@ class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
         return Container(
           decoration: const BoxDecoration(
             color: AppColors.background,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: SafeArea(
             top: false,
@@ -135,14 +141,16 @@ class _CountryPickerSheetState extends ConsumerState<CountryPickerSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Where are you based?',
+                              widget.sheetTitle ?? 'Where are you based?',
                               style: AppTextStyles.titleMedium.copyWith(
                                 fontSize: 18,
                               ),
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              'This helps us show prices in your currency.',
+                              widget.sheetSubtitle ??
+                                  'This helps us show prices '
+                                      'in your currency.',
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -329,10 +337,7 @@ class _CountryTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Text(
-                  country.flag,
-                  style: const TextStyle(fontSize: 24),
-                ),
+                Text(country.flag, style: const TextStyle(fontSize: 24)),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
@@ -347,12 +352,28 @@ class _CountryTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (isSelected)
+                if (country.dialCode.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    country.dialCode,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: isSelected
+                          ? AppColors.secondary
+                          : AppColors.textTertiary,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                    ),
+                  ),
+                ],
+                if (isSelected) ...[
+                  const SizedBox(width: 8),
                   const Icon(
                     Icons.check_rounded,
                     size: 20,
                     color: AppColors.secondary,
                   ),
+                ],
               ],
             ),
           ),

@@ -3,6 +3,8 @@ class AppUser {
   final String fullName;
   final String phone;
   final String? email;
+  final String? smsPhone;
+  final String? whatsappPhone;
   final String role;
   final String location;
   /// ISO 3166-1 alpha-2 e.g. 'GH'; empty if unset.
@@ -24,6 +26,8 @@ class AppUser {
     required this.fullName,
     required this.phone,
     required this.email,
+    this.smsPhone,
+    this.whatsappPhone,
     required this.role,
     required this.location,
     this.country = '',

@@ -19,6 +19,8 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$LoginState {
   // Input values
   String get phone => throw _privateConstructorUsedError;
+  String get dialCode => throw _privateConstructorUsedError;
+  String get countryFlag => throw _privateConstructorUsedError;
   String get verificationId => throw _privateConstructorUsedError;
   String get otp => throw _privateConstructorUsedError;
   String get fullName => throw _privateConstructorUsedError;
@@ -26,8 +28,14 @@ mixin _$LoginState {
   String get referralCode => throw _privateConstructorUsedError;
   String get ghanaCardNumber => throw _privateConstructorUsedError;
   String? get ghanaCardPhotoPath => throw _privateConstructorUsedError;
-  String get idDocumentType =>
-      throw _privateConstructorUsedError; // Step and navigation
+  String get idDocumentType => throw _privateConstructorUsedError;
+  String get smsPhone => throw _privateConstructorUsedError;
+  String get smsDialCode => throw _privateConstructorUsedError;
+  String get smsCountryFlag => throw _privateConstructorUsedError;
+  String get whatsappPhone => throw _privateConstructorUsedError;
+  String get whatsappDialCode => throw _privateConstructorUsedError;
+  String get whatsappCountryFlag => throw _privateConstructorUsedError;
+  String get email => throw _privateConstructorUsedError; // Step and navigation
   LoginStep get step => throw _privateConstructorUsedError;
   LoginNav get nav => throw _privateConstructorUsedError; // Loading states
   bool get isLoading => throw _privateConstructorUsedError;
@@ -56,6 +64,8 @@ abstract class $LoginStateCopyWith<$Res> {
   @useResult
   $Res call({
     String phone,
+    String dialCode,
+    String countryFlag,
     String verificationId,
     String otp,
     String fullName,
@@ -64,6 +74,13 @@ abstract class $LoginStateCopyWith<$Res> {
     String ghanaCardNumber,
     String? ghanaCardPhotoPath,
     String idDocumentType,
+    String smsPhone,
+    String smsDialCode,
+    String smsCountryFlag,
+    String whatsappPhone,
+    String whatsappDialCode,
+    String whatsappCountryFlag,
+    String email,
     LoginStep step,
     LoginNav nav,
     bool isLoading,
@@ -91,6 +108,8 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
   @override
   $Res call({
     Object? phone = null,
+    Object? dialCode = null,
+    Object? countryFlag = null,
     Object? verificationId = null,
     Object? otp = null,
     Object? fullName = null,
@@ -99,6 +118,13 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
     Object? ghanaCardNumber = null,
     Object? ghanaCardPhotoPath = freezed,
     Object? idDocumentType = null,
+    Object? smsPhone = null,
+    Object? smsDialCode = null,
+    Object? smsCountryFlag = null,
+    Object? whatsappPhone = null,
+    Object? whatsappDialCode = null,
+    Object? whatsappCountryFlag = null,
+    Object? email = null,
     Object? step = null,
     Object? nav = null,
     Object? isLoading = null,
@@ -113,6 +139,14 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
             phone: null == phone
                 ? _value.phone
                 : phone // ignore: cast_nullable_to_non_nullable
+                      as String,
+            dialCode: null == dialCode
+                ? _value.dialCode
+                : dialCode // ignore: cast_nullable_to_non_nullable
+                      as String,
+            countryFlag: null == countryFlag
+                ? _value.countryFlag
+                : countryFlag // ignore: cast_nullable_to_non_nullable
                       as String,
             verificationId: null == verificationId
                 ? _value.verificationId
@@ -145,6 +179,34 @@ class _$LoginStateCopyWithImpl<$Res, $Val extends LoginState>
             idDocumentType: null == idDocumentType
                 ? _value.idDocumentType
                 : idDocumentType // ignore: cast_nullable_to_non_nullable
+                      as String,
+            smsPhone: null == smsPhone
+                ? _value.smsPhone
+                : smsPhone // ignore: cast_nullable_to_non_nullable
+                      as String,
+            smsDialCode: null == smsDialCode
+                ? _value.smsDialCode
+                : smsDialCode // ignore: cast_nullable_to_non_nullable
+                      as String,
+            smsCountryFlag: null == smsCountryFlag
+                ? _value.smsCountryFlag
+                : smsCountryFlag // ignore: cast_nullable_to_non_nullable
+                      as String,
+            whatsappPhone: null == whatsappPhone
+                ? _value.whatsappPhone
+                : whatsappPhone // ignore: cast_nullable_to_non_nullable
+                      as String,
+            whatsappDialCode: null == whatsappDialCode
+                ? _value.whatsappDialCode
+                : whatsappDialCode // ignore: cast_nullable_to_non_nullable
+                      as String,
+            whatsappCountryFlag: null == whatsappCountryFlag
+                ? _value.whatsappCountryFlag
+                : whatsappCountryFlag // ignore: cast_nullable_to_non_nullable
+                      as String,
+            email: null == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
                       as String,
             step: null == step
                 ? _value.step
@@ -195,6 +257,8 @@ abstract class _$$LoginStateImplCopyWith<$Res>
   @useResult
   $Res call({
     String phone,
+    String dialCode,
+    String countryFlag,
     String verificationId,
     String otp,
     String fullName,
@@ -203,6 +267,13 @@ abstract class _$$LoginStateImplCopyWith<$Res>
     String ghanaCardNumber,
     String? ghanaCardPhotoPath,
     String idDocumentType,
+    String smsPhone,
+    String smsDialCode,
+    String smsCountryFlag,
+    String whatsappPhone,
+    String whatsappDialCode,
+    String whatsappCountryFlag,
+    String email,
     LoginStep step,
     LoginNav nav,
     bool isLoading,
@@ -229,6 +300,8 @@ class __$$LoginStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? phone = null,
+    Object? dialCode = null,
+    Object? countryFlag = null,
     Object? verificationId = null,
     Object? otp = null,
     Object? fullName = null,
@@ -237,6 +310,13 @@ class __$$LoginStateImplCopyWithImpl<$Res>
     Object? ghanaCardNumber = null,
     Object? ghanaCardPhotoPath = freezed,
     Object? idDocumentType = null,
+    Object? smsPhone = null,
+    Object? smsDialCode = null,
+    Object? smsCountryFlag = null,
+    Object? whatsappPhone = null,
+    Object? whatsappDialCode = null,
+    Object? whatsappCountryFlag = null,
+    Object? email = null,
     Object? step = null,
     Object? nav = null,
     Object? isLoading = null,
@@ -251,6 +331,14 @@ class __$$LoginStateImplCopyWithImpl<$Res>
         phone: null == phone
             ? _value.phone
             : phone // ignore: cast_nullable_to_non_nullable
+                  as String,
+        dialCode: null == dialCode
+            ? _value.dialCode
+            : dialCode // ignore: cast_nullable_to_non_nullable
+                  as String,
+        countryFlag: null == countryFlag
+            ? _value.countryFlag
+            : countryFlag // ignore: cast_nullable_to_non_nullable
                   as String,
         verificationId: null == verificationId
             ? _value.verificationId
@@ -283,6 +371,34 @@ class __$$LoginStateImplCopyWithImpl<$Res>
         idDocumentType: null == idDocumentType
             ? _value.idDocumentType
             : idDocumentType // ignore: cast_nullable_to_non_nullable
+                  as String,
+        smsPhone: null == smsPhone
+            ? _value.smsPhone
+            : smsPhone // ignore: cast_nullable_to_non_nullable
+                  as String,
+        smsDialCode: null == smsDialCode
+            ? _value.smsDialCode
+            : smsDialCode // ignore: cast_nullable_to_non_nullable
+                  as String,
+        smsCountryFlag: null == smsCountryFlag
+            ? _value.smsCountryFlag
+            : smsCountryFlag // ignore: cast_nullable_to_non_nullable
+                  as String,
+        whatsappPhone: null == whatsappPhone
+            ? _value.whatsappPhone
+            : whatsappPhone // ignore: cast_nullable_to_non_nullable
+                  as String,
+        whatsappDialCode: null == whatsappDialCode
+            ? _value.whatsappDialCode
+            : whatsappDialCode // ignore: cast_nullable_to_non_nullable
+                  as String,
+        whatsappCountryFlag: null == whatsappCountryFlag
+            ? _value.whatsappCountryFlag
+            : whatsappCountryFlag // ignore: cast_nullable_to_non_nullable
+                  as String,
+        email: null == email
+            ? _value.email
+            : email // ignore: cast_nullable_to_non_nullable
                   as String,
         step: null == step
             ? _value.step
@@ -326,6 +442,8 @@ class __$$LoginStateImplCopyWithImpl<$Res>
 class _$LoginStateImpl implements _LoginState {
   const _$LoginStateImpl({
     this.phone = '',
+    this.dialCode = '+233',
+    this.countryFlag = '🇬🇭',
     this.verificationId = '',
     this.otp = '',
     this.fullName = '',
@@ -334,6 +452,13 @@ class _$LoginStateImpl implements _LoginState {
     this.ghanaCardNumber = '',
     this.ghanaCardPhotoPath,
     this.idDocumentType = 'ghana_card',
+    this.smsPhone = '',
+    this.smsDialCode = '+233',
+    this.smsCountryFlag = '🇬🇭',
+    this.whatsappPhone = '',
+    this.whatsappDialCode = '+233',
+    this.whatsappCountryFlag = '🇬🇭',
+    this.email = '',
     this.step = LoginStep.phone,
     this.nav = LoginNav.none,
     this.isLoading = false,
@@ -348,6 +473,12 @@ class _$LoginStateImpl implements _LoginState {
   @override
   @JsonKey()
   final String phone;
+  @override
+  @JsonKey()
+  final String dialCode;
+  @override
+  @JsonKey()
+  final String countryFlag;
   @override
   @JsonKey()
   final String verificationId;
@@ -371,6 +502,27 @@ class _$LoginStateImpl implements _LoginState {
   @override
   @JsonKey()
   final String idDocumentType;
+  @override
+  @JsonKey()
+  final String smsPhone;
+  @override
+  @JsonKey()
+  final String smsDialCode;
+  @override
+  @JsonKey()
+  final String smsCountryFlag;
+  @override
+  @JsonKey()
+  final String whatsappPhone;
+  @override
+  @JsonKey()
+  final String whatsappDialCode;
+  @override
+  @JsonKey()
+  final String whatsappCountryFlag;
+  @override
+  @JsonKey()
+  final String email;
   // Step and navigation
   @override
   @JsonKey()
@@ -401,7 +553,7 @@ class _$LoginStateImpl implements _LoginState {
 
   @override
   String toString() {
-    return 'LoginState(phone: $phone, verificationId: $verificationId, otp: $otp, fullName: $fullName, country: $country, referralCode: $referralCode, ghanaCardNumber: $ghanaCardNumber, ghanaCardPhotoPath: $ghanaCardPhotoPath, idDocumentType: $idDocumentType, step: $step, nav: $nav, isLoading: $isLoading, isUploadingPhoto: $isUploadingPhoto, error: $error, generatedReferralCode: $generatedReferralCode, resendCountdown: $resendCountdown, resendEnabled: $resendEnabled)';
+    return 'LoginState(phone: $phone, dialCode: $dialCode, countryFlag: $countryFlag, verificationId: $verificationId, otp: $otp, fullName: $fullName, country: $country, referralCode: $referralCode, ghanaCardNumber: $ghanaCardNumber, ghanaCardPhotoPath: $ghanaCardPhotoPath, idDocumentType: $idDocumentType, smsPhone: $smsPhone, smsDialCode: $smsDialCode, smsCountryFlag: $smsCountryFlag, whatsappPhone: $whatsappPhone, whatsappDialCode: $whatsappDialCode, whatsappCountryFlag: $whatsappCountryFlag, email: $email, step: $step, nav: $nav, isLoading: $isLoading, isUploadingPhoto: $isUploadingPhoto, error: $error, generatedReferralCode: $generatedReferralCode, resendCountdown: $resendCountdown, resendEnabled: $resendEnabled)';
   }
 
   @override
@@ -410,6 +562,10 @@ class _$LoginStateImpl implements _LoginState {
         (other.runtimeType == runtimeType &&
             other is _$LoginStateImpl &&
             (identical(other.phone, phone) || other.phone == phone) &&
+            (identical(other.dialCode, dialCode) ||
+                other.dialCode == dialCode) &&
+            (identical(other.countryFlag, countryFlag) ||
+                other.countryFlag == countryFlag) &&
             (identical(other.verificationId, verificationId) ||
                 other.verificationId == verificationId) &&
             (identical(other.otp, otp) || other.otp == otp) &&
@@ -424,6 +580,19 @@ class _$LoginStateImpl implements _LoginState {
                 other.ghanaCardPhotoPath == ghanaCardPhotoPath) &&
             (identical(other.idDocumentType, idDocumentType) ||
                 other.idDocumentType == idDocumentType) &&
+            (identical(other.smsPhone, smsPhone) ||
+                other.smsPhone == smsPhone) &&
+            (identical(other.smsDialCode, smsDialCode) ||
+                other.smsDialCode == smsDialCode) &&
+            (identical(other.smsCountryFlag, smsCountryFlag) ||
+                other.smsCountryFlag == smsCountryFlag) &&
+            (identical(other.whatsappPhone, whatsappPhone) ||
+                other.whatsappPhone == whatsappPhone) &&
+            (identical(other.whatsappDialCode, whatsappDialCode) ||
+                other.whatsappDialCode == whatsappDialCode) &&
+            (identical(other.whatsappCountryFlag, whatsappCountryFlag) ||
+                other.whatsappCountryFlag == whatsappCountryFlag) &&
+            (identical(other.email, email) || other.email == email) &&
             (identical(other.step, step) || other.step == step) &&
             (identical(other.nav, nav) || other.nav == nav) &&
             (identical(other.isLoading, isLoading) ||
@@ -440,9 +609,11 @@ class _$LoginStateImpl implements _LoginState {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     phone,
+    dialCode,
+    countryFlag,
     verificationId,
     otp,
     fullName,
@@ -451,6 +622,13 @@ class _$LoginStateImpl implements _LoginState {
     ghanaCardNumber,
     ghanaCardPhotoPath,
     idDocumentType,
+    smsPhone,
+    smsDialCode,
+    smsCountryFlag,
+    whatsappPhone,
+    whatsappDialCode,
+    whatsappCountryFlag,
+    email,
     step,
     nav,
     isLoading,
@@ -459,7 +637,7 @@ class _$LoginStateImpl implements _LoginState {
     generatedReferralCode,
     resendCountdown,
     resendEnabled,
-  );
+  ]);
 
   /// Create a copy of LoginState
   /// with the given fields replaced by the non-null parameter values.
@@ -473,6 +651,8 @@ class _$LoginStateImpl implements _LoginState {
 abstract class _LoginState implements LoginState {
   const factory _LoginState({
     final String phone,
+    final String dialCode,
+    final String countryFlag,
     final String verificationId,
     final String otp,
     final String fullName,
@@ -481,6 +661,13 @@ abstract class _LoginState implements LoginState {
     final String ghanaCardNumber,
     final String? ghanaCardPhotoPath,
     final String idDocumentType,
+    final String smsPhone,
+    final String smsDialCode,
+    final String smsCountryFlag,
+    final String whatsappPhone,
+    final String whatsappDialCode,
+    final String whatsappCountryFlag,
+    final String email,
     final LoginStep step,
     final LoginNav nav,
     final bool isLoading,
@@ -494,6 +681,10 @@ abstract class _LoginState implements LoginState {
   // Input values
   @override
   String get phone;
+  @override
+  String get dialCode;
+  @override
+  String get countryFlag;
   @override
   String get verificationId;
   @override
@@ -509,7 +700,21 @@ abstract class _LoginState implements LoginState {
   @override
   String? get ghanaCardPhotoPath;
   @override
-  String get idDocumentType; // Step and navigation
+  String get idDocumentType;
+  @override
+  String get smsPhone;
+  @override
+  String get smsDialCode;
+  @override
+  String get smsCountryFlag;
+  @override
+  String get whatsappPhone;
+  @override
+  String get whatsappDialCode;
+  @override
+  String get whatsappCountryFlag;
+  @override
+  String get email; // Step and navigation
   @override
   LoginStep get step;
   @override

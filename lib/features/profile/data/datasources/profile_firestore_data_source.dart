@@ -43,6 +43,27 @@ class ProfileFirestoreDataSource {
     });
   }
 
+  Future<void> updateSmsPhone(String userId, String value) async {
+    await _firestore.collection(FirestoreCollections.users).doc(userId).update({
+      'smsPhone': value,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> updateWhatsappPhone(String userId, String value) async {
+    await _firestore.collection(FirestoreCollections.users).doc(userId).update({
+      'whatsappPhone': value,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> updateEmail(String userId, String value) async {
+    await _firestore.collection(FirestoreCollections.users).doc(userId).update({
+      'email': value,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   Future<void> updateNotificationPreference(
     String userId,
     String key,

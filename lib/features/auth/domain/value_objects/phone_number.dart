@@ -2,49 +2,94 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
 
-/// Validated Ghanaian phone number in E.164 format.
-/// Immutable value object — created via factory method.
+/// Validated international phone
+/// number in E.164 format.
+/// Immutable value object —
+/// created via factory methods.
 class PhoneNumber {
-  final String value; // always +233XXXXXXXXX
+  /// Always E.164 e.g. +233XXXXXXXXX
+  final String value;
   const PhoneNumber._(this.value);
 
-  /// Accepts any of these formats:
-  ///   9 digits           → +233XXXXXXXXX
-  ///   0XXXXXXXXX (10)    → +233XXXXXXXXX
-  ///   233XXXXXXXXX (12)  → +233XXXXXXXXX
-  ///   +233XXXXXXXXX      → +233XXXXXXXXX (normalized)
-  static Either<ValidationFailure, PhoneNumber> create(
-    String raw,
-  ) {
-    final trimmed = raw.trim();
-    final digits = trimmed.replaceAll(RegExp(r'\D'), '');
-    late String e164;
-    if (digits.length == 9) {
-      e164 = '+233$digits';
-    } else if (digits.length == 10 && digits.startsWith('0')) {
-      e164 = '+233${digits.substring(1)}';
-    } else if (digits.length == 12 && digits.startsWith('233')) {
-      e164 = '+$digits';
-    } else if (trimmed.startsWith('+233') &&
-        digits.length == 12 &&
-        digits.startsWith('233')) {
-      e164 = '+$digits';
-    } else {
+  /// Creates from a dial code and
+  /// raw digit string.
+  ///
+  /// [dialCode] e.g. '+233', '+1'
+  /// [digits]   local digits only,
+  ///            no leading zeros,
+  ///            no spaces
+  ///
+  /// Validates:
+  ///   - dialCode starts with '+'
+  ///   - digits is non-empty
+  ///   - combined length is
+  ///     reasonable (7-15 digits
+  ///     per ITU E.164)
+  static Either<ValidationFailure, PhoneNumber> fromDialCodeAndDigits({
+    required String dialCode,
+    required String digits,
+  }) {
+    final cleanDial = dialCode.trim();
+    final cleanDigits = digits.trim().replaceAll(RegExp(r'\D'), '');
+
+    if (!cleanDial.startsWith('+')) {
+      return const Left(ValidationFailure(message: 'Invalid country code.'));
+    }
+
+    if (cleanDigits.isEmpty) {
       return const Left(
         ValidationFailure(
-          message: 'Enter a valid Ghanaian phone number',
+          message:
+              'Please enter your '
+              'phone number.',
         ),
       );
     }
+
+    final dialDigits = cleanDial.replaceAll(RegExp(r'\D'), '');
+    final totalDigits = dialDigits.length + cleanDigits.length;
+
+    if (totalDigits < 7 || totalDigits > 15) {
+      return const Left(
+        ValidationFailure(
+          message:
+              'Please enter a valid '
+              'phone number.',
+        ),
+      );
+    }
+
+    final e164 = '$cleanDial$cleanDigits';
     return Right(PhoneNumber._(e164));
   }
 
-  /// Local display format: 0XX XXX XXXX
-  String get displayValue {
-    final local = '0${value.substring(4)}';
-    return '${local.substring(0, 3)} '
-        '${local.substring(3, 6)} '
-        '${local.substring(6)}';
+  /// Creates from a full E.164
+  /// string directly.
+  /// Used for backward compatibility
+  /// where the full number is
+  /// already known.
+  static Either<ValidationFailure, PhoneNumber> fromE164(String raw) {
+    final trimmed = raw.trim();
+    if (!trimmed.startsWith('+')) {
+      return const Left(
+        ValidationFailure(
+          message:
+              'Please enter a valid '
+              'phone number.',
+        ),
+      );
+    }
+    final digits = trimmed.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 7 || digits.length > 15) {
+      return const Left(
+        ValidationFailure(
+          message:
+              'Please enter a valid '
+              'phone number.',
+        ),
+      );
+    }
+    return Right(PhoneNumber._(trimmed));
   }
 
   @override
@@ -53,4 +98,7 @@ class PhoneNumber {
 
   @override
   int get hashCode => value.hashCode;
+
+  @override
+  String toString() => value;
 }

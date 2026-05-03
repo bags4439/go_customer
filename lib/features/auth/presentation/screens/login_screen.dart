@@ -5,12 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
+import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/utils/cross_platform_image.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../domain/entities/country.dart';
 import '../notifiers/login_notifier.dart';
@@ -29,8 +28,7 @@ class LoginScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen<LoginState>(loginNotifierProvider, (prev, next) {
-      if (next.nav == LoginNav.goHome &&
-          prev?.nav != LoginNav.goHome) {
+      if (next.nav == LoginNav.goHome && prev?.nav != LoginNav.goHome) {
         context.go('/home');
       }
     });
@@ -39,25 +37,25 @@ class LoginScreen extends ConsumerWidget {
     final notifier = ref.read(loginNotifierProvider.notifier);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 320),
           transitionBuilder: (child, animation) {
-            final slide = Tween<Offset>(
-              begin: const Offset(1.0, 0.0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            ));
+            final slide =
+                Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                );
             return SlideTransition(
               position: slide,
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
+              child: FadeTransition(opacity: animation, child: child),
             );
           },
           child: KeyedSubtree(
@@ -69,21 +67,16 @@ class LoginScreen extends ConsumerWidget {
     );
   }
 
-  Widget _stepWidget(
-    LoginState state,
-    LoginNotifier notifier,
-  ) {
+  Widget _stepWidget(LoginState state, LoginNotifier notifier) {
     return switch (state.step) {
-      LoginStep.phone =>
-        _PhoneStep(state: state, notifier: notifier),
-      LoginStep.otp =>
-        _OtpStep(state: state, notifier: notifier),
-      LoginStep.name =>
-        _NameStep(state: state, notifier: notifier),
-      LoginStep.referral =>
-        _ReferralStep(state: state, notifier: notifier),
-      LoginStep.ghanaCard =>
-        _GhanaCardStep(state: state, notifier: notifier),
+      LoginStep.phone => _PhoneStep(state: state, notifier: notifier),
+      LoginStep.otp => _OtpStep(state: state, notifier: notifier),
+      LoginStep.name => _NameStep(state: state, notifier: notifier),
+      LoginStep.referral => _ReferralStep(state: state, notifier: notifier),
+      LoginStep.contactChannels => _ContactChannelsStep(
+        state: state,
+        notifier: notifier,
+      ),
     };
   }
 }
@@ -98,59 +91,37 @@ class _AuthResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: ResponsiveLayout.contentMaxWidth(context),
-        ),
-        child: SingleChildScrollView(
-          padding: ResponsiveLayout.contentPadding(context)
-              .copyWith(top: 0, bottom: 40),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-class _AppLogo extends StatelessWidget {
-  final double fontSize;
-  const _AppLogo({this.fontSize = 26});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Stack(
       children: [
-        Container(
-          width: fontSize * 1.4,
-          height: fontSize * 1.4,
-          decoration: BoxDecoration(
-            color: const Color(0xFF378ADD),
-            borderRadius: BorderRadius.circular(fontSize * 0.28),
-          ),
-          child: Icon(
-            Icons.directions_car_filled,
-            color: Colors.white,
-            size: fontSize * 0.82,
-          ),
-        ),
-        SizedBox(width: fontSize * 0.36),
-        Text(
-          'AutoImport',
-          style: AppTextStyles.titleLarge.copyWith(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF1A1A18),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 260,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.secondary.withValues(alpha: 0.07),
+                  AppColors.secondary.withValues(alpha: 0.0),
+                ],
+              ),
+            ),
           ),
         ),
-        Text(
-          ' GH',
-          style: AppTextStyles.titleLarge.copyWith(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF378ADD),
+        Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: ResponsiveLayout.contentMaxWidth(context),
+            ),
+            child: SingleChildScrollView(
+              padding: ResponsiveLayout.contentPadding(
+                context,
+              ).copyWith(top: 0, bottom: 40),
+              child: child,
+            ),
           ),
         ),
       ],
@@ -180,15 +151,12 @@ class _AuthPrimaryButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          color: canTap
-              ? const Color(0xFF378ADD)
-              : const Color(0xFFE0DFD8),
+          color: canTap ? const Color(0xFF378ADD) : const Color(0xFFE0DFD8),
           borderRadius: BorderRadius.circular(12),
           boxShadow: canTap
               ? [
                   BoxShadow(
-                    color: const Color(0xFF378ADD)
-                        .withValues(alpha: 0.30),
+                    color: const Color(0xFF378ADD).withValues(alpha: 0.30),
                     blurRadius: 14,
                     offset: const Offset(0, 5),
                   ),
@@ -238,6 +206,7 @@ class _StyledTextField extends StatefulWidget {
   final String hintText;
   final TextCapitalization textCapitalization;
   final TextInputAction textInputAction;
+  final TextInputType keyboardType;
   final VoidCallback? onSubmit;
   final bool hasError;
   final bool autofocus;
@@ -248,6 +217,7 @@ class _StyledTextField extends StatefulWidget {
     required this.hintText,
     this.textCapitalization = TextCapitalization.none,
     this.textInputAction = TextInputAction.done,
+    this.keyboardType = TextInputType.text,
     this.onSubmit,
     this.hasError = false,
     this.autofocus = false,
@@ -281,15 +251,13 @@ class _StyledTextFieldState extends State<_StyledTextField> {
       duration: const Duration(milliseconds: 150),
       height: 56,
       decoration: BoxDecoration(
-        color: widget.hasError
-            ? const Color(0xFFFCEBEB)
-            : Colors.white,
+        color: widget.hasError ? const Color(0xFFFCEBEB) : Colors.white,
         border: Border.all(
           color: widget.hasError
               ? const Color(0xFFE24B4A)
               : _focused
-                  ? const Color(0xFF378ADD)
-                  : const Color(0xFFE0DFD8),
+              ? const Color(0xFF378ADD)
+              : const Color(0xFFE0DFD8),
           width: (_focused || widget.hasError) ? 1.5 : 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
@@ -298,6 +266,7 @@ class _StyledTextFieldState extends State<_StyledTextField> {
         controller: widget.controller,
         focusNode: _focus,
         autofocus: widget.autofocus,
+        keyboardType: widget.keyboardType,
         textCapitalization: widget.textCapitalization,
         textInputAction: widget.textInputAction,
         inputFormatters: widget.inputFormatters,
@@ -353,15 +322,13 @@ class _CountryPickerField extends StatelessWidget {
           duration: const Duration(milliseconds: 150),
           height: 56,
           decoration: BoxDecoration(
-            color: hasError
-                ? const Color(0xFFFCEBEB)
-                : Colors.white,
+            color: hasError ? const Color(0xFFFCEBEB) : Colors.white,
             border: Border.all(
               color: hasError
                   ? const Color(0xFFE24B4A)
                   : borderFocused
-                      ? const Color(0xFF378ADD)
-                      : const Color(0xFFE0DFD8),
+                  ? const Color(0xFF378ADD)
+                  : const Color(0xFFE0DFD8),
               width: (hasError || borderFocused) ? 1.5 : 1.0,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -405,35 +372,428 @@ class _CountryPickerField extends StatelessWidget {
   }
 }
 
-class _OnboardingProgress extends StatelessWidget {
+/// Premium linear progress bar
+/// shown on onboarding steps 3-5.
+/// Animates smoothly between steps.
+class _OnboardingProgressBar extends StatelessWidget {
   final int current;
   final int total;
-  const _OnboardingProgress({
-    required this.current,
-    required this.total,
-  });
+
+  const _OnboardingProgressBar({required this.current, required this.total});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(total, (i) {
-        final isActive = i == current;
-        final isDone = i < current;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: isActive ? 28 : 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: (isDone || isActive)
-                ? const Color(0xFF378ADD)
-                : const Color(0xFFE0DFD8),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        );
-      }),
+    final fraction = (current + 1) / total;
+    return SizedBox(
+      height: 3,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              Container(
+                width: constraints.maxWidth,
+                height: 3,
+                color: AppColors.borderSolid,
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutCubic,
+                width: constraints.maxWidth * fraction,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.circular(1.5),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ─── Illustration painters ───────────────────────────────────
+
+/// Phone step: circle + signal waves
+class _PhoneIllustrationPainter extends CustomPainter {
+  final Color color;
+  const _PhoneIllustrationPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(Offset(cx, cy), 44, paint);
+
+    final phonePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final phoneRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, cy), width: 22, height: 34),
+      const Radius.circular(5),
+    );
+    canvas.drawRRect(phoneRect, phonePaint);
+
+    final screenPaint = Paint()
+      ..color = color.withValues(alpha: 0.07)
+      ..style = PaintingStyle.fill;
+    final screenRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, cy - 2), width: 16, height: 22),
+      const Radius.circular(2),
+    );
+    canvas.drawRRect(screenRect, screenPaint);
+
+    final arcPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    for (int i = 0; i < 3; i++) {
+      arcPaint.color = color.withValues(alpha: 1.0 - (i * 0.28));
+      final radius = 54.0 + (i * 12.0);
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset(cx - 2, cy), radius: radius),
+        -0.6,
+        1.2,
+        false,
+        arcPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PhoneIllustrationPainter old) => old.color != color;
+}
+
+/// OTP step: shield with checkmark
+class _ShieldIllustrationPainter extends CustomPainter {
+  final Color color;
+  const _ShieldIllustrationPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    final shield = Path();
+    shield.moveTo(cx, cy - 40);
+    shield.cubicTo(cx + 30, cy - 40, cx + 38, cy - 20, cx + 38, cy);
+    shield.cubicTo(cx + 38, cy + 22, cx + 20, cy + 36, cx, cy + 44);
+    shield.cubicTo(cx - 20, cy + 36, cx - 38, cy + 22, cx - 38, cy);
+    shield.cubicTo(cx - 38, cy - 20, cx - 30, cy - 40, cx, cy - 40);
+    shield.close();
+
+    canvas.drawPath(
+      shield,
+      Paint()
+        ..color = color.withValues(alpha: 0.10)
+        ..style = PaintingStyle.fill,
+    );
+
+    canvas.drawPath(
+      shield,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..strokeJoin = StrokeJoin.round,
+    );
+
+    final check = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final checkPath = Path();
+    checkPath.moveTo(cx - 14, cy + 2);
+    checkPath.lineTo(cx - 4, cy + 12);
+    checkPath.lineTo(cx + 14, cy - 10);
+    canvas.drawPath(checkPath, check);
+  }
+
+  @override
+  bool shouldRepaint(_ShieldIllustrationPainter old) => old.color != color;
+}
+
+/// Name step: person + location pin
+class _PersonIllustrationPainter extends CustomPainter {
+  final Color color;
+  const _PersonIllustrationPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final fill = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    canvas.drawCircle(
+      Offset(cx, cy),
+      46,
+      Paint()
+        ..color = color.withValues(alpha: 0.07)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawCircle(Offset(cx, cy), 46, stroke);
+
+    canvas.drawCircle(Offset(cx, cy - 14), 13, fill);
+
+    final body = Path();
+    body.moveTo(cx - 18, cy + 36);
+    body.quadraticBezierTo(cx - 20, cy + 10, cx, cy + 4);
+    body.quadraticBezierTo(cx + 20, cy + 10, cx + 18, cy + 36);
+    body.close();
+    canvas.drawPath(body, fill);
+
+    final pinCx = cx + 28.0;
+    final pinCy = cy + 10.0;
+    final pinFill = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final pinPath = Path();
+    pinPath.addOval(
+      Rect.fromCircle(center: Offset(pinCx, pinCy - 10), radius: 10),
+    );
+    pinPath.moveTo(pinCx - 4, pinCy - 2);
+    pinPath.quadraticBezierTo(pinCx, pinCy + 12, pinCx + 4, pinCy - 2);
+    canvas.drawPath(pinPath, pinFill);
+
+    canvas.drawCircle(
+      Offset(pinCx, pinCy - 10),
+      4,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_PersonIllustrationPainter old) => old.color != color;
+}
+
+/// Referral step: two nodes connected
+class _ReferralIllustrationPainter extends CustomPainter {
+  final Color color;
+  const _ReferralIllustrationPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final fill = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+    final fadeFill = Paint()
+      ..color = color.withValues(alpha: 0.12)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(cx - 32, cy), 18, fadeFill);
+    canvas.drawCircle(Offset(cx - 32, cy), 18, stroke);
+    canvas.drawCircle(Offset(cx - 32, cy - 5), 6, fill);
+    final leftBody = Path();
+    leftBody.moveTo(cx - 42, cy + 14);
+    leftBody.quadraticBezierTo(cx - 32, cy + 6, cx - 22, cy + 14);
+    canvas.drawPath(leftBody, stroke);
+
+    canvas.drawCircle(Offset(cx + 32, cy), 18, fadeFill);
+    canvas.drawCircle(Offset(cx + 32, cy), 18, stroke);
+    canvas.drawCircle(Offset(cx + 32, cy - 5), 6, fill);
+    final rightBody = Path();
+    rightBody.moveTo(cx + 22, cy + 14);
+    rightBody.quadraticBezierTo(cx + 32, cy + 6, cx + 42, cy + 14);
+    canvas.drawPath(rightBody, stroke);
+
+    canvas.drawLine(Offset(cx - 14, cy), Offset(cx + 14, cy), stroke);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(cx, cy), width: 20, height: 18),
+        const Radius.circular(4),
+      ),
+      fill,
+    );
+    canvas.drawLine(
+      Offset(cx, cy - 9),
+      Offset(cx, cy + 9),
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
+    canvas.drawLine(
+      Offset(cx - 10, cy),
+      Offset(cx + 10, cy),
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
+    canvas.drawArc(
+      Rect.fromCenter(center: Offset(cx - 4, cy - 9), width: 12, height: 10),
+      pi,
+      pi,
+      false,
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
+    canvas.drawArc(
+      Rect.fromCenter(center: Offset(cx + 4, cy - 9), width: 12, height: 10),
+      0,
+      pi,
+      false,
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ReferralIllustrationPainter old) => old.color != color;
+}
+
+/// Stay in the loop step:
+/// bell with notification ripples
+class _BellIllustrationPainter extends CustomPainter {
+  final Color color;
+  const _BellIllustrationPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final fill = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    final bell = Path();
+    bell.moveTo(cx, cy - 36);
+    bell.cubicTo(cx + 26, cy - 36, cx + 32, cy - 16, cx + 32, cy + 4);
+    bell.lineTo(cx + 38, cy + 14);
+    bell.lineTo(cx - 38, cy + 14);
+    bell.lineTo(cx - 32, cy + 4);
+    bell.cubicTo(cx - 32, cy - 16, cx - 26, cy - 36, cx, cy - 36);
+    bell.close();
+    canvas.drawPath(bell, fill);
+
+    canvas.drawLine(Offset(cx - 38, cy + 14), Offset(cx + 38, cy + 14), fill);
+
+    canvas.drawCircle(Offset(cx, cy + 22), 8, fill);
+
+    canvas.drawLine(Offset(cx, cy - 36), Offset(cx, cy - 44), stroke);
+
+    final arcStroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    for (int i = 0; i < 3; i++) {
+      arcStroke.color = color.withValues(alpha: 0.7 - (i * 0.22));
+      final r = 52.0 + (i * 14.0);
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset(cx, cy + 4), radius: r),
+        -pi * 0.85,
+        -pi * 0.3,
+        false,
+        arcStroke,
+      );
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset(cx, cy + 4), radius: r),
+        -pi * 0.15,
+        -pi * 0.3,
+        false,
+        arcStroke,
+      );
+    }
+
+    canvas.drawCircle(
+      Offset(cx + 28, cy - 34),
+      8,
+      Paint()
+        ..color = AppColors.danger
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BellIllustrationPainter old) => old.color != color;
+}
+
+/// Wrapper that animates an
+/// illustration in with scale +
+/// fade on step entry.
+class _IllustrationWidget extends StatefulWidget {
+  final CustomPainter painter;
+  const _IllustrationWidget({required this.painter});
+
+  @override
+  State<_IllustrationWidget> createState() => _IllustrationWidgetState();
+}
+
+class _IllustrationWidgetState extends State<_IllustrationWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ac;
+  late final Animation<double> _scale;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ac = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _scale = Tween<double>(
+      begin: 0.72,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _ac, curve: Curves.easeOutBack));
+    _fade = CurvedAnimation(
+      parent: _ac,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+    );
+    _ac.forward();
+  }
+
+  @override
+  void dispose() {
+    _ac.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: ScaleTransition(
+        scale: _scale,
+        child: CustomPaint(painter: widget.painter, size: const Size(120, 120)),
+      ),
     );
   }
 }
@@ -444,23 +804,25 @@ class _BackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: Material(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFE0DFD8)),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.arrow_back_ios_new,
-            size: 16,
-            color: Color(0xFF666666),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.borderSolid),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
       ),
@@ -510,8 +872,7 @@ class _UpperCaseFormatter extends TextInputFormatter {
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
-  ) =>
-      newValue.copyWith(text: newValue.text.toUpperCase());
+  ) => newValue.copyWith(text: newValue.text.toUpperCase());
 }
 
 class _OtpInputRow extends StatefulWidget {
@@ -577,13 +938,8 @@ class _OtpInputRowState extends State<_OtpInputRow>
       animation: _shakeController,
       builder: (context, child) {
         final t = _shakeController.value;
-        final offset = t < 1.0
-            ? sin(t * pi * 4) * 8 * (1 - t)
-            : 0.0;
-        return Transform.translate(
-          offset: Offset(offset, 0),
-          child: child,
-        );
+        final offset = t < 1.0 ? sin(t * pi * 4) * 8 * (1 - t) : 0.0;
+        return Transform.translate(offset: Offset(offset, 0), child: child);
       },
       child: Stack(
         children: [
@@ -610,7 +966,8 @@ class _OtpInputRowState extends State<_OtpInputRow>
                 final text = i < _controller.text.length
                     ? _controller.text[i]
                     : '';
-                final isFocused = _focusNode.hasFocus &&
+                final isFocused =
+                    _focusNode.hasFocus &&
                     i == _controller.text.length &&
                     i < 6;
                 final isFilled = text.isNotEmpty;
@@ -646,8 +1003,7 @@ class _OtpBox extends StatelessWidget {
     final padding = ResponsiveLayout.contentPadding(context);
     final screenW = MediaQuery.sizeOf(context).width;
     final maxContent = ResponsiveLayout.contentMaxWidth(context);
-    final contentW =
-        maxContent.isFinite ? maxContent : screenW;
+    final contentW = maxContent.isFinite ? maxContent : screenW;
     final availableW = contentW - padding.horizontal - (5 * 8.0);
     final boxW = (availableW / 6).clamp(0.0, 52.0);
 
@@ -659,16 +1015,16 @@ class _OtpBox extends StatelessWidget {
         color: hasError
             ? const Color(0xFFFCEBEB)
             : isFocused
-                ? const Color(0xFFEBF4FD)
-                : Colors.white,
+            ? const Color(0xFFEBF4FD)
+            : Colors.white,
         border: Border.all(
           color: hasError
               ? const Color(0xFFE24B4A)
               : isFocused
-                  ? const Color(0xFF378ADD)
-                  : isFilled
-                      ? const Color(0xFF378ADD)
-                      : const Color(0xFFE0DFD8),
+              ? const Color(0xFF378ADD)
+              : isFilled
+              ? const Color(0xFF378ADD)
+              : const Color(0xFFE0DFD8),
           width: (isFocused || hasError) ? 2.0 : 1.0,
         ),
         borderRadius: BorderRadius.circular(10),
@@ -678,172 +1034,10 @@ class _OtpBox extends StatelessWidget {
           text,
           style: AppTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.w600,
-            color: hasError
-                ? const Color(0xFFE24B4A)
-                : const Color(0xFF1A1A18),
+            color: hasError ? const Color(0xFFE24B4A) : const Color(0xFF1A1A18),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _GhanaCardPhotoField extends StatelessWidget {
-  final String? photoPath;
-  final bool isUploading;
-  final ValueChanged<String> onPick;
-  final VoidCallback onClear;
-  const _GhanaCardPhotoField({
-    required this.photoPath,
-    required this.isUploading,
-    required this.onPick,
-    required this.onClear,
-  });
-
-  Future<void> _pickPhoto(BuildContext context) async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(16),
-        ),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: Text(
-                'Take a photo',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: 15,
-                  height: null,
-                ),
-              ),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(
-                'Choose from gallery',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: 15,
-                  height: null,
-                ),
-              ),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null || !context.mounted) return;
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: source,
-      imageQuality: 80,
-      maxWidth: 1200,
-    );
-    if (file != null && context.mounted) {
-      onPick(file.path);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        GestureDetector(
-          onTap: isUploading ? null : () => _pickPhoto(context),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            height: 120,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F4F0),
-              border: Border.all(color: const Color(0xFFE0DFD8)),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: photoPath != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(11),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        buildLocalImage(
-                          photoPath!,
-                          fit: BoxFit.cover,
-                        ),
-                        if (isUploading)
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: LinearProgressIndicator(
-                              backgroundColor: Colors.black12,
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                Color(0xFF378ADD),
-                              ),
-                              minHeight: 3,
-                            ),
-                          ),
-                      ],
-                    ),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.camera_alt_outlined,
-                        size: 32,
-                        color: Color(0xFFAAAAAA),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Tap to upload',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: const Color(0xFF666666),
-                        ),
-                      ),
-                      Text(
-                        'Camera or gallery',
-                        style: AppTextStyles.caption.copyWith(
-                          color: const Color(0xFFAAAAAA),
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-        if (photoPath != null && !isUploading)
-          Positioned(
-            top: -8,
-            right: -8,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onClear,
-                customBorder: const CircleBorder(),
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE24B4A),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    size: 14,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }
@@ -922,24 +1116,32 @@ class _PhoneTermsRichTextState extends State<_PhoneTermsRichText> {
   }
 }
 
-class _PhoneInputField extends StatefulWidget {
+class _PhoneInputField extends ConsumerStatefulWidget {
   final String initialDigits;
+  final String dialCode;
+  final String countryFlag;
   final ValueChanged<String> onChanged;
   final VoidCallback onSubmit;
+  final void Function(String dialCode, String flag) onDialSelected;
+
   const _PhoneInputField({
     required this.initialDigits,
+    required this.dialCode,
+    required this.countryFlag,
     required this.onChanged,
     required this.onSubmit,
+    required this.onDialSelected,
   });
 
   @override
-  State<_PhoneInputField> createState() => _PhoneInputFieldState();
+  ConsumerState<_PhoneInputField> createState() => _PhoneInputFieldState();
 }
 
-class _PhoneInputFieldState extends State<_PhoneInputField> {
+class _PhoneInputFieldState extends ConsumerState<_PhoneInputField> {
   final _focus = FocusNode();
   late final TextEditingController _controller;
   bool _focused = false;
+  bool _pickerOpen = false;
 
   @override
   void initState() {
@@ -950,14 +1152,13 @@ class _PhoneInputFieldState extends State<_PhoneInputField> {
   }
 
   @override
-  void didUpdateWidget(_PhoneInputField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.initialDigits != oldWidget.initialDigits &&
+  void didUpdateWidget(_PhoneInputField old) {
+    super.didUpdateWidget(old);
+    if (widget.initialDigits != old.initialDigits &&
         widget.initialDigits != _controller.text) {
       _controller.value = TextEditingValue(
         text: widget.initialDigits,
-        selection:
-            TextSelection.collapsed(offset: widget.initialDigits.length),
+        selection: TextSelection.collapsed(offset: widget.initialDigits.length),
       );
     }
   }
@@ -969,44 +1170,78 @@ class _PhoneInputFieldState extends State<_PhoneInputField> {
     super.dispose();
   }
 
+  Future<void> _openPicker() async {
+    setState(() => _pickerOpen = true);
+    final country = await CountryPickerSheet.show(
+      context,
+      selectedIsoCode: '',
+      sheetTitle: 'Select country code',
+      sheetSubtitle: 'Choose your country to set the dial code.',
+    );
+    if (!mounted) return;
+    setState(() => _pickerOpen = false);
+    if (country != null && country.dialCode.isNotEmpty) {
+      widget.onDialSelected(country.dialCode, country.flag);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
-      height: 56,
+      height: 60,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: _focused
-              ? const Color(0xFF378ADD)
-              : const Color(0xFFE0DFD8),
-          width: _focused ? 1.5 : 1.0,
+          color: _focused || _pickerOpen
+              ? AppColors.secondary
+              : AppColors.borderSolid,
+          width: (_focused || _pickerOpen) ? 1.5 : 1.0,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🇬🇭', style: TextStyle(fontSize: 20)),
-                const SizedBox(width: 6),
-                Text(
-                  '+233',
-                  style: AppTextStyles.titleSmall.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A1A18),
-                  ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _openPicker,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(13),
+                bottomLeft: Radius.circular(13),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.countryFlag,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      widget.dialCode,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.textTertiary,
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 1,
+                      height: 26,
+                      color: AppColors.borderSolid,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                Container(
-                  width: 1,
-                  height: 24,
-                  color: const Color(0xFFE0DFD8),
-                ),
-              ],
+              ),
             ),
           ),
           Expanded(
@@ -1017,15 +1252,183 @@ class _PhoneInputFieldState extends State<_PhoneInputField> {
               keyboardType: TextInputType.phone,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(9),
+                LengthLimitingTextInputFormatter(15),
               ],
               onFieldSubmitted: (_) => widget.onSubmit(),
               textInputAction: TextInputAction.done,
               style: AppTextStyles.bodyLarge,
               decoration: InputDecoration(
+                hintText: 'Phone number',
+                hintStyle: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textTertiary,
+                  height: null,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PhoneFieldWithDialCode extends ConsumerStatefulWidget {
+  final String initialDialCode;
+  final String initialFlag;
+  final String initialDigits;
+  final void Function(String dialCode, String flag) onDialCodeChanged;
+  final void Function(String digits) onDigitsChanged;
+  final bool hasError;
+
+  const _PhoneFieldWithDialCode({
+    required this.initialDialCode,
+    required this.initialFlag,
+    required this.initialDigits,
+    required this.onDialCodeChanged,
+    required this.onDigitsChanged,
+    this.hasError = false,
+  });
+
+  @override
+  ConsumerState<_PhoneFieldWithDialCode> createState() =>
+      _PhoneFieldWithDialCodeState();
+}
+
+class _PhoneFieldWithDialCodeState
+    extends ConsumerState<_PhoneFieldWithDialCode> {
+  final _focus = FocusNode();
+  late final TextEditingController _controller;
+  late String _dialCode;
+  late String _flag;
+  bool _focused = false;
+  bool _pickerOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _dialCode = widget.initialDialCode;
+    _flag = widget.initialFlag;
+    _controller = TextEditingController(text: widget.initialDigits);
+    _controller.addListener(() => widget.onDigitsChanged(_controller.text));
+    _focus.addListener(() => setState(() => _focused = _focus.hasFocus));
+  }
+
+  @override
+  void didUpdateWidget(_PhoneFieldWithDialCode old) {
+    super.didUpdateWidget(old);
+    if (widget.initialDialCode != old.initialDialCode) {
+      _dialCode = widget.initialDialCode;
+    }
+    if (widget.initialFlag != old.initialFlag) {
+      _flag = widget.initialFlag;
+    }
+    if (widget.initialDigits != old.initialDigits &&
+        widget.initialDigits != _controller.text) {
+      _controller.value = TextEditingValue(
+        text: widget.initialDigits,
+        selection: TextSelection.collapsed(offset: widget.initialDigits.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openDialCodePicker() async {
+    setState(() => _pickerOpen = true);
+    final country = await CountryPickerSheet.show(
+      context,
+      selectedIsoCode: '',
+      sheetTitle: 'Select country code',
+      sheetSubtitle: 'Choose the country for this phone number.',
+    );
+    if (!mounted) return;
+    setState(() => _pickerOpen = false);
+    if (country != null && country.dialCode.isNotEmpty) {
+      setState(() {
+        _dialCode = country.dialCode;
+        _flag = country.flag;
+      });
+      widget.onDialCodeChanged(country.dialCode, country.flag);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      height: 60,
+      decoration: BoxDecoration(
+        color: widget.hasError ? AppColors.dangerMutedBackground : Colors.white,
+        border: Border.all(
+          color: widget.hasError
+              ? AppColors.danger
+              : _focused || _pickerOpen
+              ? AppColors.secondary
+              : AppColors.borderSolid,
+          width: (widget.hasError || _focused || _pickerOpen) ? 1.5 : 1.0,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _openDialCodePicker,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(13),
+                bottomLeft: Radius.circular(13),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_flag, style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 6),
+                    Text(
+                      _dialCode,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.textTertiary,
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 1,
+                      height: 26,
+                      color: AppColors.borderSolid,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: TextFormField(
+              controller: _controller,
+              focusNode: _focus,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              textInputAction: TextInputAction.next,
+              style: AppTextStyles.bodyLarge,
+              decoration: InputDecoration(
                 hintText: 'XX XXX XXXX',
                 hintStyle: AppTextStyles.bodyLarge.copyWith(
-                  color: const Color(0xFFAAAAAA),
+                  color: AppColors.textTertiary,
                   height: null,
                 ),
                 border: InputBorder.none,
@@ -1142,16 +1545,23 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
   Widget build(BuildContext context) {
     final state = widget.state;
     final notifier = widget.notifier;
-    final showError =
-        state.error != null && state.step == LoginStep.phone;
+    final showError = state.error != null && state.step == LoginStep.phone;
+
+    final phoneDigits = state.phone.replaceAll(RegExp(r'\D'), '');
+    final phoneLooksComplete =
+        phoneDigits.length >= 7 && phoneDigits.length <= 15;
 
     return _AuthResponsiveWrapper(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 52),
+          const SizedBox(height: 60),
           _animated(
-            const Center(child: _AppLogo(fontSize: 26)),
+            Center(
+              child: _IllustrationWidget(
+                painter: _PhoneIllustrationPainter(AppColors.secondary),
+              ),
+            ),
             _logoFade,
             _logoSlide,
           ),
@@ -1194,15 +1604,19 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                 const SizedBox(height: 8),
                 _PhoneInputField(
                   initialDigits: state.phone,
+                  dialCode: state.dialCode,
+                  countryFlag: state.countryFlag,
                   onChanged: notifier.updatePhone,
                   onSubmit: notifier.requestOtp,
+                  onDialSelected: notifier.updateDialCode,
                 ),
                 _InlineError(error: showError ? state.error : null),
                 if (!showError) ...[
                   const SizedBox(height: 6),
                   Text(
-                    state.phone.length == 9
-                        ? 'Sending to +233 ${state.phone}'
+                    state.phone.isNotEmpty
+                        ? 'Sending to ${state.dialCode} '
+                              '${state.phone}'
                         : 'We\'ll send a code to this number',
                     style: AppTextStyles.cardLabel.copyWith(
                       color: const Color(0xFFAAAAAA),
@@ -1222,7 +1636,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                 _AuthPrimaryButton(
                   label: 'Send verification code →',
                   isLoading: state.isLoading,
-                  isEnabled: state.phone.length == 9,
+                  isEnabled: phoneLooksComplete,
                   onTap: notifier.requestOtp,
                 ),
                 const SizedBox(height: 24),
@@ -1342,8 +1756,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
   Widget build(BuildContext context) {
     final state = widget.state;
     final notifier = widget.notifier;
-    final otpError =
-        state.error != null && state.step == LoginStep.otp;
+    final otpError = state.error != null && state.step == LoginStep.otp;
 
     return _AuthResponsiveWrapper(
       child: Column(
@@ -1357,50 +1770,61 @@ class _OtpStepState extends ConsumerState<_OtpStep>
               _backFade,
             ),
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 28),
           _fadeSlide(
             Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Enter verification code',
-                  style: AppTextStyles.titleLarge.copyWith(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
+                Center(
+                  child: _IllustrationWidget(
+                    painter: _ShieldIllustrationPainter(AppColors.secondary),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text.rich(
-                  TextSpan(
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: const Color(0xFF666666),
-                    ),
-                    children: [
-                      const TextSpan(text: 'Sent to '),
-                      TextSpan(
-                        text: '+233 ${state.phone}',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1A1A18),
-                        ),
+                const SizedBox(height: 28),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Enter verification code',
+                      style: AppTextStyles.titleLarge.copyWith(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const TextSpan(text: '  ·  '),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.baseline,
-                        baseline: TextBaseline.alphabetic,
-                        child: GestureDetector(
-                          onTap: notifier.goBackToPhone,
-                          child: Text(
-                            'Change',
+                    ),
+                    const SizedBox(height: 8),
+                    Text.rich(
+                      TextSpan(
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: const Color(0xFF666666),
+                        ),
+                        children: [
+                          const TextSpan(text: 'Sent to '),
+                          TextSpan(
+                            text: '${state.dialCode} ${state.phone}',
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF378ADD),
+                              color: const Color(0xFF1A1A18),
                             ),
                           ),
-                        ),
+                          const TextSpan(text: '  ·  '),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.baseline,
+                            baseline: TextBaseline.alphabetic,
+                            child: GestureDetector(
+                              onTap: notifier.goBackToPhone,
+                              child: Text(
+                                'Change',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1426,8 +1850,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                 _AuthPrimaryButton(
                   label: 'Verify →',
                   isLoading: state.isLoading,
-                  isEnabled:
-                      state.otp.length == 6 && !state.isLoading,
+                  isEnabled: state.otp.length == 6 && !state.isLoading,
                   onTap: notifier.verifyOtp,
                 ),
                 const SizedBox(height: 24),
@@ -1456,7 +1879,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                                       text: 'Resend',
                                       style: AppTextStyles.bodySmall.copyWith(
                                         fontWeight: FontWeight.w500,
-                                        color: const Color(0xFF378ADD),
+                                        color: AppColors.secondary,
                                       ),
                                     ),
                                   ],
@@ -1519,9 +1942,7 @@ class _NameStepState extends ConsumerState<_NameStep>
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.state.fullName);
-    _nameCtrl.addListener(
-      () => widget.notifier.updateFullName(_nameCtrl.text),
-    );
+    _nameCtrl.addListener(() => widget.notifier.updateFullName(_nameCtrl.text));
     _ac = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -1627,8 +2048,7 @@ class _NameStepState extends ConsumerState<_NameStep>
     setState(() => _countrySheetOpen = true);
     final country = await CountryPickerSheet.show(
       context,
-      selectedIsoCode:
-          _selectedCountry?.isoCode ?? widget.state.country,
+      selectedIsoCode: _selectedCountry?.isoCode ?? widget.state.country,
     );
     if (!mounted) return;
     setState(() {
@@ -1645,14 +2065,14 @@ class _NameStepState extends ConsumerState<_NameStep>
     final state = widget.state;
     final notifier = widget.notifier;
     final loginStepName = state.step == LoginStep.name;
-    final nameFieldHasError = loginStepName &&
+    final nameFieldHasError =
+        loginStepName &&
         state.error != null &&
         state.error != 'Please select your country';
     final countryFieldHasError =
         loginStepName && state.error == 'Please select your country';
     final nameInlineError = nameFieldHasError ? state.error : null;
-    final countryInlineError =
-        countryFieldHasError ? state.error : null;
+    final countryInlineError = countryFieldHasError ? state.error : null;
 
     final countriesAsync = ref.watch(countriesProvider);
     Country? displayCountry = _selectedCountry;
@@ -1668,116 +2088,125 @@ class _NameStepState extends ConsumerState<_NameStep>
       );
     }
 
-    return _AuthResponsiveWrapper(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 48),
-          const Center(
-            child: _OnboardingProgress(current: 0, total: 3),
-          ),
-          const SizedBox(height: 40),
-          FadeTransition(
-            opacity: _emojiFade,
-            child: ScaleTransition(
-              scale: _emojiScale,
-              child: const Center(
-                child: Text('👋', style: TextStyle(fontSize: 44)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          _fadeSlide(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _OnboardingProgressBar(current: 0, total: 3),
+        Expanded(
+          child: _AuthResponsiveWrapper(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'What should we call you?',
-                  style: AppTextStyles.titleLarge.copyWith(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(height: 48),
+                FadeTransition(
+                  opacity: _emojiFade,
+                  child: ScaleTransition(
+                    scale: _emojiScale,
+                    child: Center(
+                      child: _IllustrationWidget(
+                        painter: _PersonIllustrationPainter(
+                          AppColors.secondary,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'Your agent will use your name to address you.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF666666),
+                const SizedBox(height: 20),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'What should we call you?',
+                        style: AppTextStyles.titleLarge.copyWith(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Your agent will use your name to address you.',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: const Color(0xFF666666),
+                        ),
+                      ),
+                    ],
                   ),
+                  _headingFade,
+                  _headingSlide,
                 ),
+                const SizedBox(height: 32),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'FULL NAME',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _StyledTextField(
+                        hintText: 'e.g. Kwame Mensah',
+                        controller: _nameCtrl,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.done,
+                        onSubmit: notifier.completeProfile,
+                        hasError: nameFieldHasError,
+                        autofocus: true,
+                      ),
+                      _InlineError(error: nameInlineError),
+                    ],
+                  ),
+                  _fieldFade,
+                  _fieldSlide,
+                ),
+                const SizedBox(height: 16),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'COUNTRY',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _CountryPickerField(
+                        selectedCountry: displayCountry,
+                        onTap: _openCountryPicker,
+                        hasError: countryFieldHasError,
+                        isActive: _countrySheetOpen,
+                      ),
+                      _InlineError(error: countryInlineError),
+                    ],
+                  ),
+                  _countryFade,
+                  _countrySlide,
+                ),
+                const SizedBox(height: 32),
+                _fadeSlide(
+                  _AuthPrimaryButton(
+                    label: 'Continue →',
+                    isLoading: state.isLoading,
+                    isEnabled:
+                        state.fullName.trim().length >= 2 &&
+                        state.country.isNotEmpty,
+                    onTap: notifier.completeProfile,
+                  ),
+                  _buttonFade,
+                  _buttonSlide,
+                ),
+                const SizedBox(height: 32),
               ],
             ),
-            _headingFade,
-            _headingSlide,
           ),
-          const SizedBox(height: 32),
-          _fadeSlide(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'FULL NAME',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFFAAAAAA),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _StyledTextField(
-                  hintText: 'e.g. Kwame Mensah',
-                  controller: _nameCtrl,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.done,
-                  onSubmit: notifier.completeProfile,
-                  hasError: nameFieldHasError,
-                  autofocus: true,
-                ),
-                _InlineError(error: nameInlineError),
-              ],
-            ),
-            _fieldFade,
-            _fieldSlide,
-          ),
-          const SizedBox(height: 16),
-          _fadeSlide(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'COUNTRY',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFFAAAAAA),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _CountryPickerField(
-                  selectedCountry: displayCountry,
-                  onTap: _openCountryPicker,
-                  hasError: countryFieldHasError,
-                  isActive: _countrySheetOpen,
-                ),
-                _InlineError(error: countryInlineError),
-              ],
-            ),
-            _countryFade,
-            _countrySlide,
-          ),
-          const SizedBox(height: 32),
-          _fadeSlide(
-            _AuthPrimaryButton(
-              label: 'Continue →',
-              isLoading: state.isLoading,
-              isEnabled: state.fullName.trim().length >= 2 &&
-                  state.country.isNotEmpty,
-              onTap: notifier.completeProfile,
-            ),
-            _buttonFade,
-            _buttonSlide,
-          ),
-          const SizedBox(height: 32),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -1889,137 +2318,156 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
     final notifier = widget.notifier;
     final empty = state.referralCode.trim().isEmpty;
 
-    return _AuthResponsiveWrapper(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 48),
-          const Center(
-            child: _OnboardingProgress(current: 1, total: 3),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: ResponsiveLayout.contentPadding(
+            context,
+          ).copyWith(top: 16, bottom: 0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _BackButton(onTap: notifier.goBack),
           ),
-          const SizedBox(height: 40),
-          FadeTransition(
-            opacity: _emojiFade,
-            child: ScaleTransition(
-              scale: _emojiScale,
-              child: const Center(
-                child: Text('🎁', style: TextStyle(fontSize: 44)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          _fadeSlide(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Do you have a referral code?',
-                  style: AppTextStyles.titleLarge.copyWith(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Enter a friend\'s code — they\'ll get a reward when you join.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF666666),
-                  ),
-                ),
-              ],
-            ),
-            _headingFade,
-            _headingSlide,
-          ),
-          const SizedBox(height: 32),
-          _fadeSlide(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'REFERRAL CODE (OPTIONAL)',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFFAAAAAA),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _StyledTextField(
-                  hintText: 'e.g. A3K9PX',
-                  controller: _codeCtrl,
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.done,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                      RegExp(
-                        r'[23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz]',
-                      ),
-                    ),
-                    LengthLimitingTextInputFormatter(6),
-                    _UpperCaseFormatter(),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '6 characters — letters and numbers only',
-                  style: AppTextStyles.cardLabel.copyWith(
-                    color: const Color(0xFFAAAAAA),
-                  ),
-                ),
-              ],
-            ),
-            _fieldFade,
-            _fieldSlide,
-          ),
-          const SizedBox(height: 32),
-          _fadeSlide(
-            Column(
+        ),
+        const SizedBox(height: 8),
+        const _OnboardingProgressBar(current: 1, total: 3),
+        Expanded(
+          child: _AuthResponsiveWrapper(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _AuthPrimaryButton(
-                  label: empty ? 'Skip →' : 'Apply & continue →',
-                  isLoading: false,
-                  isEnabled: true,
-                  onTap: notifier.proceedToGhanaCard,
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: TextButton(
-                    onPressed: notifier.skipReferral,
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'Skip',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: const Color(0xFFAAAAAA),
+                const SizedBox(height: 40),
+                FadeTransition(
+                  opacity: _emojiFade,
+                  child: ScaleTransition(
+                    scale: _emojiScale,
+                    child: Center(
+                      child: _IllustrationWidget(
+                        painter: _ReferralIllustrationPainter(
+                          AppColors.secondary,
+                        ),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Do you have a referral code?',
+                        style: AppTextStyles.titleLarge.copyWith(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Enter a friend\'s code — they\'ll get a reward when you join.',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: const Color(0xFF666666),
+                        ),
+                      ),
+                    ],
+                  ),
+                  _headingFade,
+                  _headingSlide,
+                ),
+                const SizedBox(height: 32),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'REFERRAL CODE (OPTIONAL)',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _StyledTextField(
+                        hintText: 'e.g. A3K9PX',
+                        controller: _codeCtrl,
+                        textCapitalization: TextCapitalization.characters,
+                        textInputAction: TextInputAction.done,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(
+                              r'[23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz]',
+                            ),
+                          ),
+                          LengthLimitingTextInputFormatter(6),
+                          _UpperCaseFormatter(),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '6 characters — letters and numbers only',
+                        style: AppTextStyles.cardLabel.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                        ),
+                      ),
+                    ],
+                  ),
+                  _fieldFade,
+                  _fieldSlide,
+                ),
+                const SizedBox(height: 32),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _AuthPrimaryButton(
+                        label: empty ? 'Skip →' : 'Apply & continue →',
+                        isLoading: false,
+                        isEnabled: true,
+                        onTap: notifier.proceedToContactChannels,
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: TextButton(
+                          onPressed: notifier.skipReferral,
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(48, 48),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Skip',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: const Color(0xFFAAAAAA),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  _buttonFade,
+                  _buttonSlide,
+                ),
+                const SizedBox(height: 32),
               ],
             ),
-            _buttonFade,
-            _buttonSlide,
           ),
-          const SizedBox(height: 32),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-class _GhanaCardStep extends ConsumerStatefulWidget {
+class _ContactChannelsStep extends ConsumerStatefulWidget {
   final LoginState state;
   final LoginNotifier notifier;
-  const _GhanaCardStep({required this.state, required this.notifier});
+  const _ContactChannelsStep({required this.state, required this.notifier});
 
   @override
-  ConsumerState<_GhanaCardStep> createState() => _GhanaCardStepState();
+  ConsumerState<_ContactChannelsStep> createState() =>
+      _ContactChannelsStepState();
 }
 
-class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
+class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ac;
   late final Animation<double> _emojiScale;
@@ -2030,15 +2478,33 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
   late final Animation<double> _fieldSlide;
   late final Animation<double> _buttonFade;
   late final Animation<double> _buttonSlide;
-  late final TextEditingController _cardCtrl;
+  late final TextEditingController _emailCtrl;
 
   @override
   void initState() {
     super.initState();
-    _cardCtrl = TextEditingController(text: widget.state.ghanaCardNumber);
-    _cardCtrl.addListener(
-      () => widget.notifier.updateGhanaCardNumber(_cardCtrl.text),
+
+    _emailCtrl = TextEditingController(text: widget.state.email);
+
+    _emailCtrl.addListener(
+      () => widget.notifier.updateContactEmail(_emailCtrl.text),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final n = widget.notifier;
+      final s = widget.state;
+      n.updateSmsDialCode(s.dialCode, s.countryFlag);
+      n.updateWhatsappDialCode(s.dialCode, s.countryFlag);
+      final rawDigits = s.phone.replaceAll(RegExp(r'\D'), '');
+      if (s.smsPhone.isEmpty && rawDigits.isNotEmpty) {
+        n.updateSmsPhone(rawDigits);
+      }
+      if (s.whatsappPhone.isEmpty && rawDigits.isNotEmpty) {
+        n.updateWhatsappPhone(rawDigits);
+      }
+      n.updateContactEmail(_emailCtrl.text);
+    });
+
     _ac = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -2084,16 +2550,11 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
       ),
     );
     _ac.forward();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.notifier.updateIdDocumentType(
-        widget.state.country == 'GH' ? 'ghana_card' : 'passport',
-      );
-    });
   }
 
   @override
   void dispose() {
-    _cardCtrl.dispose();
+    _emailCtrl.dispose();
     _ac.dispose();
     super.dispose();
   }
@@ -2120,144 +2581,237 @@ class _GhanaCardStepState extends ConsumerState<_GhanaCardStep>
   Widget build(BuildContext context) {
     final state = widget.state;
     final notifier = widget.notifier;
-    final isGhanaian = state.country == 'GH';
-    final docLabel = isGhanaian ? 'Ghana Card' : 'Passport';
-    final numberLabel = isGhanaian
-        ? 'GHANA CARD NUMBER (OPTIONAL)'
-        : 'PASSPORT NUMBER (OPTIONAL)';
-    final numberHint = isGhanaian ? 'GHA-XXXXXXXXX-X' : 'A12345678';
-    final photoLabel = isGhanaian
-        ? 'PHOTO OF GHANA CARD (OPTIONAL)'
-        : 'PHOTO OF PASSPORT (OPTIONAL)';
-    final emoji = isGhanaian ? '🪪' : '🛂';
-    final cardError = state.error != null &&
-        state.step == LoginStep.ghanaCard;
+    final hasError =
+        state.error != null && state.step == LoginStep.contactChannels;
 
-    return _AuthResponsiveWrapper(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 48),
-          const Center(
-            child: _OnboardingProgress(current: 2, total: 3),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: ResponsiveLayout.contentPadding(
+            context,
+          ).copyWith(top: 16, bottom: 0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _BackButton(onTap: notifier.goBack),
           ),
-          const SizedBox(height: 40),
-          FadeTransition(
-            opacity: _emojiFade,
-            child: ScaleTransition(
-              scale: _emojiScale,
-              child: Center(
-                child: Text(
-                  emoji,
-                  style: const TextStyle(fontSize: 44),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          _fadeSlide(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Verify your identity',
-                  style: AppTextStyles.titleLarge.copyWith(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Add your $docLabel to help your agent verify your '
-                  'identity. Optional — you can do this from your profile '
-                  'anytime.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF666666),
-                  ),
-                ),
-              ],
-            ),
-            _headingFade,
-            _headingSlide,
-          ),
-          const SizedBox(height: 32),
-          _fadeSlide(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  numberLabel,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFFAAAAAA),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _StyledTextField(
-                  hintText: numberHint,
-                  controller: _cardCtrl,
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.next,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  photoLabel,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFFAAAAAA),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _GhanaCardPhotoField(
-                  photoPath: state.ghanaCardPhotoPath,
-                  isUploading: state.isUploadingPhoto,
-                  onPick: notifier.setGhanaCardPhoto,
-                  onClear: notifier.clearGhanaCardPhoto,
-                ),
-                _InlineError(error: cardError ? state.error : null),
-              ],
-            ),
-            _fieldFade,
-            _fieldSlide,
-          ),
-          const SizedBox(height: 32),
-          _fadeSlide(
-            Column(
+        ),
+        const SizedBox(height: 8),
+        const _OnboardingProgressBar(current: 2, total: 3),
+        Expanded(
+          child: _AuthResponsiveWrapper(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _AuthPrimaryButton(
-                  label: state.isUploadingPhoto
-                      ? 'Uploading...'
-                      : 'Save & finish →',
-                  isLoading: state.isLoading,
-                  isEnabled: !state.isLoading,
-                  onTap: notifier.saveGhanaCardAndFinish,
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: TextButton(
-                    onPressed:
-                        state.isLoading ? null : notifier.skipGhanaCardAndFinish,
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(48, 48),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'Skip for now',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: const Color(0xFFAAAAAA),
+                const SizedBox(height: 40),
+                FadeTransition(
+                  opacity: _emojiFade,
+                  child: ScaleTransition(
+                    scale: _emojiScale,
+                    child: Center(
+                      child: _IllustrationWidget(
+                        painter: _BellIllustrationPainter(AppColors.secondary),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Stay in the loop',
+                        style: AppTextStyles.titleLarge.copyWith(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'We will keep you updated on your order progress. '
+                        'Your phone number has been pre-filled — update it if '
+                        'you use a different number for these channels.',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: const Color(0xFF666666),
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  _headingFade,
+                  _headingSlide,
+                ),
+                const SizedBox(height: 32),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ContactFieldLabel(
+                        label: 'SMS NUMBER',
+                        isRequired: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _PhoneFieldWithDialCode(
+                        initialDialCode: state.smsDialCode,
+                        initialFlag: state.smsCountryFlag,
+                        initialDigits: state.smsPhone,
+                        onDialCodeChanged: (code, flag) =>
+                            notifier.updateSmsDialCode(code, flag),
+                        onDigitsChanged: notifier.updateSmsPhone,
+                        hasError:
+                            hasError &&
+                            state.smsPhone
+                                .replaceAll(RegExp(r'\D'), '')
+                                .isEmpty,
+                      ),
+                      _InlineError(
+                        error:
+                            hasError &&
+                                state.smsPhone
+                                    .replaceAll(RegExp(r'\D'), '')
+                                    .isEmpty
+                            ? state.error
+                            : null,
+                      ),
+                      const SizedBox(height: 20),
+                      const _ContactFieldLabel(
+                        label: 'WHATSAPP NUMBER',
+                        isRequired: false,
+                      ),
+                      const SizedBox(height: 8),
+                      _PhoneFieldWithDialCode(
+                        initialDialCode: state.whatsappDialCode,
+                        initialFlag: state.whatsappCountryFlag,
+                        initialDigits: state.whatsappPhone,
+                        onDialCodeChanged: (code, flag) =>
+                            notifier.updateWhatsappDialCode(code, flag),
+                        onDigitsChanged: notifier.updateWhatsappPhone,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Make sure this number has WhatsApp installed.',
+                        style: AppTextStyles.caption.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const _ContactFieldLabel(
+                        label: 'EMAIL ADDRESS',
+                        isRequired: false,
+                      ),
+                      const SizedBox(height: 8),
+                      _StyledTextField(
+                        hintText: 'your@email.com',
+                        controller: _emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.done,
+                        onSubmit: notifier.saveContactChannelsAndFinish,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Required for payment receipts. You will be asked to '
+                        'add it before your first payment if left empty.',
+                        style: AppTextStyles.caption.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  _fieldFade,
+                  _fieldSlide,
+                ),
+                const SizedBox(height: 32),
+                _fadeSlide(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _AuthPrimaryButton(
+                        label: 'Finish →',
+                        isLoading: state.isLoading,
+                        isEnabled: !state.isLoading,
+                        onTap: notifier.saveContactChannelsAndFinish,
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: TextButton(
+                          onPressed: state.isLoading
+                              ? null
+                              : notifier.skipContactChannelsAndFinish,
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(48, 48),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Skip for now',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: const Color(0xFFAAAAAA),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  _buttonFade,
+                  _buttonSlide,
+                ),
+                const SizedBox(height: 32),
               ],
             ),
-            _buttonFade,
-            _buttonSlide,
           ),
-          const SizedBox(height: 32),
+        ),
+      ],
+    );
+  }
+}
+
+/// Label for contact channel fields with required / optional hint.
+class _ContactFieldLabel extends StatelessWidget {
+  const _ContactFieldLabel({required this.label, required this.isRequired});
+
+  final String label;
+  final bool isRequired;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.labelSmall.copyWith(
+            color: const Color(0xFFAAAAAA),
+            letterSpacing: 0.5,
+          ),
+        ),
+        if (isRequired) ...[
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              'Required',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.secondary,
+                fontWeight: FontWeight.w600,
+                fontSize: 9,
+              ),
+            ),
+          ),
+        ] else ...[
+          const SizedBox(width: 6),
+          Text(
+            'Optional',
+            style: AppTextStyles.caption.copyWith(
+              color: const Color(0xFFCCCCCC),
+              fontSize: 9,
+            ),
+          ),
         ],
-      ),
+      ],
     );
   }
 }

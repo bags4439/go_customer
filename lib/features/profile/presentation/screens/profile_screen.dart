@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
@@ -49,10 +50,7 @@ const Color _kBlueTint = Color(0xFFE6F1FB);
 const Color _kBlueText = Color(0xFF185FA5);
 const Color _kDarkBrown = Color(0xFF633806);
 
-Future<void> _resetGuide(
-  BuildContext context,
-  WidgetRef ref,
-) async {
+Future<void> _resetGuide(BuildContext context, WidgetRef ref) async {
   await ref.read(guideNotifierProvider.notifier).resetAll();
 
   if (!context.mounted) return;
@@ -67,9 +65,7 @@ Future<void> _resetGuide(
       backgroundColor: AppColors.textPrimary,
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       duration: const Duration(seconds: 3),
     ),
   );
@@ -169,9 +165,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               preferredSize: const Size.fromHeight(0.5),
               child: Container(color: _kBorder),
             ),
-            actions: const [
-              GuideHelpButton(),
-            ],
+            actions: const [GuideHelpButton()],
           ),
           body: user == null
               ? const _ProfileShimmer()
@@ -233,13 +227,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             onPhoneTap: _onPhoneEditTap,
                           ),
                         ),
-                        // _AnimatedSection(
-                        //   index: 2,
-                        //   animation: _sectionAnimations[2]!,
-                        //   title: ProfileConstants.sectionNotifications,
-                        //   hasUnsaved: false,
-                        //   child: _NotificationsSection(user: user),
-                        // ),
+                        _AnimatedSection(
+                          index: 2,
+                          animation: _sectionAnimations[2]!,
+                          title: ProfileConstants.sectionContactChannels,
+                          hasUnsaved: _hasContactUnsaved(ref),
+                          child: _ContactChannelsSection(
+                            user: user,
+                            onSaveSmsPhone: _saveSmsPhone,
+                            onSaveWhatsappPhone: _saveWhatsappPhone,
+                            onSaveEmail: _saveEmail,
+                          ),
+                        ),
                         _AnimatedSection(
                           index: 3,
                           animation: _sectionAnimations[3]!,
@@ -328,6 +327,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return edit.expandedField != null && personal.contains(edit.expandedField);
   }
 
+  bool _hasContactUnsaved(WidgetRef r) {
+    final edit = r.watch(profileEditProvider);
+    const fields = ['smsPhone', 'whatsappPhone', 'email'];
+    return edit.expandedField != null && fields.contains(edit.expandedField);
+  }
+
   Future<void> _saveFullName(String value) async {
     final user = ref.read(currentUserProfileProvider).value;
     if (user == null) return;
@@ -364,6 +369,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       ),
       (_) {
         ref.read(profileEditProvider.notifier).collapse();
+      },
+    );
+  }
+
+  Future<void> _saveSmsPhone(String value) async {
+    final user = ref.read(currentUserProfileProvider).value;
+    if (user == null) return;
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateSmsPhone(user.id, value);
+    if (!mounted) return;
+    result.fold(
+      (_) => showErrorSnackBar(
+        context,
+        ProfileConstants.errorSaveField,
+        actionLabel: ProfileConstants.retry,
+        onAction: () => _saveSmsPhone(value),
+      ),
+      (_) {
+        ref.read(profileEditProvider.notifier).collapse();
+        ref.invalidate(currentUserProfileProvider);
+      },
+    );
+  }
+
+  Future<void> _saveWhatsappPhone(String value) async {
+    final user = ref.read(currentUserProfileProvider).value;
+    if (user == null) return;
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateWhatsappPhone(user.id, value);
+    if (!mounted) return;
+    result.fold(
+      (_) => showErrorSnackBar(
+        context,
+        ProfileConstants.errorSaveField,
+        actionLabel: ProfileConstants.retry,
+        onAction: () => _saveWhatsappPhone(value),
+      ),
+      (_) {
+        ref.read(profileEditProvider.notifier).collapse();
+        ref.invalidate(currentUserProfileProvider);
+      },
+    );
+  }
+
+  Future<void> _saveEmail(String value) async {
+    final user = ref.read(currentUserProfileProvider).value;
+    if (user == null) return;
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .updateEmail(user.id, value);
+    if (!mounted) return;
+    result.fold(
+      (_) => showErrorSnackBar(
+        context,
+        ProfileConstants.errorSaveField,
+        actionLabel: ProfileConstants.retry,
+        onAction: () => _saveEmail(value),
+      ),
+      (_) {
+        ref.read(profileEditProvider.notifier).collapse();
+        ref.invalidate(currentUserProfileProvider);
       },
     );
   }
@@ -853,16 +921,91 @@ class _PersonalDetailsSection extends ConsumerWidget {
           subtitle: ProfileConstants.phoneChangeNote,
         ),
         _DividerIndent(),
-        _CountryRow(
-          currentIsoCode: user.country,
-          userId: user.id,
-        ),
+        _CountryRow(currentIsoCode: user.country, userId: user.id),
         _DividerIndent(),
         GhanaCardProfileRow(user: user),
-        if (user.email != null && user.email!.isNotEmpty) ...[
-          _DividerIndent(),
-          _ReadOnlyRow(label: ProfileConstants.emailLabel, value: user.email!),
-        ],
+      ],
+    );
+  }
+}
+
+class _ContactChannelsSection extends ConsumerWidget {
+  const _ContactChannelsSection({
+    required this.user,
+    required this.onSaveSmsPhone,
+    required this.onSaveWhatsappPhone,
+    required this.onSaveEmail,
+  });
+
+  final AppUser user;
+  final void Function(String) onSaveSmsPhone;
+  final void Function(String) onSaveWhatsappPhone;
+  final void Function(String) onSaveEmail;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final edit = ref.watch(profileEditProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _PhoneEditRow(
+          label: ProfileConstants.smsPhoneLabel,
+          value: user.smsPhone?.isNotEmpty == true ? user.smsPhone! : 'Not set',
+          expanded: edit.expandedField == 'smsPhone',
+          errorMessage: edit.expandedField == 'smsPhone'
+              ? edit.errorMessage
+              : null,
+          subtitle: 'Used for order status SMS updates',
+          onTap: () => ref
+              .read(profileEditProvider.notifier)
+              .expandField('smsPhone', user.smsPhone ?? ''),
+          onSave: (fullNumber) {
+            onSaveSmsPhone(fullNumber);
+            ref.read(profileEditProvider.notifier).collapse();
+          },
+          onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
+        ),
+        _DividerIndent(),
+        _PhoneEditRow(
+          label: ProfileConstants.whatsappLabel,
+          value: user.whatsappPhone?.isNotEmpty == true
+              ? user.whatsappPhone!
+              : 'Not set',
+          expanded: edit.expandedField == 'whatsappPhone',
+          errorMessage: edit.expandedField == 'whatsappPhone'
+              ? edit.errorMessage
+              : null,
+          subtitle: 'Make sure this number has WhatsApp installed',
+          onTap: () => ref
+              .read(profileEditProvider.notifier)
+              .expandField('whatsappPhone', user.whatsappPhone ?? ''),
+          onSave: (fullNumber) {
+            onSaveWhatsappPhone(fullNumber);
+            ref.read(profileEditProvider.notifier).collapse();
+          },
+          onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
+        ),
+        _DividerIndent(),
+        _EditRow(
+          label: ProfileConstants.emailLabel,
+          value: user.email?.isNotEmpty == true ? user.email! : 'Not set',
+          expanded: edit.expandedField == 'email',
+          draftValue: edit.expandedField == 'email' ? edit.draftValue : null,
+          errorMessage: edit.expandedField == 'email'
+              ? edit.errorMessage
+              : null,
+          subtitle: 'Used for payment receipts and order summaries',
+          onTap: () => ref
+              .read(profileEditProvider.notifier)
+              .expandField('email', user.email ?? ''),
+          onDraftChanged: (v) =>
+              ref.read(profileEditProvider.notifier).updateDraft(v),
+          onSave: () {
+            final v = (edit.draftValue ?? user.email ?? '').trim();
+            onSaveEmail(v);
+          },
+          onCancel: () => ref.read(profileEditProvider.notifier).collapse(),
+        ),
       ],
     );
   }
@@ -961,7 +1104,7 @@ class _EditRow extends StatelessWidget {
                             ? TextInputType.phone
                             : TextInputType.text,
                         decoration: InputDecoration(
-                          hintText: isPhone ? '+233 XX XXX XXXX' : null,
+                          hintText: isPhone ? '+XX XXXXXXXXX' : null,
                           isDense: true,
                           errorText: errorMessage,
                           errorStyle: AppTextStyles.caption.copyWith(
@@ -988,7 +1131,9 @@ class _EditRow extends StatelessWidget {
                             onPressed: onCancel,
                             child: Text(
                               ProfileConstants.cancel,
-                              style: AppTextStyles.bodyMedium.copyWith(color: _kTextTertiary),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: _kTextTertiary,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -1036,42 +1181,316 @@ class _EditRow extends StatelessWidget {
   }
 }
 
-class _ReadOnlyRow extends StatelessWidget {
-  const _ReadOnlyRow({required this.label, required this.value});
+/// A profile edit row specifically for phone number fields.
+/// Supports a tappable country code prefix that opens
+/// [CountryPickerSheet], followed by a digits-only input.
+///
+/// Stores the full E.164 number (dialCode + digits) via [onSave].
+class _PhoneEditRow extends ConsumerStatefulWidget {
+  const _PhoneEditRow({
+    required this.label,
+    required this.value,
+    required this.expanded,
+    required this.onTap,
+    required this.onSave,
+    required this.onCancel,
+    this.subtitle,
+    this.errorMessage,
+  });
 
   final String label;
+
+  /// Current saved value — full E.164 e.g. +233XXXXXXXXX or 'Not set'
   final String value;
+  final bool expanded;
+  final VoidCallback onTap;
+
+  /// Called with the full E.164 number when the user taps Save
+  final void Function(String) onSave;
+  final VoidCallback onCancel;
+  final String? subtitle;
+  final String? errorMessage;
+
+  @override
+  ConsumerState<_PhoneEditRow> createState() => _PhoneEditRowState();
+}
+
+class _PhoneEditRowState extends ConsumerState<_PhoneEditRow> {
+  late String _dialCode;
+  late String _flag;
+  late String _digits;
+  late TextEditingController _ctrl;
+  bool _pickerOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFromValue(widget.value);
+    _ctrl = TextEditingController(text: _digits);
+    _ctrl.addListener(() {
+      setState(() {
+        _digits = _ctrl.text;
+      });
+    });
+  }
+
+  @override
+  void didUpdateWidget(_PhoneEditRow old) {
+    super.didUpdateWidget(old);
+    if (widget.expanded && !old.expanded) {
+      _initFromValue(widget.value);
+      _ctrl.text = _digits;
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  /// Parses a saved E.164 value into dial code + digits.
+  /// Falls back to Ghana defaults.
+  void _initFromValue(String raw) {
+    if (raw.isEmpty || raw == 'Not set' || !raw.startsWith('+')) {
+      _dialCode = '+233';
+      _flag = '🇬🇭';
+      _digits = '';
+      return;
+    }
+
+    final countries = ref.read(countriesProvider).valueOrNull ?? [];
+    final sorted = [...countries]
+      ..sort((a, b) => b.dialCode.length.compareTo(a.dialCode.length));
+
+    for (final c in sorted) {
+      if (c.dialCode.isNotEmpty && raw.startsWith(c.dialCode)) {
+        _dialCode = c.dialCode;
+        _flag = c.flag;
+        _digits = raw.substring(c.dialCode.length);
+        return;
+      }
+    }
+
+    _dialCode = '+233';
+    _flag = '🇬🇭';
+    _digits = raw.replaceAll(RegExp(r'\D'), '');
+  }
+
+  Future<void> _openPicker() async {
+    setState(() => _pickerOpen = true);
+    final country = await CountryPickerSheet.show(
+      context,
+      selectedIsoCode: '',
+      sheetTitle: 'Select country code',
+      sheetSubtitle: 'Choose the country for this phone number.',
+    );
+    if (!mounted) return;
+    setState(() => _pickerOpen = false);
+    if (country != null && country.dialCode.isNotEmpty) {
+      setState(() {
+        _dialCode = country.dialCode;
+        _flag = country.flag;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 52),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 52),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.label,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        if (!widget.expanded)
+                          Text(
+                            widget.value,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.black54,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                Text(
-                  value,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.black54,
-                  ),
-                ),
-              ],
+                  if (!widget.expanded)
+                    const Icon(
+                      Icons.edit_outlined,
+                      size: 20,
+                      color: _kTextTertiary,
+                    ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: widget.expanded
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: _pickerOpen ? _kPrimary : _kBorder,
+                            width: _pickerOpen ? 1.5 : 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _openPicker,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(7),
+                                  bottomLeft: Radius.circular(7),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _flag,
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _dialCode,
+                                        style: AppTextStyles.labelMedium
+                                            .copyWith(
+                                              color: AppColors.textPrimary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        size: 16,
+                                        color: _kTextTertiary,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        width: 1,
+                                        height: 22,
+                                        color: _kBorder,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _ctrl,
+                                autofocus: true,
+                                keyboardType: TextInputType.phone,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(15),
+                                ],
+                                decoration: InputDecoration(
+                                  hintText: 'XX XXX XXXX',
+                                  hintStyle: AppTextStyles.bodySmall.copyWith(
+                                    color: _kTextTertiary,
+                                  ),
+                                  isDense: true,
+                                  border: InputBorder.none,
+                                  errorText: widget.errorMessage,
+                                  errorStyle: AppTextStyles.caption.copyWith(
+                                    color: _kDanger,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (widget.subtitle != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          widget.subtitle!,
+                          style: AppTextStyles.caption.copyWith(
+                            color: _kTextTertiary,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: widget.onCancel,
+                            child: Text(
+                              ProfileConstants.cancel,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: _kTextTertiary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              final digits = _digits.trim();
+                              if (digits.isEmpty) {
+                                return;
+                              }
+                              widget.onSave('$_dialCode$digits');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _kPrimary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text(
+                              'Save',
+                              style: AppTextStyles.titleSmall.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }
@@ -1254,10 +1673,7 @@ class _LanguageCurrencySection extends ConsumerWidget {
       children: [
         _LanguageRow(currentLanguage: user.preferredLanguage),
         _DividerIndent(),
-        _CurrencyRow(
-          currentCurrency: user.preferredCurrency,
-          userId: user.id,
-        ),
+        _CurrencyRow(currentCurrency: user.preferredCurrency, userId: user.id),
       ],
     );
   }
@@ -1283,9 +1699,7 @@ class _LanguageRow extends StatelessWidget {
                 children: [
                   Text(
                     ProfileConstants.languageLabel,
-                    style: AppTextStyles.titleSmall.copyWith(
-                      fontSize: 16,
-                    ),
+                    style: AppTextStyles.titleSmall.copyWith(fontSize: 16),
                   ),
                   ListTile(
                     title: Text(
@@ -1327,18 +1741,12 @@ class _LanguageRow extends StatelessWidget {
 }
 
 class _CurrencyRow extends ConsumerWidget {
-  const _CurrencyRow({
-    required this.currentCurrency,
-    required this.userId,
-  });
+  const _CurrencyRow({required this.currentCurrency, required this.userId});
 
   final String currentCurrency;
   final String userId;
 
-  static String _currencyLabel(
-    String code,
-    List<CurrencyModel>? currencies,
-  ) {
+  static String _currencyLabel(String code, List<CurrencyModel>? currencies) {
     if (currencies == null) return code;
     for (final c in currencies) {
       if (c.code == code) {
@@ -1423,11 +1831,7 @@ class _CurrencyRow extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.edit_outlined,
-                size: 20,
-                color: _kTextTertiary,
-              ),
+              const Icon(Icons.edit_outlined, size: 20, color: _kTextTertiary),
             ],
           ),
         ),
@@ -1456,9 +1860,7 @@ class _CurrencyPickerSheet extends StatelessWidget {
         height: maxH,
         decoration: const BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
           top: false,
@@ -1526,12 +1928,7 @@ class _CurrencyPickerSheet extends StatelessWidget {
               ),
               Expanded(
                 child: ListView.separated(
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    8,
-                    20,
-                    24 + bottomInset,
-                  ),
+                  padding: EdgeInsets.fromLTRB(20, 8, 20, 24 + bottomInset),
                   itemCount: currencies.length,
                   separatorBuilder: (_, __) => const Divider(
                     height: 1,
@@ -1547,8 +1944,9 @@ class _CurrencyPickerSheet extends StatelessWidget {
                           : Colors.transparent,
                       child: InkWell(
                         onTap: () => Navigator.pop(context, currency),
-                        splashColor:
-                            AppColors.secondary.withValues(alpha: 0.08),
+                        splashColor: AppColors.secondary.withValues(
+                          alpha: 0.08,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             vertical: 16,
@@ -1622,10 +2020,7 @@ class _CurrencyPickerSheet extends StatelessWidget {
 }
 
 class _CountryRow extends ConsumerWidget {
-  const _CountryRow({
-    required this.currentIsoCode,
-    required this.userId,
-  });
+  const _CountryRow({required this.currentIsoCode, required this.userId});
 
   final String currentIsoCode;
   final String userId;
@@ -1666,8 +2061,7 @@ class _CountryRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final countriesAsync = ref.watch(countriesProvider);
-    final currentCountry =
-        _currentCountry(countriesAsync.valueOrNull);
+    final currentCountry = _currentCountry(countriesAsync.valueOrNull);
 
     return Material(
       color: Colors.transparent,
@@ -1694,8 +2088,8 @@ class _CountryRow extends ConsumerWidget {
                       currentCountry != null
                           ? currentCountry.displayLabel
                           : currentIsoCode.isNotEmpty
-                              ? currentIsoCode
-                              : 'Not set',
+                          ? currentIsoCode
+                          : 'Not set',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.black54,
                       ),
@@ -1703,11 +2097,7 @@ class _CountryRow extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.edit_outlined,
-                size: 20,
-                color: _kTextTertiary,
-              ),
+              const Icon(Icons.edit_outlined, size: 20, color: _kTextTertiary),
             ],
           ),
         ),
@@ -1741,11 +2131,7 @@ class _ProfileMenuTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 22,
-                color: _kPrimary,
-              ),
+              Icon(icon, size: 22, color: _kPrimary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -1769,11 +2155,7 @@ class _ProfileMenuTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: _kTextTertiary,
-              ),
+              Icon(Icons.chevron_right, size: 20, color: _kTextTertiary),
             ],
           ),
         ),
@@ -1798,7 +2180,7 @@ class _SupportSection extends StatelessWidget {
         _DividerIndent(),
         _SupportRow(
           label: ProfileConstants.faqs,
-          onTap: () =>  GuideFaqSheet.show(context)
+          onTap: () => GuideFaqSheet.show(context),
         ),
         _DividerIndent(),
         _SupportRow(
@@ -2087,9 +2469,7 @@ class _SessionsBottomSheet extends StatelessWidget {
         children: [
           Text(
             ProfileConstants.activeSessions,
-            style: AppTextStyles.titleMedium.copyWith(
-              fontSize: 18,
-            ),
+            style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
           ),
           const SizedBox(height: 16),
           ...sessions.asMap().entries.map((e) {
@@ -2158,10 +2538,7 @@ class _LogOutButton extends StatelessWidget {
           foregroundColor: _kDanger,
           side: const BorderSide(color: _kDanger, width: 1),
         ),
-        child: Text(
-          ProfileConstants.logOut,
-          style: AppTextStyles.labelLarge,
-        ),
+        child: Text(ProfileConstants.logOut, style: AppTextStyles.labelLarge),
       ),
     );
   }
@@ -2241,9 +2618,7 @@ class _DeleteAccountBottomSheetState
         children: [
           Text(
             ProfileConstants.deleteConfirmHeading,
-            style: AppTextStyles.titleSmall.copyWith(
-              fontSize: 16,
-            ),
+            style: AppTextStyles.titleSmall.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 12),
           Text(
@@ -2355,6 +2730,22 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
   int _countdown = 0;
   String _otpCode = '';
   Timer? _countdownTimer;
+  String _dialCode = '+233';
+  String _countryFlag = '🇬🇭';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final iso =
+          ref.read(currentUserProfileProvider).valueOrNull?.country ?? 'GH';
+      setState(() {
+        _dialCode = _dialCodeForCountry(iso);
+        _countryFlag = _flagForCountry(iso);
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -2364,21 +2755,43 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
     super.dispose();
   }
 
+  Country? _countryMatch(String isoCode) {
+    final countries = ref.read(countriesProvider).valueOrNull ?? [];
+    for (final c in countries) {
+      if (c.isoCode == isoCode) return c;
+    }
+    return null;
+  }
+
+  /// Looks up the dial code for an ISO country code using the same
+  /// Firestore countries data as the rest of the app.
+  /// Falls back to '+233' only if the country is not found.
   String _dialCodeForCountry(String isoCode) {
-    const map = {
-      'GH': '+233',
-      'NG': '+234',
-      'US': '+1',
-      'GB': '+44',
-      'CA': '+1',
-      'DE': '+49',
-      'FR': '+33',
-      'ZA': '+27',
-      'KE': '+254',
-      'AU': '+61',
-      'NL': '+31',
-    };
-    return map[isoCode] ?? '+233';
+    final match = _countryMatch(isoCode);
+    return (match != null && match.dialCode.isNotEmpty)
+        ? match.dialCode
+        : '+233';
+  }
+
+  String _flagForCountry(String isoCode) {
+    final match = _countryMatch(isoCode);
+    return (match != null && match.flag.isNotEmpty) ? match.flag : '🇬🇭';
+  }
+
+  Future<void> _openDialCodePicker() async {
+    final country = await CountryPickerSheet.show(
+      context,
+      selectedIsoCode: '',
+      sheetTitle: 'Select country code',
+      sheetSubtitle: 'Choose the country for this phone number.',
+    );
+    if (!mounted) return;
+    if (country != null && country.dialCode.isNotEmpty) {
+      setState(() {
+        _dialCode = country.dialCode;
+        _countryFlag = country.flag;
+      });
+    }
   }
 
   void _startCountdown() {
@@ -2400,46 +2813,33 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
   }
 
   Future<void> _sendOtp() async {
-    final digits =
-        _phoneCtrl.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.length < 7 || digits.length > 11) {
-      showErrorSnackBar(
-        context,
-        'Enter a valid phone number',
-      );
+    final digits = _phoneCtrl.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 7 || digits.length > 15) {
+      showErrorSnackBar(context, 'Enter a valid phone number');
       return;
     }
 
-    final user = ref.read(currentUserProfileProvider).valueOrNull;
-    final iso = user?.country ?? '';
-    final dialCode = _dialCodeForCountry(iso.isNotEmpty ? iso : 'GH');
-    final phone = '$dialCode$digits';
+    final phone = '$_dialCode$digits';
 
     setState(() => _busy = true);
 
     final result = await ref
         .read(startPhoneVerificationUseCaseProvider)
-        .call(
-          phoneNumber: phone,
-          resendToken: _resendToken,
-        );
+        .call(phoneNumber: phone, resendToken: _resendToken);
 
     if (!mounted) return;
     setState(() => _busy = false);
 
-    result.fold(
-      (f) => showErrorSnackBar(context, f.message),
-      (session) {
-        setState(() {
-          _verificationId = session.verificationId;
-          _resendToken = session.resendToken;
-          _newPhone = phone;
-          _step = 1;
-          _countdown = 30;
-        });
-        _startCountdown();
-      },
-    );
+    result.fold((f) => showErrorSnackBar(context, f.message), (session) {
+      setState(() {
+        _verificationId = session.verificationId;
+        _resendToken = session.resendToken;
+        _newPhone = phone;
+        _step = 1;
+        _countdown = 30;
+      });
+      _startCountdown();
+    });
   }
 
   Future<void> _resend() async {
@@ -2448,36 +2848,29 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
 
     final result = await ref
         .read(startPhoneVerificationUseCaseProvider)
-        .call(
-          phoneNumber: _newPhone!,
-          resendToken: _resendToken,
-        );
+        .call(phoneNumber: _newPhone!, resendToken: _resendToken);
 
     if (!mounted) return;
     setState(() => _busy = false);
 
-    result.fold(
-      (f) => showErrorSnackBar(context, f.message),
-      (session) {
-        setState(() {
-          _verificationId = session.verificationId;
-          _resendToken = session.resendToken;
-          _countdown = 30;
-        });
-        _startCountdown();
-        showSuccessSnackBar(context, 'New code sent.');
-      },
-    );
+    result.fold((f) => showErrorSnackBar(context, f.message), (session) {
+      setState(() {
+        _verificationId = session.verificationId;
+        _resendToken = session.resendToken;
+        _countdown = 30;
+      });
+      _startCountdown();
+      showSuccessSnackBar(context, 'New code sent.');
+    });
   }
 
   Future<void> _verifyOtp() async {
     if (_otpCode.length != 6 || _verificationId == null) return;
     setState(() => _busy = true);
 
-    final result = await ref.read(verifyOtpUseCaseProvider).call(
-          verificationId: _verificationId!,
-          smsCode: _otpCode,
-        );
+    final result = await ref
+        .read(verifyOtpUseCaseProvider)
+        .call(verificationId: _verificationId!, smsCode: _otpCode);
 
     if (!mounted) return;
 
@@ -2493,43 +2886,26 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
             .updatePhone(userId, _newPhone!);
         if (!mounted) return;
         setState(() => _busy = false);
-        updateResult.fold(
-          (f) => showErrorSnackBar(context, f.message),
-          (_) {
-            ref.invalidate(currentUserProfileProvider);
-            Navigator.pop(context);
-            widget.onVerified();
-            showSuccessSnackBar(
-              context,
-              'Phone number updated.',
-            );
-          },
-        );
+        updateResult.fold((f) => showErrorSnackBar(context, f.message), (_) {
+          ref.invalidate(currentUserProfileProvider);
+          Navigator.pop(context);
+          widget.onVerified();
+          showSuccessSnackBar(context, 'Phone number updated.');
+        });
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset =
-        MediaQuery.viewInsetsOf(context).bottom;
-    final user = ref.watch(currentUserProfileProvider).valueOrNull;
-    final iso = user?.country ?? '';
-    final dialCode = _dialCodeForCountry(iso.isNotEmpty ? iso : 'GH');
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        24 + bottomInset,
-      ),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + bottomInset),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2546,17 +2922,12 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
             ),
           ),
           if (_step == 0) ...[
-            Text(
-              'Change phone number',
-              style: AppTextStyles.appBarTitle,
-            ),
+            Text('Change phone number', style: AppTextStyles.appBarTitle),
             const SizedBox(height: 4),
             Text(
               'Enter your new phone number. '
               'We will send a verification code.',
-              style: AppTextStyles.bodySmall.copyWith(
-                height: 1.5,
-              ),
+              style: AppTextStyles.bodySmall.copyWith(height: 1.5),
             ),
             const SizedBox(height: 20),
             Container(
@@ -2564,21 +2935,43 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.borderSolid,
-                  width: 0.5,
-                ),
+                border: Border.all(color: AppColors.borderSolid, width: 0.5),
               ),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                    ),
-                    child: Text(
-                      dialCode,
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontWeight: FontWeight.w500,
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _busy ? null : _openDialCodePicker,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(11),
+                        bottomLeft: Radius.circular(11),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _countryFlag,
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _dialCode,
+                              style: AppTextStyles.titleSmall.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 18,
+                              color: AppColors.textTertiary,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -2592,6 +2985,10 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
                       controller: _phoneCtrl,
                       autofocus: true,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(15),
+                      ],
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontSize: 15,
                         color: AppColors.textPrimary,
@@ -2668,10 +3065,7 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
               ],
             ),
             const SizedBox(height: 4),
-            Text(
-              'Code sent to $_newPhone',
-              style: AppTextStyles.bodySmall,
-            ),
+            Text('Code sent to $_newPhone', style: AppTextStyles.bodySmall),
             const SizedBox(height: 20),
             TextField(
               controller: _otpCtrl,
@@ -2744,8 +3138,7 @@ class _PhoneChangeSheetState extends ConsumerState<_PhoneChangeSheet> {
             SizedBox(
               height: 52,
               child: ElevatedButton(
-                onPressed:
-                    (_otpCode.length == 6 && !_busy) ? _verifyOtp : null,
+                onPressed: (_otpCode.length == 6 && !_busy) ? _verifyOtp : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.secondary,
                   foregroundColor: Colors.white,

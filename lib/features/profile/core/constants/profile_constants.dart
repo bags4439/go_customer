@@ -20,6 +20,9 @@ class ProfileConstants {
   static const String idBannerSubtitleUnderReview =
       "We'll notify you once verified.";
 
+  static const String sectionContactChannels = 'Contact channels';
+  static const String smsPhoneLabel = 'SMS number';
+  static const String whatsappLabel = 'WhatsApp number';
   static const String sectionPersonalDetails = 'Personal details';
   static const String sectionNotifications = 'Notifications';
   static const String sectionLanguageCurrency = 'Language & currency';

@@ -63,6 +63,63 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> updateSmsPhone(
+    String userId,
+    String value,
+  ) async {
+    try {
+      await _profileDataSource.updateSmsPhone(userId, value);
+      return right(unit);
+    } catch (e) {
+      return left(
+        FirestoreFailure(
+          message: 'Could not save.',
+          cause: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> updateWhatsappPhone(
+    String userId,
+    String value,
+  ) async {
+    try {
+      await _profileDataSource.updateWhatsappPhone(
+        userId,
+        value,
+      );
+      return right(unit);
+    } catch (e) {
+      return left(
+        FirestoreFailure(
+          message: 'Could not save.',
+          cause: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> updateEmail(
+    String userId,
+    String value,
+  ) async {
+    try {
+      await _profileDataSource.updateEmail(userId, value);
+      return right(unit);
+    } catch (e) {
+      return left(
+        FirestoreFailure(
+          message: 'Could not save.',
+          cause: e,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> updateNotificationPreference(
     String userId,
     String key,

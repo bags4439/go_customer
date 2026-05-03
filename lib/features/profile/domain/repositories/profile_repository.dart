@@ -10,6 +10,9 @@ abstract class ProfileRepository {
   Future<Either<Failure, Unit>> updateFullName(String userId, String value);
   Future<Either<Failure, Unit>> updateLocation(String userId, String value);
   Future<Either<Failure, Unit>> updatePhone(String userId, String phone);
+  Future<Either<Failure, Unit>> updateSmsPhone(String userId, String value);
+  Future<Either<Failure, Unit>> updateWhatsappPhone(String userId, String value);
+  Future<Either<Failure, Unit>> updateEmail(String userId, String value);
   Future<Either<Failure, Unit>> updateNotificationPreference(
     String userId,
     String key,

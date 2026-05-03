@@ -25,6 +25,8 @@ mixin _$UserModel {
   String get fullName => throw _privateConstructorUsedError;
   String get phone => throw _privateConstructorUsedError;
   String? get email => throw _privateConstructorUsedError;
+  String? get smsPhone => throw _privateConstructorUsedError;
+  String? get whatsappPhone => throw _privateConstructorUsedError;
   String get role =>
       throw _privateConstructorUsedError; // 'buyer' | 'agent' | 'admin'
   String? get location => throw _privateConstructorUsedError;
@@ -64,6 +66,8 @@ abstract class $UserModelCopyWith<$Res> {
     String fullName,
     String phone,
     String? email,
+    String? smsPhone,
+    String? whatsappPhone,
     String role,
     String? location,
     String country,
@@ -102,6 +106,8 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? fullName = null,
     Object? phone = null,
     Object? email = freezed,
+    Object? smsPhone = freezed,
+    Object? whatsappPhone = freezed,
     Object? role = null,
     Object? location = freezed,
     Object? country = null,
@@ -136,6 +142,14 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
             email: freezed == email
                 ? _value.email
                 : email // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            smsPhone: freezed == smsPhone
+                ? _value.smsPhone
+                : smsPhone // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            whatsappPhone: freezed == whatsappPhone
+                ? _value.whatsappPhone
+                : whatsappPhone // ignore: cast_nullable_to_non_nullable
                       as String?,
             role: null == role
                 ? _value.role
@@ -221,6 +235,8 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String fullName,
     String phone,
     String? email,
+    String? smsPhone,
+    String? whatsappPhone,
     String role,
     String? location,
     String country,
@@ -258,6 +274,8 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? fullName = null,
     Object? phone = null,
     Object? email = freezed,
+    Object? smsPhone = freezed,
+    Object? whatsappPhone = freezed,
     Object? role = null,
     Object? location = freezed,
     Object? country = null,
@@ -292,6 +310,14 @@ class __$$UserModelImplCopyWithImpl<$Res>
         email: freezed == email
             ? _value.email
             : email // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        smsPhone: freezed == smsPhone
+            ? _value.smsPhone
+            : smsPhone // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        whatsappPhone: freezed == whatsappPhone
+            ? _value.whatsappPhone
+            : whatsappPhone // ignore: cast_nullable_to_non_nullable
                   as String?,
         role: null == role
             ? _value.role
@@ -370,6 +396,8 @@ class _$UserModelImpl implements _UserModel {
     required this.fullName,
     required this.phone,
     this.email,
+    this.smsPhone,
+    this.whatsappPhone,
     required this.role,
     this.location,
     this.country = '',
@@ -399,6 +427,10 @@ class _$UserModelImpl implements _UserModel {
   final String phone;
   @override
   final String? email;
+  @override
+  final String? smsPhone;
+  @override
+  final String? whatsappPhone;
   @override
   final String role;
   // 'buyer' | 'agent' | 'admin'
@@ -451,7 +483,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, role: $role, location: $location, country: $country, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, idDocumentType: $idDocumentType, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, smsPhone: $smsPhone, whatsappPhone: $whatsappPhone, role: $role, location: $location, country: $country, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, idDocumentType: $idDocumentType, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -464,6 +496,10 @@ class _$UserModelImpl implements _UserModel {
                 other.fullName == fullName) &&
             (identical(other.phone, phone) || other.phone == phone) &&
             (identical(other.email, email) || other.email == email) &&
+            (identical(other.smsPhone, smsPhone) ||
+                other.smsPhone == smsPhone) &&
+            (identical(other.whatsappPhone, whatsappPhone) ||
+                other.whatsappPhone == whatsappPhone) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.location, location) ||
                 other.location == location) &&
@@ -506,6 +542,8 @@ class _$UserModelImpl implements _UserModel {
     fullName,
     phone,
     email,
+    smsPhone,
+    whatsappPhone,
     role,
     location,
     country,
@@ -544,6 +582,8 @@ abstract class _UserModel implements UserModel {
     required final String fullName,
     required final String phone,
     final String? email,
+    final String? smsPhone,
+    final String? whatsappPhone,
     required final String role,
     final String? location,
     final String country,
@@ -573,6 +613,10 @@ abstract class _UserModel implements UserModel {
   String get phone;
   @override
   String? get email;
+  @override
+  String? get smsPhone;
+  @override
+  String? get whatsappPhone;
   @override
   String get role; // 'buyer' | 'agent' | 'admin'
   @override

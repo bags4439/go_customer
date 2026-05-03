@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../data/services/paystack_payment_service.dart';
 import '../../domain/entities/payment_request.dart';
+import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/payment_providers.dart';
 
 class PaymentMethodScreen extends ConsumerStatefulWidget {
@@ -218,11 +221,54 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
     return RegExp(r'^[0-9]{9}$').hasMatch(digits);
   }
 
+  Future<String?> _ensureEmail(
+    BuildContext context,
+    WidgetRef ref,
+    AppUser user,
+  ) async {
+    if (user.email != null && user.email!.trim().isNotEmpty) {
+      return user.email!.trim();
+    }
+
+    final email = await showModalBottomSheet<String?>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (ctx) => _EmailGateSheet(
+        userId: user.id,
+        ref: ref,
+      ),
+    );
+    return email;
+  }
+
   Future<void> _onConfirmAndPay(WidgetRef ref, PaymentRequest request, double totalUsd) async {
     final method = ref.read(selectedPaymentMethodProvider);
     if (method == null) return;
     final buyerId = ref.read(authStateProvider).value;
     if (buyerId == null) return;
+
+    if (!mounted) return;
+    final user = await ref.read(currentUserProvider.future);
+    if (user == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not load your profile. Try again.')),
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+    final email = await _ensureEmail(context, ref, user);
+    if (email == null || email.trim().isEmpty) {
+      return;
+    }
+
     final paymentRepo = ref.read(paymentRepositoryProvider);
 
     final providerRef = generatePaystackReference(widget.orderId, widget.requestId);
@@ -257,13 +303,12 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
     ref.read(paymentTimeoutProvider.notifier).start(payment.id);
 
     if (!mounted) return;
-    final email = ref.read(currentUserProvider).value?.email ?? 'buyer@autoimport.gh';
     final chargeGhs = totalUsd * request.exchangeRateAtRequest;
     final launched = await initiatePaystackCharge(
       context: context,
       reference: payment.providerRef ?? generatePaystackReference(widget.orderId, widget.requestId),
       chargeAmountGhs: chargeGhs,
-      customerEmail: email,
+      customerEmail: email.trim(),
     );
 
     if (!launched && mounted) {
@@ -380,6 +425,179 @@ class _SummaryRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _EmailGateSheet extends StatefulWidget {
+  const _EmailGateSheet({
+    required this.userId,
+    required this.ref,
+  });
+
+  final String userId;
+  final WidgetRef ref;
+
+  @override
+  State<_EmailGateSheet> createState() => _EmailGateSheetState();
+}
+
+class _EmailGateSheetState extends State<_EmailGateSheet> {
+  final _ctrl = TextEditingController();
+  bool _isSaving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  bool _isValidEmail(String v) {
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim());
+  }
+
+  Future<void> _save() async {
+    final email = _ctrl.text.trim();
+    if (!_isValidEmail(email)) {
+      setState(() {
+        _error = 'Please enter a valid email address';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _error = null;
+    });
+
+    final result = await widget.ref
+        .read(profileRepositoryProvider)
+        .updateEmail(widget.userId, email);
+
+    if (!mounted) return;
+
+    result.fold(
+      (_) {
+        setState(() {
+          _isSaving = false;
+          _error = 'Could not save. Please try again.';
+        });
+      },
+      (_) {
+        widget.ref.invalidate(currentUserProvider);
+        Navigator.of(context).pop(email);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            width: 32,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: AppColors.borderSolid,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          Text(
+            'Add your email address',
+            style: AppTextStyles.titleSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Your email is needed to send you a payment receipt. It will be '
+            'saved to your profile for future payments.',
+            style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'EMAIL ADDRESS',
+            style: AppTextStyles.sectionLabel,
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _ctrl,
+            autofocus: true,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _save(),
+            style: AppTextStyles.bodyMedium,
+            decoration: InputDecoration(
+              hintText: 'your@email.com',
+              hintStyle: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textTertiary,
+              ),
+              errorText: _error,
+              errorStyle: AppTextStyles.caption.copyWith(
+                color: AppColors.danger,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColors.borderSolid,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColors.borderSolid,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColors.secondary,
+                  width: 1.5,
+                ),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 52,
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Save & continue →',
+                      style: AppTextStyles.buttonLarge,
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
