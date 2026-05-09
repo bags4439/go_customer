@@ -10,6 +10,8 @@ import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/layout/auth_split_layout.dart';
+import '../../../../core/layout/dark_split_panel.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../domain/entities/country.dart';
 import '../notifiers/login_notifier.dart';
@@ -37,34 +39,128 @@ class LoginScreen extends ConsumerWidget {
     final notifier = ref.read(loginNotifierProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 320),
-          transitionBuilder: (child, animation) {
-            final slide =
-                Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
+      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
+      body: AuthSplitLayout(
+        form: Scaffold(
+          backgroundColor: Colors.white,
+          resizeToAvoidBottomInset: true,
+          body: SafeArea(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 320),
+              transitionBuilder: (child, animation) {
+                final slide =
+                    Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    );
+                return SlideTransition(
+                  position: slide,
+                  child: FadeTransition(opacity: animation, child: child),
                 );
-            return SlideTransition(
-              position: slide,
-              child: FadeTransition(opacity: animation, child: child),
-            );
-          },
-          child: KeyedSubtree(
-            key: ValueKey(state.step),
-            child: _stepWidget(state, notifier),
+              },
+              child: KeyedSubtree(
+                key: ValueKey(state.step),
+                child: _stepWidget(state, notifier),
+              ),
+            ),
           ),
         ),
+        panel: _panelForStep(state.step),
       ),
     );
+  }
+
+  /// Right-hand dark panel copy for tablet / web; mobile omits via
+  /// [AuthSplitLayout].
+  DarkSplitPanel _panelForStep(LoginStep step) {
+    switch (step) {
+      case LoginStep.phone:
+      case LoginStep.otp:
+        return const DarkSplitPanel(
+          eyebrow: 'TRUSTED BY BUYERS ACROSS GHANA',
+          heading:
+              'Your car, sourced globally.\nDelivered to your door.',
+          subheading:
+              'From US auctions to Dubai dealers — your dedicated agent '
+              'manages everything so you don\'t have to.',
+          stats: [
+            DarkPanelStat(
+              value: '48+',
+              label: 'Vehicles imported',
+            ),
+            DarkPanelStat(
+              value: '100%',
+              label: 'Transparent pricing',
+            ),
+            DarkPanelStat(
+              value: '4.9★',
+              label: 'Customer rating',
+            ),
+          ],
+        );
+      case LoginStep.name:
+        return const DarkSplitPanel(
+          heading: 'It all starts\nwith a name.',
+          subheading:
+              'Your agent is a real person who will be in touch personally '
+              'throughout the import journey.',
+          quote: DarkPanelQuote(
+            initials: 'E',
+            name: 'Ernest, your agent',
+            text: '"I\'ll be handling your import personally."',
+          ),
+        );
+      case LoginStep.referral:
+        return const DarkSplitPanel(
+          heading: 'Share the journey.',
+          subheading:
+              'Have a friend\'s referral code? Enter it to reward them for '
+              'introducing you to AutoImport GH.',
+          stats: [
+            DarkPanelStat(
+              value: 'GHS 500',
+              label: 'Reward per referral',
+            ),
+            DarkPanelStat(
+              value: 'Instant',
+              label: 'Credit on completion',
+            ),
+          ],
+        );
+      case LoginStep.contactChannels:
+        return const DarkSplitPanel(
+          heading: 'Never miss\na moment.',
+          subheading:
+              'We\'ll notify you when things happen with your order via the '
+              'channels you choose.',
+          accentItems: [
+            DarkPanelAccentItem(
+              color: Color(0xFF378ADD),
+              title: 'SMS',
+              subtitle:
+                  'Instant alerts for payment requests and key milestones.',
+            ),
+            DarkPanelAccentItem(
+              color: Color(0xFF1D9E75),
+              title: 'WhatsApp',
+              subtitle:
+                  'Rich updates with order details and agent messages.',
+            ),
+            DarkPanelAccentItem(
+              color: Color(0xFFBA7517),
+              title: 'Email',
+              subtitle:
+                  'Payment receipts and full order summaries.',
+            ),
+          ],
+        );
+    }
   }
 
   Widget _stepWidget(LoginState state, LoginNotifier notifier) {

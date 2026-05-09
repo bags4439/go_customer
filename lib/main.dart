@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -85,8 +86,54 @@ Future<void> main() async {
   );
 }
 
-class CustomerApp extends StatelessWidget {
+class CustomerApp extends StatefulWidget {
   const CustomerApp({super.key});
+
+  @override
+  State<CustomerApp> createState() => _CustomerAppState();
+}
+
+class _CustomerAppState extends State<CustomerApp> {
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _appLinks = AppLinks();
+    _initDeepLinks();
+  }
+
+  Future<void> _initDeepLinks() async {
+    _sub = _appLinks.uriLinkStream.listen(
+      _onLink,
+      onError: (err) {
+        debugPrint('[DeepLink] error: $err');
+      },
+    );
+
+    try {
+      final initial = await _appLinks.getInitialLink();
+      if (initial != null) {
+        _onLink(initial);
+      }
+    } catch (e) {
+      debugPrint('[DeepLink] initial link error: $e');
+    }
+  }
+
+  void _onLink(Uri uri) {
+    debugPrint('[DeepLink] received: $uri');
+    // autoimportgh://payment/callback — the processing screen is already
+    // watching Firestore. No navigation needed here. The app simply comes to
+    // foreground.
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

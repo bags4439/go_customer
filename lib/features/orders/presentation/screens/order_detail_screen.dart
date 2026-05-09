@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/panel_divider.dart';
+import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../payments/data/models/payment_request_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
@@ -156,191 +159,647 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = AppBreakpoints.isWeb(context);
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         context.go('/home');
       },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-            ),
-            onPressed: () =>
-              context.go('/home'),
-          ),
-          titleSpacing: 0,
-          title: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOut,
-            switchOutCurve: Curves.easeIn,
-            transitionBuilder: (child, anim) => FadeTransition(
-              opacity: anim,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.08),
-                  end: Offset.zero,
-                ).animate(anim),
-                child: child,
-              ),
-            ),
-            child: _isChatTabActive
-                ? _AgentAppBarTitle(
-                    key: const ValueKey('agent'),
-                    orderId: widget.orderId,
-                  )
-                : Padding(
-                    key: const ValueKey('order'),
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text(
-                      ref
-                              .watch(orderProvider(widget.orderId))
-                              .valueOrNull
-                              ?.orderRef ??
-                          '--',
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: const Color(0xFF1A1A18),
+      child: isWeb
+          ? WebAppShell(
+              activeRoute: '/home',
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  final tw = AppBreakpoints.timelinePanelWidth(totalWidth);
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        width: tw,
+                        child: _OrderTimelinePanel(
+                          orderId: widget.orderId,
+                          currentTab: _tabController.index,
+                          onTabSelected: (i) {
+                            _tabController.animateTo(i);
+                            setState(() {
+                              _isChatTabActive = i == 1;
+                            });
+                          },
+                        ),
                       ),
-                    ),
-                  ),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(0.5),
-            child: Container(height: 0.5, color: const Color(0xFFE0DFD8)),
+                      const PanelDivider(),
+                      Expanded(
+                        child: Scaffold(
+                          backgroundColor: AppColors.background,
+                          appBar: _buildWebDetailAppBar(context),
+                          body: _buildBody(context, showSegmentedTabBar: false),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            )
+          : Scaffold(
+              backgroundColor: AppColors.background,
+              appBar: _buildAppBar(context),
+              body: _buildBody(context, showSegmentedTabBar: true),
+            ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        onPressed: () => context.go('/home'),
+      ),
+      titleSpacing: 0,
+      title: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        transitionBuilder: (child, anim) => FadeTransition(
+          opacity: anim,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.08),
+              end: Offset.zero,
+            ).animate(anim),
+            child: child,
           ),
         ),
-        body: Builder(
-          builder: (context) {
-            final payment = ref
-                .watch(activePaymentRequestProvider(widget.orderId))
-                .valueOrNull;
-            return Stack(
-              fit: StackFit.expand,
+        child: _isChatTabActive
+            ? _AgentAppBarTitle(
+                key: const ValueKey('agent'),
+                orderId: widget.orderId,
+              )
+            : Padding(
+                key: const ValueKey('order'),
+                padding: const EdgeInsets.only(left: 4),
+                child: Text(
+                  ref
+                          .watch(orderProvider(widget.orderId))
+                          .valueOrNull
+                          ?.orderRef ??
+                      '--',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: const Color(0xFF1A1A18),
+                  ),
+                ),
+              ),
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(0.5),
+        child: Container(height: 0.5, color: const Color(0xFFE0DFD8)),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildWebDetailAppBar(BuildContext context) {
+    return AppBar(
+      toolbarHeight: 52,
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      titleSpacing: 20,
+      title: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: _isChatTabActive
+            ? _AgentAppBarTitle(
+                key: const ValueKey('agent'),
+                orderId: widget.orderId,
+              )
+            : Text(
+                ref
+                        .watch(orderProvider(widget.orderId))
+                        .valueOrNull
+                        ?.orderRef ??
+                    '--',
+                key: const ValueKey('order'),
+                style: AppTextStyles.titleMedium.copyWith(
+                  color: const Color(0xFF1A1A18),
+                ),
+              ),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: TextButton.icon(
+            onPressed: () {
+              _tabController.animateTo(1);
+              setState(() {
+                _isChatTabActive = true;
+              });
+            },
+            icon: const Icon(Icons.chat_rounded, size: 16),
+            label: const Text('Chat with agent'),
+            style: TextButton.styleFrom(foregroundColor: AppColors.secondary),
+          ),
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(0.5),
+        child: Container(height: 0.5, color: AppColors.borderSolid),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, {required bool showSegmentedTabBar}) {
+    return Builder(
+      builder: (context) {
+        final payment = ref
+            .watch(activePaymentRequestProvider(widget.orderId))
+            .valueOrNull;
+        final tabColumn = Column(
+          children: [
+            if (showSegmentedTabBar)
+              SegmentedTabBar(
+                controller: _tabController,
+                orderId: widget.orderId,
+                chatTabKey: _chatTabKey,
+                documentsTabKey: _docsTabKey,
+              ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _OrderOverviewTab(
+                    orderId: widget.orderId,
+                    timelineKey: _timelineKey,
+                    paymentCardKey: _paymentCardKey,
+                    suppressTimelineStageCoaches:
+                        _showPaymentCoach || _guideStep != 0,
+                    onChatTap: _onSwitchToChat,
+                  ),
+                  OrderChatTab(orderId: widget.orderId),
+                  OrderDocumentsTab(orderId: widget.orderId),
+                ],
+              ),
+            ),
+          ],
+        );
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            if (AppBreakpoints.isWeb(context))
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxW = AppBreakpoints.contentMaxWidth(
+                    constraints.maxWidth,
+                  );
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxW),
+                      child: tabColumn,
+                    ),
+                  );
+                },
+              )
+            else
+              tabColumn,
+            if (_showPaymentCoach && payment != null && _guideStep == 0)
+              CoachMarkOverlay(
+                guideKey: GuideKeys.orderPaymentRequest,
+                targetKey: _paymentCardKey,
+                title: 'Payment request from your agent',
+                body:
+                    'Your agent sent a payment request. '
+                    'Review the details carefully — '
+                    'no money leaves your account until '
+                    'you approve it here.',
+                spotlightShape: SpotlightShape.roundedRect,
+                cardPosition: CardPosition.below,
+                onDismiss: () {
+                  setState(() => _showPaymentCoach = false);
+                  WidgetsBinding.instance.addPostFrameCallback(
+                    (_) => _maybeStartChainAfterPaymentCoach(),
+                  );
+                },
+                onFaqTap: () {
+                  setState(() => _showPaymentCoach = false);
+                  GuideFaqSheet.show(context);
+                  WidgetsBinding.instance.addPostFrameCallback(
+                    (_) => _maybeStartChainAfterPaymentCoach(),
+                  );
+                },
+              ),
+            if (_guideStep == 1 && !_showPaymentCoach)
+              CoachMarkOverlay(
+                guideKey: GuideKeys.orderTimeline,
+                targetKey: _timelineKey,
+                title: 'Your import journey',
+                body:
+                    'This timeline tracks every stage '
+                    'from search to delivery. Tap any '
+                    'stage to see more details.',
+                spotlightShape: SpotlightShape.roundedRect,
+                onDismiss: () => setState(() => _guideStep = 0),
+                onNext: () {
+                  setState(() {
+                    _guideStep = 2;
+                  });
+                  _tabController.animateTo(1);
+                },
+                onFaqTap: () {
+                  setState(() => _guideStep = 0);
+                  GuideFaqSheet.show(context);
+                },
+              ),
+            if (_guideStep == 2 && !_showPaymentCoach)
+              CoachMarkOverlay(
+                guideKey: GuideKeys.chat,
+                targetKey: _chatTabKey,
+                title: 'Chat with your agent',
+                body:
+                    'Your dedicated agent is always '
+                    'available here. Ask anything — '
+                    'they handle everything for you.',
+                spotlightShape: SpotlightShape.roundedRect,
+                onDismiss: () => setState(() => _guideStep = 0),
+                onNext: () {
+                  setState(() {
+                    _guideStep = 3;
+                  });
+                  _tabController.animateTo(2);
+                },
+                onFaqTap: () {
+                  setState(() => _guideStep = 0);
+                  GuideFaqSheet.show(context);
+                },
+              ),
+            if (_guideStep == 3 && !_showPaymentCoach)
+              CoachMarkOverlay(
+                guideKey: GuideKeys.documents,
+                targetKey: _docsTabKey,
+                title: 'Your documents',
+                body:
+                    'All your import papers live here '
+                    '— receipts, vehicle title, clearance '
+                    'docs and more. Always accessible.',
+                spotlightShape: SpotlightShape.roundedRect,
+                onDismiss: () => setState(() => _guideStep = 0),
+                onFaqTap: () {
+                  setState(() => _guideStep = 0);
+                  GuideFaqSheet.show(context);
+                },
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Step labels aligned with [OrderTimelineConstants.journeyTitle] stages
+/// and the 9-step journey used on home order cards.
+const List<String> _kOrderTimelineStepNames = [
+  'Preferences submission',
+  'Agent assignment',
+  'Deposit & service fee',
+  'Vehicle search',
+  'Vehicle balance',
+  'Shipping',
+  'Duty & clearance',
+  'Repairs',
+  'Delivery',
+];
+
+String _orderVehicleHeadline(OrderView? order) {
+  if (order == null) return '--';
+  final name = '${order.make ?? ''} ${order.model ?? ''}'.trim();
+  return name.isNotEmpty ? name : order.orderRef;
+}
+
+String _orderCurrentStageHeadline(OrderView? order) {
+  if (order == null) return '--';
+  final sn = order.stageNumber.clamp(1, _kOrderTimelineStepNames.length);
+  return _kOrderTimelineStepNames[sn - 1];
+}
+
+class _OrderTimelinePanel extends ConsumerWidget {
+  const _OrderTimelinePanel({
+    required this.orderId,
+    required this.currentTab,
+    required this.onTabSelected,
+  });
+
+  final String orderId;
+  final int currentTab;
+  final void Function(int) onTabSelected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderAsync = ref.watch(orderProvider(orderId));
+    final order = orderAsync.valueOrNull;
+
+    return Container(
+      color: AppColors.backgroundSecondary,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderSolid, width: .5),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SegmentedTabBar(
-                      controller: _tabController,
-                      orderId: widget.orderId,
-                      chatTabKey: _chatTabKey,
-                      documentsTabKey: _docsTabKey,
+                    Text(
+                      _orderVehicleHeadline(order),
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _OrderOverviewTab(
-                            orderId: widget.orderId,
-                            timelineKey: _timelineKey,
-                            paymentCardKey: _paymentCardKey,
-                            suppressTimelineStageCoaches:
-                                _showPaymentCoach || _guideStep != 0,
-                            onChatTap: _onSwitchToChat,
-                          ),
-                          OrderChatTab(orderId: widget.orderId),
-                          OrderDocumentsTab(orderId: widget.orderId),
-                        ],
+                    Text(
+                      order?.orderRef ?? '--',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ],
                 ),
-                if (_showPaymentCoach && payment != null && _guideStep == 0)
-                  CoachMarkOverlay(
-                    guideKey: GuideKeys.orderPaymentRequest,
-                    targetKey: _paymentCardKey,
-                    title: 'Payment request from your agent',
-                    body:
-                        'Your agent sent a payment request. '
-                        'Review the details carefully — '
-                        'no money leaves your account until '
-                        'you approve it here.',
-                    spotlightShape: SpotlightShape.roundedRect,
-                    cardPosition: CardPosition.below,
-                    onDismiss: () {
-                      setState(() => _showPaymentCoach = false);
-                      WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => _maybeStartChainAfterPaymentCoach(),
-                      );
-                    },
-                    onFaqTap: () {
-                      setState(() => _showPaymentCoach = false);
-                      GuideFaqSheet.show(context);
-                      WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => _maybeStartChainAfterPaymentCoach(),
-                      );
-                    },
-                  ),
-                if (_guideStep == 1 && !_showPaymentCoach)
-                  CoachMarkOverlay(
-                    guideKey: GuideKeys.orderTimeline,
-                    targetKey: _timelineKey,
-                    title: 'Your import journey',
-                    body:
-                        'This timeline tracks every stage '
-                        'from search to delivery. Tap any '
-                        'stage to see more details.',
-                    spotlightShape: SpotlightShape.roundedRect,
-                    onDismiss: () => setState(() => _guideStep = 0),
-                    onNext: () {
-                      setState(() {
-                        _guideStep = 2;
-                      });
-                      _tabController.animateTo(1);
-                    },
-                    onFaqTap: () {
-                      setState(() => _guideStep = 0);
-                      GuideFaqSheet.show(context);
-                    },
-                  ),
-                if (_guideStep == 2 && !_showPaymentCoach)
-                  CoachMarkOverlay(
-                    guideKey: GuideKeys.chat,
-                    targetKey: _chatTabKey,
-                    title: 'Chat with your agent',
-                    body:
-                        'Your dedicated agent is always '
-                        'available here. Ask anything — '
-                        'they handle everything for you.',
-                    spotlightShape: SpotlightShape.roundedRect,
-                    onDismiss: () => setState(() => _guideStep = 0),
-                    onNext: () {
-                      setState(() {
-                        _guideStep = 3;
-                      });
-                      _tabController.animateTo(2);
-                    },
-                    onFaqTap: () {
-                      setState(() => _guideStep = 0);
-                      GuideFaqSheet.show(context);
-                    },
-                  ),
-                if (_guideStep == 3 && !_showPaymentCoach)
-                  CoachMarkOverlay(
-                    guideKey: GuideKeys.documents,
-                    targetKey: _docsTabKey,
-                    title: 'Your documents',
-                    body:
-                        'All your import papers live here '
-                        '— receipts, vehicle title, clearance '
-                        'docs and more. Always accessible.',
-                    spotlightShape: SpotlightShape.roundedRect,
-                    onDismiss: () => setState(() => _guideStep = 0),
-                    onFaqTap: () {
-                      setState(() => _guideStep = 0);
-                      GuideFaqSheet.show(context);
-                    },
+                if (order != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.infoBackground,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Step ${order.stageNumber} of 9',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.infoText,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
               ],
-            );
-          },
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF1A5FA5), Color(0xFF378ADD)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                    padding: const EdgeInsets.all(14),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Import progress',
+                              style: AppTextStyles.caption.copyWith(
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
+                            LayoutBuilder(
+                              builder: (ctx, constraints) {
+                                final sw = MediaQuery.sizeOf(ctx).width;
+                                return Text(
+                                  order == null
+                                      ? '--'
+                                      : '${((order.stageNumber / 9) * 100).round()}%',
+                                  style: AppTextStyles.titleMedium.copyWith(
+                                    fontSize: AppBreakpoints.scaledFontSize(
+                                      16,
+                                      sw,
+                                    ),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _orderCurrentStageHeadline(order),
+                          style: AppTextStyles.caption.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: LinearProgressIndicator(
+                            value: order == null
+                                ? 0
+                                : (order.stageNumber.clamp(1, 9) / 9),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.2,
+                            ),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                            minHeight: 3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    'JOURNEY',
+                    style: AppTextStyles.sectionLabel.copyWith(
+                      color: AppColors.textTertiary,
+                      fontSize: 10,
+                      letterSpacing: .4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (order != null) _TimelineStepsList(order: order),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.borderSolid, width: .5),
+              ),
+            ),
+            child: Row(
+              children: [
+                _TimelinePanelTab(
+                  label: 'Overview',
+                  isSelected: currentTab == 0,
+                  onTap: () => onTabSelected(0),
+                ),
+                _TimelinePanelTab(
+                  label: 'Chat',
+                  isSelected: currentTab == 1,
+                  onTap: () => onTabSelected(1),
+                ),
+                _TimelinePanelTab(
+                  label: 'Documents',
+                  isSelected: currentTab == 2,
+                  onTap: () => onTabSelected(2),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimelinePanelTab extends StatelessWidget {
+  const _TimelinePanelTab({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected ? AppColors.secondary : Colors.transparent,
+                width: 2,
+              ),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+              color: isSelected ? AppColors.secondary : AppColors.textSecondary,
+            ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _TimelineStepsList extends StatelessWidget {
+  const _TimelineStepsList({required this.order});
+
+  final OrderView order;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentStage = order.stageNumber;
+
+    return Column(
+      children: List.generate(_kOrderTimelineStepNames.length, (i) {
+        final stepNumber = i + 1;
+        final isDone = stepNumber < currentStage;
+        final isActive = stepNumber == currentStage;
+        final isPending = stepNumber > currentStage;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Row(
+            children: [
+              _StepIndicator(isDone: isDone, isActive: isActive),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _kOrderTimelineStepNames[i],
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: 11,
+                    color: isPending
+                        ? AppColors.textTertiary
+                        : isActive
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
+                    fontWeight: isActive ? FontWeight.w500 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _StepIndicator extends StatelessWidget {
+  const _StepIndicator({required this.isDone, required this.isActive});
+
+  final bool isDone;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isDone) {
+      return Container(
+        width: 14,
+        height: 14,
+        decoration: const BoxDecoration(
+          color: AppColors.success,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.check, size: 8, color: Colors.white),
+      );
+    }
+    if (isActive) {
+      return Container(
+        width: 14,
+        height: 14,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.secondary, width: 2),
+          color: AppColors.infoBackground,
+        ),
+      );
+    }
+    return Container(
+      width: 14,
+      height: 14,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.borderSolid, width: 1.5),
       ),
     );
   }

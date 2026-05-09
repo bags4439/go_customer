@@ -42,4 +42,27 @@ class AppColors {
 
   /// “Invite Friends” label on white pill (warning tone — on-brand emphasis).
   static const Color referralCtaLabel = warning;
+
+  // ── Hover / interaction states ─
+
+  /// Subtle hover background for
+  /// nav items and interactive
+  /// tiles on web. Slightly darker
+  /// than surface.
+  static const Color hoverSurface = Color(0xFFF0EFE9);
+
+  /// Hover state for items that
+  /// are already selected/active.
+  static const Color hoverSelected = Color(0xFFD6E8F7);
+
+  /// Panel shadow colour — used
+  /// instead of hard dividers on
+  /// web for a more premium feel.
+  static const Color panelShadow = Color(0x0A000000);
+
+  /// Background for secondary
+  /// panels (timeline, selections
+  /// summary) — very slightly off
+  /// white to create depth.
+  static const Color backgroundSecondary = Color(0xFFFAF9F7);
 }

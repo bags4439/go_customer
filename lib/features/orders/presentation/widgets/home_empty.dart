@@ -32,229 +32,245 @@ class _EmptyHomeState extends ConsumerState<_EmptyHome>
     return Stack(
       children: [
         SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              20,
-              16,
-              20 + _shellFloatingNavScrollBottomExtra(context),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _timeGreeting(),
-                  style: AppTextStyles.sectionLabel.copyWith(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.6,
-                    color: _C.textTertiary,
-                  ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  20,
+                  24,
+                  20 + _shellFloatingNavScrollBottomExtra(context),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  widget.firstName != null
-                      ? 'Hi ${widget.firstName}'
-                      : 'Welcome',
-                  style: AppTextStyles.displaySmall.copyWith(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w600,
-                    height: 1.15,
-                    color: _C.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  'Ready to buy your first car?',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: 13.5,
-                    color: _C.textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // CTA card
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _C.bgPrimary,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: _C.border, width: 0.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _timeGreeting(),
+                      style: AppTextStyles.sectionLabel.copyWith(
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.6,
+                        color: _C.textTertiary,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(18, 20, 18, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _CtaIllustration(),
-                            const SizedBox(height: 16),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      widget.firstName != null
+                          ? 'Hi ${widget.firstName}'
+                          : 'Welcome',
+                      style: AppTextStyles.displaySmall.copyWith(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        height: 1.15,
+                        color: _C.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Ready to buy your first car?',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: 13.5,
+                        color: _C.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                            Text(
-                              'Buy your car from the US, Dubai or China',
-                              style: AppTextStyles.titleMedium.copyWith(
-                                fontSize: 18,
-                                height: 1.25,
-                                color: _C.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
+                    // CTA card
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: _C.bgPrimary,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: _C.border, width: 0.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(18, 20, 18, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const _CtaIllustration(),
+                                const SizedBox(height: 16),
 
-                            Text(
-                              'Tell us what you want — we handle everything '
-                              'from auction to your driveway.',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: _C.textSecondary,
-                                height: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-
-                            SizedBox(
-                              key: _importButtonKey,
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: () => GoRouter.of(
-                                  context,
-                                ).push('/preferences/new'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _C.primary,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                Text(
+                                  'Buy your car from the US, Dubai or China',
+                                  style: AppTextStyles.titleMedium.copyWith(
+                                    fontSize: 18,
+                                    height: 1.25,
+                                    color: _C.textPrimary,
                                   ),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Get started',
-                                      style: AppTextStyles.buttonLarge,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Container(
-                                      width: 26,
-                                      height: 26,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.18,
-                                        ),
-                                        borderRadius: BorderRadius.circular(7),
-                                      ),
-                                      child: const Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 14,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  'Tell us what you want — we handle everything '
+                                  'from auction to your driveway.',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: _C.textSecondary,
+                                    height: 1.5,
+                                  ),
                                 ),
+                                const SizedBox(height: 18),
+
+                                SizedBox(
+                                  key: _importButtonKey,
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: ElevatedButton(
+                                    onPressed: () => GoRouter.of(
+                                      context,
+                                    ).push('/preferences/new'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: _C.primary,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Get started',
+                                          style: AppTextStyles.buttonLarge,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Container(
+                                          width: 26,
+                                          height: 26,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.18,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              7,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_forward_rounded,
+                                            size: 14,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                              ],
+                            ),
+                          ),
+
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 11,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _C.bgSecondary,
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(17),
+                                bottomRight: Radius.circular(17),
+                              ),
+                              border: Border(
+                                top: BorderSide(color: _C.border, width: 0.5),
                               ),
                             ),
-                            const SizedBox(height: 18),
-                          ],
-                        ),
-                      ),
-
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 11,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _C.bgSecondary,
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(17),
-                            bottomRight: Radius.circular(17),
-                          ),
-                          border: Border(
-                            top: BorderSide(color: _C.border, width: 0.5),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.lock_outline,
-                              size: 11,
-                              color: _C.primary,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 11,
+                                  color: _C.primary,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'No payment until your agent sends a request',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: _C.primary,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'No payment until your agent sends a request',
-                              style: AppTextStyles.caption.copyWith(
-                                color: _C.primary,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const SizedBox(height: 28),
+                    const SizedBox(height: 28),
 
-                Text(
-                  'HOW IT WORKS',
-                  style: AppTextStyles.sectionLabel.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: _C.textTertiary,
-                  ),
-                ),
-                const SizedBox(height: 10),
+                    Text(
+                      'HOW IT WORKS',
+                      style: AppTextStyles.sectionLabel.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: _C.textTertiary,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
 
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 1.5,
-                  children: [
-                    _FeatureItem(
-                      iconBg: _C.infoBg,
-                      title: 'Dedicated agent',
-                      subtitle: 'Matched to you\nwithin minutes',
-                      iconWidget: CustomPaint(painter: _AgentIconPainter()),
+                    GridView.count(
+                      crossAxisCount: AppBreakpoints.isWeb(context) ? 4 : 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: AppBreakpoints.isWeb(context)
+                          ? 1.3
+                          : 1.5,
+                      children: [
+                        _FeatureItem(
+                          iconBg: _C.infoBg,
+                          title: 'Dedicated agent',
+                          subtitle: 'Matched to you\nwithin minutes',
+                          iconWidget: CustomPaint(painter: _AgentIconPainter()),
+                        ),
+                        _FeatureItem(
+                          iconBg: _C.successBg,
+                          title: 'Every step tracked',
+                          subtitle:
+                              'Live updates from\nauction/purchase to delivery',
+                          iconWidget: CustomPaint(
+                            painter: _TrackingIconPainter(),
+                          ),
+                        ),
+                        _FeatureItem(
+                          iconBg: _C.warningBg,
+                          title: 'Duty & clearance',
+                          subtitle: 'GRA paperwork\nfully managed',
+                          iconWidget: CustomPaint(
+                            painter: _ClearanceIconPainter(),
+                          ),
+                        ),
+                        _FeatureItem(
+                          iconBg: _C.infoBg,
+                          title: 'Door delivery',
+                          subtitle: 'Straight to your\nhome in Ghana',
+                          iconWidget: CustomPaint(
+                            painter: _DeliveryIconPainter(),
+                          ),
+                        ),
+                      ],
                     ),
-                    _FeatureItem(
-                      iconBg: _C.successBg,
-                      title: 'Every step tracked',
-                      subtitle:
-                          'Live updates from\nauction/purchase to delivery',
-                      iconWidget: CustomPaint(painter: _TrackingIconPainter()),
-                    ),
-                    _FeatureItem(
-                      iconBg: _C.warningBg,
-                      title: 'Duty & clearance',
-                      subtitle: 'GRA paperwork\nfully managed',
-                      iconWidget: CustomPaint(painter: _ClearanceIconPainter()),
-                    ),
-                    _FeatureItem(
-                      iconBg: _C.infoBg,
-                      title: 'Door delivery',
-                      subtitle: 'Straight to your\nhome in Ghana',
-                      iconWidget: CustomPaint(painter: _DeliveryIconPainter()),
-                    ),
+
+                    const SizedBox(height: 32),
+                    const ReferralPromoCard(),
+                    const SizedBox(height: 16),
                   ],
                 ),
-
-                const SizedBox(height: 32),
-                const ReferralPromoCard(),
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
           ),
         ),

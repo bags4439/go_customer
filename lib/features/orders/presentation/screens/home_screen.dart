@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/error/error_handler.dart';
@@ -105,28 +106,51 @@ class HomeScreen extends ConsumerWidget {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final isMobile = AppBreakpoints.isMobile(context);
+
+    if (isMobile) {
+      return AppBar(
+        backgroundColor: _C.bgPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 20,
+        title: const _AppLogo(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.headset_mic_rounded, size: 22),
+            color: AppColors.textSecondary,
+            tooltip: 'Support',
+            style: IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.only(right: 16),
+            ),
+            onPressed: () => SupportBottomSheet.show(context),
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(height: 0.5, color: _C.border),
+        ),
+      );
+    }
+
     return AppBar(
-      backgroundColor: _C.bgPrimary,
+      backgroundColor: AppColors.background,
       elevation: 0,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
       titleSpacing: 20,
-      title: const _AppLogo(),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.headset_mic_rounded, size: 22),
-          color: AppColors.textSecondary,
-          tooltip: 'Support',
-          style: IconButton.styleFrom(
-            minimumSize: const Size(48, 48),
-            padding: const EdgeInsets.only(right: 16),
-          ),
-          onPressed: () => SupportBottomSheet.show(context),
-        ),
-      ],
+      title: Text(
+        'Home',
+        style: AppTextStyles.appBarTitle,
+      ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(height: 0.5, color: _C.border),
+        child: Container(
+          height: 0.5,
+          color: AppColors.borderSolid,
+        ),
       ),
     );
   }

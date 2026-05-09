@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_layout.dart';
@@ -70,18 +71,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final unreadCount = ref.watch(unreadNotificationCountProvider);
-    final filter = ref.watch(notificationFilterProvider);
-    final items = ref.watch(notificationListItemsProvider(filter));
-    final hasNotificationEntry = items.any(
-      (e) => e is NotificationListItemEntry,
-    );
+  PreferredSizeWidget _buildAppBar(BuildContext context, int unreadCount) {
+    final isMobile = AppBreakpoints.isMobile(context);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      appBar: AppBar(
+    if (isMobile) {
+      return AppBar(
         backgroundColor: const Color(0xFFFFFFFF),
         elevation: 0,
         title: Column(
@@ -89,7 +83,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
           children: [
             Text(
               NotificationConstants.appBarTitle,
-              style: AppTextStyles.appBarTitle.copyWith(color: AppColors.primary),
+              style: AppTextStyles.appBarTitle.copyWith(
+                color: AppColors.primary,
+              ),
             ),
             const SizedBox(height: 2),
             Text(
@@ -118,34 +114,87 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.border, height: 0.5),
         ),
+      );
+    }
+
+    return AppBar(
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      titleSpacing: 20,
+      title: Text(
+        NotificationConstants.appBarTitle,
+        style: AppTextStyles.appBarTitle.copyWith(color: AppColors.primary),
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: _NotificationsBody(
-              firstNotificationEntryKey: _firstNotificationKey,
-            ),
+      actions: [
+        GuideHelpButton(onShowGuide: showCoachMarkManually),
+        if (unreadCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: _MarkAllReadButton(onMarkAllRead: _onMarkAllRead),
           ),
-          if (showCoachMark && hasNotificationEntry)
-            CoachMarkOverlay(
-              guideKey: GuideKeys.notifications,
-              targetKey: _firstNotificationKey,
-              title: 'Stay in the loop',
-              body:
-                  'Every update about your order '
-                  'appears here. Tap any notification '
-                  'to go directly to that part of '
-                  'your order.',
-              spotlightShape: SpotlightShape.roundedRect,
-              onDismiss: hideCoachMark,
-              onFaqTap: () {
-                hideCoachMark();
-                GuideFaqSheet.show(context);
-              },
-            ),
-        ],
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(0.5),
+        child: Container(height: 0.5, color: AppColors.borderSolid),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+    final filter = ref.watch(notificationFilterProvider);
+    final items = ref.watch(notificationListItemsProvider(filter));
+    final hasNotificationEntry = items.any(
+      (e) => e is NotificationListItemEntry,
+    );
+
+    final bodyStack = Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: _NotificationsBody(
+            firstNotificationEntryKey: _firstNotificationKey,
+          ),
+        ),
+        if (showCoachMark && hasNotificationEntry)
+          CoachMarkOverlay(
+            guideKey: GuideKeys.notifications,
+            targetKey: _firstNotificationKey,
+            title: 'Stay in the loop',
+            body:
+                'Every update about your order '
+                'appears here. Tap any notification '
+                'to go directly to that part of '
+                'your order.',
+            spotlightShape: SpotlightShape.roundedRect,
+            onDismiss: hideCoachMark,
+            onFaqTap: () {
+              hideCoachMark();
+              GuideFaqSheet.show(context);
+            },
+          ),
+      ],
+    );
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFFFFF),
+      appBar: _buildAppBar(context, unreadCount),
+      body: AppBreakpoints.isWeb(context)
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                final mw = AppBreakpoints.contentMaxWidth(constraints.maxWidth);
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: mw),
+                    child: bodyStack,
+                  ),
+                );
+              },
+            )
+          : bodyStack,
     );
   }
 }
@@ -172,8 +221,12 @@ class _MarkAllReadButton extends ConsumerWidget {
               )
             : Text(
                 NotificationConstants.markAllRead,
-                style: AppTextStyles.labelMedium
-                    .copyWith(color: AppColors.secondary, fontSize: 12, letterSpacing: 0.0, fontWeight: FontWeight.w500),
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.secondary,
+                  fontSize: 12,
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
       ),
     );
@@ -181,9 +234,7 @@ class _MarkAllReadButton extends ConsumerWidget {
 }
 
 class _NotificationsBody extends ConsumerWidget {
-  const _NotificationsBody({
-    required this.firstNotificationEntryKey,
-  });
+  const _NotificationsBody({required this.firstNotificationEntryKey});
 
   final GlobalKey firstNotificationEntryKey;
 
@@ -636,10 +687,7 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
             index: index,
             child: Padding(
               padding: const EdgeInsets.only(top: 12, bottom: 6),
-              child: Text(
-                item.label,
-                style: AppTextStyles.sectionLabel,
-              ),
+              child: Text(item.label, style: AppTextStyles.sectionLabel),
             ),
           );
         }
@@ -898,8 +946,13 @@ class _NotificationItemCard extends StatelessWidget {
                             child: Center(
                               child: Text(
                                 actionLabel,
-                                style: AppTextStyles.labelSmall
-                                    .copyWith(color: Colors.white, fontSize: 11, letterSpacing: 0.0, fontWeight: FontWeight.w500, height: 1.0),
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.0,
+                                ),
                               ),
                             ),
                           ),
@@ -983,8 +1036,13 @@ class _NotificationIcon extends StatelessWidget {
         bgColor = const Color(0xFFE6F1FB);
         content = Text(
           'GHS',
-          style: AppTextStyles.caption
-              .copyWith(color: const Color(0xFF185FA5), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.0, height: 1.0),
+          style: AppTextStyles.caption.copyWith(
+            color: const Color(0xFF185FA5),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.0,
+            height: 1.0,
+          ),
         );
         break;
       case 'bid_won':
@@ -1109,8 +1167,10 @@ class _EmptyState extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: AppTextStyles.titleSmall
-                    .copyWith(fontWeight: FontWeight.w500, height: 1.2),
+                style: AppTextStyles.titleSmall.copyWith(
+                  fontWeight: FontWeight.w500,
+                  height: 1.2,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -1162,8 +1222,10 @@ class _NotificationsError extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               NotificationConstants.errorTitle,
-              style: AppTextStyles.bodyLarge
-                  .copyWith(fontWeight: FontWeight.w600, height: 1.2),
+              style: AppTextStyles.bodyLarge.copyWith(
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),

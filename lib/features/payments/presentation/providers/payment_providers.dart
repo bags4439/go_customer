@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:state_notifier/state_notifier.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../data/services/payment_cloud_service.dart';
 import '../../../../shared/providers/firebase_providers.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../data/datasources/payment_firestore_data_source.dart';
 import '../../data/repositories/payment_repository_impl.dart';
@@ -16,29 +16,46 @@ import '../../domain/repositories/payment_repository.dart';
 import '../../domain/repositories/payment_request_repository.dart';
 
 // --- Data source & repositories ---
-final paymentFirestoreDataSourceProvider = Provider<PaymentFirestoreDataSource>((ref) {
-  return PaymentFirestoreDataSource(ref.watch(firestoreProvider));
-});
+final paymentFirestoreDataSourceProvider = Provider<PaymentFirestoreDataSource>(
+  (ref) {
+    return PaymentFirestoreDataSource(ref.watch(firestoreProvider));
+  },
+);
 
-final paymentRequestRepositoryProvider = Provider<PaymentRequestRepository>((ref) {
-  return PaymentRequestRepositoryImpl(ref.watch(paymentFirestoreDataSourceProvider));
+final paymentRequestRepositoryProvider = Provider<PaymentRequestRepository>((
+  ref,
+) {
+  return PaymentRequestRepositoryImpl(
+    ref.watch(paymentFirestoreDataSourceProvider),
+  );
 });
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
   return PaymentRepositoryImpl(ref.watch(paymentFirestoreDataSourceProvider));
 });
 
+final paymentCloudServiceProvider = Provider<PaymentCloudService>(
+  (ref) => PaymentCloudService(
+    FirebaseFunctions.instanceFor(region: 'europe-west1'),
+  ),
+);
+
 // --- Payment request (Screen 1) ---
-final paymentRequestProvider =
-    StreamProvider.family<PaymentRequest?, String>((ref, requestId) {
-  return ref.watch(paymentRequestRepositoryProvider).watchPaymentRequest(requestId);
+final paymentRequestProvider = StreamProvider.family<PaymentRequest?, String>((
+  ref,
+  requestId,
+) {
+  return ref
+      .watch(paymentRequestRepositoryProvider)
+      .watchPaymentRequest(requestId);
 });
 
 // --- Agent for payment header (users/{agentUserId} via agent doc) ---
-final agentForPaymentProvider =
-    FutureProvider.family<AgentDetailView?, String>((ref, agentId) {
-  return ref.watch(agentDetailProvider(agentId).future);
-});
+final agentForPaymentProvider = FutureProvider.family<AgentDetailView?, String>(
+  (ref, agentId) {
+    return ref.watch(agentDetailProvider(agentId).future);
+  },
+);
 
 // --- Selected method & MoMo number (Screen 2) ---
 enum PaymentMethod {
@@ -49,26 +66,30 @@ enum PaymentMethod {
   bankTransfer,
 }
 
-final selectedPaymentMethodProvider =
-    StateProvider<PaymentMethod?>((ref) => PaymentMethod.mtnMomo);
+final selectedPaymentMethodProvider = StateProvider<PaymentMethod?>(
+  (ref) => PaymentMethod.mtnMomo,
+);
 
 final momoNumberProvider = StateProvider<String>((ref) => '');
 
 // --- Active payment (in-progress) per order ---
-final activePaymentProvider =
-    StateProvider.family<Payment?, String>((ref, orderId) => null);
+final activePaymentProvider = StateProvider.family<Payment?, String>(
+  (ref, orderId) => null,
+);
 
 // --- Payment status stream (Screen 3) ---
-final paymentStatusProvider =
-    StreamProvider.family<Payment?, String>((ref, paymentId) {
+final paymentStatusProvider = StreamProvider.family<Payment?, String>((
+  ref,
+  paymentId,
+) {
   return ref.watch(paymentRepositoryProvider).watchPayment(paymentId);
 });
 
-// --- 5 minute timeout ---
+// --- 3 minute timeout ---
 final paymentTimeoutProvider =
     StateNotifierProvider<PaymentTimeoutNotifier, PaymentTimeoutState>((ref) {
-  return PaymentTimeoutNotifier();
-});
+      return PaymentTimeoutNotifier();
+    });
 
 class PaymentTimeoutState {
   final bool isTimedOut;
@@ -85,7 +106,7 @@ class PaymentTimeoutNotifier extends StateNotifier<PaymentTimeoutState> {
   void start(String paymentId) {
     _timer?.cancel();
     state = const PaymentTimeoutState(isTimedOut: false);
-    _timer = Timer(const Duration(minutes: 5), () {
+    _timer = Timer(const Duration(minutes: 3), () {
       state = PaymentTimeoutState(isTimedOut: true, paymentId: paymentId);
     });
   }

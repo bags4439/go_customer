@@ -192,14 +192,19 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
 
     return Stack(
       children: [
-        ListView(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            24 + _shellFloatingNavScrollBottomExtra(context),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                24 + _shellFloatingNavScrollBottomExtra(context),
+              ),
+              children: listChildren,
+            ),
           ),
-          children: listChildren,
         ),
         if (showCoachMark && sorted.isNotEmpty)
           CoachMarkOverlay(

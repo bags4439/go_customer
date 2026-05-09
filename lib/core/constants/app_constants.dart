@@ -6,13 +6,14 @@ class AppConstants {
   /// Keeping it as a constant avoids scattering the value across the codebase.
   static const String oneSignalAppId = '9a05e7b1-ca1c-4de2-b521-a175c1d66e34';
 
-  /// Paystack secret key (mobile). Required for payment flow. Configure manually.
-  static const String paystackSecretKey =
-      'sk_test_3fb395ade7ccf7b5452cda34c14a97d6bcd7b896';
+  /// Paystack PUBLIC key — safe to include in client code.
+  /// NEVER put the secret key here. Secret key lives in Firebase Secret Manager only.
+  static const String paystackPublicKey =
+      'pk_test_863222f7f4a7f5217eabbf1b8dc56afcb254c1c0';
 
-  /// Paystack callback URL (from dashboard). Required for mobile WebView to close after payment.
-  static const String paystackCallBackUrl =
-      'https://europe-west1-velocitech-auto-go.cloudfunctions.net/paystackWebhook';
+  /// Deep link URI that Paystack redirects to after checkout.
+  /// Handled by AppLinks in main.dart.
+  static const String paystackCallbackScheme = 'autoimportgh';
 
   /// Google Places / Geocoding (delivery address search). Replace with your key from Google Cloud.
   static const String googlePlacesApiKey = 'YOUR_KEY';

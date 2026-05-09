@@ -1,19 +1,26 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
-import '../../domain/entities/breakdown_item.dart';
+import '../../data/services/payment_cloud_service.dart';
+import '../../data/services/paystack_payment_service.dart'
+    show launchPaystackCheckout;
 import '../../domain/entities/payment_request.dart';
+import '../../../auth/domain/entities/app_user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/payment_providers.dart';
 
-class PaymentRequestViewScreen extends ConsumerWidget {
+class PaymentRequestViewScreen extends ConsumerStatefulWidget {
   final String orderId;
   final String requestId;
 
@@ -24,203 +31,506 @@ class PaymentRequestViewScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final requestAsync = ref.watch(paymentRequestProvider(requestId));
-    final agentAsync = ref.watch(agentForPaymentProvider(requestAsync.valueOrNull?.createdByAgentId ?? ''));
-    final orderAsync = ref.watch(orderProvider(orderId));
-    final orderRef = orderAsync.valueOrNull?.orderRef ?? orderId;
+  ConsumerState<PaymentRequestViewScreen> createState() =>
+      _PaymentRequestViewScreenState();
+}
+
+class _PaymentRequestViewScreenState
+    extends ConsumerState<PaymentRequestViewScreen> {
+  bool _paying = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final requestAsync = ref.watch(paymentRequestProvider(widget.requestId));
+    final agentAsync = ref.watch(
+      agentForPaymentProvider(requestAsync.valueOrNull?.createdByAgentId ?? ''),
+    );
+    final orderAsync = ref.watch(orderProvider(widget.orderId));
+    final orderRef = orderAsync.valueOrNull?.orderRef ?? widget.orderId;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Payment request',
-          style: TextStyle(color: Colors.black87, fontSize: 18),
-        ),
+        title: Text('Payment request', style: AppTextStyles.appBarTitle),
         centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                orderRef,
-                style: const TextStyle(color: Colors.black54, fontSize: 14),
-              ),
-            ),
+            child: Center(child: Text(orderRef, style: AppTextStyles.caption)),
           ),
         ],
       ),
       body: requestAsync.when(
         data: (request) {
           if (request == null) {
-            return const Center(child: Text('Payment request not found', style: TextStyle(color: Colors.black87)));
+            return Center(
+              child: Text(
+                'Payment request not found',
+                style: AppTextStyles.bodyMedium,
+              ),
+            );
           }
           if (!request.isPending) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('This request is no longer pending', style: TextStyle(color: Colors.black87)),
+                  Text(
+                    'This request is no longer pending',
+                    style: AppTextStyles.bodyMedium,
+                  ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () => context.go('/order/$orderId'),
+                    onPressed: () => context.go('/order/${widget.orderId}'),
                     child: const Text('View order'),
                   ),
                 ],
               ),
             );
           }
+
+          final currency = ref.watch(preferredCurrencyProvider);
+
+          // GHS is always the payment currency — Paystack only accepts GHS
+          // regardless of the customer's preferred display currency.
+          // We always show GHS as the primary amount.
+          final ghsCurrency = CurrencyModel(
+            code: 'GHS',
+            symbol: 'GHS',
+            name: 'Ghanaian Cedi',
+            usdToRate:
+                currency.code == 'GHS' ? currency.usdToRate : 15.4,
+            decimalDigits: 0,
+          );
+
+          // We will update ghsRate from the currencies provider — for now use
+          // the preferred currency rate if GHS, else fallback
+          final ghsDisplay = CurrencyFormatter.formatForDisplay(
+            usdAmount: request.amountUsd,
+            preferredCurrency: ghsCurrency,
+          );
+
+          // Preferred currency display shown as secondary if it differs from GHS
+          final preferredDisplay = currency.code == 'GHS'
+              ? null
+              : CurrencyFormatter.format(
+                  request.amountUsd * currency.usdToRate,
+                  currency,
+                );
+
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _AgentHeader(request: request, agentAsync: agentAsync),
-                const SizedBox(height: 24),
-                _AmountHero(request: request),
-                const SizedBox(height: 24),
-                _BreakdownSection(request: request),
-                if (request.type == AppConstants.paymentRequestTypeVehicleBalanceAndShipping &&
+                _HeroCard(
+                  request: request,
+                  agentAsync: agentAsync,
+                  ghsDisplay: ghsDisplay,
+                  preferredDisplay: preferredDisplay,
+                ),
+                const SizedBox(height: 12),
+                _BreakdownCard(request: request, ghsCurrency: ghsCurrency),
+                const SizedBox(height: 8),
+                _ExchangeRateNote(
+                  ghsCurrency: ghsCurrency,
+                  amountUsd: request.amountUsd,
+                ),
+                if (request.type ==
+                        AppConstants
+                            .paymentRequestTypeVehicleBalanceAndShipping &&
                     request.depositDeductedUsd != null) ...[
-                  const SizedBox(height: 16),
-                  _DepositClarityNote(depositDeductedUsd: request.depositDeductedUsd!),
+                  const SizedBox(height: 12),
+                  _DepositClarityNote(
+                    depositDeductedUsd: request.depositDeductedUsd!,
+                  ),
                 ],
-                if (request.type == AppConstants.paymentRequestTypeRepairFee) ...[
-                  const SizedBox(height: 16),
+                if (request.type ==
+                    AppConstants.paymentRequestTypeRepairFee) ...[
+                  const SizedBox(height: 12),
                   _RepairFeeNote(),
                 ],
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.lock_outline_rounded,
+                      size: 12,
+                      color: AppColors.textTertiary,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Secured by Paystack · 256-bit encryption',
+                      style: AppTextStyles.caption,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
                 SizedBox(
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: () => context.push(
-                      '/order/$orderId/payment-request/$requestId/checkout',
-                    ),
+                    onPressed: _paying ? null : () => _onPay(request),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
+                      disabledBackgroundColor: AppColors.secondary.withValues(
+                        alpha: 0.6,
+                      ),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                    child: const Text('Proceed to payment →'),
+                    child: _paying
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.credit_card_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Pay ${ghsDisplay.primary} →',
+                                style: AppTextStyles.buttonLarge,
+                              ),
+                            ],
+                          ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => context.go('/order/$orderId'),
-                  child: const Text('View order details', style: TextStyle(color: Colors.black87)),
+                const SizedBox(height: 10),
+                Center(
+                  child: TextButton(
+                    onPressed: () => context.go('/order/${widget.orderId}'),
+                    child: Text(
+                      'View order details',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
-                const Center(
-                  child: Text(
-                    'PAYMENT REQUEST',
-                    style: TextStyle(color: Colors.black38, fontSize: 12),
-                  ),
-                ),
               ],
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.secondary)),
-        error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.black87))),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.secondary),
+        ),
+        error: (e, _) =>
+            Center(child: Text('Error: $e', style: AppTextStyles.bodyMedium)),
       ),
     );
   }
+
+  Future<void> _onPay(PaymentRequest request) async {
+    if (_paying) return;
+    setState(() => _paying = true);
+
+    try {
+      final user = await ref.read(currentUserProvider.future);
+      if (user == null) {
+        _showError('Could not load your profile. Please try again.');
+        return;
+      }
+
+      if (!mounted) return;
+      final email = await _ensureEmail(context, ref, user);
+      if (email == null || email.trim().isEmpty) {
+        return;
+      }
+
+      if (!mounted) return;
+      late final PaystackInitResult result;
+      try {
+        result = await ref
+            .read(paymentCloudServiceProvider)
+            .initializeTransaction(
+              orderId: widget.orderId,
+              requestId: widget.requestId,
+              email: email.trim(),
+            );
+      } on FirebaseFunctionsException catch (e) {
+        if (mounted) {
+          _showError(
+            e.message ?? 'Could not initialize payment. Please try again.',
+          );
+        }
+        return;
+      } catch (_) {
+        if (mounted) {
+          _showError('Could not initialize payment. Please try again.');
+        }
+        return;
+      }
+
+      ref.read(paymentTimeoutProvider.notifier).start(result.paymentId);
+
+      if (!mounted) return;
+      await launchPaystackCheckout(
+        context: context,
+        authorizationUrl: result.authorizationUrl,
+        reference: result.reference,
+        customerEmail: email.trim(),
+        amountGhs: result.amountGhs,
+      );
+
+      if (mounted) {
+        context.push(
+          '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${result.paymentId}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _paying = false);
+      }
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<String?> _ensureEmail(
+    BuildContext context,
+    WidgetRef ref,
+    AppUser user,
+  ) async {
+    if (user.email != null && user.email!.trim().isNotEmpty) {
+      return user.email!.trim();
+    }
+
+    final email = await showModalBottomSheet<String?>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _EmailGateSheet(userId: user.id, ref: ref),
+    );
+    return email;
+  }
 }
 
-class _AgentHeader extends ConsumerWidget {
+/// Hero card showing agent info, amount due and deadline.
+class _HeroCard extends ConsumerWidget {
+  const _HeroCard({
+    required this.request,
+    required this.agentAsync,
+    required this.ghsDisplay,
+    this.preferredDisplay,
+  });
+
   final PaymentRequest request;
   final AsyncValue<AgentDetailView?> agentAsync;
-
-  const _AgentHeader({required this.request, required this.agentAsync});
+  final CurrencyDisplay ghsDisplay;
+  /// Non-null only when preferred currency differs from GHS
+  final String? preferredDisplay;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final typeLabel = paymentRequestTypeLabel(request.type);
     final sentAt = request.sentAt != null
         ? DateFormat.jm().format(request.sentAt!)
         : 'Just now';
 
-    return Row(
-      children: [
-        agentAsync.when(
-          data: (agent) {
-            return CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.secondary,
-              child: Text(
-                agent?.initials ?? '?',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-              ),
-            );
-          },
-          loading: () => const CircleAvatar(radius: 24, backgroundColor: Colors.grey),
-          error: (_, __) => const CircleAvatar(radius: 24, backgroundColor: Colors.grey, child: Icon(Icons.person)),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Request from ${agentAsync.valueOrNull?.fullName ?? 'Agent'}',
-                style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-              Text(
-                typeLabel,
-                style: const TextStyle(color: Colors.black54, fontSize: 14),
-              ),
-            ],
-          ),
-        ),
-        Text(sentAt, style: const TextStyle(color: Colors.black54, fontSize: 12)),
-      ],
-    );
-  }
-}
+    final typeLabel = paymentRequestTypeLabel(request.type);
 
-class _AmountHero extends ConsumerWidget {
-  const _AmountHero({required this.request});
-
-  final PaymentRequest request;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currency = ref.watch(preferredCurrencyProvider);
-    final display = CurrencyFormatter.formatForDisplay(
-      usdAmount: request.amountUsd,
-      preferredCurrency: currency,
-    );
-    final deadlineWidget = request.deadlineAt != null
-        ? _DeadlinePill(deadlineAt: request.deadlineAt!)
-        : const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'AMOUNT DUE',
-          style: AppTextStyles.labelSmall,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          display.primary,
-          style: AppTextStyles.displaySmall.copyWith(fontSize: 32),
-        ),
-        if (display.hasSecondary) ...[
-          const SizedBox(height: 4),
-          Text(
-            display.secondary!,
-            style: AppTextStyles.bodySmall,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
         ],
-        const SizedBox(height: 8),
-        deadlineWidget,
-      ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                agentAsync.when(
+                  data: (agent) => CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.secondary,
+                    child: Text(
+                      agent?.initials ?? '?',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  loading: () => const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.borderSolid,
+                  ),
+                  error: (_, __) => const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.borderSolid,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Request from ${agentAsync.valueOrNull?.fullName ?? 'Agent'}',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(sentAt, style: AppTextStyles.caption),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AppColors.success,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(height: 0.5, color: AppColors.backgroundSecondary),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('AMOUNT DUE', style: AppTextStyles.sectionLabel),
+                const SizedBox(height: 6),
+                // GHS amount — always primary regardless of preferred currency
+                Text(
+                  ghsDisplay.primary,
+                  style: AppTextStyles.displaySmall.copyWith(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    // Preferred currency badge if not GHS
+                    if (preferredDisplay != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: AppColors.borderSolid,
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Text(
+                          '≈ $preferredDisplay',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    // USD secondary
+                    Text(
+                      '≈ ${CurrencyFormatter.formatUsd(request.amountUsd)}',
+                      style: AppTextStyles.caption,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (request.deadlineAt != null)
+                  _DeadlinePill(deadlineAt: request.deadlineAt!),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.infoBackground,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.credit_card_rounded,
+                      size: 15,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      typeLabel,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -234,7 +544,8 @@ class _DeadlinePill extends StatefulWidget {
   State<_DeadlinePill> createState() => _DeadlinePillState();
 }
 
-class _DeadlinePillState extends State<_DeadlinePill> with SingleTickerProviderStateMixin {
+class _DeadlinePillState extends State<_DeadlinePill>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -273,7 +584,14 @@ class _DeadlinePillState extends State<_DeadlinePill> with SingleTickerProviderS
         color: AppColors.danger,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+      ),
     );
 
     if (within24h) {
@@ -289,84 +607,99 @@ class _DeadlinePillState extends State<_DeadlinePill> with SingleTickerProviderS
   }
 }
 
-class _BreakdownSection extends ConsumerWidget {
-  final PaymentRequest request;
+class _BreakdownCard extends StatelessWidget {
+  const _BreakdownCard({required this.request, required this.ghsCurrency});
 
-  const _BreakdownSection({required this.request});
+  final PaymentRequest request;
+  final CurrencyModel ghsCurrency;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currency = ref.watch(preferredCurrencyProvider);
-    final totalPrimary = CurrencyFormatter.formatForDisplay(
-      usdAmount: request.amountUsd,
-      preferredCurrency: currency,
-    ).primary;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'BREAKDOWN',
-          style: TextStyle(color: Colors.black54, fontSize: 12),
-        ),
-        const SizedBox(height: 12),
-        ...request.breakdown.map((item) => _BreakdownRow(item: item)),
-        const Divider(color: Color(0xFFE0DFD8), height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Total due', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+            child: Text('BREAKDOWN', style: AppTextStyles.sectionLabel),
+          ),
+          Container(height: 0.5, color: AppColors.backgroundSecondary),
+          ...request.breakdown.map((item) {
+            final converted = item.amountUsd * ghsCurrency.usdToRate;
+            final formatted = item.isDeduction
+                ? '−${CurrencyFormatter.format(converted, ghsCurrency)}'
+                : CurrencyFormatter.format(converted, ghsCurrency);
+            return Column(
               children: [
-                Text(
-                  totalPrimary,
-                  style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700, fontSize: 18),
-                ),
-                if (currency.code != 'USD')
-                  Text(
-                    '≈ ${CurrencyFormatter.formatUsd(request.amountUsd)}',
-                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
                   ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.label,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: item.isDeduction
+                                ? AppColors.success
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        formatted,
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: item.isDeduction
+                              ? AppColors.success
+                              : AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 0.5,
+                  color: AppColors.backgroundSecondary,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+              ],
+            );
+          }),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Total due', style: AppTextStyles.titleSmall),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      CurrencyFormatter.format(
+                        request.amountUsd * ghsCurrency.usdToRate,
+                        ghsCurrency,
+                      ),
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (ghsCurrency.code != 'USD')
+                      Text(
+                        '≈ ${CurrencyFormatter.formatUsd(request.amountUsd)}',
+                        style: AppTextStyles.caption,
+                      ),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _BreakdownRow extends ConsumerWidget {
-  final BreakdownItem item;
-
-  const _BreakdownRow({required this.item});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currency = ref.watch(preferredCurrencyProvider);
-    final isDeduction = item.isDeduction;
-    final color = isDeduction ? AppColors.success : Colors.black87;
-
-    final converted = item.amountUsd * currency.usdToRate;
-    final formattedStr = isDeduction
-        ? '−${CurrencyFormatter.format(converted, currency)}'
-        : CurrencyFormatter.format(converted, currency);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              item.label,
-              style: TextStyle(color: color, fontSize: 14),
-            ),
-          ),
-          Text(
-            formattedStr,
-            style: TextStyle(color: color, fontSize: 14),
           ),
         ],
       ),
@@ -392,7 +725,9 @@ class _DepositClarityNote extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
-        border: const Border(left: BorderSide(color: AppColors.success, width: 4)),
+        border: const Border(
+          left: BorderSide(color: AppColors.success, width: 4),
+        ),
       ),
       child: Text(
         'Your 10% deposit of $depositFormatted has been deducted from the vehicle purchase price. You are only paying the remaining balance.',
@@ -410,11 +745,216 @@ class _RepairFeeNote extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.secondary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
-        border: const Border(left: BorderSide(color: AppColors.secondary, width: 4)),
+        border: const Border(
+          left: BorderSide(color: AppColors.secondary, width: 4),
+        ),
       ),
       child: const Text(
         'Garage name and approved quote reference are shown in the breakdown above.',
         style: TextStyle(color: Colors.black87, fontSize: 14),
+      ),
+    );
+  }
+}
+
+class _ExchangeRateNote extends StatelessWidget {
+  const _ExchangeRateNote({
+    required this.ghsCurrency,
+    required this.amountUsd,
+  });
+
+  final CurrencyModel ghsCurrency;
+  final double amountUsd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label:
+          'USD ${amountUsd.toStringAsFixed(2)} equivalent at '
+          '${ghsCurrency.usdToRate.toStringAsFixed(2)} GHS per USD',
+      child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.currency_exchange_rounded,
+            size: 12,
+            color: AppColors.textTertiary,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              '1 USD = GHS ${ghsCurrency.usdToRate.toStringAsFixed(2)}'
+              ' · Payment processed in GHS',
+              style: AppTextStyles.caption,
+            ),
+          ),
+        ],
+      ),
+    ),
+    );
+  }
+}
+
+class _EmailGateSheet extends StatefulWidget {
+  const _EmailGateSheet({required this.userId, required this.ref});
+
+  final String userId;
+  final WidgetRef ref;
+
+  @override
+  State<_EmailGateSheet> createState() => _EmailGateSheetState();
+}
+
+class _EmailGateSheetState extends State<_EmailGateSheet> {
+  final _ctrl = TextEditingController();
+  bool _isSaving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  bool _isValidEmail(String v) {
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim());
+  }
+
+  Future<void> _save() async {
+    final email = _ctrl.text.trim();
+    if (!_isValidEmail(email)) {
+      setState(() {
+        _error = 'Please enter a valid email address';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _error = null;
+    });
+
+    final result = await widget.ref
+        .read(profileRepositoryProvider)
+        .updateEmail(widget.userId, email);
+
+    if (!mounted) return;
+
+    result.fold(
+      (_) {
+        setState(() {
+          _isSaving = false;
+          _error = 'Could not save. Please try again.';
+        });
+      },
+      (_) {
+        widget.ref.invalidate(currentUserProvider);
+        Navigator.of(context).pop(email);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            width: 32,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: AppColors.borderSolid,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          Text('Add your email address', style: AppTextStyles.titleSmall),
+          const SizedBox(height: 8),
+          Text(
+            'Your email is needed to send you a payment receipt. It will be '
+            'saved to your profile for future payments.',
+            style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: 24),
+          Text('EMAIL ADDRESS', style: AppTextStyles.sectionLabel),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _ctrl,
+            autofocus: true,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _save(),
+            style: AppTextStyles.bodyMedium,
+            decoration: InputDecoration(
+              hintText: 'your@email.com',
+              hintStyle: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textTertiary,
+              ),
+              errorText: _error,
+              errorStyle: AppTextStyles.caption.copyWith(
+                color: AppColors.danger,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.borderSolid),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.borderSolid),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColors.secondary,
+                  width: 1.5,
+                ),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 52,
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text('Save & continue →', style: AppTextStyles.buttonLarge),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -13,6 +13,7 @@
 			<array>
 				<string>$(FIREBASE_REVERSED_CLIENT_ID)</string>
 				<string>$(FIREBASE_IOS_URL_SCHEME)</string>
+				<string>autoimportgh</string>
 			</array>
 		</dict>
 	</array>

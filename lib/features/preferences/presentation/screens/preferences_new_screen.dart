@@ -5,7 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/panel_divider.dart';
+import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../catalogue/domain/entities/car_model.dart';
 import '../../../catalogue/presentation/providers/car_catalogue_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -63,81 +67,115 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(preferenceFormProvider);
     final notifier = ref.read(preferenceFormProvider.notifier);
+    final isWeb = AppBreakpoints.isWeb(context);
 
-    return PopScope(
-      canPop: state.currentStep == 1,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) notifier.previousStep();
-      },
-      child: Scaffold(
+    final scaffold = Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          onPressed: () {
+            if (state.currentStep == 1) {
+              context.pop();
+            } else {
+              notifier.previousStep();
+            }
+          },
+        ),
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-            onPressed: () {
-              if (state.currentStep == 1) {
-                context.pop();
-              } else {
-                notifier.previousStep();
-              }
-            },
-          ),
-          backgroundColor: AppColors.background,
-          foregroundColor: AppColors.textPrimary,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          title: Text(
-            'Car preferences',
-            style: GoogleFonts.dmSans(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+        foregroundColor: AppColors.textPrimary,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 52,
+        title: Text(
+          'Car preferences',
+          style: GoogleFonts.dmSans(
+            fontSize: AppBreakpoints.scaledFontSize(
+              isWeb ? 15 : 17,
+              MediaQuery.sizeOf(context).width,
             ),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(0.5),
-            child: Container(height: 0.5, color: AppColors.borderSolid),
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
           ),
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              PreferencesStepProgressBar(
-                displayStep: _displayStep(state),
-                totalSteps: _totalSteps(state),
-              ),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) {
-                    return SlideTransition(
-                      position:
-                          Tween<Offset>(
-                            begin: const Offset(0.06, 0),
-                            end: Offset.zero,
-                          ).animate(
-                            CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutCubic,
-                            ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            PreferencesStepProgressBar(
+              displayStep: _displayStep(state),
+              totalSteps: _totalSteps(state),
+            ),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
+                  return SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0.06, 0),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
                           ),
-                      child: FadeTransition(opacity: animation, child: child),
-                    );
-                  },
-                  child: KeyedSubtree(
-                    key: ValueKey<int>(state.currentStep),
-                    child: _buildStep(context, state, notifier),
-                  ),
+                        ),
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey<int>(state.currentStep),
+                  child: _buildStep(context, state, notifier),
                 ),
               ),
-              PreferencesBottomNavBar(
-                state: state,
-                notifier: notifier,
-                isLoading: _submitting,
-                onConfirm: () => _onConfirm(context, state),
-              ),
-            ],
-          ),
+            ),
+            PreferencesBottomNavBar(
+              state: state,
+              notifier: notifier,
+              isLoading: _submitting,
+              onConfirm: () => _onConfirm(context, state),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (!isWeb) {
+      return PopScope(
+        canPop: state.currentStep == 1,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) notifier.previousStep();
+        },
+        child: scaffold,
+      );
+    }
+
+    return WebAppShell(
+      child: PopScope(
+        canPop: state.currentStep == 1,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) notifier.previousStep();
+        },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final rw = AppBreakpoints.rightPanelWidth(constraints.maxWidth);
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: scaffold),
+                const PanelDivider(),
+                SizedBox(
+                  width: rw,
+                  child: _PreferencesSelectionsSummary(state: state),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -954,6 +992,182 @@ class _StepReview extends ConsumerWidget {
           ),
           const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+}
+
+String? _purchaseOriginLabel(PreferenceFormState state) {
+  return AppConstants.purchaseOriginLabels[state.purchaseOrigin] ??
+      (state.purchaseOrigin.isEmpty ? null : state.purchaseOrigin);
+}
+
+String? _budgetSummary(PreferenceFormState state, CostEstimate? estimate) {
+  if (state.isNewVehicle) return null;
+  if (estimate == null) return null;
+  return '~GHS ${estimate.ghs.toStringAsFixed(0)}';
+}
+
+class _PreferencesSelectionsSummary extends ConsumerWidget {
+  const _PreferencesSelectionsSummary({required this.state});
+
+  final PreferenceFormState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sw = MediaQuery.sizeOf(context).width;
+    final estimate = ref.watch(liveCostEstimateProvider).valueOrNull;
+    final totalSteps = _totalSteps(state);
+
+    return Container(
+      color: AppColors.backgroundSecondary,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderSolid, width: .5),
+              ),
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'YOUR SELECTIONS',
+                style: AppTextStyles.sectionLabel.copyWith(
+                  color: AppColors.textTertiary,
+                  fontSize: AppBreakpoints.scaledFontSize(10, sw),
+                  letterSpacing: .5,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SelectionRow(
+                    label: 'Source',
+                    value: _purchaseOriginLabel(state),
+                  ),
+                  _SelectionRow(
+                    label: 'Make',
+                    value: state.make.isEmpty ? null : state.make,
+                  ),
+                  _SelectionRow(
+                    label: 'Model',
+                    value: state.model.isEmpty ? null : state.model,
+                  ),
+                  _SelectionRow(
+                    label: 'Budget',
+                    value: _budgetSummary(state, estimate),
+                  ),
+                  _SelectionRow(
+                    label: 'Condition',
+                    value: preferenceConditionUiLabel(state.condition),
+                  ),
+                  const SizedBox(height: 14),
+                  _StepsRemainingHint(
+                    currentStep: state.currentStep,
+                    totalSteps: totalSteps,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SelectionRow extends StatelessWidget {
+  const _SelectionRow({required this.label, required this.value});
+
+  final String label;
+  final String? value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.borderSolid, width: .5),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textTertiary,
+            ),
+          ),
+          if (value != null && value!.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.infoBackground,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                value!,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.infoText,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            )
+          else
+            Text(
+              'Not set',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepsRemainingHint extends StatelessWidget {
+  const _StepsRemainingHint({
+    required this.currentStep,
+    required this.totalSteps,
+  });
+
+  final int currentStep;
+  final int totalSteps;
+
+  @override
+  Widget build(BuildContext context) {
+    final stepsLeft = totalSteps - currentStep;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(8),
+        border: const Border(
+          left: BorderSide(color: AppColors.secondary, width: 3),
+        ),
+      ),
+      child: Text(
+        stepsLeft <= 0
+            ? 'Last step'
+            : '$stepsLeft step${stepsLeft == 1 ? '' : 's'} remaining',
+        style: AppTextStyles.labelSmall.copyWith(
+          fontWeight: FontWeight.w500,
+          color: AppColors.textPrimary,
+        ),
       ),
     );
   }

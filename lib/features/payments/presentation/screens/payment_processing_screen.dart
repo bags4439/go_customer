@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../providers/payment_providers.dart';
 
 class PaymentProcessingScreen extends ConsumerWidget {
@@ -48,18 +49,24 @@ class PaymentProcessingScreen extends ConsumerWidget {
                   if (payment?.isConfirmed == true) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       ref.read(paymentTimeoutProvider.notifier).reset();
-                      ref.read(activePaymentProvider(orderId).notifier).state = null;
+                      ref.read(activePaymentProvider(orderId).notifier).state =
+                          null;
                       context.go(
                         '/order/$orderId/payment-request/$requestId/confirmed?paymentId=$paymentId',
                       );
                     });
-                    return const Center(child: CircularProgressIndicator(color: AppColors.secondary));
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.secondary,
+                      ),
+                    );
                   }
-                  return _ProcessingBody(maskedPhone: 'XX XXX XXXX');
+                  return const _ProcessingBody();
                 },
-                loading: () => _ProcessingBody(maskedPhone: 'XX XXX XXXX'),
+                loading: () => const _ProcessingBody(),
                 error: (e, _) => _TimeoutBody(
-                  onTryAgain: () => ref.refresh(paymentStatusProvider(paymentId)),
+                  onTryAgain: () =>
+                      ref.refresh(paymentStatusProvider(paymentId)),
                 ),
               ),
       ),
@@ -68,34 +75,41 @@ class PaymentProcessingScreen extends ConsumerWidget {
 }
 
 class _ProcessingBody extends StatelessWidget {
-  final String maskedPhone;
-
-  const _ProcessingBody({required this.maskedPhone});
+  const _ProcessingBody();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
       child: Column(
         children: [
-          const SizedBox(height: 48),
-          const Icon(Icons.phone_android, size: 80, color: Colors.black45),
-          const SizedBox(height: 24),
-          const Text(
-            'Check your phone',
-            style: TextStyle(color: Colors.black87, fontSize: 22, fontWeight: FontWeight.w700),
+          const SizedBox(
+            width: 64,
+            height: 64,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(height: 28),
+          Text(
+            'Confirming your payment',
+            style: AppTextStyles.titleMedium,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            'A MoMo prompt has been sent to $maskedPhone',
+            'Please wait while we confirm your payment. This usually takes a few seconds.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.black54, fontSize: 16),
           ),
-          const SizedBox(height: 48),
-          _StepItem(label: 'Payment request sent to network', done: true),
-          _StepItem(label: 'Waiting for your PIN approval', active: true),
-          _StepItem(label: 'Payment confirmed', done: false),
-          _StepItem(label: 'Agent notified', done: false),
+          const SizedBox(height: 40),
+          const _StepItem(label: 'Payment submitted to Paystack', done: true),
+          const _StepItem(label: 'Awaiting confirmation', active: true),
+          const _StepItem(label: 'Payment confirmed'),
+          const _StepItem(label: 'Agent notified'),
         ],
       ),
     );
@@ -125,7 +139,10 @@ class _StepItem extends StatelessWidget {
             const SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.secondary),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.secondary,
+              ),
             )
           else
             Container(
@@ -140,7 +157,9 @@ class _StepItem extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: done ? AppColors.success : (active ? Colors.black87 : Colors.black54),
+              color: done
+                  ? AppColors.success
+                  : (active ? Colors.black87 : Colors.black54),
               fontWeight: active ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -151,9 +170,9 @@ class _StepItem extends StatelessWidget {
 }
 
 class _TimeoutBody extends StatelessWidget {
-  final VoidCallback onTryAgain;
-
   const _TimeoutBody({required this.onTryAgain});
+
+  final VoidCallback onTryAgain;
 
   @override
   Widget build(BuildContext context) {
@@ -163,28 +182,47 @@ class _TimeoutBody extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.schedule, size: 64, color: Colors.black45),
+            const Icon(
+              Icons.schedule_rounded,
+              size: 56,
+              color: AppColors.textTertiary,
+            ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Taking longer than expected',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w600),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Your payment may still be processing. You can try again or check your order for updates.',
+            Text(
+              'If you completed the payment, it will be confirmed shortly and your order will update automatically. You can safely go back to your orders.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: onTryAgain,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
               ),
-              child: const Text('Try again'),
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: onTryAgain,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                ),
+                child: const Text('Check again'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => context.go('/home'),
+              child: Text(
+                'Go to my orders',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.secondary,
+                ),
+              ),
             ),
           ],
         ),

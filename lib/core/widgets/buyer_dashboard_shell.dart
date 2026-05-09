@@ -6,43 +6,35 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
+import '../../features/profile/presentation/providers/profile_providers.dart';
+import '../layout/app_breakpoints.dart';
+import '../layout/app_nav_destinations.dart';
+import '../layout/panel_divider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/responsive_layout.dart';
 
 class BuyerDashboardShell extends ConsumerWidget {
-  const BuyerDashboardShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const BuyerDashboardShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
-  static const List<String> _labels = [
-    'Home',
-    'Notifications',
-    'Profile',
-  ];
+  static List<String> get _labels =>
+      AppNavDestinations.items.map((d) => d.label).toList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unread =
-        ref.watch(unreadNotificationCountProvider);
-    final useRail =
-        !ResponsiveLayout.isMobile(context);
-    final extendedRail =
-        ResponsiveLayout.isWeb(context);
+    final unread = ref.watch(unreadNotificationCountProvider);
+    final useRail = !AppBreakpoints.isMobile(context);
+    final extendedRail = AppBreakpoints.isWeb(context);
     final index = navigationShell.currentIndex;
 
-    Widget shellChild = PopScope(
+    return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (index != 0) {
           navigationShell.goBranch(0);
-        } else if (!kIsWeb &&
-            defaultTargetPlatform ==
-                TargetPlatform.android) {
+        } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
           SystemNavigator.pop();
         }
       },
@@ -52,66 +44,25 @@ class BuyerDashboardShell extends ConsumerWidget {
               selectedIndex: index,
               unreadCount: unread,
               onDestinationSelected: (i) =>
-                  _onBranchSelected(
-                      navigationShell, i),
+                  _onBranchSelected(navigationShell, i),
               child: navigationShell,
             )
           : Scaffold(
               backgroundColor: Colors.white,
               extendBody: true,
               body: navigationShell,
-              bottomNavigationBar:
-                  _FloatingNavBar(
+              bottomNavigationBar: _FloatingNavBar(
                 selectedIndex: index,
                 unreadCount: unread,
                 onDestinationSelected: (i) =>
-                    _onBranchSelected(
-                        navigationShell, i),
+                    _onBranchSelected(navigationShell, i),
               ),
             ),
     );
-
-    return Theme(
-      data: Theme.of(context).copyWith(
-        navigationRailTheme:
-            NavigationRailThemeData(
-          backgroundColor: Colors.white,
-          selectedIconTheme: const IconThemeData(
-            color: AppColors.secondary,
-            size: 24,
-          ),
-          unselectedIconTheme:
-              const IconThemeData(
-            color: AppColors.textTertiary,
-            size: 24,
-          ),
-          selectedLabelTextStyle:
-              GoogleFonts.dmSans(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: AppColors.secondary,
-          ),
-          unselectedLabelTextStyle:
-              GoogleFonts.dmSans(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textTertiary,
-          ),
-          indicatorColor: AppColors.secondary
-              .withValues(alpha: 0.12),
-          useIndicator: true,
-        ),
-      ),
-      child: shellChild,
-    );
   }
 
-  void _onBranchSelected(
-    StatefulNavigationShell shell,
-    int i,
-  ) {
-    shell.goBranch(
-        i, initialLocation: i == shell.currentIndex);
+  void _onBranchSelected(StatefulNavigationShell shell, int i) {
+    shell.goBranch(i, initialLocation: i == shell.currentIndex);
   }
 }
 
@@ -146,17 +97,14 @@ class _FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset =
-        MediaQuery.of(context).padding.bottom;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
         24,
         0,
         24,
-        bottomInset > 0
-            ? bottomInset + 8
-            : 16,
+        bottomInset > 0 ? bottomInset + 8 : 16,
       ),
       child: Container(
         height: 64,
@@ -165,14 +113,12 @@ class _FloatingNavBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: Colors.black
-                  .withValues(alpha: 0.10),
+              color: Colors.black.withValues(alpha: 0.10),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
             BoxShadow(
-              color: Colors.black
-                  .withValues(alpha: 0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -185,11 +131,8 @@ class _FloatingNavBar extends StatelessWidget {
               child: _NavTile(
                 item: _items[i],
                 isSelected: selectedIndex == i,
-                badgeCount: i == 1
-                    ? unreadCount
-                    : 0,
-                onTap: () =>
-                    onDestinationSelected(i),
+                badgeCount: i == 1 ? unreadCount : 0,
+                onTap: () => onDestinationSelected(i),
               ),
             ),
           ),
@@ -233,57 +176,43 @@ class _NavTile extends StatelessWidget {
         height: 64,
         child: Center(
           child: AnimatedContainer(
-            duration: const Duration(
-                milliseconds: 220),
+            duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
             padding: EdgeInsets.symmetric(
               horizontal: isSelected ? 18 : 12,
               vertical: 10,
             ),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.secondary
-                  : Colors.transparent,
-              borderRadius:
-                  BorderRadius.circular(24),
+              color: isSelected ? AppColors.secondary : Colors.transparent,
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _IconWithBadge(
-                  icon: isSelected
-                      ? item.activeIcon
-                      : item.icon,
+                  icon: isSelected ? item.activeIcon : item.icon,
                   isSelected: isSelected,
                   badgeCount: badgeCount,
                 ),
                 AnimatedSize(
-                  duration: const Duration(
-                      milliseconds: 220),
+                  duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
                   child: isSelected
                       ? Row(
-                          mainAxisSize:
-                              MainAxisSize.min,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(
-                                width: 6),
+                            const SizedBox(width: 6),
                             Text(
                               item.label,
-                              style: GoogleFonts
-                                  .dmSans(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 13,
-                                fontWeight:
-                                    FontWeight
-                                        .w600,
-                                color:
-                                    Colors.white,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         )
-                      : const SizedBox
-                          .shrink(),
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -310,9 +239,7 @@ class _IconWithBadge extends StatelessWidget {
     final iconWidget = Icon(
       icon,
       size: 22,
-      color: isSelected
-          ? Colors.white
-          : AppColors.textTertiary,
+      color: isSelected ? Colors.white : AppColors.textTertiary,
     );
 
     if (badgeCount <= 0) return iconWidget;
@@ -325,38 +252,21 @@ class _IconWithBadge extends StatelessWidget {
           top: -5,
           right: -7,
           child: Container(
-            constraints: const BoxConstraints(
-              minWidth: 16,
-              minHeight: 16,
-            ),
-            padding: const EdgeInsets
-                .symmetric(
-              horizontal: 4,
-              vertical: 1,
-            ),
+            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? Colors.white
-                  : AppColors.danger,
-              borderRadius:
-                  BorderRadius.circular(8),
+              color: isSelected ? Colors.white : AppColors.danger,
+              borderRadius: BorderRadius.circular(8),
               border: isSelected
                   ? null
-                  : Border.all(
-                      color: Colors.white,
-                      width: 1.5,
-                    ),
+                  : Border.all(color: Colors.white, width: 1.5),
             ),
             child: Text(
-              badgeCount > 99
-                  ? '99+'
-                  : '$badgeCount',
+              badgeCount > 99 ? '99+' : '$badgeCount',
               style: GoogleFonts.dmSans(
                 fontSize: 9.5,
                 fontWeight: FontWeight.w600,
-                color: isSelected
-                    ? AppColors.secondary
-                    : Colors.white,
+                color: isSelected ? AppColors.secondary : Colors.white,
                 height: 1,
               ),
               textAlign: TextAlign.center,
@@ -380,231 +290,432 @@ class _TabletWebLayout extends StatelessWidget {
   final bool extendedRail;
   final int selectedIndex;
   final int unreadCount;
-  final ValueChanged<int> onDestinationSelected;
+  final void Function(int) onDestinationSelected;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(
-        child: Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.stretch,
-          children: [
-            NavigationRail(
-              extended: extendedRail,
-              selectedIndex: selectedIndex,
-              onDestinationSelected:
-                  onDestinationSelected,
-              minWidth: extendedRail ? 88 : 72,
-              minExtendedWidth: 220,
-              leading: _RailBranding(
-                  extended: extendedRail),
-              destinations: [
-                NavigationRailDestination(
-                  icon: const Icon(
-                      Icons.home_outlined),
-                  selectedIcon: const Icon(
-                      Icons.home_rounded),
-                  label: Text(
-                    BuyerDashboardShell
-                        ._labels[0],
+      backgroundColor: AppColors.background,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = constraints.maxWidth;
+          final sw = AppBreakpoints.sidebarWidth(totalWidth);
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (extendedRail)
+                SizedBox(
+                  width: sw,
+                  child: _FullSidebar(
+                    selectedIndex: selectedIndex,
+                    unreadCount: unreadCount,
+                    onDestinationSelected: onDestinationSelected,
+                    availableWidth: totalWidth,
+                  ),
+                )
+              else
+                _IconRail(
+                  selectedIndex: selectedIndex,
+                  unreadCount: unreadCount,
+                  onDestinationSelected: onDestinationSelected,
+                ),
+              const PanelDivider(),
+              Expanded(child: child),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Full-width fluid sidebar on web.
+class _FullSidebar extends ConsumerWidget {
+  const _FullSidebar({
+    required this.selectedIndex,
+    required this.unreadCount,
+    required this.onDestinationSelected,
+    required this.availableWidth,
+  });
+
+  final int selectedIndex;
+  final int unreadCount;
+  final void Function(int) onDestinationSelected;
+  final double availableWidth;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProfileProvider).valueOrNull;
+    final navPad = (10 * (availableWidth / 1200)).clamp(8.0, 14.0);
+
+    return Container(
+      color: AppColors.background,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Brand header
+          Container(
+            height: 64,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderSolid, width: .5),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: const Icon(
+                    Icons.directions_car_filled,
+                    color: Colors.white,
+                    size: 16,
                   ),
                 ),
-                NavigationRailDestination(
-                  icon: _RailNotificationIcon(
-                    outlined: true,
-                    unreadCount: unreadCount,
-                  ),
-                  selectedIcon:
-                      _RailNotificationIcon(
-                    outlined: false,
-                    unreadCount: unreadCount,
-                  ),
-                  label: Text(
-                    BuyerDashboardShell
-                        ._labels[1],
-                  ),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(
-                    Icons.person_outline_rounded,
-                  ),
-                  selectedIcon: const Icon(
-                      Icons.person_rounded),
-                  label: Text(
-                    BuyerDashboardShell
-                        ._labels[2],
+                const SizedBox(width: 8),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'AutoImport',
+                        style: AppTextStyles.titleSmall,
+                      ),
+                      TextSpan(
+                        text: ' GH',
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const VerticalDivider(
-              width: 1,
-              thickness: 1,
-              color: AppColors.borderSolid,
-            ),
-            Expanded(
-              child: Padding(
-                padding:
-                  const EdgeInsets.fromLTRB(
-                    12, 12, 16, 16),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                      BorderRadius.circular(
-                          12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black
-                          .withValues(
-                              alpha: 0.06),
-                        blurRadius: 8,
-                        offset:
-                            const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(
-                          12),
-                    child: child,
-                  ),
-                ),
+          ),
+
+          // Nav items
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(navPad),
+              child: Column(
+                children: [
+                  ...AppNavDestinations.items.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final dest = entry.value;
+                    final isSelected = i == selectedIndex;
+                    final badge = i == 1 ? unreadCount : 0;
+                    return _SidebarNavItem(
+                      label: BuyerDashboardShell._labels[i],
+                      icon: isSelected ? dest.activeIcon : dest.icon,
+                      isSelected: isSelected,
+                      badgeCount: badge,
+                      onTap: () => onDestinationSelected(i),
+                    );
+                  }),
+                ],
               ),
             ),
-          ],
+          ),
+
+          // User footer
+          if (user != null)
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: AppColors.borderSolid, width: .5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: const BoxDecoration(
+                      color: AppColors.infoBackground,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        user.fullName.isNotEmpty
+                            ? user.fullName[0].toUpperCase()
+                            : 'U',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.infoText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.fullName.split(' ').first,
+                          style: AppTextStyles.labelMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${user.country} · ${user.preferredCurrency}',
+                          style: AppTextStyles.caption,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Single nav item in the full
+/// sidebar.
+class _SidebarNavItem extends StatefulWidget {
+  const _SidebarNavItem({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  @override
+  State<_SidebarNavItem> createState() => _SidebarNavItemState();
+}
+
+class _SidebarNavItemState extends State<_SidebarNavItem> {
+  bool _hovered = false;
+
+  Color get _bg {
+    if (widget.isSelected) {
+      return _hovered ? AppColors.hoverSelected : AppColors.infoBackground;
+    }
+    return _hovered ? AppColors.hoverSurface : Colors.transparent;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          decoration: BoxDecoration(
+            color: _bg,
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(9),
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              child: Row(
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 150),
+                    child: Icon(
+                      widget.icon,
+                      key: ValueKey(widget.isSelected),
+                      size: 18,
+                      color: widget.isSelected
+                          ? AppColors.secondary
+                          : AppColors.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.label,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: widget.isSelected
+                            ? FontWeight.w500
+                            : FontWeight.w400,
+                        color: widget.isSelected
+                            ? AppColors.infoText
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  if (widget.badgeCount > 0)
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.danger,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${widget.badgeCount}',
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.white,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _RailBranding extends StatelessWidget {
-  const _RailBranding({required this.extended});
+/// 56px icon rail shown on tablet.
+/// Replaces the old NavigationRail
+/// with a cleaner custom version
+/// consistent with the sidebar.
+class _IconRail extends StatelessWidget {
+  const _IconRail({
+    required this.selectedIndex,
+    required this.unreadCount,
+    required this.onDestinationSelected,
+  });
 
-  final bool extended;
+  final int selectedIndex;
+  final int unreadCount;
+  final void Function(int) onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding:
-          const EdgeInsets.fromLTRB(
-              8, 0, 8, 16),
-      child: extended
-          ? Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary
-                      .withValues(alpha: 0.12),
-                    borderRadius:
-                        BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'AI',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 13,
-                      fontWeight:
-                        FontWeight.w600,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    mainAxisSize:
-                        MainAxisSize.min,
-                    children: [
-                      Text(
-                        'AutoImport',
-                        style:
-                            GoogleFonts.dmSans(
-                          fontSize: 14,
-                          fontWeight:
-                            FontWeight.w600,
-                          color: AppColors
-                              .textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'GH',
-                        style:
-                            GoogleFonts.dmSans(
-                          fontSize: 11,
-                          fontWeight:
-                            FontWeight.w500,
-                          color: AppColors
-                              .textTertiary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            )
-          : Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary
-                      .withValues(alpha: 0.12),
-                    borderRadius:
-                        BorderRadius.circular(10),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'AI',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                ),
-              ],
+    return Container(
+      width: AppBreakpoints.iconRailWidth,
+      color: AppColors.background,
+      child: Column(
+        children: [
+          // Logo mark
+          Padding(
+            padding: const EdgeInsets.only(top: 14, bottom: 12),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.directions_car_filled,
+                color: Colors.white,
+                size: 17,
+              ),
             ),
+          ),
+          const SizedBox(height: 4),
+          // Nav icons
+          ...AppNavDestinations.items.asMap().entries.map((entry) {
+            final i = entry.key;
+            final dest = entry.value;
+            final isSelected = i == selectedIndex;
+            final badge = i == 1 ? unreadCount : 0;
+            return _IconRailItem(
+              icon: isSelected ? dest.activeIcon : dest.icon,
+              label: BuyerDashboardShell._labels[i],
+              isSelected: isSelected,
+              badgeCount: badge,
+              onTap: () => onDestinationSelected(i),
+            );
+          }),
+        ],
+      ),
     );
   }
 }
 
-class _RailNotificationIcon
-    extends StatelessWidget {
-  const _RailNotificationIcon({
-    required this.outlined,
-    required this.unreadCount,
+/// Single icon item in the rail.
+class _IconRailItem extends StatelessWidget {
+  const _IconRailItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.badgeCount = 0,
   });
 
-  final bool outlined;
-  final int unreadCount;
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
-    final icon = Icon(
-      outlined
-          ? Icons.notifications_outlined
-          : Icons.notifications_rounded,
-    );
-    if (unreadCount <= 0) return icon;
-    return Badge(
-      label: Text(
-        unreadCount > 99
-            ? '99+'
-            : '$unreadCount',
-        style: AppTextStyles.caption,
+    return Tooltip(
+      message: label,
+      preferBelow: false,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Material(
+          color: isSelected ? AppColors.infoBackground : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 20,
+                    color: isSelected
+                        ? AppColors.secondary
+                        : AppColors.textTertiary,
+                  ),
+                  if (badgeCount > 0)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppColors.danger,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.background,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
-      child: icon,
     );
   }
 }

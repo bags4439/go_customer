@@ -24,7 +24,6 @@ import 'features/orders/presentation/screens/buyer_review_screen.dart';
 import 'features/orders/presentation/screens/order_detail_screen.dart';
 import 'features/preferences/presentation/screens/order_edit_preferences_screen.dart';
 import 'features/payments/presentation/screens/payment_request_view_screen.dart';
-import 'features/payments/presentation/screens/payment_method_screen.dart';
 import 'features/payments/presentation/screens/payment_processing_screen.dart';
 import 'features/payments/presentation/screens/payment_confirmed_screen.dart';
 import 'features/preferences/presentation/screens/preferences_new_screen.dart';
@@ -39,9 +38,10 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 final router = GoRouter(
   navigatorKey: rootNavigatorKey,
   initialLocation: '/splash',
-  refreshListenable: GoRouterRefreshStream(FirebaseAuth.instance.authStateChanges()),
+  refreshListenable: GoRouterRefreshStream(
+    FirebaseAuth.instance.authStateChanges(),
+  ),
   redirect: (context, state) {
-
     final user = FirebaseAuth.instance.currentUser;
     final location = state.matchedLocation;
     final guestOnlyPaths = <String>{
@@ -142,9 +142,8 @@ final router = GoRouter(
         GoRoute(
           name: RouteConstants.agentConnection,
           path: 'agent-connection',
-          builder: (context, state) => AgentConnectionScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              AgentConnectionScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.paymentRequest,
@@ -154,14 +153,6 @@ final router = GoRouter(
             requestId: state.pathParameters['requestId']!,
           ),
           routes: [
-            GoRoute(
-              name: RouteConstants.paymentCheckout,
-              path: 'checkout',
-              builder: (context, state) => PaymentMethodScreen(
-                orderId: state.pathParameters['orderId']!,
-                requestId: state.pathParameters['requestId']!,
-              ),
-            ),
             GoRoute(
               name: RouteConstants.paymentProcessing,
               path: 'processing',
@@ -191,44 +182,38 @@ final router = GoRouter(
         GoRoute(
           name: RouteConstants.shipping,
           path: 'shipping',
-          builder: (context, state) => ShippingScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              ShippingScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.clearance,
           path: 'clearance',
-          builder: (context, state) => ClearanceScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              ClearanceScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.repair,
           path: 'repair',
-          builder: (context, state) => RepairScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              RepairScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.delivery,
           path: 'delivery',
-          builder: (context, state) => DeliveryScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              DeliveryScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.orderReview,
           path: 'review',
-          builder: (context, state) => BuyerReviewScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              BuyerReviewScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.bidStatus,
           path: 'bid-status',
-          builder: (context, state) => BidStatusScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              BidStatusScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.vehicleDetail,
@@ -256,16 +241,14 @@ final router = GoRouter(
         GoRoute(
           name: RouteConstants.orderCancel,
           path: 'cancel',
-          builder: (context, state) => OrderCancelScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              OrderCancelScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: RouteConstants.orderCancelled,
           path: 'cancelled',
-          builder: (context, state) => OrderCancelledScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) =>
+              OrderCancelledScreen(orderId: state.pathParameters['orderId']!),
         ),
       ],
     ),
@@ -277,9 +260,8 @@ final router = GoRouter(
     GoRoute(
       name: RouteConstants.preferencesEdit,
       path: '/preferences/edit/:orderId',
-      builder: (context, state) => OrderEditPreferencesScreen(
-        orderId: state.pathParameters['orderId']!,
-      ),
+      builder: (context, state) =>
+          OrderEditPreferencesScreen(orderId: state.pathParameters['orderId']!),
     ),
     GoRoute(
       name: RouteConstants.idVerification,
@@ -290,18 +272,14 @@ final router = GoRouter(
   ],
   errorBuilder: (context, state) => Scaffold(
     appBar: AppBar(title: const Text('Not found')),
-    body: Center(
-      child: Text(state.error?.toString() ?? 'Route not found'),
-    ),
+    body: Center(child: Text(state.error?.toString() ?? 'Route not found')),
   ),
 );
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
-    _subscription = stream.asBroadcastStream().listen(
-          (_) => notifyListeners(),
-        );
+    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
 
   late final StreamSubscription<dynamic> _subscription;
@@ -312,4 +290,3 @@ class GoRouterRefreshStream extends ChangeNotifier {
     super.dispose();
   }
 }
-
