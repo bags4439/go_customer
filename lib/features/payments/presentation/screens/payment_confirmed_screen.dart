@@ -103,6 +103,41 @@ class _PaymentConfirmedScreenState
                   const SizedBox(height: 16),
                   const _WhatHappensNext(),
                   const SizedBox(height: 24),
+                  // Receipt note
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.receipt_long_rounded,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Your receipt has been saved to your order '
+                            'documents tab.',
+                            style: AppTextStyles.caption.copyWith(
+                              color: Colors.white.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
@@ -119,34 +154,6 @@ class _PaymentConfirmedScreenState
                       child: Text(
                         'View order →',
                         style: AppTextStyles.buttonLarge,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 48,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _downloadReceipt(payment.id),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor:
-                            Colors.white.withValues(alpha: 0.7),
-                        side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.15),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      icon: Icon(
-                        Icons.download_rounded,
-                        size: 18,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                      label: Text(
-                        'Download receipt',
-                        style: AppTextStyles.buttonMedium.copyWith(
-                          color: Colors.white.withValues(alpha: 0.7),
-                        ),
                       ),
                     ),
                   ),
@@ -176,8 +183,6 @@ class _PaymentConfirmedScreenState
       ),
     );
   }
-
-  void _downloadReceipt(String _) {}
 }
 
 class _DepositNote extends ConsumerWidget {

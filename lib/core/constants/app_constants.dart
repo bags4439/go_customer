@@ -1,6 +1,9 @@
 class AppConstants {
   static const String appName = 'AutoImport GH';
-
+  /// Support email shown on
+  /// receipts and error screens.
+  static const String supportEmail =
+      'support@autoimportgh.com';
   /// Set this to your OneSignal App ID.
   ///
   /// Keeping it as a constant avoids scattering the value across the codebase.
