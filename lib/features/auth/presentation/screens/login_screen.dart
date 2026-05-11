@@ -199,10 +199,9 @@ class LoginScreen extends ConsumerWidget {
 }
 
 /// Left panel for web login layout.
-/// Full bleed photo with dark
-/// gradient overlay and contextual
-/// content tiles per step.
-/// All steps use the same photo.
+/// Full bleed photo, right-edge vignette,
+/// optional step pill (setup steps),
+/// and brand mark.
 class _LoginWebPhotoPanel extends StatelessWidget {
   const _LoginWebPhotoPanel({required this.step});
 
@@ -210,24 +209,32 @@ class _LoginWebPhotoPanel extends StatelessWidget {
 
   static const String _photo = 'assets/onboarding_preference.jpg';
 
-  String _panelKey() {
+  bool _isSetupStep() {
     switch (step) {
-      case LoginStep.phone:
-      case LoginStep.otp:
-        return 'login';
       case LoginStep.name:
-        return 'name';
       case LoginStep.referral:
-        return 'referral';
       case LoginStep.contactChannels:
-        return 'contactChannels';
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  String _stepLabel() {
+    switch (step) {
+      case LoginStep.name:
+        return '1 of 3';
+      case LoginStep.referral:
+        return '2 of 3';
+      case LoginStep.contactChannels:
+        return '3 of 3';
+      default:
+        return '';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final panel = kLoginWebPanels[_panelKey()]!;
-
     return Stack(
       fit: StackFit.expand,
       clipBehavior: Clip.hardEdge,
@@ -240,135 +247,86 @@ class _LoginWebPhotoPanel extends StatelessWidget {
           alignment: Alignment.topCenter,
           filterQuality: FilterQuality.high,
         ),
-        const Positioned.fill(
+        Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
                 colors: [
                   Colors.transparent,
                   Colors.transparent,
-                  Color(0x44000000),
-                  Color(0xBB000000),
-                  Color(0xEE000000),
+                  Colors.black.withValues(alpha: 0.08),
                 ],
-                stops: [0.0, 0.35, 0.55, 0.75, 1.0],
+                stops: const [0.0, 0.7, 1.0],
               ),
             ),
           ),
         ),
+        if (_isSetupStep())
+          Positioned(
+            top: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: .5,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _stepLabel(),
+                  style: AppTextStyles.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 10,
+                    letterSpacing: .3,
+                  ),
+                ),
+              ),
+            ),
+          ),
         Positioned(
           bottom: 24,
-          left: 24,
-          right: 24,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _PanelContent(
-              key: ValueKey<String>(_panelKey()),
-              panel: panel,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PanelContent extends StatelessWidget {
-  const _PanelContent({super.key, required this.panel});
-
-  final LoginWebPanel panel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          panel.eyebrow,
-          style: AppTextStyles.sectionLabel.copyWith(
-            color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 9,
-            letterSpacing: .7,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          panel.heading,
-          style: AppTextStyles.displaySmall.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            height: 1.25,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          panel.subheading,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 11,
-            height: 1.6,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...panel.tiles.map(
-          (tile) => Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.09),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.13),
-                  width: .5,
+          left: 0,
+          right: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: .5,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                borderRadius: BorderRadius.circular(8),
+                child: const Icon(
+                  Icons.directions_car_filled,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: tile.iconBg.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(
-                      tile.icon,
-                      size: 14,
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tile.label,
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 11,
-                          ),
-                        ),
-                        if (tile.sublabel != null)
-                          Text(
-                            tile.sublabel!,
-                            style: AppTextStyles.caption.copyWith(
-                              color: Colors.white.withValues(alpha: 0.55),
-                              fontSize: 10,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 8),
+              Text(
+                'AutoImport GH',
+                style: AppTextStyles.caption.copyWith(
+                  color: Colors.white.withValues(alpha: 0.35),
+                  fontSize: 9,
+                  letterSpacing: .5,
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ],
@@ -409,6 +367,15 @@ class _LoginWebActionPanel extends StatelessWidget {
         return 1.0;
       default:
         return 0;
+    }
+  }
+
+  Color get _progressColor {
+    switch (state.step) {
+      case LoginStep.referral:
+        return const Color(0xFF8C6B00);
+      default:
+        return AppColors.secondary;
     }
   }
 
@@ -477,7 +444,7 @@ class _LoginWebActionPanel extends StatelessWidget {
                           width: barWidth,
                           height: 3,
                           decoration: BoxDecoration(
-                            color: AppColors.secondary,
+                            color: _progressColor,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -728,7 +695,9 @@ class _StyledTextFieldState extends State<_StyledTextField> {
         border: Border.all(
           color: widget.hasError
               ? const Color(0xFFE24B4A)
-              :  const Color(0xFFE0DFD8),
+              : _focused
+              ? const Color(0xFF378ADD)
+              : const Color(0xFFE0DFD8),
           width: 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
@@ -1754,7 +1723,7 @@ class _PhoneInputFieldState extends ConsumerState<_PhoneInputField> {
               ),
             ),
           ),
-          SizedBox(width: 16,)
+          SizedBox(width: 16),
         ],
       ),
     );
@@ -1923,7 +1892,7 @@ class _PhoneFieldWithDialCodeState
               ),
             ),
           ),
-          const SizedBox(width: 16,),
+          const SizedBox(width: 16),
         ],
       ),
     );
@@ -2586,37 +2555,47 @@ class _NameStepState extends ConsumerState<_NameStep>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 48),
-                FadeTransition(
-                  opacity: _emojiFade,
-                  child: ScaleTransition(
-                    scale: _emojiScale,
-                    child: Center(
-                      child: _IllustrationWidget(
-                        painter: _PersonIllustrationPainter(
-                          AppColors.secondary,
+                if (!ResponsiveLayout.isWeb(context)) ...[
+                  const SizedBox(height: 48),
+                  FadeTransition(
+                    opacity: _emojiFade,
+                    child: ScaleTransition(
+                      scale: _emojiScale,
+                      child: Center(
+                        child: _IllustrationWidget(
+                          painter: _PersonIllustrationPainter(
+                            AppColors.secondary,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                ],
+                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 24),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'What should we call you?',
+                        ResponsiveLayout.isWeb(context)
+                            ? 'It all starts\nwith a name.'
+                            : 'What should we call you?',
                         style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
+                          fontSize: ResponsiveLayout.isWeb(context) ? 22 : 24,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Your agent will use your name to address you.',
+                        ResponsiveLayout.isWeb(context)
+                            ? 'Your agent is a real person who will address '
+                                  'you by name throughout your entire import '
+                                  'journey.'
+                            : 'Your agent will use your name to address you.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),
+                          fontSize: ResponsiveLayout.isWeb(context) ? 12 : null,
                         ),
                       ),
                     ],
@@ -2624,7 +2603,16 @@ class _NameStepState extends ConsumerState<_NameStep>
                   _headingFade,
                   _headingSlide,
                 ),
-                const SizedBox(height: 32),
+                if (ResponsiveLayout.isWeb(context))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _WebContextTiles(
+                      tiles: kLoginWebPanels['name']!.tiles,
+                    ),
+                  ),
+                if (!ResponsiveLayout.isWeb(context))
+                  const SizedBox(height: 32),
+                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 12),
                 _fadeSlide(
                   _loginWebFieldCard(
                     context,
@@ -2833,37 +2821,47 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
-                FadeTransition(
-                  opacity: _emojiFade,
-                  child: ScaleTransition(
-                    scale: _emojiScale,
-                    child: Center(
-                      child: _IllustrationWidget(
-                        painter: _ReferralIllustrationPainter(
-                          AppColors.secondary,
+                if (!ResponsiveLayout.isWeb(context)) ...[
+                  const SizedBox(height: 40),
+                  FadeTransition(
+                    opacity: _emojiFade,
+                    child: ScaleTransition(
+                      scale: _emojiScale,
+                      child: Center(
+                        child: _IllustrationWidget(
+                          painter: _ReferralIllustrationPainter(
+                            AppColors.secondary,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                ],
+                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 24),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Do you have a referral code?',
+                        ResponsiveLayout.isWeb(context)
+                            ? 'Share the journey.\nEarn rewards.'
+                            : 'Do you have a referral code?',
                         style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
+                          fontSize: ResponsiveLayout.isWeb(context) ? 22 : 24,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Enter a friend\'s code — they\'ll get a reward when you join.',
+                        ResponsiveLayout.isWeb(context)
+                            ? 'If a friend referred you, enter their code. '
+                                  'They earn a reward when you complete your '
+                                  'first order.'
+                            : 'Enter a friend\'s code — they\'ll get a reward when you join.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),
+                          fontSize: ResponsiveLayout.isWeb(context) ? 12 : null,
                         ),
                       ),
                     ],
@@ -2871,7 +2869,16 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                   _headingFade,
                   _headingSlide,
                 ),
-                const SizedBox(height: 32),
+                if (ResponsiveLayout.isWeb(context))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _WebContextTiles(
+                      tiles: kLoginWebPanels['referral']!.tiles,
+                    ),
+                  ),
+                if (!ResponsiveLayout.isWeb(context))
+                  const SizedBox(height: 32),
+                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 12),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3100,38 +3107,49 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
-                FadeTransition(
-                  opacity: _emojiFade,
-                  child: ScaleTransition(
-                    scale: _emojiScale,
-                    child: Center(
-                      child: _IllustrationWidget(
-                        painter: _BellIllustrationPainter(AppColors.secondary),
+                if (!ResponsiveLayout.isWeb(context)) ...[
+                  const SizedBox(height: 40),
+                  FadeTransition(
+                    opacity: _emojiFade,
+                    child: ScaleTransition(
+                      scale: _emojiScale,
+                      child: Center(
+                        child: _IllustrationWidget(
+                          painter: _BellIllustrationPainter(
+                            AppColors.secondary,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                ],
+                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 24),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Stay in the loop',
+                        ResponsiveLayout.isWeb(context)
+                            ? 'Never miss\na moment.'
+                            : 'Stay in the loop',
                         style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
+                          fontSize: ResponsiveLayout.isWeb(context) ? 22 : 24,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'We will keep you updated on your order progress. '
-                        'Your phone number has been pre-filled — update it if '
-                        'you use a different number for these channels.',
+                        ResponsiveLayout.isWeb(context)
+                            ? 'We\'ll keep you updated on your order progress '
+                                  'via the channels you choose.'
+                            : 'We will keep you updated on your order progress. '
+                                  'Your phone number has been pre-filled — update it if '
+                                  'you use a different number for these channels.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),
                           height: 1.5,
+                          fontSize: ResponsiveLayout.isWeb(context) ? 12 : null,
                         ),
                       ),
                     ],
@@ -3139,7 +3157,16 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                   _headingFade,
                   _headingSlide,
                 ),
-                const SizedBox(height: 32),
+                if (ResponsiveLayout.isWeb(context))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _WebContextTiles(
+                      tiles: kLoginWebPanels['contactChannels']!.tiles,
+                    ),
+                  ),
+                if (!ResponsiveLayout.isWeb(context))
+                  const SizedBox(height: 32),
+                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 12),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3334,6 +3361,95 @@ class _ContactFieldLabel extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Grouped context tiles shown
+/// on the right action panel for
+/// web setup steps.
+/// Uses a coloured left border
+/// accent to distinguish from
+/// interactive form field cards.
+class _WebContextTiles extends StatelessWidget {
+  const _WebContextTiles({required this.tiles});
+
+  final List<LoginWebTile> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAFAF8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFECEAE4), width: .5),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < tiles.length; i++)
+            _WebContextTile(tile: tiles[i], isFirst: i == 0),
+        ],
+      ),
+    );
+  }
+}
+
+class _WebContextTile extends StatelessWidget {
+  const _WebContextTile({required this.tile, required this.isFirst});
+
+  final LoginWebTile tile;
+  final bool isFirst;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: tile.accentColor, width: 2.5),
+          top: isFirst
+              ? BorderSide.none
+              : const BorderSide(color: Color(0xFFF0EFE9), width: .5),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
+      child: Row(
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: tile.iconBg,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(tile.icon, size: 13, color: tile.iconColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tile.label,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    fontSize: 11,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (tile.sublabel != null)
+                  Text(
+                    tile.sublabel!,
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

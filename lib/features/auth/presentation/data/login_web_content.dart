@@ -27,6 +27,7 @@ class LoginWebTile {
     required this.icon,
     required this.iconBg,
     required this.iconColor,
+    required this.accentColor,
     required this.label,
     this.sublabel,
   });
@@ -34,6 +35,11 @@ class LoginWebTile {
   final IconData icon;
   final Color iconBg;
   final Color iconColor;
+
+  /// Left border accent colour
+  /// for the context tile on web
+  final Color accentColor;
+
   final String label;
 
   /// Optional second line of text
@@ -60,6 +66,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.map_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
+        accentColor: Color(0xFF378ADD),
         label: '48+ vehicles imported',
         sublabel: 'Across Ghana',
       ),
@@ -67,6 +74,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.star_outline_rounded,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
+        accentColor: Color(0xFF1D9E75),
         label: '4.9 ★ customer rating',
         sublabel: 'Average across all orders',
       ),
@@ -74,6 +82,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.receipt_long_outlined,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
+        accentColor: Color(0xFFBA7517),
         label: '100% transparent pricing',
         sublabel: 'No hidden fees ever',
       ),
@@ -93,6 +102,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.person_outline_rounded,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
+        accentColor: Color(0xFF378ADD),
         label:
             'Your agent knows who'
             ' to contact',
@@ -101,6 +111,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.chat_bubble_outline_rounded,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
+        accentColor: Color(0xFF1D9E75),
         label:
             'Personal communication'
             ' throughout',
@@ -109,6 +120,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.verified_outlined,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
+        accentColor: Color(0xFFBA7517),
         label:
             'Required for port'
             ' clearance documents',
@@ -129,6 +141,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.card_giftcard_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
+        accentColor: Color(0xFF378ADD),
         label: 'GHS 500 reward',
         sublabel: 'Per successful referral',
       ),
@@ -136,6 +149,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.flash_on_outlined,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
+        accentColor: Color(0xFF1D9E75),
         label: 'Instant credit',
         sublabel: 'Applied on order completion',
       ),
@@ -143,6 +157,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.people_outline_rounded,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
+        accentColor: Color(0xFFBA7517),
         label: 'No limit on referrals',
         sublabel: 'Refer as many as you want',
       ),
@@ -161,6 +176,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.sms_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
+        accentColor: Color(0xFF378ADD),
         label: 'SMS',
         sublabel:
             'Payment requests and'
@@ -170,6 +186,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.chat_outlined,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
+        accentColor: Color(0xFF1D9E75),
         label: 'WhatsApp',
         sublabel:
             'Rich updates with order'
@@ -179,6 +196,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         icon: Icons.mail_outline_rounded,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
+        accentColor: Color(0xFFBA7517),
         label: 'Email',
         sublabel:
             'Payment receipts and'
