@@ -10,9 +10,12 @@ import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/constants/route_constants.dart';
 import '../../../../core/layout/auth_split_layout.dart';
 import '../../../../core/layout/dark_split_panel.dart';
 import '../../../../core/utils/responsive_layout.dart';
+import '../data/login_web_content.dart';
+import '../widgets/auth_visual_widgets.dart';
 import '../../domain/entities/country.dart';
 import '../notifiers/login_notifier.dart';
 import '../notifiers/login_state.dart';
@@ -37,6 +40,42 @@ class LoginScreen extends ConsumerWidget {
 
     final state = ref.watch(loginNotifierProvider);
     final notifier = ref.read(loginNotifierProvider.notifier);
+    final isWeb = ResponsiveLayout.isWeb(context);
+
+    if (isWeb) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        resizeToAvoidBottomInset: false,
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 6,
+                      child: _LoginWebPhotoPanel(step: state.step),
+                    ),
+                    SizedBox(
+                      width: 400,
+                      child: _LoginWebActionPanel(
+                        state: state,
+                        notifier: notifier,
+                        stepWidget: _stepWidget(state, notifier),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -84,24 +123,14 @@ class LoginScreen extends ConsumerWidget {
       case LoginStep.otp:
         return const DarkSplitPanel(
           eyebrow: 'TRUSTED BY BUYERS ACROSS GHANA',
-          heading:
-              'Your car, sourced globally.\nDelivered to your door.',
+          heading: 'Your car, sourced globally.\nDelivered to your door.',
           subheading:
               'From US auctions to Dubai dealers — your dedicated agent '
               'manages everything so you don\'t have to.',
           stats: [
-            DarkPanelStat(
-              value: '48+',
-              label: 'Vehicles imported',
-            ),
-            DarkPanelStat(
-              value: '100%',
-              label: 'Transparent pricing',
-            ),
-            DarkPanelStat(
-              value: '4.9★',
-              label: 'Customer rating',
-            ),
+            DarkPanelStat(value: '48+', label: 'Vehicles imported'),
+            DarkPanelStat(value: '100%', label: 'Transparent pricing'),
+            DarkPanelStat(value: '4.9★', label: 'Customer rating'),
           ],
         );
       case LoginStep.name:
@@ -123,14 +152,8 @@ class LoginScreen extends ConsumerWidget {
               'Have a friend\'s referral code? Enter it to reward them for '
               'introducing you to AutoImport GH.',
           stats: [
-            DarkPanelStat(
-              value: 'GHS 500',
-              label: 'Reward per referral',
-            ),
-            DarkPanelStat(
-              value: 'Instant',
-              label: 'Credit on completion',
-            ),
+            DarkPanelStat(value: 'GHS 500', label: 'Reward per referral'),
+            DarkPanelStat(value: 'Instant', label: 'Credit on completion'),
           ],
         );
       case LoginStep.contactChannels:
@@ -149,14 +172,12 @@ class LoginScreen extends ConsumerWidget {
             DarkPanelAccentItem(
               color: Color(0xFF1D9E75),
               title: 'WhatsApp',
-              subtitle:
-                  'Rich updates with order details and agent messages.',
+              subtitle: 'Rich updates with order details and agent messages.',
             ),
             DarkPanelAccentItem(
               color: Color(0xFFBA7517),
               title: 'Email',
-              subtitle:
-                  'Payment receipts and full order summaries.',
+              subtitle: 'Payment receipts and full order summaries.',
             ),
           ],
         );
@@ -177,9 +198,360 @@ class LoginScreen extends ConsumerWidget {
   }
 }
 
+/// Left panel for web login layout.
+/// Full bleed photo with dark
+/// gradient overlay and contextual
+/// content tiles per step.
+/// All steps use the same photo.
+class _LoginWebPhotoPanel extends StatelessWidget {
+  const _LoginWebPhotoPanel({required this.step});
+
+  final LoginStep step;
+
+  static const String _photo = 'assets/onboarding_preference.jpg';
+
+  String _panelKey() {
+    switch (step) {
+      case LoginStep.phone:
+      case LoginStep.otp:
+        return 'login';
+      case LoginStep.name:
+        return 'name';
+      case LoginStep.referral:
+        return 'referral';
+      case LoginStep.contactChannels:
+        return 'contactChannels';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final panel = kLoginWebPanels[_panelKey()]!;
+
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.hardEdge,
+      children: [
+        Image.asset(
+          _photo,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          alignment: Alignment.topCenter,
+          filterQuality: FilterQuality.high,
+        ),
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Color(0x44000000),
+                  Color(0xBB000000),
+                  Color(0xEE000000),
+                ],
+                stops: [0.0, 0.35, 0.55, 0.75, 1.0],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 24,
+          left: 24,
+          right: 24,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _PanelContent(
+              key: ValueKey<String>(_panelKey()),
+              panel: panel,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PanelContent extends StatelessWidget {
+  const _PanelContent({super.key, required this.panel});
+
+  final LoginWebPanel panel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          panel.eyebrow,
+          style: AppTextStyles.sectionLabel.copyWith(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 9,
+            letterSpacing: .7,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          panel.heading,
+          style: AppTextStyles.displaySmall.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            height: 1.25,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          panel.subheading,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Colors.white.withValues(alpha: 0.6),
+            fontSize: 11,
+            height: 1.6,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...panel.tiles.map(
+          (tile) => Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.09),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.13),
+                  width: .5,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: tile.iconBg.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      tile.icon,
+                      size: 14,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tile.label,
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                          ),
+                        ),
+                        if (tile.sublabel != null)
+                          Text(
+                            tile.sublabel!,
+                            style: AppTextStyles.caption.copyWith(
+                              color: Colors.white.withValues(alpha: 0.55),
+                              fontSize: 10,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Right panel for web login layout.
+/// Off-white #F5F4F0 background with
+/// logo, optional progress bar,
+/// and the existing step form widget
+/// unchanged inside a scroll view.
+class _LoginWebActionPanel extends StatelessWidget {
+  const _LoginWebActionPanel({
+    required this.state,
+    required this.notifier,
+    required this.stepWidget,
+  });
+
+  final LoginState state;
+  // Reserved for future web-only actions; step widgets use notifier directly.
+  // ignore: unused_field
+  final LoginNotifier notifier;
+  final Widget stepWidget;
+
+  bool get _isSetupStep =>
+      state.step == LoginStep.name ||
+      state.step == LoginStep.referral ||
+      state.step == LoginStep.contactChannels;
+
+  double get _progressFraction {
+    switch (state.step) {
+      case LoginStep.name:
+        return 1 / 3;
+      case LoginStep.referral:
+        return 2 / 3;
+      case LoginStep.contactChannels:
+        return 1.0;
+      default:
+        return 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+            child: Row(
+              children: [
+                const AuthAppLogo(fontSize: 16),
+                const Spacer(),
+                if (!_isSetupStep)
+                  OutlinedButton(
+                    onPressed: () => context.goNamed(RouteConstants.onboarding),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.secondary,
+                      side: BorderSide(color: AppColors.borderSolid, width: .5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      minimumSize: const Size(0, 34),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Create account',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (_isSetupStep)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final barWidth = constraints.maxWidth * _progressFraction;
+                  return Stack(
+                    children: [
+                      Container(
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: AppColors.borderSolid,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeOutCubic,
+                          width: barWidth,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          Expanded(child: stepWidget),
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.borderSolid, width: .5),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _isSetupStep
+                      ? 'Already have an account? '
+                      : 'New to AutoImport GH? ',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => context.goNamed(
+                    _isSetupStep
+                        ? RouteConstants.login
+                        : RouteConstants.onboarding,
+                  ),
+                  child: Text(
+                    _isSetupStep ? 'Sign in' : 'Create account',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // Shared widgets
 // ─────────────────────────────────────────────────────────────
+
+/// White elevated card for setup-step fields on web only.
+Widget _loginWebFieldCard(BuildContext context, {required Widget child}) {
+  if (!ResponsiveLayout.isWeb(context)) return child;
+  return Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 4,
+          offset: const Offset(0, 1),
+        ),
+      ],
+    ),
+    child: child,
+  );
+}
 
 class _AuthResponsiveWrapper extends StatelessWidget {
   final Widget child;
@@ -189,24 +561,25 @@ class _AuthResponsiveWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 260,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.secondary.withValues(alpha: 0.07),
-                  AppColors.secondary.withValues(alpha: 0.0),
-                ],
+        if (ResponsiveLayout.isMobile(context))
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 260,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.secondary.withValues(alpha: 0.07),
+                    AppColors.secondary.withValues(alpha: 0.0),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
         Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -216,7 +589,12 @@ class _AuthResponsiveWrapper extends StatelessWidget {
               padding: ResponsiveLayout.contentPadding(
                 context,
               ).copyWith(top: 0, bottom: 40),
-              child: child,
+              child: ColoredBox(
+                color: ResponsiveLayout.isWeb(context)
+                    ? AppColors.surface
+                    : Colors.white,
+                child: child,
+              ),
             ),
           ),
         ),
@@ -345,16 +723,13 @@ class _StyledTextFieldState extends State<_StyledTextField> {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
-      height: 56,
       decoration: BoxDecoration(
         color: widget.hasError ? const Color(0xFFFCEBEB) : Colors.white,
         border: Border.all(
           color: widget.hasError
               ? const Color(0xFFE24B4A)
-              : _focused
-              ? const Color(0xFF378ADD)
-              : const Color(0xFFE0DFD8),
-          width: (_focused || widget.hasError) ? 1.5 : 1.0,
+              :  const Color(0xFFE0DFD8),
+          width: 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -1056,24 +1431,36 @@ class _OtpInputRowState extends State<_OtpInputRow>
           GestureDetector(
             onTap: () => _focusNode.requestFocus(),
             behavior: HitTestBehavior.opaque,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(6, (i) {
-                final text = i < _controller.text.length
-                    ? _controller.text[i]
-                    : '';
-                final isFocused =
-                    _focusNode.hasFocus &&
-                    i == _controller.text.length &&
-                    i < 6;
-                final isFilled = text.isNotEmpty;
-                return _OtpBox(
-                  text: text,
-                  isFocused: isFocused,
-                  isFilled: isFilled,
-                  hasError: widget.hasError,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const totalGap = 5 * 8.0;
+                final boxW = ((constraints.maxWidth - totalGap) / 6).clamp(
+                  0.0,
+                  52.0,
                 );
-              }),
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(6, (i) {
+                    final text = i < _controller.text.length
+                        ? _controller.text[i]
+                        : '';
+                    final isFocused =
+                        _focusNode.hasFocus &&
+                        i == _controller.text.length &&
+                        i < 6;
+                    final isFilled = text.isNotEmpty;
+                    return SizedBox(
+                      width: boxW,
+                      child: _OtpBox(
+                        text: text,
+                        isFocused: isFocused,
+                        isFilled: isFilled,
+                        hasError: widget.hasError,
+                      ),
+                    );
+                  }),
+                );
+              },
             ),
           ),
         ],
@@ -1096,44 +1483,47 @@ class _OtpBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = ResponsiveLayout.contentPadding(context);
-    final screenW = MediaQuery.sizeOf(context).width;
-    final maxContent = ResponsiveLayout.contentMaxWidth(context);
-    final contentW = maxContent.isFinite ? maxContent : screenW;
-    final availableW = contentW - padding.horizontal - (5 * 8.0);
-    final boxW = (availableW / 6).clamp(0.0, 52.0);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: boxW,
-      height: 56,
-      decoration: BoxDecoration(
-        color: hasError
-            ? const Color(0xFFFCEBEB)
-            : isFocused
-            ? const Color(0xFFEBF4FD)
-            : Colors.white,
-        border: Border.all(
-          color: hasError
-              ? const Color(0xFFE24B4A)
-              : isFocused
-              ? const Color(0xFF378ADD)
-              : isFilled
-              ? const Color(0xFF378ADD)
-              : const Color(0xFFE0DFD8),
-          width: (isFocused || hasError) ? 2.0 : 1.0,
-        ),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Text(
-          text,
-          style: AppTextStyles.titleLarge.copyWith(
-            fontWeight: FontWeight.w600,
-            color: hasError ? const Color(0xFFE24B4A) : const Color(0xFF1A1A18),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boxW = constraints.maxWidth.isFinite
+            ? constraints.maxWidth.clamp(0.0, 52.0)
+            : (((MediaQuery.sizeOf(context).width * 0.6) - (5 * 8.0)) / 6)
+                  .clamp(0.0, 52.0);
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: boxW,
+          height: 56,
+          decoration: BoxDecoration(
+            color: hasError
+                ? const Color(0xFFFCEBEB)
+                : isFocused
+                ? const Color(0xFFEBF4FD)
+                : Colors.white,
+            border: Border.all(
+              color: hasError
+                  ? const Color(0xFFE24B4A)
+                  : isFocused
+                  ? const Color(0xFF378ADD)
+                  : isFilled
+                  ? const Color(0xFF378ADD)
+                  : const Color(0xFFE0DFD8),
+              width: (isFocused || hasError) ? 2.0 : 1.0,
+            ),
+            borderRadius: BorderRadius.circular(10),
           ),
-        ),
-      ),
+          child: Center(
+            child: Text(
+              text,
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w600,
+                color: hasError
+                    ? const Color(0xFFE24B4A)
+                    : const Color(0xFF1A1A18),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -1364,6 +1754,7 @@ class _PhoneInputFieldState extends ConsumerState<_PhoneInputField> {
               ),
             ),
           ),
+          SizedBox(width: 16,)
         ],
       ),
     );
@@ -1465,7 +1856,7 @@ class _PhoneFieldWithDialCodeState
         border: Border.all(
           color: widget.hasError
               ? AppColors.danger
-              : _focused || _pickerOpen
+              : _pickerOpen
               ? AppColors.secondary
               : AppColors.borderSolid,
           width: (widget.hasError || _focused || _pickerOpen) ? 1.5 : 1.0,
@@ -1532,6 +1923,7 @@ class _PhoneFieldWithDialCodeState
               ),
             ),
           ),
+          const SizedBox(width: 16,),
         ],
       ),
     );
@@ -2187,7 +2579,8 @@ class _NameStepState extends ConsumerState<_NameStep>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _OnboardingProgressBar(current: 0, total: 3),
+        if (!ResponsiveLayout.isWeb(context))
+          const _OnboardingProgressBar(current: 0, total: 3),
         Expanded(
           child: _AuthResponsiveWrapper(
             child: Column(
@@ -2233,53 +2626,59 @@ class _NameStepState extends ConsumerState<_NameStep>
                 ),
                 const SizedBox(height: 32),
                 _fadeSlide(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'FULL NAME',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: const Color(0xFFAAAAAA),
-                          letterSpacing: 0.5,
+                  _loginWebFieldCard(
+                    context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'FULL NAME',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: const Color(0xFFAAAAAA),
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      _StyledTextField(
-                        hintText: 'e.g. Kwame Mensah',
-                        controller: _nameCtrl,
-                        textCapitalization: TextCapitalization.words,
-                        textInputAction: TextInputAction.done,
-                        onSubmit: notifier.completeProfile,
-                        hasError: nameFieldHasError,
-                        autofocus: true,
-                      ),
-                      _InlineError(error: nameInlineError),
-                    ],
+                        const SizedBox(height: 8),
+                        _StyledTextField(
+                          hintText: 'e.g. Kwame Mensah',
+                          controller: _nameCtrl,
+                          textCapitalization: TextCapitalization.words,
+                          textInputAction: TextInputAction.done,
+                          onSubmit: notifier.completeProfile,
+                          hasError: nameFieldHasError,
+                          autofocus: true,
+                        ),
+                        _InlineError(error: nameInlineError),
+                      ],
+                    ),
                   ),
                   _fieldFade,
                   _fieldSlide,
                 ),
                 const SizedBox(height: 16),
                 _fadeSlide(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'COUNTRY',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: const Color(0xFFAAAAAA),
-                          letterSpacing: 0.5,
+                  _loginWebFieldCard(
+                    context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'COUNTRY',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: const Color(0xFFAAAAAA),
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      _CountryPickerField(
-                        selectedCountry: displayCountry,
-                        onTap: _openCountryPicker,
-                        hasError: countryFieldHasError,
-                        isActive: _countrySheetOpen,
-                      ),
-                      _InlineError(error: countryInlineError),
-                    ],
+                        const SizedBox(height: 8),
+                        _CountryPickerField(
+                          selectedCountry: displayCountry,
+                          onTap: _openCountryPicker,
+                          hasError: countryFieldHasError,
+                          isActive: _countrySheetOpen,
+                        ),
+                        _InlineError(error: countryInlineError),
+                      ],
+                    ),
                   ),
                   _countryFade,
                   _countrySlide,
@@ -2427,7 +2826,8 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
           ),
         ),
         const SizedBox(height: 8),
-        const _OnboardingProgressBar(current: 1, total: 3),
+        if (!ResponsiveLayout.isWeb(context))
+          const _OnboardingProgressBar(current: 1, total: 3),
         Expanded(
           child: _AuthResponsiveWrapper(
             child: Column(
@@ -2693,7 +3093,8 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
           ),
         ),
         const SizedBox(height: 8),
-        const _OnboardingProgressBar(current: 2, total: 3),
+        if (!ResponsiveLayout.isWeb(context))
+          const _OnboardingProgressBar(current: 2, total: 3),
         Expanded(
           child: _AuthResponsiveWrapper(
             child: Column(
@@ -2743,74 +3144,99 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const _ContactFieldLabel(
-                        label: 'SMS NUMBER',
-                        isRequired: true,
-                      ),
-                      const SizedBox(height: 8),
-                      _PhoneFieldWithDialCode(
-                        initialDialCode: state.smsDialCode,
-                        initialFlag: state.smsCountryFlag,
-                        initialDigits: state.smsPhone,
-                        onDialCodeChanged: (code, flag) =>
-                            notifier.updateSmsDialCode(code, flag),
-                        onDigitsChanged: notifier.updateSmsPhone,
-                        hasError:
-                            hasError &&
-                            state.smsPhone
-                                .replaceAll(RegExp(r'\D'), '')
-                                .isEmpty,
-                      ),
-                      _InlineError(
-                        error:
-                            hasError &&
-                                state.smsPhone
-                                    .replaceAll(RegExp(r'\D'), '')
-                                    .isEmpty
-                            ? state.error
-                            : null,
-                      ),
-                      const SizedBox(height: 20),
-                      const _ContactFieldLabel(
-                        label: 'WHATSAPP NUMBER',
-                        isRequired: false,
-                      ),
-                      const SizedBox(height: 8),
-                      _PhoneFieldWithDialCode(
-                        initialDialCode: state.whatsappDialCode,
-                        initialFlag: state.whatsappCountryFlag,
-                        initialDigits: state.whatsappPhone,
-                        onDialCodeChanged: (code, flag) =>
-                            notifier.updateWhatsappDialCode(code, flag),
-                        onDigitsChanged: notifier.updateWhatsappPhone,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Make sure this number has WhatsApp installed.',
-                        style: AppTextStyles.caption.copyWith(
-                          color: const Color(0xFFAAAAAA),
+                      _loginWebFieldCard(
+                        context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _ContactFieldLabel(
+                              label: 'SMS NUMBER',
+                              isRequired: true,
+                            ),
+                            const SizedBox(height: 8),
+                            _PhoneFieldWithDialCode(
+                              initialDialCode: state.smsDialCode,
+                              initialFlag: state.smsCountryFlag,
+                              initialDigits: state.smsPhone,
+                              onDialCodeChanged: (code, flag) =>
+                                  notifier.updateSmsDialCode(code, flag),
+                              onDigitsChanged: notifier.updateSmsPhone,
+                              hasError:
+                                  hasError &&
+                                  state.smsPhone
+                                      .replaceAll(RegExp(r'\D'), '')
+                                      .isEmpty,
+                            ),
+                            _InlineError(
+                              error:
+                                  hasError &&
+                                      state.smsPhone
+                                          .replaceAll(RegExp(r'\D'), '')
+                                          .isEmpty
+                                  ? state.error
+                                  : null,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const _ContactFieldLabel(
-                        label: 'EMAIL ADDRESS',
-                        isRequired: false,
+                      _loginWebFieldCard(
+                        context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _ContactFieldLabel(
+                              label: 'WHATSAPP NUMBER',
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 8),
+                            _PhoneFieldWithDialCode(
+                              initialDialCode: state.whatsappDialCode,
+                              initialFlag: state.whatsappCountryFlag,
+                              initialDigits: state.whatsappPhone,
+                              onDialCodeChanged: (code, flag) =>
+                                  notifier.updateWhatsappDialCode(code, flag),
+                              onDigitsChanged: notifier.updateWhatsappPhone,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Make sure this number has WhatsApp installed.',
+                              style: AppTextStyles.caption.copyWith(
+                                color: const Color(0xFFAAAAAA),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      _StyledTextField(
-                        hintText: 'your@email.com',
-                        controller: _emailCtrl,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.done,
-                        onSubmit: notifier.saveContactChannelsAndFinish,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Required for payment receipts. You will be asked to '
-                        'add it before your first payment if left empty.',
-                        style: AppTextStyles.caption.copyWith(
-                          color: const Color(0xFFAAAAAA),
-                          height: 1.4,
+                      const SizedBox(height: 20),
+                      _loginWebFieldCard(
+                        context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _ContactFieldLabel(
+                              label: 'EMAIL ADDRESS',
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 8),
+                            _StyledTextField(
+                              hintText: 'your@email.com',
+                              controller: _emailCtrl,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.done,
+                              onSubmit: notifier.saveContactChannelsAndFinish,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Required for payment receipts. You will be '
+                              'asked to add it before your first payment if '
+                              'left empty.',
+                              style: AppTextStyles.caption.copyWith(
+                                color: const Color(0xFFAAAAAA),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
