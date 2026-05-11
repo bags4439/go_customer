@@ -5,9 +5,8 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/layout/app_breakpoints.dart';
-import '../../../../core/layout/auth_split_layout.dart';
-import '../../../../core/layout/dark_split_panel.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../data/onboarding_web_content.dart';
 import '../widgets/auth_visual_widgets.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -67,51 +66,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
-  DarkSplitPanel _panelForSlide(int index) {
-    switch (index) {
-      case 0:
-        return const DarkSplitPanel(
-          eyebrow: 'WHAT YOUR PREFERENCES LOOK LIKE',
-          heading: 'Simple to set up.\nPowerful for your agent.',
-          subheading:
-              'Tell us what you want and your dedicated agent gets to work '
-              'immediately.',
-        );
-      case 1:
-        return const DarkSplitPanel(
-          eyebrow: 'YOUR AGENT IN ACTION',
-          heading: 'A real person,\nworking for you.',
-          subheading:
-              'Your agent communicates directly, sends real options, and answers '
-              'your questions personally.',
-          quote: DarkPanelQuote(
-            initials: 'E',
-            name: 'Ernest · Senior Agent',
-            text:
-                '"I found 3 matching vehicles at Copart. Here are the estimates '
-                'and condition reports."',
-          ),
-        );
-      case 2:
-        return const DarkSplitPanel(
-          eyebrow: 'YOUR IMPORT JOURNEY',
-          heading: '9 stages.\nFull visibility.',
-          subheading:
-              'Track every step in real time. Your agent keeps you informed '
-              'throughout the entire journey.',
-        );
-      case 3:
-      default:
-        return const DarkSplitPanel(
-          eyebrow: "WHAT HAPPENS WHEN YOU'RE DONE",
-          heading: 'Your car. Delivered.\nJust as you ordered.',
-          subheading:
-              'Your agent confirms delivery and you rate your experience. '
-              'Simple, transparent, end to end.',
-        );
-    }
-  }
-
   @override
   void dispose() {
     _controller.dispose();
@@ -123,6 +77,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       context.goNamed(RouteConstants.register);
       return;
     }
+    if (!mounted) return;
+    if (AppBreakpoints.isWeb(context)) {
+      setState(() => _index++);
+      return;
+    }
     _controller.nextPage(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
@@ -131,6 +90,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _previous() {
     if (_index == 0) return;
+    if (!mounted) return;
+    if (AppBreakpoints.isWeb(context)) {
+      setState(() => _index--);
+      return;
+    }
     _controller.previousPage(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
@@ -153,70 +117,44 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
 
     if (isWeb) {
+      final slide = kOnboardingWebSlides[_index];
       return Scaffold(
-        backgroundColor: Colors.white,
-        body: AuthSplitLayout(
-          form: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const AuthAppLogo(fontSize: 20),
-                      TextButton(
-                        onPressed: () => context.goNamed(RouteConstants.login),
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(48, 48),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          'Sign in',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF378ADD),
-                          ),
-                        ),
+        backgroundColor: AppColors.surface,
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 6,
+                      child: _WebPhotoPanel(
+                        slide: slide,
+                        slideIndex: _index,
+                        totalSlides: _slides.length,
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(
+                      width: 400,
+                      child: _WebActionPanel(
+                        slide: slide,
+                        slideIndex: _index,
+                        totalSlides: _slides.length,
+                        onNext: _next,
+                        onPrevious: _previous,
+                        onSkip: () =>
+                            context.goNamed(RouteConstants.login),
+                      ),
+                    ),
+                  ],
                 ),
-                const Divider(height: .5, thickness: .5),
-                Expanded(
-                  child: PageView.builder(
-                    controller: _controller,
-                    itemCount: _slides.length,
-                    onPageChanged: (v) => setState(() => _index = v),
-                    itemBuilder: (context, index) {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: _OnboardingSlideContent(
-                              slide: _slides[index],
-                              index: index,
-                              totalSlides: _slides.length,
-                              currentIndex: _index,
-                              onNext: _next,
-                              onSkip: () =>
-                                  context.goNamed(RouteConstants.login),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                controls,
-              ],
+              ),
             ),
           ),
-          panel: _panelForSlide(_index),
         ),
       );
     }
@@ -849,6 +787,462 @@ class _BackArrowButton extends StatelessWidget {
           color: Colors.white,
           size: 16,
         ),
+      ),
+    );
+  }
+}
+
+/// Left panel — full bleed photo
+/// with dark gradient overlay,
+/// slide counter pill and optional
+/// agent quote tile.
+class _WebPhotoPanel extends StatelessWidget {
+  const _WebPhotoPanel({
+    required this.slide,
+    required this.slideIndex,
+    required this.totalSlides,
+  });
+
+  final OnboardingWebSlide slide;
+  final int slideIndex;
+  final int totalSlides;
+
+  static const _images = [
+    'assets/onboarding_preference.jpg',
+    'assets/onboarding_agent.jpg',
+    'assets/onboarding_journey.jpg',
+    'assets/onboarding_ready.jpg',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.hardEdge,
+      children: [
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          child: Image.asset(
+            _images[slideIndex],
+            key: ValueKey<int>(slideIndex),
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            alignment: Alignment.topCenter,
+            filterQuality: FilterQuality.high,
+          ),
+        ),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Color(0x44000000),
+                  Color(0xBB000000),
+                  Color(0xEE000000),
+                ],
+                stops: [
+                  0.0,
+                  0.35,
+                  0.55,
+                  0.75,
+                  1.0,
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 20,
+          left: 20,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 5,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+                width: 0.5,
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: slide.accentColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Slide ${slideIndex + 1} of $totalSlides',
+                  style: AppTextStyles.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (slide.quote != null)
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.09),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  width: 0.5,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: AppColors.secondary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        slide.quote!.initials,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          slide.quote!.name,
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          slide.quote!.text,
+                          style: AppTextStyles.caption.copyWith(
+                            color: Colors.white.withValues(alpha: 0.65),
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Right panel — off-white
+/// background with logo, dots,
+/// title, subtitle, white card
+/// feature tiles and CTA button.
+class _WebActionPanel extends StatelessWidget {
+  const _WebActionPanel({
+    required this.slide,
+    required this.slideIndex,
+    required this.totalSlides,
+    required this.onNext,
+    required this.onPrevious,
+    required this.onSkip,
+  });
+
+  final OnboardingWebSlide slide;
+  final int slideIndex;
+  final int totalSlides;
+  final VoidCallback onNext;
+  final VoidCallback onPrevious;
+  final VoidCallback onSkip;
+
+  bool get _isLast => slideIndex == totalSlides - 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+            child: Row(
+              children: [
+                const AuthAppLogo(fontSize: 16),
+                const Spacer(),
+                OutlinedButton(
+                  onPressed: () =>
+                      context.goNamed(RouteConstants.login),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.secondary,
+                    side: const BorderSide(
+                      color: AppColors.borderSolid,
+                      width: 0.5,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    minimumSize: const Size(0, 34),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'Sign in',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (slideIndex > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          onPressed: onPrevious,
+                          icon: Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 16,
+                            color: AppColors.textSecondary,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 40,
+                            minHeight: 40,
+                          ),
+                        ),
+                      ),
+                    ),
+                  Row(
+                    children: List.generate(
+                      totalSlides,
+                      (i) {
+                        final active = i == slideIndex;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.only(right: 5),
+                          width: active ? 18 : 5,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: active
+                                ? slide.accentColor
+                                : AppColors.borderSolid,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    slide.eyebrow,
+                    style: AppTextStyles.sectionLabel.copyWith(
+                      color: AppColors.textTertiary,
+                      fontSize: 9,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    slide.title,
+                    style: AppTextStyles.displaySmall.copyWith(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    slide.subtitle,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  ...slide.tiles.map(
+                    (tile) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: tile.iconBg,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                tile.icon,
+                                size: 16,
+                                color: tile.iconColor,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                tile.label,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 12,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton(
+                      onPressed: onNext,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: slide.accentColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            slide.buttonLabel,
+                            style: AppTextStyles.buttonMedium.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: TextButton(
+                      onPressed: onSkip,
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 36),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        _isLast
+                            ? 'Already have an account? Sign in'
+                            : 'Skip for now',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.borderSolid,
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Have an account? ',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () =>
+                      context.goNamed(RouteConstants.login),
+                  child: Text(
+                    'Sign in',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
