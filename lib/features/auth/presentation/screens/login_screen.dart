@@ -263,6 +263,13 @@ class _LoginWebPhotoPanel extends StatelessWidget {
             ),
           ),
         ),
+        if (!_isSetupStep())
+          Positioned(
+            bottom: 100,
+            left: 20,
+            right: 20,
+            child: _LoginPhotoPanelContent(step: step),
+          ),
         if (_isSetupStep())
           Positioned(
             top: 20,
@@ -2008,36 +2015,54 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
     final phoneLooksComplete =
         phoneDigits.length >= 7 && phoneDigits.length <= 15;
 
+    final isWeb = ResponsiveLayout.isWeb(context);
+
     return _AuthResponsiveWrapper(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 60),
-          _animated(
-            Center(
-              child: _IllustrationWidget(
-                painter: _PhoneIllustrationPainter(AppColors.secondary),
+          if (!isWeb) ...[
+            const SizedBox(height: 60),
+            _animated(
+              Center(
+                child: _IllustrationWidget(
+                  painter: _PhoneIllustrationPainter(AppColors.secondary),
+                ),
               ),
+              _logoFade,
+              _logoSlide,
             ),
-            _logoFade,
-            _logoSlide,
-          ),
-          const SizedBox(height: 44),
+            const SizedBox(height: 44),
+          ] else
+            const SizedBox(height: 24),
           _animated(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (isWeb)
+                  Text(
+                    'SIGN IN',
+                    style: AppTextStyles.sectionLabel.copyWith(
+                      fontSize: 9,
+                      letterSpacing: .8,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                if (isWeb) const SizedBox(height: 3),
                 Text(
-                  'Enter your phone number',
+                  isWeb ? 'Welcome back.' : 'Enter your phone number',
                   style: AppTextStyles.titleLarge.copyWith(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
+                    fontSize: isWeb ? 22 : 24,
+                    fontWeight: isWeb ? FontWeight.w500 : FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'We\'ll send a 6-digit verification code',
+                  isWeb
+                      ? 'Enter your phone number to receive a verification code.'
+                      : 'We\'ll send a 6-digit verification code',
                   style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: isWeb ? 12 : null,
                     color: const Color(0xFF666666),
                   ),
                 ),
@@ -2046,41 +2071,53 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
             _headingFade,
             _headingSlide,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+          if (isWeb)
+            _animated(
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _WebContextTiles(tiles: kLoginWebPanels['login']!.tiles),
+              ),
+              _fieldFade,
+              _fieldSlide,
+            ),
+          if (!isWeb) const SizedBox(height: 16),
           _animated(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PHONE NUMBER',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFFAAAAAA),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _PhoneInputField(
-                  initialDigits: state.phone,
-                  dialCode: state.dialCode,
-                  countryFlag: state.countryFlag,
-                  onChanged: notifier.updatePhone,
-                  onSubmit: notifier.requestOtp,
-                  onDialSelected: notifier.updateDialCode,
-                ),
-                _InlineError(error: showError ? state.error : null),
-                if (!showError) ...[
-                  const SizedBox(height: 6),
+            _loginWebFieldCard(
+              context,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    state.phone.isNotEmpty
-                        ? 'Sending to ${state.dialCode} '
-                              '${state.phone}'
-                        : 'We\'ll send a code to this number',
-                    style: AppTextStyles.cardLabel.copyWith(
+                    'PHONE NUMBER',
+                    style: AppTextStyles.labelSmall.copyWith(
                       color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  _PhoneInputField(
+                    initialDigits: state.phone,
+                    dialCode: state.dialCode,
+                    countryFlag: state.countryFlag,
+                    onChanged: notifier.updatePhone,
+                    onSubmit: notifier.requestOtp,
+                    onDialSelected: notifier.updateDialCode,
+                  ),
+                  _InlineError(error: showError ? state.error : null),
+                  if (!showError) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      state.phone.isNotEmpty
+                          ? 'Sending to ${state.dialCode} ${state.phone}'
+                          : 'We\'ll send a code to this number',
+                      style: AppTextStyles.cardLabel.copyWith(
+                        color: const Color(0xFFAAAAAA),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
             _fieldFade,
             _fieldSlide,
@@ -2213,6 +2250,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
   Widget build(BuildContext context) {
     final state = widget.state;
     final notifier = widget.notifier;
+    final isWeb = ResponsiveLayout.isWeb(context);
     final otpError = state.error != null && state.step == LoginStep.otp;
 
     return _AuthResponsiveWrapper(
@@ -2232,68 +2270,140 @@ class _OtpStepState extends ConsumerState<_OtpStep>
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(
-                  child: _IllustrationWidget(
-                    painter: _ShieldIllustrationPainter(AppColors.secondary),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Enter verification code',
-                      style: AppTextStyles.titleLarge.copyWith(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                      ),
+                if (!isWeb) ...[
+                  Center(
+                    child: _IllustrationWidget(
+                      painter: _ShieldIllustrationPainter(AppColors.secondary),
                     ),
-                    const SizedBox(height: 8),
-                    Text.rich(
-                      TextSpan(
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFF666666),
+                  ),
+                  const SizedBox(height: 28),
+                ],
+                if (isWeb)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${state.dialCode} ${state.phone}',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                            fontSize: 12,
+                          ),
                         ),
-                        children: [
-                          const TextSpan(text: 'Sent to '),
-                          TextSpan(
-                            text: '${state.dialCode} ${state.phone}',
-                            style: AppTextStyles.bodyMedium.copyWith(
+                        const SizedBox(width: 8),
+                        Text(
+                          '·',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: const Color(0xFFAAAAAA),
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: notifier.goBackToPhone,
+                          child: Text(
+                            'Change',
+                            style: AppTextStyles.bodySmall.copyWith(
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1A1A18),
+                              color: AppColors.secondary,
+                              fontSize: 12,
                             ),
                           ),
-                          const TextSpan(text: '  ·  '),
-                          WidgetSpan(
-                            alignment: PlaceholderAlignment.baseline,
-                            baseline: TextBaseline.alphabetic,
-                            child: GestureDetector(
-                              onTap: notifier.goBackToPhone,
-                              child: Text(
-                                'Change',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.secondary,
-                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (isWeb)
+                  Text(
+                    'VERIFICATION',
+                    style: AppTextStyles.sectionLabel.copyWith(
+                      fontSize: 9,
+                      letterSpacing: .8,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                if (isWeb) const SizedBox(height: 3),
+                Text(
+                  isWeb ? 'Enter your code.' : 'Enter verification code',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontSize: isWeb ? 22 : 24,
+                    fontWeight: isWeb ? FontWeight.w500 : FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (!isWeb)
+                  Text.rich(
+                    TextSpan(
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: const Color(0xFF666666),
+                      ),
+                      children: [
+                        const TextSpan(text: 'Sent to '),
+                        TextSpan(
+                          text: '${state.dialCode} ${state.phone}',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF1A1A18),
+                          ),
+                        ),
+                        const TextSpan(text: '  ·  '),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.baseline,
+                          baseline: TextBaseline.alphabetic,
+                          child: GestureDetector(
+                            onTap: notifier.goBackToPhone,
+                            child: Text(
+                              'Change',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.secondary,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                if (isWeb) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Check your SMS for the 6-digit verification code.',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: 12,
+                      color: const Color(0xFF666666),
+                    ),
+                  ),
+                ],
               ],
             ),
             _headingFade,
             _headingSlide,
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 24),
           _fadeSlide(
-            _OtpInputRow(
-              onChanged: notifier.updateOtp,
-              onCompleted: notifier.verifyOtp,
-              hasError: otpError,
+            _loginWebFieldCard(
+              context,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isWeb) ...[
+                    Text(
+                      '6-DIGIT CODE',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: const Color(0xFFAAAAAA),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  _OtpInputRow(
+                    onChanged: notifier.updateOtp,
+                    onCompleted: notifier.verifyOtp,
+                    hasError: otpError,
+                  ),
+                ],
+              ),
             ),
             _otpFade,
             _otpSlide,
@@ -3443,6 +3553,148 @@ class _WebContextTile extends StatelessWidget {
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 10,
                       color: AppColors.textTertiary,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Content overlaid on the photo
+/// panel for login and OTP steps.
+/// Shows eyebrow, heading,
+/// subheading and accent-border
+/// tiles on the dark photo.
+class _LoginPhotoPanelContent extends StatelessWidget {
+  const _LoginPhotoPanelContent({required this.step});
+
+  final LoginStep step;
+
+  @override
+  Widget build(BuildContext context) {
+    assert(
+      step == LoginStep.phone || step == LoginStep.otp,
+      '_LoginPhotoPanelContent is only for phone/otp steps',
+    );
+    final panel = kLoginWebPanels['login']!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          panel.eyebrow,
+          style: AppTextStyles.sectionLabel.copyWith(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 9,
+            letterSpacing: .7,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          panel.heading,
+          style: AppTextStyles.titleLarge.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            height: 1.25,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          panel.subheading,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Colors.white.withValues(alpha: 0.6),
+            fontSize: 11,
+            height: 1.6,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: .5,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < panel.tiles.length; i++)
+                _DarkContextTile(tile: panel.tiles[i], isFirst: i == 0),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A single context tile rendered
+/// on the dark photo panel.
+/// Uses white-tinted colours
+/// instead of coloured backgrounds.
+class _DarkContextTile extends StatelessWidget {
+  const _DarkContextTile({required this.tile, required this.isFirst});
+
+  final LoginWebTile tile;
+  final bool isFirst;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: tile.accentColor, width: 2.5),
+          top: isFirst
+              ? BorderSide.none
+              : BorderSide(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: .5,
+                ),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
+      child: Row(
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: tile.accentColor.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              tile.icon,
+              size: 13,
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tile.label,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    fontSize: 11,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (tile.sublabel != null)
+                  Text(
+                    tile.sublabel!,
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10,
+                      color: Colors.white.withValues(alpha: 0.55),
                     ),
                   ),
               ],

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,8 +7,6 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/layout/app_breakpoints.dart';
-import '../../../../core/layout/auth_split_layout.dart';
-import '../../../../core/layout/dark_split_panel.dart';
 import '../widgets/auth_visual_widgets.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -57,10 +56,17 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1200),
     )..repeat();
 
-    Future<void>.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      context.goNamed(RouteConstants.onboarding);
-    });
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.goNamed(RouteConstants.onboarding);
+      });
+    } else {
+      Future<void>.delayed(const Duration(seconds: 2), () {
+        if (!mounted) return;
+        context.goNamed(RouteConstants.onboarding);
+      });
+    }
   }
 
   @override
@@ -79,27 +85,48 @@ class _SplashScreenState extends State<SplashScreen>
       shimmerController: _shimmerController,
     );
 
+    if (AppBreakpoints.isWeb(context)) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Expanded(flex: 6, child: _SplashWebPhotoPanel()),
+                    SizedBox(
+                      width: 400,
+                      child: _SplashWebActionPanel(
+                        logoOpacity: _logoOpacity,
+                        logoScale: _logoScale,
+                        taglineOpacity: _taglineOpacity,
+                        shimmerController: _shimmerController,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: AppBreakpoints.isMobile(context)
           ? form
-          : AppBreakpoints.isWeb(context)
-              ? AuthSplitLayout(
-                  form: form,
-                  panel: const DarkSplitPanel(
-                    heading:
-                        'Your car, sourced globally.\nDelivered to your door.',
-                    subheading:
-                        'From US auctions to Dubai dealers — your dedicated '
-                        'agent manages everything end to end.',
-                  ),
-                )
-              : _SplashTabletContent(
-                  logoOpacity: _logoOpacity,
-                  logoScale: _logoScale,
-                  taglineOpacity: _taglineOpacity,
-                  shimmerController: _shimmerController,
-                ),
+          : _SplashTabletContent(
+              logoOpacity: _logoOpacity,
+              logoScale: _logoScale,
+              taglineOpacity: _taglineOpacity,
+              shimmerController: _shimmerController,
+            ),
     );
   }
 }
@@ -146,10 +173,7 @@ class _SplashFormContent extends StatelessWidget {
                 builder: (context, child) {
                   return FadeTransition(
                     opacity: logoOpacity,
-                    child: ScaleTransition(
-                      scale: logoScale,
-                      child: child,
-                    ),
+                    child: ScaleTransition(scale: logoScale, child: child),
                   );
                 },
                 child: const AuthAppLogo(fontSize: 28),
@@ -268,10 +292,7 @@ class _SplashTabletContent extends StatelessWidget {
                 builder: (context, child) {
                   return FadeTransition(
                     opacity: logoOpacity,
-                    child: ScaleTransition(
-                      scale: logoScale,
-                      child: child,
-                    ),
+                    child: ScaleTransition(scale: logoScale, child: child),
                   );
                 },
                 child: const AuthAppLogo(fontSize: 28),
@@ -326,6 +347,226 @@ class _SplashTabletContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Left panel for web splash.
+/// Full bleed photo with subtle
+/// right-edge vignette and brand
+/// mark at bottom centre.
+class _SplashWebPhotoPanel extends StatelessWidget {
+  const _SplashWebPhotoPanel();
+
+  static const String _photo = 'assets/onboarding_preference.jpg';
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.hardEdge,
+      children: [
+        Image.asset(
+          _photo,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          alignment: Alignment.topCenter,
+          filterQuality: FilterQuality.high,
+        ),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.08),
+                ],
+                stops: const [0.0, 0.7, 1.0],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 24,
+          left: 0,
+          right: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: .5,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.directions_car_filled,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'AutoImport GH',
+                style: AppTextStyles.caption.copyWith(
+                  color: Colors.white.withValues(alpha: 0.35),
+                  fontSize: 9,
+                  letterSpacing: .5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Right panel for web splash.
+/// Off-white #F5F4F0 background
+/// with centred logo, tagline
+/// and shimmer loading indicator.
+class _SplashWebActionPanel extends StatelessWidget {
+  const _SplashWebActionPanel({
+    required this.logoOpacity,
+    required this.logoScale,
+    required this.taglineOpacity,
+    required this.shimmerController,
+  });
+
+  final Animation<double> logoOpacity;
+  final Animation<double> logoScale;
+  final Animation<double> taglineOpacity;
+  final AnimationController shimmerController;
+
+  static const Color _shimmerColor = Color(0xFF378ADD);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+            child: const AuthAppLogo(fontSize: 16),
+          ),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FadeTransition(
+                      opacity: logoOpacity,
+                      child: ScaleTransition(
+                        scale: logoScale,
+                        child: Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.secondary.withValues(
+                                  alpha: 0.25,
+                                ),
+                                blurRadius: 20,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.directions_car_filled,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    FadeTransition(
+                      opacity: logoOpacity,
+                      child: RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.titleLarge.copyWith(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          children: [
+                            const TextSpan(text: 'AutoImport '),
+                            TextSpan(
+                              text: 'GH',
+                              style: AppTextStyles.titleLarge.copyWith(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    FadeTransition(
+                      opacity: taglineOpacity,
+                      child: Text(
+                        'Import your dream car from anywhere in the world.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    AnimatedBuilder(
+                      animation: shimmerController,
+                      builder: (context, child) {
+                        final t = shimmerController.value;
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(1),
+                          child: SizedBox(
+                            width: 48,
+                            height: 2,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment(-1.0 + 2 * t, 0),
+                                  end: Alignment(1.0 + 2 * t, 0),
+                                  colors: [
+                                    Colors.transparent,
+                                    _shimmerColor,
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.5, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
