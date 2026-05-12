@@ -533,9 +533,23 @@ class _AuthResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveLayout.isWeb(context);
+
+    // On web the step widgets live inside a fixed 400px right panel — do not
+    // apply any max-width constraint or large horizontal padding. Use the full
+    // panel width with only 24px padding matching the onboarding _WebActionPanel.
+    // On mobile and tablet keep the existing behaviour.
+    final maxWidth =
+        isWeb ? double.infinity : ResponsiveLayout.contentMaxWidth(context);
+
+    final padding = isWeb
+        ? const EdgeInsets.fromLTRB(24, 0, 24, 40)
+        : ResponsiveLayout.contentPadding(context)
+            .copyWith(top: 0, bottom: 40);
+
     return Stack(
       children: [
-        if (ResponsiveLayout.isMobile(context))
+        if (!isWeb)
           Positioned(
             top: 0,
             left: 0,
@@ -556,17 +570,11 @@ class _AuthResponsiveWrapper extends StatelessWidget {
           ),
         Center(
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: ResponsiveLayout.contentMaxWidth(context),
-            ),
+            constraints: BoxConstraints(maxWidth: maxWidth),
             child: SingleChildScrollView(
-              padding: ResponsiveLayout.contentPadding(
-                context,
-              ).copyWith(top: 0, bottom: 40),
+              padding: padding,
               child: ColoredBox(
-                color: ResponsiveLayout.isWeb(context)
-                    ? AppColors.surface
-                    : Colors.white,
+                color: isWeb ? AppColors.surface : Colors.white,
                 child: child,
               ),
             ),
