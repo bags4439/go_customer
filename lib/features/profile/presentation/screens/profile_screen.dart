@@ -114,37 +114,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   PreferredSizeWidget _buildProfileAppBar(BuildContext context) {
-    if (AppBreakpoints.isMobile(context)) {
-      return AppBar(
-        title: Text(
-          ProfileConstants.appBarTitle,
-          style: AppTextStyles.appBarTitle.copyWith(color: Colors.black),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: ProfileUi.border),
-        ),
-        actions: const [GuideHelpButton()],
-      );
-    }
-
     return AppBar(
-      backgroundColor: AppColors.surface,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      automaticallyImplyLeading: false,
-      titleSpacing: 20,
-      centerTitle: false,
       title: Text(
         ProfileConstants.appBarTitle,
-        style: AppTextStyles.appBarTitle,
+        style: AppTextStyles.appBarTitle.copyWith(color: Colors.black),
       ),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      scrolledUnderElevation: 0,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(height: 0.5, color: AppColors.borderSolid),
+        child: Container(color: ProfileUi.border),
       ),
       actions: const [GuideHelpButton()],
     );
@@ -165,7 +145,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           _startSectionAnimations();
         }
         final isWeb = AppBreakpoints.isWeb(context);
-        final appBar = _buildProfileAppBar(context);
         final backgroundColor = isWeb ? AppColors.surface : Colors.white;
         final Widget body = user == null
             ? const ProfileBodyShimmer()
@@ -275,9 +254,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           animation: _sectionAnimations[5]!,
                           title: ProfileConstants.sectionSession,
                           hasUnsaved: false,
-                          child: ProfileSessionSection(
-                            sessions: sessions,
-                          ),
+                          child: ProfileSessionSection(sessions: sessions),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -326,7 +303,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
         return Scaffold(
           backgroundColor: backgroundColor,
-          appBar: appBar,
+          appBar: _buildProfileAppBar(context),
           body: body,
         );
       },
