@@ -13,6 +13,7 @@ import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/widgets/web_dashboard_right_panel.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
@@ -68,9 +69,7 @@ class HomeScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(buyerOrdersProvider);
     final currentUserAsync = ref.watch(currentUserProfileProvider);
     final pendingPayments = ref.watch(pendingPaymentCountProvider);
-    final pendingReviews = ref.watch(
-      pendingReviewCountProvider,
-    );
+    final pendingReviews = ref.watch(pendingReviewCountProvider);
 
     ordersAsync.whenOrNull(
       error: (error, stack) {
@@ -84,24 +83,43 @@ class HomeScreen extends ConsumerWidget {
       },
     );
 
+    final isWeb = AppBreakpoints.isWeb(context);
+
+    final bodyContent = ordersAsync.when(
+      data: (orders) => _AnimatedBody(
+        child: orders.isEmpty
+            ? _EmptyHome(firstName: _firstNameFromUser(currentUserAsync))
+            : _MultiOrderHome(
+                orders: orders,
+                pendingPayments: pendingPayments,
+                pendingReviews: pendingReviews,
+                currentUserName: currentUserAsync.value?.fullName,
+              ),
+      ),
+      loading: () => const _HomeShimmer(),
+      error: (_, __) =>
+          _ErrorHome(onRetry: () => ref.invalidate(buyerOrdersProvider)),
+    );
+
+    if (isWeb) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: _buildAppBar(context),
+        body: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(flex: 5,child: bodyContent,),
+            Container(width: 0.5, color: AppColors.borderSolid),
+            Expanded(flex: 4,child: WebDashboardRightPanel(),)
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: _C.bgPrimary,
       appBar: _buildAppBar(context),
-      body: ordersAsync.when(
-        data: (orders) => _AnimatedBody(
-          child: orders.isEmpty
-              ? _EmptyHome(firstName: _firstNameFromUser(currentUserAsync))
-              : _MultiOrderHome(
-                  orders: orders,
-                  pendingPayments: pendingPayments,
-                  pendingReviews: pendingReviews,
-                  currentUserName: currentUserAsync.value?.fullName,
-                ),
-        ),
-        loading: () => const _HomeShimmer(),
-        error: (_, __) =>
-            _ErrorHome(onRetry: () => ref.invalidate(buyerOrdersProvider)),
-      ),
+      body: bodyContent,
     );
   }
 
@@ -136,21 +154,16 @@ class HomeScreen extends ConsumerWidget {
     }
 
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       elevation: 0,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
       titleSpacing: 20,
-      title: Text(
-        'Home',
-        style: AppTextStyles.appBarTitle,
-      ),
+      centerTitle: false,
+      title: Text('Home', style: AppTextStyles.appBarTitle),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(
-          height: 0.5,
-          color: AppColors.borderSolid,
-        ),
+        child: Container(height: 0.5, color: AppColors.borderSolid),
       ),
     );
   }

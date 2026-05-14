@@ -295,37 +295,63 @@ class _TabletWebLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final totalWidth = constraints.maxWidth;
-          final sw = AppBreakpoints.sidebarWidth(totalWidth);
+    if (!extendedRail) {
+      // Tablet: unchanged
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _IconRail(
+              selectedIndex: selectedIndex,
+              unreadCount: unreadCount,
+              onDestinationSelected: onDestinationSelected,
+            ),
+            const PanelDivider(),
+            Expanded(child: child),
+          ],
+        ),
+      );
+    }
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (extendedRail)
-                SizedBox(
-                  width: sw,
-                  child: _FullSidebar(
-                    selectedIndex: selectedIndex,
-                    unreadCount: unreadCount,
-                    onDestinationSelected: onDestinationSelected,
-                    availableWidth: totalWidth,
-                  ),
-                )
-              else
-                _IconRail(
-                  selectedIndex: selectedIndex,
-                  unreadCount: unreadCount,
-                  onDestinationSelected: onDestinationSelected,
-                ),
-              const PanelDivider(),
-              Expanded(child: child),
-            ],
-          );
-        },
+    // Web: 1280px centred container
+    // #F5F4F0 scaffold background
+    // 14px rounded corners
+    // Sidebar white 220px
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  final sw = AppBreakpoints.sidebarWidth(totalWidth);
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        width: sw,
+                        child: _FullSidebar(
+                          selectedIndex: selectedIndex,
+                          unreadCount: unreadCount,
+                          onDestinationSelected: onDestinationSelected,
+                          availableWidth: totalWidth,
+                        ),
+                      ),
+                      const PanelDivider(),
+                      Expanded(child: child),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

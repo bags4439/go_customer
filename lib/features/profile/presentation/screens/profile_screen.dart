@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/layout/web_app_body.dart';
+import 'package:go_customer/core/widgets/card_container.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -17,6 +19,7 @@ import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
+import '../../../../core/widgets/web_dashboard_right_panel.dart';
 import '../../../../shared/providers/currencies_provider.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../auth/domain/entities/app_user.dart';
@@ -158,11 +161,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     }
 
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       elevation: 0,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
       titleSpacing: 20,
+      centerTitle: false,
       title: Text(
         ProfileConstants.appBarTitle,
         style: AppTextStyles.appBarTitle,
@@ -189,84 +193,67 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         if (_headerAnimated && user != null && !_sectionsAnimated) {
           _startSectionAnimations();
         }
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: _buildProfileAppBar(context),
-          body: user == null
-              ? const _ProfileShimmer()
-              : AppBreakpoints.isWeb(context)
-              ? _ProfileWebLayout(
-                  user: user,
-                  orderSummaryAsync: orderSummaryAsync,
-                  sessionsAsync: sessionsAsync,
-                  hasPersonalUnsaved: _hasPersonalUnsaved(ref),
-                  hasContactUnsaved: _hasContactUnsaved(ref),
-                  onRefresh: () async {
-                    ref.invalidate(currentUserProfileProvider);
-                    ref.invalidate(orderSummaryProvider);
-                    ref.invalidate(sessionListProvider);
-                  },
-                  onSaveFullName: _saveFullName,
-                  onSaveLocation: _saveLocation,
-                  onPhoneTap: _onPhoneEditTap,
-                  onSaveSmsPhone: _saveSmsPhone,
-                  onSaveWhatsappPhone: _saveWhatsappPhone,
-                  onSaveEmail: _saveEmail,
-                  onResetGuide: () => _resetGuide(context, ref),
-                  onLogOut: () => _showLogOutConfirm(context),
-                  onDeleteAccount: () => _showDeleteAccountSheet(context),
-                  pulseController: _pulseController,
-                  headerController: _headerController,
-                  headerAnimation: _headerAnimation,
-                  sectionAnimations: _sectionAnimations,
-                )
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(currentUserProfileProvider);
-                    ref.invalidate(orderSummaryProvider);
-                  },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      16,
-                      16,
-                      24 + _profileShellFloatingNavExtra(context),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _AnimatedHeaderCard(
-                          controller: _headerController,
-                          animation: _headerAnimation,
+        final isWeb = AppBreakpoints.isWeb(context);
+        final appBar = _buildProfileAppBar(context);
+        final backgroundColor = isWeb ? AppColors.surface : Colors.white;
+        final Widget body = user == null
+            ? const _ProfileShimmer()
+            : RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(currentUserProfileProvider);
+                  ref.invalidate(orderSummaryProvider);
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    16,
+                    16,
+                    24 + _profileShellFloatingNavExtra(context),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      CardContainer(
+                        paddingType: CardContainerPaddingType.large,
+                        child: Column(
+                          children: [
+                            _AnimatedHeaderCard(
+                              controller: _headerController,
+                              animation: _headerAnimation,
+                              user: user,
+                            ),
+                            const SizedBox(height: 12),
+                            orderSummaryAsync.when(
+                              data: (summary) => _OrderSummaryRow(
+                                animation: _sectionAnimations[0]!,
+                                activeCount: summary.activeCount,
+                                completedCount: summary.completedCount,
+                                agentFirstName: summary.agentFirstName,
+                              ),
+                              loading: () => _OrderSummaryShimmer(
+                                animation: _sectionAnimations[0]!,
+                              ),
+                              error: (_, __) => _OrderSummaryRow(
+                                animation: _sectionAnimations[0]!,
+                                activeCount: 0,
+                                completedCount: 0,
+                                agentFirstName: ProfileConstants.noAgentYet,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!user.hasGhanaCard) ...[
+                        const SizedBox(height: 12),
+                        IdVerificationBanner(
+                          pulse: _pulseController,
                           user: user,
                         ),
-                        const SizedBox(height: 12),
-                        orderSummaryAsync.when(
-                          data: (summary) => _OrderSummaryRow(
-                            animation: _sectionAnimations[0]!,
-                            activeCount: summary.activeCount,
-                            completedCount: summary.completedCount,
-                            agentFirstName: summary.agentFirstName,
-                          ),
-                          loading: () => _OrderSummaryShimmer(
-                            animation: _sectionAnimations[0]!,
-                          ),
-                          error: (_, __) => _OrderSummaryRow(
-                            animation: _sectionAnimations[0]!,
-                            activeCount: 0,
-                            completedCount: 0,
-                            agentFirstName: ProfileConstants.noAgentYet,
-                          ),
-                        ),
-                        if (!user.hasGhanaCard) ...[
-                          const SizedBox(height: 12),
-                          IdVerificationBanner(
-                            pulse: _pulseController,
-                            user: user,
-                          ),
-                        ],
-                        _AnimatedSection(
+                      ],
+                      SizedBox(height: 16),
+                      CardContainer(
+                        child: _AnimatedSection(
                           index: 1,
                           animation: _sectionAnimations[1]!,
                           title: ProfileConstants.sectionPersonalDetails,
@@ -278,7 +265,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             onPhoneTap: _onPhoneEditTap,
                           ),
                         ),
-                        _AnimatedSection(
+                      ),
+                      SizedBox(height: 16),
+                      CardContainer(
+                        child: _AnimatedSection(
                           index: 2,
                           animation: _sectionAnimations[2]!,
                           title: ProfileConstants.sectionContactChannels,
@@ -290,14 +280,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             onSaveEmail: _saveEmail,
                           ),
                         ),
-                        _AnimatedSection(
+                      ),
+                      SizedBox(height: 16),
+                      CardContainer(
+                        child: _AnimatedSection(
                           index: 3,
                           animation: _sectionAnimations[3]!,
                           title: ProfileConstants.sectionLanguageCurrency,
                           hasUnsaved: false,
                           child: _LanguageCurrencySection(user: user),
                         ),
-                        _AnimatedSection(
+                      ),
+                      SizedBox(height: 16),
+                      CardContainer(
+                        child: _AnimatedSection(
                           index: 4,
                           animation: _sectionAnimations[4]!,
                           title: ProfileConstants.sectionSupport,
@@ -306,40 +302,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             onResetGuide: () => _resetGuide(context, ref),
                           ),
                         ),
-                        _AnimatedSection(
-                          index: 5,
-                          animation: _sectionAnimations[5]!,
-                          title: ProfileConstants.sectionSession,
-                          hasUnsaved: false,
-                          child: _SessionSection(
-                            sessions: sessionsAsync.valueOrNull ?? [],
-                            userId: user.id,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        _LogOutButton(
-                          onPressed: () => _showLogOutConfirm(context),
-                        ),
-                        const SizedBox(height: 12),
-                        _DeleteAccountLink(
-                          onPressed: () => _showDeleteAccountSheet(context),
-                        ),
-                        ...[
-                          const SizedBox(height: 16),
-                          Center(
-                            child: Text(
-                              appVersionLabel,
-                              style: AppTextStyles.caption.copyWith(
-                                color: _kTextTertiary,
-                              ),
+                      ),
+                      const SizedBox(height: 32),
+                      _LogOutButton(
+                        onPressed: () => _showLogOutConfirm(context),
+                      ),
+                      const SizedBox(height: 32),
+                      _DeleteAccountLink(
+                        onPressed: () => _showDeleteAccountSheet(context),
+                      ),
+                      ...[
+                        const SizedBox(height: 24),
+                        Center(
+                          child: Text(
+                            appVersionLabel,
+                            style: AppTextStyles.caption.copyWith(
+                              color: _kTextTertiary,
                             ),
                           ),
-                        ],
-                        const SizedBox(height: 24),
+                        ),
                       ],
-                    ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
                 ),
+              );
+
+        if (isWeb) {
+          return WebAppBody(
+            body: body,
+            pageTitle: ProfileConstants.appBarTitle,
+            appBarActions: [GuideHelpButton()],
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: appBar,
+          body: body,
         );
       },
       loading: () => Scaffold(
@@ -574,393 +574,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 }
 
-/// Web profile: main scroll (max 720px) plus a fixed account actions column.
-class _ProfileWebLayout extends StatelessWidget {
-  const _ProfileWebLayout({
-    required this.user,
-    required this.orderSummaryAsync,
-    required this.sessionsAsync,
-    required this.hasPersonalUnsaved,
-    required this.hasContactUnsaved,
-    required this.onRefresh,
-    required this.onSaveFullName,
-    required this.onSaveLocation,
-    required this.onPhoneTap,
-    required this.onSaveSmsPhone,
-    required this.onSaveWhatsappPhone,
-    required this.onSaveEmail,
-    required this.onResetGuide,
-    required this.onLogOut,
-    required this.onDeleteAccount,
-    required this.pulseController,
-    required this.headerController,
-    required this.headerAnimation,
-    required this.sectionAnimations,
-  });
-
-  final AppUser user;
-  final AsyncValue<OrderSummary> orderSummaryAsync;
-  final AsyncValue<List<UserSessionEntity>> sessionsAsync;
-  final bool hasPersonalUnsaved;
-  final bool hasContactUnsaved;
-  final Future<void> Function() onRefresh;
-  final Future<void> Function(String) onSaveFullName;
-  final Future<void> Function(String) onSaveLocation;
-  final VoidCallback onPhoneTap;
-  final Future<void> Function(String) onSaveSmsPhone;
-  final Future<void> Function(String) onSaveWhatsappPhone;
-  final Future<void> Function(String) onSaveEmail;
-  final Future<void> Function() onResetGuide;
-  final VoidCallback onLogOut;
-  final VoidCallback onDeleteAccount;
-  final AnimationController pulseController;
-  final AnimationController headerController;
-  final Animation<double> headerAnimation;
-  final Map<int, Animation<double>> sectionAnimations;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final rw = AppBreakpoints.rightPanelWidth(constraints.maxWidth);
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: onRefresh,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(
-                    24,
-                    16,
-                    24,
-                    24 + _profileShellFloatingNavExtra(context),
-                  ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 720),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _AnimatedHeaderCard(
-                            controller: headerController,
-                            animation: headerAnimation,
-                            user: user,
-                          ),
-                          const SizedBox(height: 12),
-                          orderSummaryAsync.when(
-                            data: (summary) => _OrderSummaryRow(
-                              animation: sectionAnimations[0]!,
-                              activeCount: summary.activeCount,
-                              completedCount: summary.completedCount,
-                              agentFirstName: summary.agentFirstName,
-                            ),
-                            loading: () => _OrderSummaryShimmer(
-                              animation: sectionAnimations[0]!,
-                            ),
-                            error: (_, __) => _OrderSummaryRow(
-                              animation: sectionAnimations[0]!,
-                              activeCount: 0,
-                              completedCount: 0,
-                              agentFirstName: ProfileConstants.noAgentYet,
-                            ),
-                          ),
-                          if (!user.hasGhanaCard) ...[
-                            const SizedBox(height: 12),
-                            IdVerificationBanner(
-                              pulse: pulseController,
-                              user: user,
-                            ),
-                          ],
-                          _AnimatedSection(
-                            index: 1,
-                            animation: sectionAnimations[1]!,
-                            title: ProfileConstants.sectionPersonalDetails,
-                            hasUnsaved: hasPersonalUnsaved,
-                            child: _PersonalDetailsSection(
-                              user: user,
-                              onSaveFullName: onSaveFullName,
-                              onSaveLocation: onSaveLocation,
-                              onPhoneTap: onPhoneTap,
-                            ),
-                          ),
-                          _AnimatedSection(
-                            index: 2,
-                            animation: sectionAnimations[2]!,
-                            title: ProfileConstants.sectionContactChannels,
-                            hasUnsaved: hasContactUnsaved,
-                            child: _ContactChannelsSection(
-                              user: user,
-                              onSaveSmsPhone: onSaveSmsPhone,
-                              onSaveWhatsappPhone: onSaveWhatsappPhone,
-                              onSaveEmail: onSaveEmail,
-                            ),
-                          ),
-                          _AnimatedSection(
-                            index: 3,
-                            animation: sectionAnimations[3]!,
-                            title: ProfileConstants.sectionLanguageCurrency,
-                            hasUnsaved: false,
-                            child: _LanguageCurrencySection(user: user),
-                          ),
-                          _AnimatedSection(
-                            index: 4,
-                            animation: sectionAnimations[4]!,
-                            title: ProfileConstants.sectionSupport,
-                            hasUnsaved: false,
-                            child: _SupportSection(onResetGuide: onResetGuide),
-                          ),
-                          _AnimatedSection(
-                            index: 5,
-                            animation: sectionAnimations[5]!,
-                            title: ProfileConstants.sectionSession,
-                            hasUnsaved: false,
-                            child: _SessionSection(
-                              sessions: sessionsAsync.valueOrNull ?? [],
-                              userId: user.id,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const PanelDivider(),
-            SizedBox(
-              width: rw,
-              child: DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    left: BorderSide(color: AppColors.borderSolid, width: 0.5),
-                  ),
-                ),
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final sw = MediaQuery.sizeOf(context).width;
-                    final sessions = sessionsAsync.valueOrNull ?? [];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 16,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _CurrencyRow(
-                                  currentCurrency: user.preferredCurrency,
-                                  userId: user.id,
-                                  scaleForWebPanel: true,
-                                ),
-                                const _WebAccountDivider(),
-                                _LanguageRow(
-                                  currentLanguage: user.preferredLanguage,
-                                  scaleForWebPanel: true,
-                                ),
-                                const _WebAccountDivider(),
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () => context.push(
-                                      '/profile/id-verification',
-                                    ),
-                                    child: Container(
-                                      constraints: const BoxConstraints(
-                                        minHeight: 52,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 12,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  ProfileConstants
-                                                      .idVerificationTitle,
-                                                  style: AppTextStyles.bodySmall
-                                                      .copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.black87,
-                                                        fontSize:
-                                                            AppBreakpoints.scaledFontSize(
-                                                              13,
-                                                              sw,
-                                                            ),
-                                                      ),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  user.hasGhanaCard
-                                                      ? 'Verified on file'
-                                                      : ProfileConstants
-                                                            .idBannerSubtitlePending,
-                                                  style: AppTextStyles.cardLabel
-                                                      .copyWith(
-                                                        color: _kTextTertiary,
-                                                        fontSize:
-                                                            AppBreakpoints.scaledFontSize(
-                                                              11,
-                                                              sw,
-                                                            ),
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const Icon(
-                                            Icons.chevron_right,
-                                            color: _kTextTertiary,
-                                            size: 22,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const _WebAccountDivider(),
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () {
-                                      showModalBottomSheet<void>(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        builder: (ctx) => _SessionsBottomSheet(
-                                          sessions: sessions,
-                                          onSignOut: (id) {
-                                            unawaited(
-                                              ref
-                                                  .read(
-                                                    profileRepositoryProvider,
-                                                  )
-                                                  .deleteSession(id)
-                                                  .then((_) {
-                                                    ref.invalidate(
-                                                      sessionListProvider,
-                                                    );
-                                                  }),
-                                            );
-                                            if (ctx.mounted) {
-                                              Navigator.pop(ctx);
-                                            }
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    child: Container(
-                                      constraints: const BoxConstraints(
-                                        minHeight: 52,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 12,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              ProfileConstants.activeSessions,
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black87,
-                                                    fontSize:
-                                                        AppBreakpoints.scaledFontSize(
-                                                          13,
-                                                          sw,
-                                                        ),
-                                                  ),
-                                            ),
-                                          ),
-                                          Text(
-                                            '${sessions.length}',
-                                            style: AppTextStyles.bodySmall.copyWith(
-                                              color: Colors.black54,
-                                              fontSize:
-                                                  AppBreakpoints.scaledFontSize(
-                                                    13,
-                                                    sw,
-                                                  ),
-                                            ),
-                                          ),
-                                          const Icon(
-                                            Icons.chevron_right,
-                                            color: _kTextTertiary,
-                                            size: 22,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const _WebAccountDivider(),
-                                _ProfileMenuTile(
-                                  icon: Icons.tour_outlined,
-                                  label: 'App guide',
-                                  sublabel: 'Replay the in-app walkthrough',
-                                  onTap: () => onResetGuide(),
-                                  scaleForWebPanel: true,
-                                ),
-                                const SizedBox(height: 16),
-                                _LogOutButton(onPressed: onLogOut),
-                                const SizedBox(height: 10),
-                                _DeleteAccountLink(onPressed: onDeleteAccount),
-                                const SizedBox(height: 12),
-                                Center(
-                                  child: Text(
-                                    appVersionLabel,
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: _kTextTertiary,
-                                      fontSize: AppBreakpoints.scaledFontSize(
-                                        11,
-                                        sw,
-                                      ),
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _WebAccountDivider extends StatelessWidget {
-  const _WebAccountDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
-      child: Divider(height: 1, thickness: 0.5, color: AppColors.borderSolid),
-    );
-  }
-}
 
 class _AnimatedHeaderCard extends StatelessWidget {
   const _AnimatedHeaderCard({
@@ -984,10 +597,7 @@ class _AnimatedHeaderCard extends StatelessWidget {
         ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
         child: Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _kSurface,
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
           child: Row(
             children: [
               _AvatarCircle(user: user),
@@ -1244,10 +854,7 @@ class _AnimatedSection extends StatelessWidget {
       },
       child: Container(
         margin: const EdgeInsets.only(top: 14),
-        decoration: BoxDecoration(
-          color: _kSurface,
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

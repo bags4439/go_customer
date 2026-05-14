@@ -35,6 +35,8 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = AppBreakpoints.isWeb(context);
+
     final active = widget.orders.where((o) => !o.isCompleted).length;
     final completed = widget.orders.where((o) => o.isCompleted).length;
     final needsAction =
@@ -187,7 +189,7 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
         ),
       ),
       const SizedBox(height: 20),
-      const ReferralPromoCard(),
+      isWeb ? SizedBox.shrink() : const ReferralPromoCard(),
     ];
 
     return Stack(

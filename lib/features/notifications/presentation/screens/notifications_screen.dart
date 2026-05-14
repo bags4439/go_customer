@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
+import '../../../../core/widgets/web_dashboard_right_panel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
@@ -118,7 +119,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
     }
 
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       elevation: 0,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
@@ -179,22 +180,27 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
       ],
     );
 
+    final isWeb = AppBreakpoints.isWeb(context);
+
+    if (isWeb) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: _buildAppBar(context, unreadCount),
+        body: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(flex: 5, child: bodyStack),
+            Container(width: 0.5, color: AppColors.borderSolid),
+            Expanded(flex: 4,child: WebDashboardRightPanel(),)
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: _buildAppBar(context, unreadCount),
-      body: AppBreakpoints.isWeb(context)
-          ? LayoutBuilder(
-              builder: (context, constraints) {
-                final mw = AppBreakpoints.contentMaxWidth(constraints.maxWidth);
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: mw),
-                    child: bodyStack,
-                  ),
-                );
-              },
-            )
-          : bodyStack,
+      body: bodyStack,
     );
   }
 }
@@ -209,7 +215,6 @@ class _MarkAllReadButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final inProgress = ref.watch(markAllReadInProgressProvider);
     return SizedBox(
-      width: 48,
       height: 48,
       child: TextButton(
         onPressed: inProgress ? null : () => onMarkAllRead(context, ref),

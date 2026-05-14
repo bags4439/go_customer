@@ -20,6 +20,11 @@ class OrderView {
   final bool isNewVehicle;
   final bool repairOptedIn;
 
+  /// From car_preferences — year range for summaries.
+  final int? yearMin;
+  final int? yearMax;
+  final bool isSingleYear;
+
   const OrderView({
     required this.id,
     required this.orderRef,
@@ -36,6 +41,9 @@ class OrderView {
     this.purchaseOrigin = 'any',
     this.isNewVehicle = false,
     this.repairOptedIn = false,
+    this.yearMin,
+    this.yearMax,
+    this.isSingleYear = false,
   });
 
   static const String _delivered = 'delivered';
@@ -48,11 +56,11 @@ class OrderView {
 
   /// Display label for purchase origin.
   String get purchaseOriginLabel => switch (purchaseOrigin) {
-        'us_canada' => 'US / Canada',
-        'dubai' => 'Dubai / Middle East',
-        'china' => 'China',
-        _ => 'No preference',
-      };
+    'us_canada' => 'US / Canada',
+    'dubai' => 'Dubai / Middle East',
+    'china' => 'China',
+    _ => 'No preference',
+  };
 }
 
 /// Alias kept for backward compatibility with existing

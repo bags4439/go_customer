@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
-import '../../features/orders/presentation/providers/order_providers.dart';
 import '../../features/profile/presentation/providers/profile_providers.dart';
 import 'app_breakpoints.dart';
 import 'app_nav_destinations.dart';
@@ -38,31 +37,40 @@ class WebAppShell extends ConsumerWidget {
 
     final unread = ref.watch(unreadNotificationCountProvider);
     final user = ref.watch(currentUserProfileProvider).valueOrNull;
-    final orders = ref.watch(buyerOrdersProvider).valueOrNull ?? [];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final totalWidth = constraints.maxWidth;
-          final sw = AppBreakpoints.sidebarWidth(totalWidth);
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                width: sw,
-                child: _WebShellSidebar(
-                  activeRoute: activeRoute,
-                  unreadCount: unread,
-                  user: user,
-                  orders: orders,
-                ),
+      backgroundColor: AppColors.surface,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  final sw = AppBreakpoints.sidebarWidth(totalWidth);
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        width: sw,
+                        child: _WebShellSidebar(
+                          activeRoute: activeRoute,
+                          unreadCount: unread,
+                          user: user,
+                        ),
+                      ),
+                      const PanelDivider(),
+                      Expanded(child: child),
+                    ],
+                  );
+                },
               ),
-              const PanelDivider(),
-              Expanded(child: child),
-            ],
-          );
-        },
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -77,13 +85,11 @@ class _WebShellSidebar extends StatelessWidget {
     required this.activeRoute,
     required this.unreadCount,
     required this.user,
-    required this.orders,
   });
 
   final String? activeRoute;
   final int unreadCount;
   final dynamic user;
-  final List<OrderView> orders;
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +143,7 @@ class _WebShellSidebar extends StatelessWidget {
             ),
           ),
 
-          // Nav items (+ scrollable active orders)
+          // Nav items
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(10),
@@ -157,38 +163,6 @@ class _WebShellSidebar extends StatelessWidget {
                       onTap: () => context.go(dest.route),
                     );
                   }),
-
-                  // Active orders list
-                  if (orders.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Container(height: .5, color: AppColors.borderSolid),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      child: Text(
-                        'ACTIVE ORDERS',
-                        style: AppTextStyles.sectionLabel.copyWith(
-                          color: AppColors.textTertiary,
-                          fontSize: 10,
-                          letterSpacing: .5,
-                        ),
-                      ),
-                    ),
-                    ...orders
-                        .where((o) => !o.isCompleted)
-                        .take(3)
-                        .map(
-                          (order) => _OrderSidebarTile(
-                            order: order,
-                            isActive: GoRouterState.of(
-                              context,
-                            ).uri.toString().contains(order.id),
-                          ),
-                        ),
-                  ],
                 ],
               ),
             ),
@@ -354,151 +328,6 @@ class _ShellNavItemState extends State<_ShellNavItem> {
                       ),
                     ),
                 ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A compact order tile shown
-/// in the sidebar orders list.
-class _OrderSidebarTile extends StatefulWidget {
-  const _OrderSidebarTile({required this.order, required this.isActive});
-
-  final OrderView order;
-  final bool isActive;
-
-  @override
-  State<_OrderSidebarTile> createState() => _OrderSidebarTileState();
-}
-
-class _OrderSidebarTileState extends State<_OrderSidebarTile> {
-  bool _hovered = false;
-
-  static const _stageNames = [
-    'Preferences',
-    'Agent assignment',
-    'Deposit & fee',
-    'Vehicle search',
-    'Balance',
-    'Shipping',
-    'Clearance',
-    'Repairs',
-    'Delivery',
-  ];
-
-  String get _displayName {
-    final make = widget.order.make ?? '';
-    final model = widget.order.model ?? '';
-    final name = '$make $model'.trim();
-    return name.isNotEmpty ? name : widget.order.orderRef;
-  }
-
-  String get _stageName {
-    final i = widget.order.stageNumber - 1;
-    if (i < 0 || i >= _stageNames.length) {
-      return 'In progress';
-    }
-    return _stageNames[i];
-  }
-
-  double get _progress => (widget.order.stageNumber / 9).clamp(0.0, 1.0);
-
-  Color get _bg => _hovered ? AppColors.hoverSurface : AppColors.surface;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        cursor: SystemMouseCursors.click,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          decoration: BoxDecoration(
-            color: _bg,
-            borderRadius: BorderRadius.circular(10),
-            border: Border(
-              left: BorderSide(
-                width: widget.isActive ? 3 : 0.5,
-                color: widget.isActive
-                    ? AppColors.secondary
-                    : AppColors.borderSolid,
-              ),
-              top: BorderSide(color: AppColors.borderSolid, width: 0.5),
-              right: BorderSide(color: AppColors.borderSolid, width: 0.5),
-              bottom: BorderSide(color: AppColors.borderSolid, width: 0.5),
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => context.go('/order/${widget.order.id}'),
-              borderRadius: BorderRadius.circular(10),
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _displayName,
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.infoBackground,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _stageName,
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.infoText,
-                              fontSize: 9,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.order.orderRef,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: LinearProgressIndicator(
-                        value: _progress,
-                        backgroundColor: AppColors.borderSolid,
-                        color: AppColors.secondary,
-                        minHeight: 3,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),

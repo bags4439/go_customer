@@ -70,7 +70,7 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
     final isWeb = AppBreakpoints.isWeb(context);
 
     final scaffold = Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isWeb ? AppColors.surface : AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
@@ -82,7 +82,7 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
             }
           },
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: isWeb ? AppColors.surface : AppColors.background,
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,

@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
@@ -63,6 +64,7 @@ class OrderTimelineStepRow extends ConsumerWidget {
   final DutyClearanceModel? clearance;
   final RepairJobModel? repairJob;
   final VoidCallback? onChatTap;
+  final void Function(String stageKey)? onStepTapped;
 
   const OrderTimelineStepRow({
     super.key,
@@ -76,6 +78,7 @@ class OrderTimelineStepRow extends ConsumerWidget {
     this.clearance,
     this.repairJob,
     this.onChatTap,
+    this.onStepTapped,
   });
 
   @override
@@ -134,6 +137,7 @@ class OrderTimelineStepRow extends ConsumerWidget {
                         clearance: clearance,
                         repairJob: repairJob,
                         onChatTap: onChatTap,
+                        onStepTapped: onStepTapped,
                       )
                     : _UpcomingRow(stage: stage, isLast: isLast),
               ),
@@ -329,6 +333,7 @@ class _ActiveStageContent extends StatelessWidget {
   final DutyClearanceModel? clearance;
   final RepairJobModel? repairJob;
   final VoidCallback? onChatTap;
+  final void Function(String stageKey)? onStepTapped;
 
   const _ActiveStageContent({
     required this.stage,
@@ -340,10 +345,23 @@ class _ActiveStageContent extends StatelessWidget {
     this.clearance,
     this.repairJob,
     this.onChatTap,
+    this.onStepTapped,
   });
 
   @override
   Widget build(BuildContext context) {
+    final card = _buildActiveCard(context);
+    if (AppBreakpoints.isWeb(context) && onStepTapped != null) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onStepTapped!(stage.stageKey),
+        child: card,
+      );
+    }
+    return card;
+  }
+
+  Widget _buildActiveCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 8, bottom: 12),
       decoration: BoxDecoration(
@@ -399,6 +417,29 @@ class _ActiveStageContent extends StatelessWidget {
                     );
                   },
                 ),
+                if (AppBreakpoints.isWeb(context) && onStepTapped != null) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => onStepTapped!(stage.stageKey),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Details →',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -419,7 +460,7 @@ class _ActiveStageContent extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-            child: _SubActionArea(
+            child: OrderTimelineSubActionArea(
               stage: stage,
               orderId: orderId,
               order: order,
@@ -436,7 +477,10 @@ class _ActiveStageContent extends StatelessWidget {
   }
 }
 
-class _SubActionArea extends StatelessWidget {
+/// Stage-specific sub-actions for the order timeline (payment, shipping,
+/// clearance, repair, delivery, chat fallbacks). Used by the active row
+/// and by the web order-detail right panel.
+class OrderTimelineSubActionArea extends StatelessWidget {
   final OrderTimelineModel stage;
   final String orderId;
   final OrderView order;
@@ -446,7 +490,8 @@ class _SubActionArea extends StatelessWidget {
   final RepairJobModel? repairJob;
   final VoidCallback? onChatTap;
 
-  const _SubActionArea({
+  const OrderTimelineSubActionArea({
+    super.key,
     required this.stage,
     required this.orderId,
     required this.order,
@@ -514,10 +559,7 @@ class _SubActionArea extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.borderSolid,
-                width: 0.5,
-              ),
+              border: Border.all(color: AppColors.borderSolid, width: 0.5),
             ),
             child: Row(
               children: [
@@ -608,25 +650,14 @@ class _SubActionArea extends StatelessWidget {
 }
 
 class _DeliveryActionCard extends ConsumerWidget {
-  const _DeliveryActionCard({
-    required this.orderId,
-  });
+  const _DeliveryActionCard({required this.orderId});
 
   final String orderId;
 
   @override
-  Widget build(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
-    final screenState = ref.watch(
-      deliveryScreenStateProvider(
-        orderId,
-      ),
-    );
-    final deliveryAsync = ref.watch(
-      deliveryProvider(orderId),
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final screenState = ref.watch(deliveryScreenStateProvider(orderId));
+    final deliveryAsync = ref.watch(deliveryProvider(orderId));
 
     return deliveryAsync.when(
       loading: () => const SizedBox(
@@ -635,39 +666,27 @@ class _DeliveryActionCard extends ConsumerWidget {
           child: SizedBox(
             width: 16,
             height: 16,
-            child:
-                CircularProgressIndicator(
-              strokeWidth: 2,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
       ),
-      error: (_, __) =>
-          const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
       data: (delivery) {
         switch (screenState) {
           // Should not appear on
           // timeline when not available
-          case DeliveryScreenState
-                .notAvailable:
-            return const SizedBox
-                .shrink();
+          case DeliveryScreenState.notAvailable:
+            return const SizedBox.shrink();
 
           // Customer has not yet
           // chosen delivery method
-          case DeliveryScreenState
-                .choice:
+          case DeliveryScreenState.choice:
             return _deliveryCard(
               context: context,
-              icon: Icons
-                  .local_shipping_outlined,
-              iconColor:
-                  AppColors.secondary,
-              backgroundColor:
-                  AppColors.infoBackground,
-              borderColor:
-                  AppColors.secondary
-                      .withValues(alpha: 0.3),
+              icon: Icons.local_shipping_outlined,
+              iconColor: AppColors.secondary,
+              backgroundColor: AppColors.infoBackground,
+              borderColor: AppColors.secondary.withValues(alpha: 0.3),
               message:
                   'Choose how you would '
                   'like to receive your '
@@ -675,8 +694,7 @@ class _DeliveryActionCard extends ConsumerWidget {
               buttonLabel:
                   'Choose delivery '
                   'option →',
-              buttonColor:
-                  AppColors.secondary,
+              buttonColor: AppColors.secondary,
               onTap: () => context.push(
                 '/order/$orderId'
                 '/delivery',
@@ -685,21 +703,14 @@ class _DeliveryActionCard extends ConsumerWidget {
 
           // Waiting for payment
           // clearance from agent
-          case DeliveryScreenState
-                .awaitingPaymentClearance:
-            final hasPending =
-                delivery != null;
+          case DeliveryScreenState.awaitingPaymentClearance:
+            final hasPending = delivery != null;
             return _deliveryCard(
               context: context,
-              icon: Icons
-                  .hourglass_top_rounded,
-              iconColor:
-                  AppColors.infoText,
-              backgroundColor:
-                  AppColors.infoBackground,
-              borderColor:
-                  AppColors.infoText
-                      .withValues(alpha: 0.3),
+              icon: Icons.hourglass_top_rounded,
+              iconColor: AppColors.infoText,
+              backgroundColor: AppColors.infoBackground,
+              borderColor: AppColors.infoText.withValues(alpha: 0.3),
               message: hasPending
                   ? 'Complete your pending'
                         ' payments to proceed '
@@ -709,10 +720,8 @@ class _DeliveryActionCard extends ConsumerWidget {
                         'payments. You will '
                         'be notified once '
                         'cleared.',
-              buttonLabel:
-                  'View payment details →',
-              buttonColor:
-                  AppColors.secondary,
+              buttonLabel: 'View payment details →',
+              buttonColor: AppColors.secondary,
               onTap: () => context.push(
                 '/order/$orderId'
                 '/delivery',
@@ -721,27 +730,19 @@ class _DeliveryActionCard extends ConsumerWidget {
 
           // Payments cleared — needs
           // delivery address
-          case DeliveryScreenState
-                .addressEntry:
+          case DeliveryScreenState.addressEntry:
             return _deliveryCard(
               context: context,
-              icon: Icons
-                  .location_off_outlined,
-              iconColor:
-                  AppColors.warning,
-              backgroundColor:
-                  AppColors.amberBackground,
-              borderColor:
-                  AppColors.warning
-                      .withValues(alpha: 0.4),
+              icon: Icons.location_off_outlined,
+              iconColor: AppColors.warning,
+              backgroundColor: AppColors.amberBackground,
+              borderColor: AppColors.warning.withValues(alpha: 0.4),
               message:
                   'Set your delivery '
                   'address so your agent '
                   'can arrange delivery.',
-              buttonLabel:
-                  'Set delivery address →',
-              buttonColor:
-                  AppColors.secondary,
+              buttonLabel: 'Set delivery address →',
+              buttonColor: AppColors.secondary,
               onTap: () => context.push(
                 '/order/$orderId'
                 '/delivery',
@@ -750,57 +751,39 @@ class _DeliveryActionCard extends ConsumerWidget {
 
           // Address set — waiting
           // for delivery
-          case DeliveryScreenState
-                .locationSet:
+          case DeliveryScreenState.locationSet:
             final d = delivery;
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets
-                          .all(12),
-                  decoration:
-                      BoxDecoration(
-                    color: AppColors
-                        .successMutedBackground,
-                    borderRadius:
-                        BorderRadius
-                            .circular(10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.successMutedBackground,
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: AppColors
-                          .successMutedBorder,
+                      color: AppColors.successMutedBorder,
                       width: 0.5,
                     ),
                   ),
                   child: Row(
                     children: [
                       const Icon(
-                        Icons
-                            .location_on_rounded,
+                        Icons.location_on_rounded,
                         size: 16,
-                        color:
-                            AppColors.success,
+                        color: AppColors.success,
                       ),
-                      const SizedBox(
-                          width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          d?.locationLabel
-                              ?? d?.deliveryAddress
-                              ?? 'Location saved',
-                          style:
-                              AppTextStyles
-                                  .cardLabel
-                                  .copyWith(
-                            color: AppColors
-                                .successMutedForeground,
+                          d?.locationLabel ??
+                              d?.deliveryAddress ??
+                              'Location saved',
+                          style: AppTextStyles.cardLabel.copyWith(
+                            color: AppColors.successMutedForeground,
                           ),
                           maxLines: 2,
-                          overflow:
-                              TextOverflow
-                                  .ellipsis,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -811,36 +794,22 @@ class _DeliveryActionCard extends ConsumerWidget {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () =>
-                        context.push(
+                    onPressed: () => context.push(
                       '/order/$orderId'
                       '/delivery',
                     ),
-                    style:
-                        ElevatedButton
-                            .styleFrom(
-                      backgroundColor:
-                          AppColors
-                              .secondary,
-                      foregroundColor:
-                          Colors.white,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
-                      minimumSize:
-                          const Size(
-                        double.infinity,
-                        48,
-                      ),
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius
-                                .circular(10),
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     child: Text(
                       'Track delivery →',
-                      style: AppTextStyles
-                          .buttonMedium,
+                      style: AppTextStyles.buttonMedium,
                     ),
                   ),
                 ),
@@ -849,32 +818,21 @@ class _DeliveryActionCard extends ConsumerWidget {
 
           // Self pickup — waiting
           // for collection details
-          case DeliveryScreenState
-                .selfPickup:
-            final hasDetails =
-                delivery
-                    ?.hasCollectionDetails
-                ?? false;
+          case DeliveryScreenState.selfPickup:
+            final hasDetails = delivery?.hasCollectionDetails ?? false;
             return _deliveryCard(
               context: context,
               icon: hasDetails
-                  ? Icons
-                        .location_on_rounded
-                  : Icons
-                        .hourglass_top_rounded,
+                  ? Icons.location_on_rounded
+                  : Icons.hourglass_top_rounded,
               iconColor: hasDetails
                   ? AppColors.secondary
                   : AppColors.textTertiary,
-              backgroundColor:
-                  hasDetails
-                  ? AppColors
-                        .infoBackground
+              backgroundColor: hasDetails
+                  ? AppColors.infoBackground
                   : AppColors.surface,
               borderColor: hasDetails
-                  ? AppColors.secondary
-                        .withValues(
-                          alpha: 0.3,
-                        )
+                  ? AppColors.secondary.withValues(alpha: 0.3)
                   : AppColors.borderSolid,
               message: hasDetails
                   ? 'Collection point is '
@@ -888,8 +846,7 @@ class _DeliveryActionCard extends ConsumerWidget {
                   ? 'View collection '
                         'point →'
                   : 'View details →',
-              buttonColor:
-                  AppColors.secondary,
+              buttonColor: AppColors.secondary,
               onTap: () => context.push(
                 '/order/$orderId'
                 '/delivery',
@@ -897,11 +854,8 @@ class _DeliveryActionCard extends ConsumerWidget {
             );
 
           // Delivery confirmed
-          case DeliveryScreenState
-                .confirmed:
-            return _DeliveredCard(
-              orderId: orderId,
-            );
+          case DeliveryScreenState.confirmed:
+            return _DeliveredCard(orderId: orderId);
         }
       },
     );
@@ -919,39 +873,24 @@ class _DeliveryActionCard extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding:
-              const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius:
-                BorderRadius.circular(10),
-            border: Border(
-              left: BorderSide(
-                color: borderColor,
-                width: 3,
-              ),
-            ),
+            borderRadius: BorderRadius.circular(10),
+            border: Border(left: BorderSide(color: borderColor, width: 3)),
           ),
           child: Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                size: 16,
-                color: iconColor,
-              ),
+              Icon(icon, size: 16, color: iconColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   message,
-                  style: AppTextStyles
-                      .cardLabel
-                      .copyWith(
+                  style: AppTextStyles.cardLabel.copyWith(
                     color: iconColor,
                     height: 1.4,
                   ),
@@ -966,29 +905,16 @@ class _DeliveryActionCard extends ConsumerWidget {
           height: 48,
           child: ElevatedButton(
             onPressed: onTap,
-            style:
-                ElevatedButton.styleFrom(
-              backgroundColor:
-                  buttonColor,
-              foregroundColor:
-                  Colors.white,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: buttonColor,
+              foregroundColor: Colors.white,
               elevation: 0,
-              minimumSize: const Size(
-                double.infinity,
-                48,
-              ),
-              shape:
-                  RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius
-                        .circular(10),
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: Text(
-              buttonLabel,
-              style:
-                  AppTextStyles.buttonMedium,
-            ),
+            child: Text(buttonLabel, style: AppTextStyles.buttonMedium),
           ),
         ),
       ],

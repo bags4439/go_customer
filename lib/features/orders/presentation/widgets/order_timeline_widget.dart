@@ -23,6 +23,7 @@ class OrderTimelineWidget extends ConsumerStatefulWidget {
   final OrderView order;
   final bool suppressStageCoachMarks;
   final VoidCallback? onChatTap;
+  final void Function(String stageKey)? onStepTapped;
 
   const OrderTimelineWidget({
     super.key,
@@ -30,6 +31,7 @@ class OrderTimelineWidget extends ConsumerStatefulWidget {
     required this.order,
     this.suppressStageCoachMarks = false,
     this.onChatTap,
+    this.onStepTapped,
   });
 
   @override
@@ -98,9 +100,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     super.dispose();
   }
 
-  List<OrderTimelineModel> _visibleStages(
-    List<OrderTimelineModel> raw,
-  ) {
+  List<OrderTimelineModel> _visibleStages(List<OrderTimelineModel> raw) {
     // All stages are always visible.
     // The repair stage is shown
     // regardless of repairOptedIn —
@@ -294,6 +294,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
             clearance: clearance,
             repairJob: repairJob,
             onChatTap: widget.onChatTap,
+            onStepTapped: widget.onStepTapped,
           );
           final isActive = s.stageNumber == widget.order.stageNumber;
           if (isActive) {
