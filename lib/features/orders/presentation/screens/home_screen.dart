@@ -102,6 +102,7 @@ class HomeScreen extends ConsumerWidget {
     );
 
     if (isWeb) {
+
       return Scaffold(
         backgroundColor: AppColors.surface,
         appBar: _buildAppBar(context),

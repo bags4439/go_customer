@@ -30,6 +30,13 @@ class AppNavDestination {
 class AppNavDestinations {
   AppNavDestinations._();
 
+  /// Branch index for [route], or `-1` if it does not match any shell item.
+  static int indexForShellRoute(String? route) {
+    if (route == null || route.isEmpty) return -1;
+    final i = items.indexWhere((d) => d.route == route);
+    return i >= 0 ? i : -1;
+  }
+
   /// The ordered list of shell nav
   /// destinations. Order determines
   /// the branch index in GoRouter.

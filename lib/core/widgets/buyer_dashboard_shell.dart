@@ -6,20 +6,17 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
-import '../../features/profile/presentation/providers/profile_providers.dart';
 import '../layout/app_breakpoints.dart';
 import '../layout/app_nav_destinations.dart';
 import '../layout/panel_divider.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import 'buyer_web_app_frame.dart';
+import 'buyer_web_sidebar.dart';
 
 class BuyerDashboardShell extends ConsumerWidget {
   const BuyerDashboardShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
-
-  static List<String> get _labels =>
-      AppNavDestinations.items.map((d) => d.label).toList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -314,305 +311,14 @@ class _TabletWebLayout extends StatelessWidget {
       );
     }
 
-    // Web: 1280px centred container
-    // #F5F4F0 scaffold background
-    // 14px rounded corners
-    // Sidebar white 220px
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1280),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final totalWidth = constraints.maxWidth;
-                  final sw = AppBreakpoints.sidebarWidth(totalWidth);
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        width: sw,
-                        child: _FullSidebar(
-                          selectedIndex: selectedIndex,
-                          unreadCount: unreadCount,
-                          onDestinationSelected: onDestinationSelected,
-                          availableWidth: totalWidth,
-                        ),
-                      ),
-                      const PanelDivider(),
-                      Expanded(child: child),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
+    return BuyerWebAppFrame(
+      sidebarBuilder: (frameWidth) => BuyerWebSidebar(
+        frameWidth: frameWidth,
+        selectedIndex: selectedIndex,
+        unreadCount: unreadCount,
+        onDestinationSelected: onDestinationSelected,
       ),
-    );
-  }
-}
-
-/// Full-width fluid sidebar on web.
-class _FullSidebar extends ConsumerWidget {
-  const _FullSidebar({
-    required this.selectedIndex,
-    required this.unreadCount,
-    required this.onDestinationSelected,
-    required this.availableWidth,
-  });
-
-  final int selectedIndex;
-  final int unreadCount;
-  final void Function(int) onDestinationSelected;
-  final double availableWidth;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProfileProvider).valueOrNull;
-    final navPad = (10 * (availableWidth / 1200)).clamp(8.0, 14.0);
-
-    return Container(
-      color: AppColors.background,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Brand header
-          Container(
-            height: 64,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: AppColors.borderSolid, width: .5),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                  child: const Icon(
-                    Icons.directions_car_filled,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'AutoImport',
-                        style: AppTextStyles.titleSmall,
-                      ),
-                      TextSpan(
-                        text: ' GH',
-                        style: AppTextStyles.titleSmall.copyWith(
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Nav items
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(navPad),
-              child: Column(
-                children: [
-                  ...AppNavDestinations.items.asMap().entries.map((entry) {
-                    final i = entry.key;
-                    final dest = entry.value;
-                    final isSelected = i == selectedIndex;
-                    final badge = i == 1 ? unreadCount : 0;
-                    return _SidebarNavItem(
-                      label: BuyerDashboardShell._labels[i],
-                      icon: isSelected ? dest.activeIcon : dest.icon,
-                      isSelected: isSelected,
-                      badgeCount: badge,
-                      onTap: () => onDestinationSelected(i),
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ),
-
-          // User footer
-          if (user != null)
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: AppColors.borderSolid, width: .5),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: const BoxDecoration(
-                      color: AppColors.infoBackground,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        user.fullName.isNotEmpty
-                            ? user.fullName[0].toUpperCase()
-                            : 'U',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.infoText,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.fullName.split(' ').first,
-                          style: AppTextStyles.labelMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          '${user.country} · ${user.preferredCurrency}',
-                          style: AppTextStyles.caption,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Single nav item in the full
-/// sidebar.
-class _SidebarNavItem extends StatefulWidget {
-  const _SidebarNavItem({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-    this.badgeCount = 0,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final int badgeCount;
-
-  @override
-  State<_SidebarNavItem> createState() => _SidebarNavItemState();
-}
-
-class _SidebarNavItemState extends State<_SidebarNavItem> {
-  bool _hovered = false;
-
-  Color get _bg {
-    if (widget.isSelected) {
-      return _hovered ? AppColors.hoverSelected : AppColors.infoBackground;
-    }
-    return _hovered ? AppColors.hoverSurface : Colors.transparent;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        cursor: SystemMouseCursors.click,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          decoration: BoxDecoration(
-            color: _bg,
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(9),
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: Row(
-                children: [
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 150),
-                    child: Icon(
-                      widget.icon,
-                      key: ValueKey(widget.isSelected),
-                      size: 18,
-                      color: widget.isSelected
-                          ? AppColors.secondary
-                          : AppColors.textTertiary,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      widget.label,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontWeight: widget.isSelected
-                            ? FontWeight.w500
-                            : FontWeight.w400,
-                        color: widget.isSelected
-                            ? AppColors.infoText
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  if (widget.badgeCount > 0)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.danger,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${widget.badgeCount}',
-                        style: AppTextStyles.caption.copyWith(
-                          color: Colors.white,
-                          fontSize: 9,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+      content: child,
     );
   }
 }
@@ -665,7 +371,7 @@ class _IconRail extends StatelessWidget {
             final badge = i == 1 ? unreadCount : 0;
             return _IconRailItem(
               icon: isSelected ? dest.activeIcon : dest.icon,
-              label: BuyerDashboardShell._labels[i],
+              label: dest.label,
               isSelected: isSelected,
               badgeCount: badge,
               onTap: () => onDestinationSelected(i),
