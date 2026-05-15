@@ -7,9 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
 import '../layout/app_breakpoints.dart';
-import '../layout/app_nav_destinations.dart';
-import '../layout/panel_divider.dart';
 import '../theme/app_colors.dart';
+import 'buyer_tablet_app_frame.dart';
 import 'buyer_web_app_frame.dart';
 import 'buyer_web_sidebar.dart';
 
@@ -22,7 +21,7 @@ class BuyerDashboardShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadNotificationCountProvider);
     final useRail = !AppBreakpoints.isMobile(context);
-    final extendedRail = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.isWeb(context);
     final index = navigationShell.currentIndex;
 
     return PopScope(
@@ -36,14 +35,24 @@ class BuyerDashboardShell extends ConsumerWidget {
         }
       },
       child: useRail
-          ? _TabletWebLayout(
-              extendedRail: extendedRail,
-              selectedIndex: index,
-              unreadCount: unread,
-              onDestinationSelected: (i) =>
-                  _onBranchSelected(navigationShell, i),
-              child: navigationShell,
-            )
+          ? (isWeb
+                ? BuyerWebAppFrame(
+                    sidebarBuilder: (frameWidth) => BuyerWebSidebar(
+                      frameWidth: frameWidth,
+                      selectedIndex: index,
+                      unreadCount: unread,
+                      onDestinationSelected: (i) =>
+                          _onBranchSelected(navigationShell, i),
+                    ),
+                    content: navigationShell,
+                  )
+                : BuyerTabletAppFrame(
+                    selectedIndex: index,
+                    unreadCount: unread,
+                    onDestinationSelected: (i) =>
+                        _onBranchSelected(navigationShell, i),
+                    child: navigationShell,
+                  ))
           : Scaffold(
               backgroundColor: Colors.white,
               extendBody: true,
@@ -271,183 +280,6 @@ class _IconWithBadge extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _TabletWebLayout extends StatelessWidget {
-  const _TabletWebLayout({
-    required this.extendedRail,
-    required this.selectedIndex,
-    required this.unreadCount,
-    required this.onDestinationSelected,
-    required this.child,
-  });
-
-  final bool extendedRail;
-  final int selectedIndex;
-  final int unreadCount;
-  final void Function(int) onDestinationSelected;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!extendedRail) {
-      // Tablet: unchanged
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _IconRail(
-              selectedIndex: selectedIndex,
-              unreadCount: unreadCount,
-              onDestinationSelected: onDestinationSelected,
-            ),
-            const PanelDivider(),
-            Expanded(child: child),
-          ],
-        ),
-      );
-    }
-
-    return BuyerWebAppFrame(
-      sidebarBuilder: (frameWidth) => BuyerWebSidebar(
-        frameWidth: frameWidth,
-        selectedIndex: selectedIndex,
-        unreadCount: unreadCount,
-        onDestinationSelected: onDestinationSelected,
-      ),
-      content: child,
-    );
-  }
-}
-
-/// 56px icon rail shown on tablet.
-/// Replaces the old NavigationRail
-/// with a cleaner custom version
-/// consistent with the sidebar.
-class _IconRail extends StatelessWidget {
-  const _IconRail({
-    required this.selectedIndex,
-    required this.unreadCount,
-    required this.onDestinationSelected,
-  });
-
-  final int selectedIndex;
-  final int unreadCount;
-  final void Function(int) onDestinationSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: AppBreakpoints.iconRailWidth,
-      color: AppColors.background,
-      child: Column(
-        children: [
-          // Logo mark
-          Padding(
-            padding: const EdgeInsets.only(top: 14, bottom: 12),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.secondary,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.directions_car_filled,
-                color: Colors.white,
-                size: 17,
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          // Nav icons
-          ...AppNavDestinations.items.asMap().entries.map((entry) {
-            final i = entry.key;
-            final dest = entry.value;
-            final isSelected = i == selectedIndex;
-            final badge = i == 1 ? unreadCount : 0;
-            return _IconRailItem(
-              icon: isSelected ? dest.activeIcon : dest.icon,
-              label: dest.label,
-              isSelected: isSelected,
-              badgeCount: badge,
-              onTap: () => onDestinationSelected(i),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-}
-
-/// Single icon item in the rail.
-class _IconRailItem extends StatelessWidget {
-  const _IconRailItem({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    this.badgeCount = 0,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final int badgeCount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: label,
-      preferBelow: false,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Material(
-          color: isSelected ? AppColors.infoBackground : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(10),
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    size: 20,
-                    color: isSelected
-                        ? AppColors.secondary
-                        : AppColors.textTertiary,
-                  ),
-                  if (badgeCount > 0)
-                    Positioned(
-                      top: 6,
-                      right: 6,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: AppColors.danger,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.background,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
