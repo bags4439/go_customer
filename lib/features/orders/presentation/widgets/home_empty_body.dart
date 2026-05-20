@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_customer/core/layout/app_breakpoints.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,6 +9,7 @@ import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
 import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
 import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
+import 'home_empty_how_it_works.dart';
 import 'home_empty_illustrations.dart';
 import 'home_layout_utils.dart';
 import 'home_theme.dart';
@@ -229,53 +229,7 @@ class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    GridView.count(
-                      crossAxisCount: AppBreakpoints.isWeb(context) ? 3 : 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                      childAspectRatio: AppBreakpoints.isWeb(context)
-                          ? 1.3
-                          : 1.5,
-                      children: [
-                        HomeEmptyFeatureItem(
-                          iconBg: HomeColors.infoBg,
-                          title: 'Dedicated agent',
-                          subtitle: 'Matched to you\nwithin minutes',
-                          iconWidget: CustomPaint(
-                            painter: HomeEmptyAgentIconPainter(),
-                          ),
-                        ),
-                        HomeEmptyFeatureItem(
-                          iconBg: HomeColors.successBg,
-                          title: 'Every step tracked',
-                          subtitle:
-                              'Live updates from\nauction/purchase to delivery',
-                          iconWidget: CustomPaint(
-                            painter: HomeEmptyTrackingIconPainter(),
-                          ),
-                        ),
-                        HomeEmptyFeatureItem(
-                          iconBg: HomeColors.warningBg,
-                          title: 'Duty & clearance',
-                          subtitle: 'GRA paperwork\nfully managed',
-                          iconWidget: CustomPaint(
-                            painter: HomeEmptyClearanceIconPainter(),
-                          ),
-                        ),
-                        HomeEmptyFeatureItem(
-                          iconBg: HomeColors.infoBg,
-                          title: 'Door delivery',
-                          subtitle: 'Straight to your\nhome in Ghana',
-                          iconWidget: CustomPaint(
-                            painter: HomeEmptyDeliveryIconPainter(),
-                          ),
-                        ),
-                      ],
-                    ),
-
+                    const HomeEmptyHowItWorksGrid(),
                     const SizedBox(height: 32),
                   ],
                 ),
