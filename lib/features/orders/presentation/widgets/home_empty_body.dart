@@ -135,7 +135,7 @@ class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
                                   child: ElevatedButton(
                                     onPressed: () => GoRouter.of(
                                       context,
-                                    ).push('/preferences/new'),
+                                    ).go('/preferences/new'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: HomeColors.primary,
                                       foregroundColor: Colors.white,
