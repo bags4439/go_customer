@@ -41,19 +41,12 @@ class AgentConnectionAgentAvatar extends StatelessWidget {
             placeholder: (_, __) => Shimmer.fromColors(
               baseColor: AppColors.surface,
               highlightColor: Colors.white,
-              child: Container(
-                width: d,
-                height: d,
-                color: AppColors.surface,
-              ),
+              child: Container(width: d, height: d, color: AppColors.surface),
             ),
             errorWidget: (_, __, ___) => GestureDetector(
               onTap: () {},
               behavior: HitTestBehavior.opaque,
-              child: _InitialsCircle(
-                radius: radius,
-                agent: agent,
-              ),
+              child: _InitialsCircle(radius: radius, agent: agent),
             ),
           ),
         ),
@@ -75,10 +68,7 @@ class AgentConnectionAgentAvatar extends StatelessWidget {
 }
 
 class _InitialsCircle extends StatelessWidget {
-  const _InitialsCircle({
-    required this.radius,
-    required this.agent,
-  });
+  const _InitialsCircle({required this.radius, required this.agent});
 
   final double radius;
   final AgentDetailView agent;

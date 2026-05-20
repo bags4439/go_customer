@@ -31,8 +31,13 @@ class AgentConnectionNextStep extends StatelessWidget {
             child: Center(
               child: Text(
                 '$number',
-                style: AppTextStyles.labelMedium
-                    .copyWith(color: AppColors.infoText, fontWeight: FontWeight.w600, fontSize: 12, height: 1.0, letterSpacing: 0.0),
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.infoText,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  height: 1.0,
+                  letterSpacing: 0.0,
+                ),
               ),
             ),
           ),

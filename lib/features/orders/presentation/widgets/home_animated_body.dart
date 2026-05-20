@@ -1,15 +1,15 @@
-part of '../screens/home_screen.dart';
+import 'package:flutter/material.dart';
 
-class _AnimatedBody extends StatefulWidget {
+class HomeAnimatedBody extends StatefulWidget {
+  const HomeAnimatedBody({super.key, required this.child});
+
   final Widget child;
 
-  const _AnimatedBody({required this.child});
-
   @override
-  State<_AnimatedBody> createState() => _AnimatedBodyState();
+  State<HomeAnimatedBody> createState() => _HomeAnimatedBodyState();
 }
 
-class _AnimatedBodyState extends State<_AnimatedBody>
+class _HomeAnimatedBodyState extends State<HomeAnimatedBody>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _fade;
@@ -37,8 +37,10 @@ class _AnimatedBodyState extends State<_AnimatedBody>
   }
 
   @override
-  Widget build(BuildContext context) => FadeTransition(
-        opacity: _fade,
-        child: SlideTransition(position: _slide, child: widget.child),
-      );
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(position: _slide, child: widget.child),
+    );
+  }
 }

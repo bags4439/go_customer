@@ -43,9 +43,10 @@ class _OrderCancelScreenState extends ConsumerState<OrderCancelScreen>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _cardSlide = Tween<double>(begin: 0.3, end: 0).animate(
-      CurvedAnimation(parent: _cardController, curve: Curves.easeOut),
-    );
+    _cardSlide = Tween<double>(
+      begin: 0.3,
+      end: 0,
+    ).animate(CurvedAnimation(parent: _cardController, curve: Curves.easeOut));
     _buttonsOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _cardController,
@@ -69,7 +70,9 @@ class _OrderCancelScreenState extends ConsumerState<OrderCancelScreen>
       data: (order) {
         if (order == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text(OrderEditConstants.cancelOrderTitle)),
+            appBar: AppBar(
+              title: const Text(OrderEditConstants.cancelOrderTitle),
+            ),
             body: const Center(child: Text('Order not found')),
           );
         }
@@ -83,7 +86,9 @@ class _OrderCancelScreenState extends ConsumerState<OrderCancelScreen>
             }
           });
           return Scaffold(
-            appBar: AppBar(title: const Text(OrderEditConstants.cancelOrderTitle)),
+            appBar: AppBar(
+              title: const Text(OrderEditConstants.cancelOrderTitle),
+            ),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -119,10 +124,7 @@ class _OrderCancelScreenState extends ConsumerState<OrderCancelScreen>
       elevation: 0,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(
-          color: const Color(_kBorderColor),
-          height: 0.5,
-        ),
+        child: Container(color: const Color(_kBorderColor), height: 0.5),
       ),
     );
   }
@@ -148,10 +150,7 @@ class _AccessDeniedScreen extends StatelessWidget {
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            color: const Color(_kBorderColor),
-            height: 0.5,
-          ),
+          child: Container(color: const Color(_kBorderColor), height: 0.5),
         ),
       ),
       body: Center(
@@ -166,8 +165,11 @@ class _AccessDeniedScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.lock_outline,
-                    size: 48, color: Color(0xFFAAAAAA)),
+                const Icon(
+                  Icons.lock_outline,
+                  size: 48,
+                  color: Color(0xFFAAAAAA),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   OrderEditConstants.notAvailable,
@@ -262,10 +264,7 @@ class _CancelContent extends ConsumerWidget {
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            color: const Color(_kBorderColor),
-            height: 0.5,
-          ),
+          child: Container(color: const Color(_kBorderColor), height: 0.5),
         ),
       ),
       body: SingleChildScrollView(
@@ -275,17 +274,24 @@ class _CancelContent extends ConsumerWidget {
           children: [
             if (vehicleOptionsSent.valueOrNull == true) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(_kAmberBg),
                   border: const Border(
-                      left: BorderSide(color: Color(_kAmberBorder), width: 3)),
+                    left: BorderSide(color: Color(_kAmberBorder), width: 3),
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber_rounded,
-                        size: 16, color: Color(_kAmberBorder)),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      size: 16,
+                      color: Color(_kAmberBorder),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -345,13 +351,17 @@ class _CancelContent extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFEAF3DE),
                 border: const Border(
-                    left: BorderSide(color: Color(_kSuccess), width: 3)),
+                  left: BorderSide(color: Color(_kSuccess), width: 3),
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_outline,
-                      size: 16, color: Color(_kSuccess)),
+                  const Icon(
+                    Icons.check_circle_outline,
+                    size: 16,
+                    color: Color(_kSuccess),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -437,9 +447,9 @@ class _CancelContent extends ConsumerWidget {
 
 final _carPrefsForOrderProvider =
     FutureProvider.family<Map<String, dynamic>?, String>((ref, orderId) async {
-  final ds = PreferencesFirestoreDataSource(ref.watch(firestoreProvider));
-  return ds.getCarPreferences(orderId);
-});
+      final ds = PreferencesFirestoreDataSource(ref.watch(firestoreProvider));
+      return ds.getCarPreferences(orderId);
+    });
 
 class _OrderSummaryCard extends StatelessWidget {
   final String orderRef;
@@ -487,17 +497,14 @@ class _OrderSummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Container(
-            height: 0.5,
-            color: const Color(_kBorderColor),
-          ),
-          _SummaryRow(
-              label: OrderEditConstants.orderLabel, value: orderRef),
+          Container(height: 0.5, color: const Color(_kBorderColor)),
+          _SummaryRow(label: OrderEditConstants.orderLabel, value: orderRef),
           _SummaryRow(label: OrderEditConstants.carLabel, value: carLabel),
+          _SummaryRow(label: OrderEditConstants.agentLabel, value: agentName),
           _SummaryRow(
-              label: OrderEditConstants.agentLabel, value: agentName),
-          _SummaryRow(
-              label: OrderEditConstants.statusLabel, value: statusLabel),
+            label: OrderEditConstants.statusLabel,
+            value: statusLabel,
+          ),
           _SummaryRow(
             label: OrderEditConstants.amountPaidLabel,
             value: OrderEditConstants.amountPaidZero,

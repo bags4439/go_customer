@@ -1,65 +1,20 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_customer/core/theme/app_text_styles.dart';
-import 'package:go_router/go_router.dart';
-import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/layout/app_breakpoints.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../core/widgets/web_dashboard_right_panel.dart';
-import '../../../../shared/providers/preferred_currency_provider.dart';
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
-import '../../../referral/presentation/widgets/referral_promo_card.dart';
-import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/widgets/coach_mark_card.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
-import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../providers/order_providers.dart';
-
-part '../widgets/home_theme.dart';
-part '../widgets/home_animated_body.dart';
-part '../widgets/home_shimmer.dart';
-part '../widgets/home_error.dart';
-part '../widgets/home_empty.dart';
-part '../widgets/home_metric_card.dart';
-part '../widgets/home_order_card.dart';
-part '../widgets/home_staggered_item.dart';
-part '../widgets/home_multi_order.dart';
-
-/// Extra bottom inset when [HomeScreen] is under the mobile floating shell nav.
-double _shellFloatingNavScrollBottomExtra(BuildContext context) {
-  if (!ResponsiveLayout.isMobile(context)) return 0;
-  final bottomInset = MediaQuery.paddingOf(context).bottom;
-  return bottomInset + 64 + 24;
-}
-
-String? _firstNameFromUser(AsyncValue<dynamic> userAsync) {
-  return userAsync.maybeWhen(
-    data: (user) {
-      if (user == null) return null;
-      final dynamic u = user;
-      final name = u.fullName;
-      if (name is! String || name.trim().isEmpty) return null;
-      final parts = name
-          .trim()
-          .split(RegExp(r'\s+'))
-          .where((s) => s.isNotEmpty)
-          .toList();
-      if (parts.isEmpty) return null;
-      return parts.first;
-    },
-    orElse: () => null,
-  );
-}
+import '../widgets/home_animated_body.dart';
+import '../widgets/home_empty_body.dart';
+import '../widgets/home_error_body.dart';
+import '../widgets/home_layout_utils.dart';
+import '../widgets/home_multi_order.dart';
+import '../widgets/home_screen_app_bar.dart';
+import '../widgets/home_shimmer.dart';
+import '../widgets/home_theme.dart';
+import '../widgets/home_web_scaffold.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -84,88 +39,32 @@ class HomeScreen extends ConsumerWidget {
     );
 
     final isWeb = AppBreakpoints.isWeb(context);
+    const appBar = HomeScreenAppBar();
 
     final bodyContent = ordersAsync.when(
-      data: (orders) => _AnimatedBody(
+      data: (orders) => HomeAnimatedBody(
         child: orders.isEmpty
-            ? _EmptyHome(firstName: _firstNameFromUser(currentUserAsync))
-            : _MultiOrderHome(
+            ? HomeEmptyBody(firstName: homeFirstNameFromUser(currentUserAsync))
+            : HomeMultiOrderBody(
                 orders: orders,
                 pendingPayments: pendingPayments,
                 pendingReviews: pendingReviews,
                 currentUserName: currentUserAsync.value?.fullName,
               ),
       ),
-      loading: () => const _HomeShimmer(),
+      loading: () => const HomeShimmer(),
       error: (_, __) =>
-          _ErrorHome(onRetry: () => ref.invalidate(buyerOrdersProvider)),
+          HomeErrorBody(onRetry: () => ref.invalidate(buyerOrdersProvider)),
     );
 
     if (isWeb) {
-
-      return Scaffold(
-        backgroundColor: AppColors.surface,
-        appBar: _buildAppBar(context),
-        body: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(flex: 5,child: bodyContent,),
-            Container(width: 0.5, color: AppColors.borderSolid),
-            Expanded(flex: 4,child: WebDashboardRightPanel(),)
-          ],
-        ),
-      );
+      return HomeWebScaffold(appBar: appBar, body: bodyContent);
     }
 
     return Scaffold(
-      backgroundColor: _C.bgPrimary,
-      appBar: _buildAppBar(context),
+      backgroundColor: HomeColors.bgPrimary,
+      appBar: appBar,
       body: bodyContent,
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    final isMobile = AppBreakpoints.isMobile(context);
-
-    if (isMobile) {
-      return AppBar(
-        backgroundColor: _C.bgPrimary,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
-        titleSpacing: 20,
-        title: const _AppLogo(),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.headset_mic_rounded, size: 22),
-            color: AppColors.textSecondary,
-            tooltip: 'Support',
-            style: IconButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              padding: const EdgeInsets.only(right: 16),
-            ),
-            onPressed: () => SupportBottomSheet.show(context),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: _C.border),
-        ),
-      );
-    }
-
-    return AppBar(
-      backgroundColor: AppColors.surface,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      automaticallyImplyLeading: false,
-      titleSpacing: 20,
-      centerTitle: false,
-      title: Text('Home', style: AppTextStyles.appBarTitle),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(0.5),
-        child: Container(height: 0.5, color: AppColors.borderSolid),
-      ),
     );
   }
 }

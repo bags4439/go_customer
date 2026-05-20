@@ -34,15 +34,15 @@ class AgentConnectionAssignStep extends StatelessWidget {
                   color: done
                       ? AppColors.success
                       : active
-                          ? AppColors.secondary
-                          : AppColors.borderSolid,
+                      ? AppColors.secondary
+                      : AppColors.borderSolid,
                 ),
                 child: Icon(
                   done
                       ? Icons.check
                       : active
-                          ? Icons.circle
-                          : Icons.circle,
+                      ? Icons.circle
+                      : Icons.circle,
                   size: done ? 14 : 9,
                   color: (done || active)
                       ? Colors.white
@@ -65,17 +65,19 @@ class AgentConnectionAssignStep extends StatelessWidget {
               padding: const EdgeInsets.only(top: 3),
               child: Text(
                 text,
-                style: (active
-                        ? AppTextStyles.labelLarge
-                        : AppTextStyles.bodyMedium)
-                    .copyWith(
-                  fontSize: 14,
-                  color: done || active
-                      ? AppColors.textPrimary
-                      : AppColors.textTertiary,
-                  fontWeight:
-                      active ? FontWeight.w600 : FontWeight.w400,
-                ),
+                style:
+                    (active
+                            ? AppTextStyles.labelLarge
+                            : AppTextStyles.bodyMedium)
+                        .copyWith(
+                          fontSize: 14,
+                          color: done || active
+                              ? AppColors.textPrimary
+                              : AppColors.textTertiary,
+                          fontWeight: active
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
               ),
             ),
           ),

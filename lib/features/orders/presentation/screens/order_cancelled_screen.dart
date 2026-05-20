@@ -35,10 +35,7 @@ class _OrderCancelledScreenState extends ConsumerState<OrderCancelledScreen>
       duration: const Duration(milliseconds: 400),
     );
     _iconScale = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _iconController,
-        curve: Curves.easeOutBack,
-      ),
+      CurvedAnimation(parent: _iconController, curve: Curves.easeOutBack),
     );
     _iconController.forward();
   }
@@ -84,10 +81,7 @@ class _OrderCancelledContent extends ConsumerWidget {
           AnimatedBuilder(
             animation: iconScale,
             builder: (context, child) {
-              return Transform.scale(
-                scale: iconScale.value,
-                child: child,
-              );
+              return Transform.scale(scale: iconScale.value, child: child);
             },
             child: const Icon(
               Icons.cancel_outlined,
@@ -107,10 +101,7 @@ class _OrderCancelledContent extends ConsumerWidget {
               color: const Color(_kSurface),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(
-              orderRef,
-              style: AppTextStyles.labelMedium,
-            ),
+            child: Text(orderRef, style: AppTextStyles.labelMedium),
           ),
           const SizedBox(height: 8),
           Text(
@@ -121,10 +112,7 @@ class _OrderCancelledContent extends ConsumerWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
-          Container(
-            height: 0.5,
-            color: const Color(_kBorderColor),
-          ),
+          Container(height: 0.5, color: const Color(_kBorderColor)),
           const SizedBox(height: 20),
           Text(
             OrderEditConstants.wantToImportDifferent,

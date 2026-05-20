@@ -52,26 +52,22 @@ class _AgentConnectionAssignedViewState
     return parts.first;
   }
 
-  Future<void> _launchCall(
-    BuildContext context,
-    String? phone,
-  ) async {
+  Future<void> _launchCall(BuildContext context, String? phone) async {
     if (phone == null || phone.isEmpty) {
       return;
     }
     final uri = Uri(scheme: 'tel', path: phone);
     try {
-      final ok = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'Could not launch call.',
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: Colors.white, height: 1.2),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Colors.white,
+                height: 1.2,
+              ),
             ),
             backgroundColor: AppColors.textPrimary,
             behavior: SnackBarBehavior.floating,
@@ -118,8 +114,7 @@ class _AgentConnectionAssignedViewState
                       const SizedBox(width: 6),
                       Text(
                         'Agent assigned',
-                        style: AppTextStyles.labelLarge
-                            .copyWith(
+                        style: AppTextStyles.labelLarge.copyWith(
                           fontSize: 13,
                           color: AppColors.success,
                           fontWeight: FontWeight.w500,
@@ -167,8 +162,7 @@ class _AgentConnectionAssignedViewState
                             children: [
                               Text(
                                 agent.fullName,
-                                style: AppTextStyles.titleSmall
-                                    .copyWith(
+                                style: AppTextStyles.titleSmall.copyWith(
                                   fontSize: 18,
                                   color: AppColors.textPrimary,
                                   fontWeight: FontWeight.w600,
@@ -240,8 +234,7 @@ class _AgentConnectionAssignedViewState
                           const SizedBox(height: 6),
                           Text(
                             '— $_firstName',
-                            style: AppTextStyles.caption
-                                .copyWith(
+                            style: AppTextStyles.caption.copyWith(
                               color: AppColors.textSecondary,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -268,10 +261,7 @@ class _AgentConnectionAssignedViewState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'What happens next',
-                    style: AppTextStyles.titleSmall,
-                  ),
+                  Text('What happens next', style: AppTextStyles.titleSmall),
                   const SizedBox(height: 14),
                   AgentConnectionNextStep(
                     number: 1,
@@ -331,9 +321,7 @@ class _AgentConnectionAssignedViewState
                     height: 52,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        context.push(
-                          '/order/${widget.orderId}?tab=chat',
-                        );
+                        context.push('/order/${widget.orderId}?tab=chat');
                       },
                       icon: const Icon(
                         Icons.chat_bubble_outline_rounded,
@@ -342,8 +330,7 @@ class _AgentConnectionAssignedViewState
                       ),
                       label: Text(
                         'Chat with $_firstName',
-                        style: AppTextStyles.labelLarge
-                            .copyWith(
+                        style: AppTextStyles.labelLarge.copyWith(
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -351,19 +338,20 @@ class _AgentConnectionAssignedViewState
                           letterSpacing: 0.0,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ).copyWith(
-                        overlayColor: WidgetStateProperty.all(
-                          Colors.white.withValues(alpha: 0.1),
-                        ),
-                      ),
+                      style:
+                          ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ).copyWith(
+                            overlayColor: WidgetStateProperty.all(
+                              Colors.white.withValues(alpha: 0.1),
+                            ),
+                          ),
                     ),
                   ),
                 ),
@@ -374,8 +362,7 @@ class _AgentConnectionAssignedViewState
                     width: 52,
                     height: 52,
                     child: OutlinedButton(
-                      onPressed: () =>
-                          _launchCall(context, widget.agent.phone),
+                      onPressed: () => _launchCall(context, widget.agent.phone),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.secondary,
                         side: const BorderSide(

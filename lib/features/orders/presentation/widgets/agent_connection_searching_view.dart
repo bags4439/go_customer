@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_customer/core/widgets/card_container.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../support/presentation/widgets/support_bottom_sheet.dart';
@@ -33,14 +34,11 @@ class _AgentConnectionSearchingViewState
   @override
   void initState() {
     super.initState();
-    _supportTimer = Timer(
-      const Duration(minutes: 2),
-      () {
-        if (mounted) {
-          setState(() => _showSupport = true);
-        }
-      },
-    );
+    _supportTimer = Timer(const Duration(minutes: 2), () {
+      if (mounted) {
+        setState(() => _showSupport = true);
+      }
+    });
   }
 
   @override
@@ -91,8 +89,13 @@ class _AgentConnectionSearchingViewState
                   Text(
                     'Finding your agent',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.displaySmall
-                        .copyWith(color: AppColors.textPrimary, fontSize: 26, fontWeight: FontWeight.w600, height: 1.0, letterSpacing: 0.0),
+                    style: AppTextStyles.displaySmall.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                      height: 1.0,
+                      letterSpacing: 0.0,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -105,38 +108,41 @@ class _AgentConnectionSearchingViewState
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AgentConnectionAssignStep(
-                          done: true,
-                          active: false,
-                          text: 'Preferences submitted',
-                        ),
-                        AgentConnectionAssignStep(
-                          done: false,
-                          active: true,
-                          text: 'Assigning your agent',
-                        ),
-                        AgentConnectionAssignStep(
-                          done: false,
-                          active: false,
-                          text: AgentConnectionLabels.step3Label(widget.order),
-                        ),
-                        AgentConnectionAssignStep(
-                          done: false,
-                          active: false,
-                          text: AgentConnectionLabels.step4Label(widget.order),
-                          isLast: true,
-                        ),
-                      ],
+                  CardContainer(
+                    paddingType: CardContainerPaddingType.large,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          AgentConnectionAssignStep(
+                            done: true,
+                            active: false,
+                            text: 'Preferences submitted',
+                          ),
+                          AgentConnectionAssignStep(
+                            done: false,
+                            active: true,
+                            text: 'Assigning your agent',
+                          ),
+                          AgentConnectionAssignStep(
+                            done: false,
+                            active: false,
+                            text: AgentConnectionLabels.step3Label(
+                              widget.order,
+                            ),
+                          ),
+                          AgentConnectionAssignStep(
+                            done: false,
+                            active: false,
+                            text: AgentConnectionLabels.step4Label(
+                              widget.order,
+                            ),
+                            isLast: true,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -167,8 +173,7 @@ class _AgentConnectionSearchingViewState
                                   child: Text(
                                     'Taking longer than expected. '
                                     "We'll notify you when assigned.",
-                                    style: AppTextStyles.labelMedium
-                                        .copyWith(
+                                    style: AppTextStyles.labelMedium.copyWith(
                                       color: AppColors.amberText,
                                       fontWeight: FontWeight.w400,
                                       height: 1.4,
@@ -194,8 +199,7 @@ class _AgentConnectionSearchingViewState
                               const SizedBox(width: 6),
                               Text(
                                 'Usually takes a few minutes',
-                                style: AppTextStyles.bodySmall
-                                    .copyWith(
+                                style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                               ),
@@ -217,12 +221,8 @@ class _AgentConnectionSearchingViewState
                       ),
                     ),
                     child: _showSupport
-                        ? const _SupportPrompt(
-                            key: ValueKey('support'),
-                          )
-                        : const SizedBox.shrink(
-                            key: ValueKey('empty'),
-                          ),
+                        ? const _SupportPrompt(key: ValueKey('support'))
+                        : const SizedBox.shrink(key: ValueKey('empty')),
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -247,8 +247,13 @@ class _SupportPrompt extends StatelessWidget {
         children: [
           Text(
             'Taking longer than expected?',
-            style: AppTextStyles.bodySmall
-                .copyWith(color: AppColors.textTertiary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.2, letterSpacing: 0.0),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              height: 1.2,
+              letterSpacing: 0.0,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
@@ -264,15 +269,17 @@ class _SupportPrompt extends StatelessWidget {
               ),
               label: Text(
                 'Contact support',
-                style: AppTextStyles.labelLarge
-                    .copyWith(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w500, height: 1.0, letterSpacing: 0.0),
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.secondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  height: 1.0,
+                  letterSpacing: 0.0,
+                ),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.secondary,
-                side: const BorderSide(
-                  color: AppColors.secondary,
-                  width: 0.5,
-                ),
+                side: const BorderSide(color: AppColors.secondary, width: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

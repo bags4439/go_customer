@@ -1,16 +1,20 @@
-part of '../screens/home_screen.dart';
+import 'package:flutter/material.dart';
 
-class _StaggeredItem extends StatefulWidget {
+class HomeStaggeredItem extends StatefulWidget {
   final int index;
   final Widget child;
 
-  const _StaggeredItem({required this.index, required this.child});
+  const HomeStaggeredItem({
+    super.key,
+    required this.index,
+    required this.child,
+  });
 
   @override
-  State<_StaggeredItem> createState() => _StaggeredItemState();
+  State<HomeStaggeredItem> createState() => HomeStaggeredItemState();
 }
 
-class _StaggeredItemState extends State<_StaggeredItem>
+class HomeStaggeredItemState extends State<HomeStaggeredItem>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _fade;
@@ -42,7 +46,7 @@ class _StaggeredItemState extends State<_StaggeredItem>
 
   @override
   Widget build(BuildContext context) => FadeTransition(
-        opacity: _fade,
-        child: SlideTransition(position: _slide, child: widget.child),
-      );
+    opacity: _fade,
+    child: SlideTransition(position: _slide, child: widget.child),
+  );
 }

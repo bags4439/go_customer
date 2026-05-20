@@ -23,11 +23,10 @@ export '../../domain/entities/payment_request_view.dart'
 
 // ── Infrastructure providers ────────────────────────────
 
-final orderFirestoreDataSourceProvider =
-    Provider<OrderFirestoreDataSource>((ref) {
-  return OrderFirestoreDataSource(
-    ref.watch(firestoreProvider),
-  );
+final orderFirestoreDataSourceProvider = Provider<OrderFirestoreDataSource>((
+  ref,
+) {
+  return OrderFirestoreDataSource(ref.watch(firestoreProvider));
 });
 
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
@@ -40,39 +39,30 @@ final orderRepositoryProvider = Provider<OrderRepository>((ref) {
 // ── Use case providers ──────────────────────────────────
 
 final watchOrderUseCaseProvider = Provider<WatchOrderUseCase>((ref) {
-  return WatchOrderUseCase(
-    ref.watch(orderRepositoryProvider),
-  );
+  return WatchOrderUseCase(ref.watch(orderRepositoryProvider));
 });
 
-final watchBuyerOrdersUseCaseProvider =
-    Provider<WatchBuyerOrdersUseCase>((ref) {
-  return WatchBuyerOrdersUseCase(
-    ref.watch(orderRepositoryProvider),
-  );
+final watchBuyerOrdersUseCaseProvider = Provider<WatchBuyerOrdersUseCase>((
+  ref,
+) {
+  return WatchBuyerOrdersUseCase(ref.watch(orderRepositoryProvider));
 });
 
-final getAgentDetailUseCaseProvider =
-    Provider<GetAgentDetailUseCase>((ref) {
-  return GetAgentDetailUseCase(
-    ref.watch(orderRepositoryProvider),
-  );
+final getAgentDetailUseCaseProvider = Provider<GetAgentDetailUseCase>((ref) {
+  return GetAgentDetailUseCase(ref.watch(orderRepositoryProvider));
 });
 
 final cancelOrderUseCaseProvider = Provider<CancelOrderUseCase>((ref) {
-  return CancelOrderUseCase(
-    ref.watch(orderRepositoryProvider),
-  );
+  return CancelOrderUseCase(ref.watch(orderRepositoryProvider));
 });
 
 // ── Order stream ────────────────────────────────────────
 
-final orderProvider =
-    StreamProvider.family<OrderView?, String>((ref, orderId) {
+final orderProvider = StreamProvider.family<OrderView?, String>((ref, orderId) {
   final useCase = ref.watch(watchOrderUseCaseProvider);
-  return useCase(orderId).map(
-    (either) => either.fold((_) => null, (order) => order),
-  );
+  return useCase(
+    orderId,
+  ).map((either) => either.fold((_) => null, (order) => order));
 });
 
 // ── Buyer orders stream ─────────────────────────────────
@@ -81,15 +71,17 @@ final buyerOrdersProvider = StreamProvider<List<OrderView>>((ref) {
   final uid = ref.watch(authStateProvider).value;
   if (uid == null) return const Stream.empty();
   final useCase = ref.watch(watchBuyerOrdersUseCaseProvider);
-  return useCase(uid).map(
-    (either) => either.fold((_) => [], (orders) => orders),
-  );
+  return useCase(
+    uid,
+  ).map((either) => either.fold((_) => [], (orders) => orders));
 });
 
 // ── Agent detail ────────────────────────────────────────
 
-final agentDetailProvider =
-    FutureProvider.family<AgentDetailView?, String>((ref, agentId) async {
+final agentDetailProvider = FutureProvider.family<AgentDetailView?, String>((
+  ref,
+  agentId,
+) async {
   final useCase = ref.watch(getAgentDetailUseCaseProvider);
   final result = await useCase(agentId);
   return result.fold((_) => null, (agent) => agent);
@@ -99,39 +91,41 @@ final agentDetailProvider =
 
 final activePaymentRequestProvider =
     StreamProvider.family<PaymentRequestView?, String>((ref, orderId) {
-  final firestore = ref.watch(firestoreProvider);
-  return firestore
-      .collection(FirestoreCollections.paymentRequests)
-      .where('orderId', isEqualTo: orderId)
-      .where(
-        'status',
-        isEqualTo: FirestoreEnumValues.paymentRequestStatusPending,
-      )
-      .limit(1)
-      .snapshots()
-      .map((snapshot) {
-    if (snapshot.docs.isEmpty) return null;
-    final doc = snapshot.docs.first;
-    final data = doc.data();
-    final amountUsd = (data['amountUsd'] as num?)?.toDouble() ?? 0;
-    final deadlineRaw = data['deadlineAt'];
-    DateTime? deadline;
-    if (deadlineRaw is Timestamp) {
-      deadline = deadlineRaw.toDate();
-    }
-    return PaymentRequestView(
-      id: doc.id,
-      amountUsd: amountUsd,
-      type: (data['type'] as String?) ?? '',
-      deadlineAt: deadline,
-    );
-  });
-});
+      final firestore = ref.watch(firestoreProvider);
+      return firestore
+          .collection(FirestoreCollections.paymentRequests)
+          .where('orderId', isEqualTo: orderId)
+          .where(
+            'status',
+            isEqualTo: FirestoreEnumValues.paymentRequestStatusPending,
+          )
+          .limit(1)
+          .snapshots()
+          .map((snapshot) {
+            if (snapshot.docs.isEmpty) return null;
+            final doc = snapshot.docs.first;
+            final data = doc.data();
+            final amountUsd = (data['amountUsd'] as num?)?.toDouble() ?? 0;
+            final deadlineRaw = data['deadlineAt'];
+            DateTime? deadline;
+            if (deadlineRaw is Timestamp) {
+              deadline = deadlineRaw.toDate();
+            }
+            return PaymentRequestView(
+              id: doc.id,
+              amountUsd: amountUsd,
+              type: (data['type'] as String?) ?? '',
+              deadlineAt: deadline,
+            );
+          });
+    });
 
 // ── Unread messages count ───────────────────────────────
 
-final unreadMessagesCountProvider =
-    StreamProvider.family<int, String>((ref, orderId) {
+final unreadMessagesCountProvider = StreamProvider.family<int, String>((
+  ref,
+  orderId,
+) {
   final firestore = ref.watch(firestoreProvider);
   return firestore
       .collection(FirestoreCollections.messages)
@@ -146,8 +140,7 @@ final unreadMessagesCountProvider =
 final pendingPaymentCountProvider = Provider<int>((ref) {
   final ordersAsync = ref.watch(buyerOrdersProvider);
   return ordersAsync.maybeWhen(
-    data: (orders) =>
-        orders.where((o) => o.needsPayment).length,
+    data: (orders) => orders.where((o) => o.needsPayment).length,
     orElse: () => 0,
   );
 });
@@ -157,23 +150,14 @@ final pendingPaymentCountProvider = Provider<int>((ref) {
 /// but has not yet submitted
 /// a review. These require
 /// action to close the order.
-final pendingReviewCountProvider =
-    Provider<int>((ref) {
-  final orders = ref.watch(
-    buyerOrdersProvider,
-  ).valueOrNull ?? [];
+final pendingReviewCountProvider = Provider<int>((ref) {
+  final orders = ref.watch(buyerOrdersProvider).valueOrNull ?? [];
   return orders
-      .where(
-        (o) =>
-            o.status ==
-            AppConstants
-                .statusDeliveryConfirmed,
-      )
+      .where((o) => o.status == AppConstants.statusDeliveryConfirmed)
       .length;
 });
 
-final canEditOrderProvider =
-    Provider.family<bool, String>((ref, orderId) {
+final canEditOrderProvider = Provider.family<bool, String>((ref, orderId) {
   final orderAsync = ref.watch(orderProvider(orderId));
   return orderAsync.maybeWhen(
     data: (order) {
@@ -187,8 +171,10 @@ final canEditOrderProvider =
   );
 });
 
-final vehicleOptionsSentProvider =
-    FutureProvider.family<bool, String>((ref, orderId) async {
+final vehicleOptionsSentProvider = FutureProvider.family<bool, String>((
+  ref,
+  orderId,
+) async {
   final firestore = ref.watch(firestoreProvider);
   final snapshot = await firestore
       .collection(FirestoreCollections.vehicleOptions)
@@ -204,8 +190,7 @@ final vehicleOptionsSentProvider =
 enum CancelOrderStatus { idle, cancelling, cancelled, error }
 
 class CancelOrderNotifier extends StateNotifier<CancelOrderStatus> {
-  CancelOrderNotifier(this._orderId, this._ref)
-      : super(CancelOrderStatus.idle);
+  CancelOrderNotifier(this._orderId, this._ref) : super(CancelOrderStatus.idle);
 
   final String _orderId;
   final Ref _ref;
@@ -215,8 +200,7 @@ class CancelOrderNotifier extends StateNotifier<CancelOrderStatus> {
     final repo = _ref.read(orderRepositoryProvider);
     final guardResult = await repo.getOrderGuard(_orderId);
     final guard = guardResult.fold((_) => null, (g) => g);
-    if (guard != null &&
-        (guard['firstPaymentMade'] as bool? ?? false)) {
+    if (guard != null && (guard['firstPaymentMade'] as bool? ?? false)) {
       state = CancelOrderStatus.error;
       return false;
     }
@@ -235,7 +219,9 @@ class CancelOrderNotifier extends StateNotifier<CancelOrderStatus> {
   }
 }
 
-final cancelOrderNotifierProvider = StateNotifierProvider.family<
-    CancelOrderNotifier, CancelOrderStatus, String>(
-  (ref, orderId) => CancelOrderNotifier(orderId, ref),
-);
+final cancelOrderNotifierProvider =
+    StateNotifierProvider.family<
+      CancelOrderNotifier,
+      CancelOrderStatus,
+      String
+    >((ref, orderId) => CancelOrderNotifier(orderId, ref));

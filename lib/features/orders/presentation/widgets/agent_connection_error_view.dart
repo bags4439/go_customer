@@ -55,8 +55,11 @@ class AgentConnectionErrorView extends StatelessWidget {
                   ),
                   child: Text(
                     'Try again',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(fontWeight: FontWeight.w500, color: AppColors.secondary, letterSpacing: 0.0),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.secondary,
+                      letterSpacing: 0.0,
+                    ),
                   ),
                 ),
               ),

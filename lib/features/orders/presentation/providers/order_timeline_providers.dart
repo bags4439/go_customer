@@ -60,7 +60,8 @@ final orderShippingProvider = StreamProvider.family<ShippingModel?, String>((
       .limit(1)
       .snapshots()
       .map(
-        (s) => s.docs.isEmpty ? null : ShippingModel.fromFirestore(s.docs.first),
+        (s) =>
+            s.docs.isEmpty ? null : ShippingModel.fromFirestore(s.docs.first),
       );
 });
 
@@ -93,4 +94,4 @@ final orderRepairJobProvider = StreamProvider.family<RepairJobModel?, String>((
         (s) =>
             s.docs.isEmpty ? null : RepairJobModel.fromFirestore(s.docs.first),
       );
-    });
+});

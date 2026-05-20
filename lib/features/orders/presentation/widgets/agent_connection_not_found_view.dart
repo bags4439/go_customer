@@ -24,8 +24,13 @@ class AgentConnectionNotFoundView extends StatelessWidget {
             Text(
               'Order not found',
               textAlign: TextAlign.center,
-              style: AppTextStyles.titleSmall
-                  .copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 16, height: 1.2, letterSpacing: 0.0),
+              style: AppTextStyles.titleSmall.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                height: 1.2,
+                letterSpacing: 0.0,
+              ),
             ),
             const SizedBox(height: 8),
             Text(

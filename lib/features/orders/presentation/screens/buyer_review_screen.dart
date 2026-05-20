@@ -64,19 +64,13 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
     final userId = ref.watch(authStateProvider).value;
     final reviewAsync = userId != null
         ? ref.watch(
-            buyerReviewProvider((
-              orderId: widget.orderId,
-              buyerId: userId,
-            )),
+            buyerReviewProvider((orderId: widget.orderId, buyerId: userId)),
           )
         : null;
     final existingReview = reviewAsync?.valueOrNull;
 
     if (existingReview != null) {
-      return _SubmittedScreen(
-        orderId: widget.orderId,
-        review: existingReview,
-      );
+      return _SubmittedScreen(orderId: widget.orderId, review: existingReview);
     }
 
     return PopScope(
@@ -88,17 +82,10 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
           elevation: 0,
           scrolledUnderElevation: 0,
           leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              size: 18,
-            ),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
             color: AppColors.textPrimary,
-            onPressed: _isSubmitting
-                ? null
-                : () => Navigator.of(context).pop(),
-            style: IconButton.styleFrom(
-              minimumSize: const Size(48, 48),
-            ),
+            onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+            style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
           ),
           title: Text(
             'Rate your experience',
@@ -109,10 +96,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(0.5),
-            child: Container(
-              height: 0.5,
-              color: AppColors.borderSolid,
-            ),
+            child: Container(height: 0.5, color: AppColors.borderSolid),
           ),
         ),
         body: Center(
@@ -336,10 +320,7 @@ class _RatingRow extends StatelessWidget {
           style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary),
         ),
         const SizedBox(height: 2),
-        Text(
-          description,
-          style: AppTextStyles.cardLabel,
-        ),
+        Text(description, style: AppTextStyles.cardLabel),
         const SizedBox(height: 10),
         Row(
           children: List.generate(5, (i) {
@@ -381,16 +362,22 @@ class _SubmittedScreen extends StatelessWidget {
   final String orderId;
   final BuyerReviewModel review;
 
-  const _SubmittedScreen({
-    required this.orderId,
-    required this.review,
-  });
+  const _SubmittedScreen({required this.orderId, required this.review});
 
   static String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr',
-      'May', 'Jun', 'Jul', 'Aug',
-      'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }
@@ -406,15 +393,10 @@ class _SubmittedScreen extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            size: 18,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
           color: AppColors.textPrimary,
           onPressed: () => Navigator.of(context).pop(),
-          style: IconButton.styleFrom(
-            minimumSize: const Size(48, 48),
-          ),
+          style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
         ),
         title: Text(
           'Your review',
@@ -425,10 +407,7 @@ class _SubmittedScreen extends StatelessWidget {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            height: 0.5,
-            color: AppColors.borderSolid,
-          ),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
       body: Center(
@@ -446,138 +425,134 @@ class _SubmittedScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0F9F4),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.successMutedBorder,
-                  width: 0.5,
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F9F4),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.successMutedBorder,
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          color: AppColors.successMutedBackground,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_circle_rounded,
+                          size: 28,
+                          color: AppColors.success,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Thank you for your\nfeedback!',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.amountMedium.copyWith(
+                          height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Your review has been submitted\n'
+                        'and helps us improve.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodySmall.copyWith(height: 1.5),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                children: [
+                const SizedBox(height: 28),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('YOUR RATING', style: AppTextStyles.labelSmall),
+                    if (review.createdAt != null)
+                      Text(
+                        _SubmittedScreen._formatDate(review.createdAt!),
+                        style: AppTextStyles.caption,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: List.generate(
+                    5,
+                    (i) => Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Icon(
+                        i < stars
+                            ? Icons.star_rounded
+                            : Icons.star_outline_rounded,
+                        size: 36,
+                        color: i < stars
+                            ? const Color(0xFFFFB800)
+                            : AppColors.borderSolid,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _ReadOnlyRatingRow(
+                  label: 'Agent performance',
+                  rating: review.agentRating,
+                ),
+                const SizedBox(height: 12),
+                _ReadOnlyRatingRow(
+                  label: 'Communication',
+                  rating: review.communicationRating,
+                ),
+                const SizedBox(height: 12),
+                _ReadOnlyRatingRow(
+                  label: 'Speed of service',
+                  rating: review.speedRating,
+                ),
+                if (review.comment != null && review.comment!.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text('YOUR COMMENT', style: AppTextStyles.labelSmall),
+                  const SizedBox(height: 10),
                   Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      color: AppColors.successMutedBackground,
-                      shape: BoxShape.circle,
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.borderSolid,
+                        width: 0.5,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.check_circle_rounded,
-                      size: 28,
-                      color: AppColors.success,
+                    child: Text(
+                      review.comment!,
+                      style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Thank you for your\nfeedback!',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.amountMedium.copyWith(
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Your review has been submitted\n'
-                    'and helps us improve.',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(height: 1.5),
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 28),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'YOUR RATING',
-                  style: AppTextStyles.labelSmall,
-                ),
-                if (review.createdAt != null)
-                  Text(
-                    _SubmittedScreen._formatDate(review.createdAt!),
-                    style: AppTextStyles.caption,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: List.generate(
-                5,
-                (i) => Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: Icon(
-                    i < stars ? Icons.star_rounded : Icons.star_outline_rounded,
-                    size: 36,
-                    color: i < stars
-                        ? const Color(0xFFFFB800)
-                        : AppColors.borderSolid,
+                const SizedBox(height: 32),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Back to order',
+                      style: AppTextStyles.buttonLarge,
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            _ReadOnlyRatingRow(
-              label: 'Agent performance',
-              rating: review.agentRating,
-            ),
-            const SizedBox(height: 12),
-            _ReadOnlyRatingRow(
-              label: 'Communication',
-              rating: review.communicationRating,
-            ),
-            const SizedBox(height: 12),
-            _ReadOnlyRatingRow(
-              label: 'Speed of service',
-              rating: review.speedRating,
-            ),
-            if (review.comment != null && review.comment!.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              Text(
-                'YOUR COMMENT',
-                style: AppTextStyles.labelSmall,
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: AppColors.borderSolid,
-                    width: 0.5,
-                  ),
-                ),
-                child: Text(
-                  review.comment!,
-                  style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
-                ),
-              ),
-            ],
-            const SizedBox(height: 32),
-            SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  'Back to order',
-                  style: AppTextStyles.buttonLarge,
-                ),
-              ),
-            ),
               ],
             ),
           ),
@@ -591,10 +566,7 @@ class _ReadOnlyRatingRow extends StatelessWidget {
   final String label;
   final double rating;
 
-  const _ReadOnlyRatingRow({
-    required this.label,
-    required this.rating,
-  });
+  const _ReadOnlyRatingRow({required this.label, required this.rating});
 
   @override
   Widget build(BuildContext context) {

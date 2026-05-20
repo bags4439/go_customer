@@ -1,12 +1,29 @@
-part of '../screens/home_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/layout/app_breakpoints.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_router/go_router.dart';
 
-class _MultiOrderHome extends ConsumerStatefulWidget {
+import '../../../guide/core/constants/guide_keys.dart';
+import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
+import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
+import '../../../guide/presentation/widgets/spotlight_painter.dart';
+import '../../../referral/presentation/widgets/referral_promo_card.dart';
+import '../../domain/entities/order_view.dart';
+import 'home_layout_utils.dart';
+import 'home_metric_card.dart';
+import 'home_order_card.dart';
+import 'home_staggered_item.dart';
+import 'home_theme.dart';
+
+class HomeMultiOrderBody extends ConsumerStatefulWidget {
   final List<OrderView> orders;
   final int pendingPayments;
   final int pendingReviews;
   final String? currentUserName;
 
-  const _MultiOrderHome({
+  const HomeMultiOrderBody({
+    super.key,
     required this.orders,
     required this.pendingPayments,
     required this.pendingReviews,
@@ -14,11 +31,11 @@ class _MultiOrderHome extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_MultiOrderHome> createState() => _MultiOrderHomeState();
+  ConsumerState<HomeMultiOrderBody> createState() => _HomeMultiOrderBodyState();
 }
 
-class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
-    with CoachMarkMixin<_MultiOrderHome> {
+class _HomeMultiOrderBodyState extends ConsumerState<HomeMultiOrderBody>
+    with CoachMarkMixin<HomeMultiOrderBody> {
   final _firstOrderCardKey = GlobalKey();
 
   @override
@@ -64,13 +81,15 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
               style: AppTextStyles.displaySmall.copyWith(
                 fontSize: 26,
                 fontWeight: FontWeight.w600,
-                color: _C.textPrimary,
+                color: HomeColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               _subtitleText(active, needsAction),
-              style: AppTextStyles.bodySmall.copyWith(color: _C.textSecondary),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: HomeColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -79,29 +98,31 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
       Row(
         children: [
           Expanded(
-            child: _MetricCard(
+            child: HomeMetricCard(
               label: 'Active',
               value: '$active',
-              valueColor: _C.primary,
+              valueColor: HomeColors.primary,
               icon: Icons.directions_car_outlined,
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: _MetricCard(
+            child: HomeMetricCard(
               label: 'Action needed',
               value: '$needsAction',
-              valueColor: needsAction > 0 ? _C.danger : _C.textTertiary,
+              valueColor: needsAction > 0
+                  ? HomeColors.danger
+                  : HomeColors.textTertiary,
               icon: Icons.notifications_outlined,
               pulse: needsAction > 0,
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: _MetricCard(
+            child: HomeMetricCard(
               label: 'Completed',
               value: '$completed',
-              valueColor: _C.success,
+              valueColor: HomeColors.success,
               icon: Icons.check_circle_outline,
             ),
           ),
@@ -112,19 +133,19 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
         'YOUR ORDERS',
         style: AppTextStyles.sectionLabel.copyWith(
           fontWeight: FontWeight.w600,
-          color: _C.textTertiary,
+          color: HomeColors.textTertiary,
         ),
       ),
       const SizedBox(height: 10),
       ...sorted.asMap().entries.map(
-        (entry) => _StaggeredItem(
+        (entry) => HomeStaggeredItem(
           index: entry.key,
           child: entry.key == 0
               ? KeyedSubtree(
                   key: _firstOrderCardKey,
-                  child: _OrderCard(order: entry.value),
+                  child: HomeOrderCard(order: entry.value),
                 )
-              : _OrderCard(order: entry.value),
+              : HomeOrderCard(order: entry.value),
         ),
       ),
       const SizedBox(height: 8),
@@ -135,15 +156,15 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: _C.bgPrimary,
+            color: HomeColors.bgPrimary,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: _C.primary.withValues(alpha: 0.25),
+              color: HomeColors.primary.withValues(alpha: 0.25),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: _C.primary.withValues(alpha: 0.06),
+                color: HomeColors.primary.withValues(alpha: 0.06),
                 blurRadius: 12,
                 offset: const Offset(0, 3),
               ),
@@ -155,12 +176,12 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _C.primary.withValues(alpha: 0.10),
+                  color: HomeColors.primary.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.add_circle_outline,
-                  color: _C.primary,
+                  color: HomeColors.primary,
                   size: 20,
                 ),
               ),
@@ -172,7 +193,7 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
                     Text(
                       'Buy another car',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: _C.primary,
+                        color: HomeColors.primary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -183,7 +204,11 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, size: 14, color: _C.primary),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 14,
+                color: HomeColors.primary,
+              ),
             ],
           ),
         ),
@@ -202,7 +227,7 @@ class _MultiOrderHomeState extends ConsumerState<_MultiOrderHome>
                 16,
                 16,
                 16,
-                24 + _shellFloatingNavScrollBottomExtra(context),
+                24 + homeShellFloatingNavScrollBottomExtra(context),
               ),
               children: listChildren,
             ),

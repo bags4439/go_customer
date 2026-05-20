@@ -8,6 +8,7 @@ class WebAppBody extends StatelessWidget {
   final Widget body;
   final Widget? rightPanel;
   final String pageTitle;
+  final VoidCallback? onBack;
   final List<Widget> appBarActions;
 
   const WebAppBody({
@@ -15,6 +16,7 @@ class WebAppBody extends StatelessWidget {
     required this.body,
     this.rightPanel,
     required this.pageTitle,
+    this.onBack,
     this.appBarActions = const [],
   });
 
@@ -27,6 +29,12 @@ class WebAppBody extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         automaticallyImplyLeading: false,
+        leading: onBack == null
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                onPressed: onBack,
+              ),
         titleSpacing: 20,
         centerTitle: false,
         title: Text(pageTitle, style: AppTextStyles.appBarTitle),

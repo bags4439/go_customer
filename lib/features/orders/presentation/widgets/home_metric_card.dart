@@ -1,13 +1,17 @@
-part of '../screens/home_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
 
-class _MetricCard extends StatelessWidget {
+import 'home_theme.dart';
+
+class HomeMetricCard extends StatelessWidget {
   final String label;
   final String value;
   final Color valueColor;
   final IconData icon;
   final bool pulse;
 
-  const _MetricCard({
+  const HomeMetricCard({
+    super.key,
     required this.label,
     required this.value,
     required this.valueColor,
@@ -20,12 +24,12 @@ class _MetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _C.bgPrimary,
+        color: HomeColors.bgPrimary,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: pulse
-              ? _C.danger.withValues(alpha: 0.3)
-              : _C.border,
+              ? HomeColors.danger.withValues(alpha: 0.3)
+              : HomeColors.border,
           width: pulse ? 1.5 : 0.5,
         ),
         boxShadow: [
@@ -51,14 +55,24 @@ class _MetricCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             value,
-            style: AppTextStyles.displaySmall
-                .copyWith(color: valueColor, fontSize: 24, fontWeight: FontWeight.w600, height: 1.0, letterSpacing: 0.0),
+            style: AppTextStyles.displaySmall.copyWith(
+              color: valueColor,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              height: 1.0,
+              letterSpacing: 0.0,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: AppTextStyles.caption
-                .copyWith(color: _C.textSecondary, fontSize: 12, fontWeight: FontWeight.w400, height: 1.0, letterSpacing: 0.0),
+            style: AppTextStyles.caption.copyWith(
+              color: HomeColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              height: 1.0,
+              letterSpacing: 0.0,
+            ),
           ),
         ],
       ),

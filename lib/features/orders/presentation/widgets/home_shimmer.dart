@@ -1,41 +1,45 @@
-part of '../screens/home_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
-class _HomeShimmer extends StatelessWidget {
-  const _HomeShimmer();
+import 'home_layout_utils.dart';
+import 'home_theme.dart';
+
+class HomeShimmer extends StatelessWidget {
+  const HomeShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: _C.bgSecondary,
+      baseColor: HomeColors.bgSecondary,
       highlightColor: Colors.white,
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           16,
           16,
           16,
-          _shellFloatingNavScrollBottomExtra(context),
+          homeShellFloatingNavScrollBottomExtra(context),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _ShimmerBox(width: 180, height: 24, radius: 6),
+            const HomeShimmerBox(width: 180, height: 24, radius: 6),
             const SizedBox(height: 8),
-            _ShimmerBox(width: 240, height: 14, radius: 4),
+            const HomeShimmerBox(width: 240, height: 14, radius: 4),
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _ShimmerBox(height: 60, radius: 10)),
+                const Expanded(child: HomeShimmerBox(height: 60, radius: 10)),
                 const SizedBox(width: 8),
-                Expanded(child: _ShimmerBox(height: 60, radius: 10)),
+                const Expanded(child: HomeShimmerBox(height: 60, radius: 10)),
                 const SizedBox(width: 8),
-                Expanded(child: _ShimmerBox(height: 60, radius: 10)),
+                const Expanded(child: HomeShimmerBox(height: 60, radius: 10)),
               ],
             ),
             const SizedBox(height: 20),
-            _ShimmerBox(width: 80, height: 12, radius: 4),
+            const HomeShimmerBox(width: 80, height: 12, radius: 4),
             const SizedBox(height: 10),
-            for (int i = 0; i < 3; i++) ...[
-              _ShimmerBox(height: 96, radius: 12),
+            for (var i = 0; i < 3; i++) ...[
+              const HomeShimmerBox(height: 96, radius: 12),
               const SizedBox(height: 10),
             ],
           ],
@@ -45,12 +49,17 @@ class _HomeShimmer extends StatelessWidget {
   }
 }
 
-class _ShimmerBox extends StatelessWidget {
+class HomeShimmerBox extends StatelessWidget {
+  const HomeShimmerBox({
+    super.key,
+    this.width,
+    required this.height,
+    this.radius = 8,
+  });
+
   final double? width;
   final double height;
   final double radius;
-
-  const _ShimmerBox({this.width, required this.height, this.radius = 8});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +67,7 @@ class _ShimmerBox extends StatelessWidget {
       width: width ?? double.infinity,
       height: height,
       decoration: BoxDecoration(
-        color: _C.bgSecondary,
+        color: HomeColors.bgSecondary,
         borderRadius: BorderRadius.circular(radius),
       ),
     );
