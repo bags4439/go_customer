@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/widgets/card_container.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -190,7 +191,6 @@ class PreferencesBottomNavBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + bottom),
       decoration: const BoxDecoration(
-        color: AppColors.background,
         border: Border(
           top: BorderSide(color: AppColors.borderSolid, width: 0.5),
         ),
@@ -201,21 +201,24 @@ class PreferencesBottomNavBar extends StatelessWidget {
           if (state.currentStep > 1) ...[
             Material(
               color: Colors.transparent,
-              child: InkWell(
-                onTap: notifier.previousStep,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  height: 52,
-                  width: 52,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.borderSolid),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_ios_new,
-                    size: 18,
-                    color: AppColors.textSecondary,
+              child: CardContainer(
+                paddingType: CardContainerPaddingType.none,
+                child: InkWell(
+                  onTap: notifier.previousStep,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    height: 52,
+                    width: 52,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.borderSolid),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.arrow_back_ios_new,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ),

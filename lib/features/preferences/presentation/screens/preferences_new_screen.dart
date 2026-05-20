@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/widgets/card_container.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,6 +8,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/panel_divider.dart';
+import '../../../../core/layout/web_app_body.dart';
 import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -69,6 +71,47 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
     final notifier = ref.read(preferenceFormProvider.notifier);
     final isWeb = AppBreakpoints.isWeb(context);
 
+    final body = SafeArea(
+      child: Column(
+        children: [
+          PreferencesStepProgressBar(
+            displayStep: _displayStep(state),
+            totalSteps: _totalSteps(state),
+          ),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return SlideTransition(
+                  position:
+                      Tween<Offset>(
+                        begin: const Offset(0.06, 0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      ),
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey<int>(state.currentStep),
+                child: _buildStep(context, state, notifier),
+              ),
+            ),
+          ),
+          PreferencesBottomNavBar(
+            state: state,
+            notifier: notifier,
+            isLoading: _submitting,
+            onConfirm: () => _onConfirm(context, state),
+          ),
+        ],
+      ),
+    );
+
     final scaffold = Scaffold(
       backgroundColor: isWeb ? AppColors.surface : AppColors.background,
       appBar: AppBar(
@@ -103,46 +146,7 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
           child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            PreferencesStepProgressBar(
-              displayStep: _displayStep(state),
-              totalSteps: _totalSteps(state),
-            ),
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) {
-                  return SlideTransition(
-                    position:
-                        Tween<Offset>(
-                          begin: const Offset(0.06, 0),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutCubic,
-                          ),
-                        ),
-                    child: FadeTransition(opacity: animation, child: child),
-                  );
-                },
-                child: KeyedSubtree(
-                  key: ValueKey<int>(state.currentStep),
-                  child: _buildStep(context, state, notifier),
-                ),
-              ),
-            ),
-            PreferencesBottomNavBar(
-              state: state,
-              notifier: notifier,
-              isLoading: _submitting,
-              onConfirm: () => _onConfirm(context, state),
-            ),
-          ],
-        ),
-      ),
+      body: body,
     );
 
     if (!isWeb) {
@@ -155,30 +159,7 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
       );
     }
 
-    return WebAppShell(
-      child: PopScope(
-        canPop: state.currentStep == 1,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) notifier.previousStep();
-        },
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final rw = AppBreakpoints.rightPanelWidth(constraints.maxWidth);
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: scaffold),
-                const PanelDivider(),
-                SizedBox(
-                  width: rw,
-                  child: _PreferencesSelectionsSummary(state: state),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
+    return WebAppBody(body: body, pageTitle: "Car Preferences");
   }
 
   Widget _buildStep(
@@ -850,71 +831,75 @@ class _StepReview extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-          if (!state.isNewVehicle) ...[
-            ReviewKeyValueRow(
-              label: 'Condition',
-              value: preferenceConditionUiLabel(state.condition),
-              onEdit: () => notifier.goToStep(3),
-            ),
-            ReviewKeyValueRow(
-              label: 'Max mileage',
-              value: state.maxMileage == 200000
-                  ? 'No preference'
-                  : '${(state.maxMileage / 1000).round()}k mi',
-              onEdit: () => notifier.goToStep(3),
-            ),
-            ReviewKeyValueRow(
-              label: 'Repairs',
-              value: state.repairOptedIn ? 'Agent arranges' : 'Self managed',
-              onEdit: () => notifier.goToStep(3),
-            ),
-          ],
-          if (state.isNewVehicle)
-            ReviewKeyValueRow(
-              label: 'Vehicle',
-              value: 'Brand new',
-              onEdit: () => notifier.goToStep(1),
-            ),
-          const SizedBox(height: 20),
-          if (state.isNewVehicle)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          if (!state.isNewVehicle)
+            CardContainer(
+              paddingType: CardContainerPaddingType.large,
+              child: Column(
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: AppColors.secondary,
+                  ReviewKeyValueRow(
+                    label: 'Condition',
+                    value: preferenceConditionUiLabel(state.condition),
+                    onEdit: () => notifier.goToStep(3),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Your agent will provide a detailed quote based on your requirements.',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
-                        height: 1.5,
-                      ),
-                    ),
+                  ReviewKeyValueRow(
+                    label: 'Max mileage',
+                    value: state.maxMileage == 200000
+                        ? 'No preference'
+                        : '${(state.maxMileage / 1000).round()}k mi',
+                    onEdit: () => notifier.goToStep(3),
+                  ),
+                  ReviewKeyValueRow(
+                    label: 'Repairs',
+                    value: state.repairOptedIn
+                        ? 'Agent arranges'
+                        : 'Self managed',
+                    onEdit: () => notifier.goToStep(3),
                   ),
                 ],
               ),
+            ),
+          if (state.isNewVehicle)
+            CardContainer(
+              paddingType: CardContainerPaddingType.large,
+              child: ReviewKeyValueRow(
+                label: 'Vehicle',
+                value: 'Brand new',
+                onEdit: () => notifier.goToStep(1),
+              ),
+            ),
+          const SizedBox(height: 20),
+          if (state.isNewVehicle)
+            CardContainer(
+              paddingType: CardContainerPaddingType.large,
+              child: SizedBox(
+                width: double.infinity,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: AppColors.secondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Your agent will provide a detailed quote based on your requirements.',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
           else if (estimate != null)
-            Container(
+            CardContainer(paddingType: CardContainerPaddingType.large,child: SizedBox(
               width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -951,45 +936,36 @@ class _StepReview extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
+            ),),
           const SizedBox(height: 20),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderSolid, width: 0.5),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'What happens next',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+          CardContainer(paddingType: CardContainerPaddingType.large,child:  Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'What happens next',
+                style: GoogleFonts.dmSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
-                const SizedBox(height: 12),
-                const NextStepRow(
-                  number: 1,
-                  text:
-                      'We match you with a dedicated agent (usually within 30 seconds)',
-                ),
-                const NextStepRow(
-                  number: 2,
-                  text:
-                      'Your agent searches for your car and sends you options in chat',
-                ),
-                const NextStepRow(
-                  number: 3,
-                  text: 'No payment until your agent sends a payment request',
-                ),
-              ],
-            ),
-          ),
+              ),
+              const SizedBox(height: 12),
+              const NextStepRow(
+                number: 1,
+                text:
+                'We match you with a dedicated agent (usually within 30 seconds)',
+              ),
+              const NextStepRow(
+                number: 2,
+                text:
+                'Your agent searches for your car and sends you options in chat',
+              ),
+              const NextStepRow(
+                number: 3,
+                text: 'No payment until your agent sends a payment request',
+              ),
+            ],
+          ),),
           const SizedBox(height: 32),
         ],
       ),

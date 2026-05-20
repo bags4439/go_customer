@@ -129,6 +129,15 @@ final router = GoRouter(
             ),
           ],
         ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              name: RouteConstants.preferencesNew,
+              path: '/preferences/new',
+              builder: (context, state) => const PreferencesNewScreen(),
+            ),
+          ],
+        ),
       ],
     ),
     GoRoute(
@@ -251,11 +260,6 @@ final router = GoRouter(
               OrderCancelledScreen(orderId: state.pathParameters['orderId']!),
         ),
       ],
-    ),
-    GoRoute(
-      name: RouteConstants.preferencesNew,
-      path: '/preferences/new',
-      builder: (context, state) => const PreferencesNewScreen(),
     ),
     GoRoute(
       name: RouteConstants.preferencesEdit,
