@@ -315,7 +315,7 @@ class _PaymentRequestViewScreenState
       ref.read(paymentTimeoutProvider.notifier).start(result.paymentId);
 
       if (!mounted) return;
-      await launchPaystackCheckout(
+      final checkoutOpened = await launchPaystackCheckout(
         context: context,
         authorizationUrl: result.authorizationUrl,
         reference: result.reference,
@@ -323,19 +323,27 @@ class _PaymentRequestViewScreenState
         amountGhs: result.amountGhs,
       );
 
-      if (mounted) {
-        if (AppBreakpoints.isWeb(context)) {
-          OrderDetailWebNavigation.openPaymentProcessing(
-            ref,
-            orderId: widget.orderId,
-            requestId: widget.requestId,
-            paymentId: result.paymentId,
-          );
-        } else {
-          context.push(
-            '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${result.paymentId}',
-          );
-        }
+      if (!mounted) return;
+      if (!checkoutOpened) {
+        ref.read(paymentTimeoutProvider.notifier).reset();
+        _showError(
+          'Could not open Paystack checkout. '
+          'Allow pop-ups for this site and try again.',
+        );
+        return;
+      }
+
+      if (AppBreakpoints.isWeb(context)) {
+        OrderDetailWebNavigation.openPaymentProcessing(
+          ref,
+          orderId: widget.orderId,
+          requestId: widget.requestId,
+          paymentId: result.paymentId,
+        );
+      } else {
+        context.push(
+          '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${result.paymentId}',
+        );
       }
     } finally {
       if (mounted) {

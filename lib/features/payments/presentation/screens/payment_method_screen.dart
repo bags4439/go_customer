@@ -224,7 +224,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
       ref.read(paymentTimeoutProvider.notifier).start(result.paymentId);
 
       if (!mounted) return;
-      await launchPaystackCheckout(
+      final checkoutOpened = await launchPaystackCheckout(
         context: context,
         authorizationUrl: result.authorizationUrl,
         reference: result.reference,
@@ -232,11 +232,19 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
         amountGhs: result.amountGhs,
       );
 
-      if (mounted) {
-        context.push(
-          '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${result.paymentId}',
+      if (!mounted) return;
+      if (!checkoutOpened) {
+        ref.read(paymentTimeoutProvider.notifier).reset();
+        _showError(
+          'Could not open Paystack checkout. '
+          'Allow pop-ups for this site and try again.',
         );
+        return;
       }
+
+      context.push(
+        '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${result.paymentId}',
+      );
     } finally {
       if (mounted) {
         setState(() => _paying = false);

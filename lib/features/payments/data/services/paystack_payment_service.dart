@@ -1,17 +1,68 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack_plus/flutter_paystack_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Launches the Paystack checkout WebView using a pre-generated authorization URL
-/// from the server.
+/// Launches Paystack checkout using a server-generated [authorizationUrl].
 ///
-/// Call ONLY after initializePaystackTransaction Cloud Function has returned the
-/// authorizationUrl.
+/// Call ONLY after `initializePaystackTransaction` has returned the URL.
 ///
-/// Returns true if the user completed the flow, false if cancelled or an error
-/// occurred.
+/// **Mobile** — opens checkout in an in-app WebView. Returns `true` when the
+/// user completes payment, `false` if they cancel or an error occurs.
+///
+/// **Web** — opens [authorizationUrl] in a new browser tab. Returns `true` if
+/// the tab opened successfully. Payment completion is handled by the Paystack
+/// webhook; show the processing screen after a successful launch.
 Future<bool> launchPaystackCheckout({
+  required BuildContext context,
+  required String authorizationUrl,
+  required String reference,
+  required String customerEmail,
+  required double amountGhs,
+}) async {
+  if (kIsWeb) {
+    return _openPaystackAuthorizationInBrowser(authorizationUrl);
+  }
+  return _launchPaystackCheckoutMobile(
+    context: context,
+    authorizationUrl: authorizationUrl,
+    reference: reference,
+    customerEmail: customerEmail,
+    amountGhs: amountGhs,
+  );
+}
+
+/// Opens the server-initialized Paystack checkout URL in a new browser tab.
+Future<bool> _openPaystackAuthorizationInBrowser(String authorizationUrl) async {
+  final uri = Uri.tryParse(authorizationUrl);
+  if (uri == null || !uri.hasScheme) {
+    debugPrint(
+      '[launchPaystackCheckout] invalid authorization URL: $authorizationUrl',
+    );
+    return false;
+  }
+
+  try {
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    );
+    if (!launched) {
+      debugPrint(
+        '[launchPaystackCheckout] launchUrl returned false for $authorizationUrl',
+      );
+    }
+    return launched;
+  } catch (e, st) {
+    debugPrint('[launchPaystackCheckout] web launch error: $e\n$st');
+    return false;
+  }
+}
+
+Future<bool> _launchPaystackCheckoutMobile({
   required BuildContext context,
   required String authorizationUrl,
   required String reference,
@@ -44,7 +95,7 @@ Future<bool> launchPaystackCheckout({
     );
     return completer.future;
   } catch (e) {
-    debugPrint('[launchPaystackCheckout] error: $e');
+    debugPrint('[launchPaystackCheckout] mobile error: $e');
     if (!completer.isCompleted) {
       completer.complete(false);
     }
