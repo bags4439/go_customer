@@ -74,11 +74,13 @@ class _PaymentRequestViewScreenState
                     'This request is no longer pending',
                     style: AppTextStyles.bodyMedium,
                   ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => context.go('/order/${widget.orderId}'),
-                    child: const Text('View order'),
-                  ),
+                  if (!widget.embedInWebPanel) ...[
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => context.go('/order/${widget.orderId}'),
+                      child: const Text('View order'),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -211,18 +213,20 @@ class _PaymentRequestViewScreenState
                           ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Center(
-                  child: TextButton(
-                    onPressed: () => context.go('/order/${widget.orderId}'),
-                    child: Text(
-                      'View order details',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textTertiary,
+                if (!widget.embedInWebPanel) ...[
+                  const SizedBox(height: 10),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => context.go('/order/${widget.orderId}'),
+                      child: Text(
+                        'View order details',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 24),
               ],
             ),
