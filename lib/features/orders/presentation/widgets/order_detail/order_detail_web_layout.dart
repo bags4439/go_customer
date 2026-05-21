@@ -14,7 +14,7 @@ import 'order_detail_web_right_panel.dart';
 /// Full web layout for order detail.
 /// Left = tab content. Right = contextual (equal width).
 class OrderDetailWebLayout extends ConsumerWidget {
-  const OrderDetailWebLayout({
+  const OrderDetailWebLayout({super.key,
     required this.orderId,
     required this.tabController,
     required this.onTabChanged,
@@ -66,7 +66,7 @@ class OrderDetailWebLayout extends ConsumerWidget {
 
 /// 56px header bar for web order detail.
 class OrderDetailWebHeader extends StatelessWidget {
-  const OrderDetailWebHeader({
+  const OrderDetailWebHeader({super.key,
     required this.orderId,
     required this.order,
     required this.tabController,
@@ -166,7 +166,7 @@ class OrderDetailWebHeader extends StatelessWidget {
 
 /// Pill tab switcher matching SegmentedTabBar style.
 class OrderDetailWebTabSwitcher extends ConsumerWidget {
-  const OrderDetailWebTabSwitcher({
+  const OrderDetailWebTabSwitcher({super.key,
     required this.tabController,
     required this.orderId,
     required this.onTabChanged,

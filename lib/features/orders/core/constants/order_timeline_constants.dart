@@ -14,7 +14,7 @@ class OrderTimelineConstants {
   static const String dueToday = 'Due today';
   static const String daysLeft = '[n] days left';
   static const String atRateNote = "At today's rate: 1 USD = GHS ";
-  static const String payNowButton = 'Pay [label] — [amount] →';
+  static const String payNowButton = 'Pay [amount] →';
   static const String paidCheck = 'Paid ✓';
   static const String paidShippingArranged = 'Paid ✓ — shipping being arranged';
   static const String chatWithAgent = 'Chat with agent →';
