@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../domain/entities/order_view.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/features/orders/domain/entities/order_view.dart';
 
 String orderDetailOriginLabel(String origin) => switch (origin) {
   'us_canada' => '🇺🇸 US / Canada',

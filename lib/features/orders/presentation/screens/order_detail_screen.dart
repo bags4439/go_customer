@@ -1,58 +1,26 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_customer/core/theme/app_text_styles.dart';
-import 'package:go_customer/core/widgets/card_container.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/layout/app_breakpoints.dart';
-import '../../../../core/layout/panel_divider.dart';
-import '../../../../core/layout/web_app_shell.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../payments/data/models/payment_request_model.dart';
-import '../../core/constants/order_timeline_constants.dart';
-import '../providers/order_providers.dart';
-import '../widgets/order_detail_car_card.dart';
-import '../widgets/segmented_tab_bar.dart';
-import '../widgets/order_detail_edit_cancel.dart';
-import '../widgets/order_detail_payment_card.dart';
-import '../widgets/order_timeline_widget.dart';
-import '../../../chat/presentation/providers/chat_providers.dart';
-import '../../../chat/presentation/screens/order_chat_tab.dart';
-import '../../../documents/presentation/screens/order_documents_tab.dart';
-import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/providers/guide_providers.dart';
-import '../../../guide/presentation/widgets/coach_mark_card.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
-import '../../data/models/order_timeline_model.dart';
-import '../providers/order_timeline_providers.dart';
-import '../widgets/order_timeline_step_row.dart';
-import '../../../documents/presentation/providers/documents_providers.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../shared/providers/preferred_currency_provider.dart';
-import '../providers/order_detail_providers.dart';
-
-part '../widgets/order_detail_timeline_panel.dart';
-
-part '../widgets/order_detail_web_layout.dart';
-
-part '../widgets/order_detail_web_doc_panel.dart';
-
-part '../widgets/order_detail_web_right_panel.dart';
+import 'package:go_customer/core/layout/app_breakpoints.dart';
+import 'package:go_customer/core/layout/web_app_shell.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/features/chat/presentation/providers/chat_providers.dart';
+import 'package:go_customer/features/orders/presentation/providers/order_detail_providers.dart';
+import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_guide.dart';
+import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_mobile_app_bar.dart';
+import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_tab_body.dart';
+import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_web_layout.dart';
 
 class OrderDetailScreen extends ConsumerStatefulWidget {
-  final String orderId;
-  final String initialTab;
-
   const OrderDetailScreen({
     super.key,
     required this.orderId,
     this.initialTab = 'overview',
   });
+
+  final String orderId;
+  final String initialTab;
 
   int get _initialIndex {
     switch (initialTab) {
@@ -97,36 +65,27 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
 
   Future<void> _bootstrapGuides() async {
     if (!mounted) return;
-    final payment = ref
-        .read(activePaymentRequestProvider(widget.orderId))
-        .valueOrNull;
-    if (payment != null) {
-      final paymentSeen = await ref.read(
-        hasSeenGuideProvider(GuideKeys.orderPaymentRequest).future,
-      );
+    if (await OrderDetailGuideBootstrap.shouldShowPaymentCoach(
+      ref,
+      widget.orderId,
+    )) {
       if (!mounted) return;
-      if (!paymentSeen) {
-        setState(() => _showPaymentCoach = true);
-        return;
-      }
+      setState(() => _showPaymentCoach = true);
+      return;
     }
-    final timelineSeen = await ref.read(
-      hasSeenGuideProvider(GuideKeys.orderTimeline).future,
-    );
+    final step = await OrderDetailGuideBootstrap.timelineStepIfNeeded(ref);
     if (!mounted) return;
-    if (!timelineSeen) {
-      setState(() => _guideStep = 1);
+    if (step != null) {
+      setState(() => _guideStep = step);
     }
   }
 
-  Future<void> _maybeStartChainAfterPaymentCoach() async {
+  Future<void> _chainGuideAfterPaymentCoach() async {
+    setState(() => _showPaymentCoach = false);
+    final step = await OrderDetailGuideBootstrap.timelineStepIfNeeded(ref);
     if (!mounted) return;
-    final timelineSeen = await ref.read(
-      hasSeenGuideProvider(GuideKeys.orderTimeline).future,
-    );
-    if (!mounted) return;
-    if (!timelineSeen) {
-      setState(() => _guideStep = 1);
+    if (step != null) {
+      setState(() => _guideStep = step);
     }
   }
 
@@ -139,19 +98,9 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
   }
 
   void _onTabChanged() {
-    // Only fire when the tab animation
-    // is fully settled — not on every
-    // frame during a swipe. This prevents
-    // setState being called mid-rebuild
-    // which breaks context.pop() in the
-    // AppBar back button.
-    if (_tabController.indexIsChanging) {
-      return;
-    }
+    if (_tabController.indexIsChanging) return;
     if (!mounted) return;
-    setState(() {
-      _isChatTabActive = _tabController.index == 1;
-    });
+    setState(() => _isChatTabActive = _tabController.index == 1);
     if (_tabController.index == 1) {
       markChatAsRead(ref, widget.orderId);
     } else {
@@ -162,8 +111,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     }
   }
 
-  void _onSwitchToChat() {
-    _tabController.animateTo(1);
+  void _onWebTabChanged(int index) {
+    _tabController.animateTo(index);
+    setState(() => _isChatTabActive = index == 1);
+    if (index != 0) {
+      ref.read(webSelectedStepProvider.notifier).state = null;
+    }
   }
 
   @override
@@ -171,6 +124,29 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
+  }
+
+  Widget _tabBody({required bool showSegmentedTabBar}) {
+    return OrderDetailTabBody(
+      orderId: widget.orderId,
+      tabController: _tabController,
+      showSegmentedTabBar: showSegmentedTabBar,
+      timelineKey: _timelineKey,
+      paymentCardKey: _paymentCardKey,
+      chatTabKey: _chatTabKey,
+      docsTabKey: _docsTabKey,
+      showPaymentCoach: _showPaymentCoach,
+      guideStep: _guideStep,
+      suppressTimelineStageCoaches: _showPaymentCoach || _guideStep != 0,
+      onPaymentCoachDismissed: () {
+        setState(() => _showPaymentCoach = false);
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _chainGuideAfterPaymentCoach(),
+        );
+      },
+      onGuideStepChanged: (step) => setState(() => _guideStep = step),
+      onSwitchToChat: () => _tabController.animateTo(1),
+    );
   }
 
   @override
@@ -186,610 +162,22 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
       child: isWeb
           ? WebAppShell(
               activeRoute: '/home',
-              child: _WebOrderDetailLayout(
+              child: OrderDetailWebLayout(
                 orderId: widget.orderId,
                 tabController: _tabController,
-                onTabChanged: (i) {
-                  _tabController.animateTo(i);
-                  setState(() {
-                    _isChatTabActive = i == 1;
-                  });
-                  if (i != 0) {
-                    ref.read(webSelectedStepProvider.notifier).state = null;
-                  }
-                },
+                onTabChanged: _onWebTabChanged,
                 buildBody: (ctx, showSegBar) =>
-                    _buildBody(ctx, showSegmentedTabBar: showSegBar),
+                    _tabBody(showSegmentedTabBar: showSegBar),
               ),
             )
           : Scaffold(
               backgroundColor: AppColors.background,
-              appBar: _buildAppBar(context),
-              body: _buildBody(context, showSegmentedTabBar: true),
-            ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-        onPressed: () => context.go('/home'),
-      ),
-      titleSpacing: 0,
-      title: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 220),
-        switchInCurve: Curves.easeOut,
-        switchOutCurve: Curves.easeIn,
-        transitionBuilder: (child, anim) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.08),
-              end: Offset.zero,
-            ).animate(anim),
-            child: child,
-          ),
-        ),
-        child: _isChatTabActive
-            ? _AgentAppBarTitle(
-                key: const ValueKey('agent'),
+              appBar: OrderDetailMobileAppBar(
                 orderId: widget.orderId,
-              )
-            : Padding(
-                key: const ValueKey('order'),
-                padding: const EdgeInsets.only(left: 4),
-                child: Text(
-                  ref
-                          .watch(orderProvider(widget.orderId))
-                          .valueOrNull
-                          ?.orderRef ??
-                      '--',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: const Color(0xFF1A1A18),
-                  ),
-                ),
+                isChatTabActive: _isChatTabActive,
               ),
-      ),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(0.5),
-        child: Container(height: 0.5, color: const Color(0xFFE0DFD8)),
-      ),
-    );
-  }
-
-  Widget _buildBody(BuildContext context, {required bool showSegmentedTabBar}) {
-    return Builder(
-      builder: (context) {
-        final payment = ref
-            .watch(activePaymentRequestProvider(widget.orderId))
-            .valueOrNull;
-        final tabColumn = Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (showSegmentedTabBar)
-              SegmentedTabBar(
-                controller: _tabController,
-                orderId: widget.orderId,
-                chatTabKey: _chatTabKey,
-                documentsTabKey: _docsTabKey,
-              ),
-            Expanded(
-              child: TabBarView(
-                physics: AppBreakpoints.isWeb(context)
-                    ? const NeverScrollableScrollPhysics()
-                    : null,
-                controller: _tabController,
-                children: [
-                  _OrderOverviewTab(
-                    orderId: widget.orderId,
-                    timelineKey: _timelineKey,
-                    paymentCardKey: _paymentCardKey,
-                    suppressTimelineStageCoaches:
-                        _showPaymentCoach || _guideStep != 0,
-                    onChatTap: _onSwitchToChat,
-                  ),
-                  OrderChatTab(orderId: widget.orderId),
-                  OrderDocumentsTab(orderId: widget.orderId),
-                ],
-              ),
+              body: _tabBody(showSegmentedTabBar: true),
             ),
-          ],
-        );
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            if (AppBreakpoints.isWeb(context))
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final maxW = AppBreakpoints.contentMaxWidth(
-                    constraints.maxWidth,
-                  );
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: maxW),
-                      child: tabColumn,
-                    ),
-                  );
-                },
-              )
-            else
-              tabColumn,
-            if (_showPaymentCoach && payment != null && _guideStep == 0)
-              CoachMarkOverlay(
-                guideKey: GuideKeys.orderPaymentRequest,
-                targetKey: _paymentCardKey,
-                title: 'Payment request from your agent',
-                body:
-                    'Your agent sent a payment request. '
-                    'Review the details carefully — '
-                    'no money leaves your account until '
-                    'you approve it here.',
-                spotlightShape: SpotlightShape.roundedRect,
-                cardPosition: CardPosition.below,
-                onDismiss: () {
-                  setState(() => _showPaymentCoach = false);
-                  WidgetsBinding.instance.addPostFrameCallback(
-                    (_) => _maybeStartChainAfterPaymentCoach(),
-                  );
-                },
-                onFaqTap: () {
-                  setState(() => _showPaymentCoach = false);
-                  GuideFaqSheet.show(context);
-                  WidgetsBinding.instance.addPostFrameCallback(
-                    (_) => _maybeStartChainAfterPaymentCoach(),
-                  );
-                },
-              ),
-            if (_guideStep == 1 && !_showPaymentCoach)
-              CoachMarkOverlay(
-                guideKey: GuideKeys.orderTimeline,
-                targetKey: _timelineKey,
-                title: 'Your import journey',
-                body:
-                    'This timeline tracks every stage '
-                    'from search to delivery. Tap any '
-                    'stage to see more details.',
-                spotlightShape: SpotlightShape.roundedRect,
-                onDismiss: () => setState(() => _guideStep = 0),
-                onNext: () {
-                  setState(() {
-                    _guideStep = 2;
-                  });
-                  _tabController.animateTo(1);
-                },
-                onFaqTap: () {
-                  setState(() => _guideStep = 0);
-                  GuideFaqSheet.show(context);
-                },
-              ),
-            if (_guideStep == 2 && !_showPaymentCoach)
-              CoachMarkOverlay(
-                guideKey: GuideKeys.chat,
-                targetKey: _chatTabKey,
-                title: 'Chat with your agent',
-                body:
-                    'Your dedicated agent is always '
-                    'available here. Ask anything — '
-                    'they handle everything for you.',
-                spotlightShape: SpotlightShape.roundedRect,
-                onDismiss: () => setState(() => _guideStep = 0),
-                onNext: () {
-                  setState(() {
-                    _guideStep = 3;
-                  });
-                  _tabController.animateTo(2);
-                },
-                onFaqTap: () {
-                  setState(() => _guideStep = 0);
-                  GuideFaqSheet.show(context);
-                },
-              ),
-            if (_guideStep == 3 && !_showPaymentCoach)
-              CoachMarkOverlay(
-                guideKey: GuideKeys.documents,
-                targetKey: _docsTabKey,
-                title: 'Your documents',
-                body:
-                    'All your import papers live here '
-                    '— receipts, vehicle title, clearance '
-                    'docs and more. Always accessible.',
-                spotlightShape: SpotlightShape.roundedRect,
-                onDismiss: () => setState(() => _guideStep = 0),
-                onFaqTap: () {
-                  setState(() => _guideStep = 0);
-                  GuideFaqSheet.show(context);
-                },
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _OrderOverviewTab extends ConsumerWidget {
-  final String orderId;
-  final GlobalKey timelineKey;
-  final GlobalKey paymentCardKey;
-  final bool suppressTimelineStageCoaches;
-  final VoidCallback? onChatTap;
-
-  const _OrderOverviewTab({
-    required this.orderId,
-    required this.timelineKey,
-    required this.paymentCardKey,
-    this.suppressTimelineStageCoaches = false,
-    this.onChatTap,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orderAsync = ref.watch(orderProvider(orderId));
-    final paymentAsync = ref.watch(activePaymentRequestProvider(orderId));
-    final router = GoRouter.of(context);
-
-    return orderAsync.when(
-      data: (order) {
-        if (order == null) {
-          return Center(
-            child: Text(
-              'Order not found',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          );
-        }
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-          children: [
-            paymentAsync.when(
-              data: (p) {
-                if (p == null) return const SizedBox.shrink();
-                final typeLabel =
-                    FirestoreEnumValues.paymentRequestTypeLabels[p.type
-                            is PaymentRequestType
-                        ? (p.type as PaymentRequestType).firestoreValue
-                        : p.type.toString()] ??
-                    p.type.toString();
-                final deadlineStr = p.deadlineAt != null
-                    ? formatOrderDetailDeadline(p.deadlineAt!)
-                    : null;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    KeyedSubtree(
-                      key: paymentCardKey,
-                      child: OrderDetailPaymentCard(
-                        payment: p,
-                        typeLabel: typeLabel,
-                        deadlineText: deadlineStr,
-                        onPayPressed: () => router.go(
-                          '/order/${order.id}/payment-request/${p.id}',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
-            ),
-            AppBreakpoints.isWeb(context)
-                ? SizedBox.shrink()
-                : OrderDetailCarCard(order: order),
-            const SizedBox(height: 14),
-            Text(
-              OrderTimelineConstants.journeyTitle,
-              style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
-            ),
-            const SizedBox(height: 14),
-            KeyedSubtree(
-              key: timelineKey,
-              child: OrderTimelineWidget(
-                orderId: orderId,
-                order: order,
-                suppressStageCoachMarks: suppressTimelineStageCoaches,
-                onChatTap: onChatTap,
-                onStepTapped: AppBreakpoints.isWeb(context)
-                    ? (stageKey) {
-                        ref.read(webSelectedStepProvider.notifier).state =
-                            stageKey;
-                      }
-                    : null,
-              ),
-            ),
-            if (ref.watch(canEditOrderProvider(order.id))) ...[
-              const SizedBox(height: 20),
-              OrderDetailEditCancelSection(orderId: order.id),
-            ],
-            const SizedBox(height: 32),
-          ],
-        );
-      },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.secondary),
-      ),
-      error: (_, __) => Center(
-        child: Text(
-          'Unable to load order',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AgentAppBarTitle extends ConsumerWidget {
-  final String orderId;
-
-  const _AgentAppBarTitle({super.key, required this.orderId});
-
-  Future<void> _launchCall(String? phone) async {
-    if (phone == null || phone.isEmpty) {
-      return;
-    }
-    final uri = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orderAsync = ref.watch(orderProvider(orderId));
-    final agentId = orderAsync.valueOrNull?.agentId;
-
-    if (agentId == null) {
-      return const SizedBox.shrink();
-    }
-
-    final agentAsync = ref.watch(agentDetailProvider(agentId));
-
-    return agentAsync.when(
-      data: (agent) {
-        if (agent == null) {
-          return const SizedBox.shrink();
-        }
-        return Row(
-          children: [
-            GestureDetector(
-              onTap: (agent.photoUrl != null && agent.photoUrl!.isNotEmpty)
-                  ? () => Navigator.of(context).push(
-                      PageRouteBuilder<void>(
-                        opaque: false,
-                        barrierColor: Colors.black87,
-                        transitionDuration: const Duration(milliseconds: 250),
-                        pageBuilder: (_, __, ___) => _AgentPhotoViewer(
-                          photoUrl: agent.photoUrl!,
-                          agentName: agent.fullName,
-                        ),
-                      ),
-                    )
-                  : null,
-              child: Hero(
-                tag: 'agent_photo_${agent.photoUrl ?? ''}',
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFFE0DFD8),
-                      width: 0.5,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: agent.photoUrl != null && agent.photoUrl!.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: agent.photoUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color: const Color(0xFFE6F1FB),
-                              child: const Icon(
-                                Icons.person_outline,
-                                size: 18,
-                                color: Color(0xFF378ADD),
-                              ),
-                            ),
-                            errorWidget: (_, __, ___) => Container(
-                              color: const Color(0xFFE6F1FB),
-                              child: const Icon(
-                                Icons.person_outline,
-                                size: 18,
-                                color: Color(0xFF378ADD),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: const Color(0xFFE6F1FB),
-                            child: Center(
-                              child: Text(
-                                agent.fullName.isNotEmpty
-                                    ? agent.fullName[0].toUpperCase()
-                                    : '?',
-                                style: AppTextStyles.labelLarge.copyWith(
-                                  color: const Color(0xFF378ADD),
-                                ),
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    agent.fullName,
-                    style: AppTextStyles.titleSmall.copyWith(
-                      color: const Color(0xFF1A1A18),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    '${agent.totalOrdersCompleted} orders · '
-                    '${agent.rating.toStringAsFixed(1)} ★',
-                    style: AppTextStyles.caption.copyWith(
-                      color: const Color(0xFF999999),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (agent.phone != null && agent.phone!.isNotEmpty)
-              GestureDetector(
-                onTap: () => _launchCall(agent.phone),
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE6F1FB),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.call_rounded,
-                    size: 17,
-                    color: Color(0xFF378ADD),
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
-      loading: () => Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF0EFE9),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            width: 120,
-            height: 13,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0EFE9),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-        ],
-      ),
-      error: (_, __) => const SizedBox.shrink(),
-    );
-  }
-}
-
-class _AgentPhotoViewer extends StatelessWidget {
-  final String photoUrl;
-  final String agentName;
-
-  const _AgentPhotoViewer({required this.photoUrl, required this.agentName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          Center(
-            child: Hero(
-              tag: 'agent_photo_$photoUrl',
-              child: InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 5.0,
-                child: CachedNetworkImage(
-                  imageUrl: photoUrl,
-                  fit: BoxFit.contain,
-                  placeholder: (_, __) => const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  errorWidget: (_, __, ___) => Container(
-                    color: const Color(0xFF1A1A18),
-                    child: const Icon(
-                      Icons.person_outline,
-                      size: 64,
-                      color: Colors.white24,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: EdgeInsets.fromLTRB(
-                8,
-                MediaQuery.of(context).padding.top + 8,
-                8,
-                16,
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      agentName,
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

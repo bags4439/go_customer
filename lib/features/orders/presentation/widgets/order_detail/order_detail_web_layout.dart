@@ -1,9 +1,20 @@
-part of 'package:go_customer/features/orders/presentation/screens/order_detail_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/widgets/card_container.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:go_customer/core/layout/panel_divider.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/features/orders/domain/entities/order_view.dart';
+import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
+import 'package:go_customer/features/chat/presentation/providers/chat_providers.dart';
+import 'order_detail_web_right_panel.dart';
 
 /// Full web layout for order detail.
 /// Left = tab content. Right = contextual (equal width).
-class _WebOrderDetailLayout extends ConsumerWidget {
-  const _WebOrderDetailLayout({
+class OrderDetailWebLayout extends ConsumerWidget {
+  const OrderDetailWebLayout({
     required this.orderId,
     required this.tabController,
     required this.onTabChanged,
@@ -25,7 +36,7 @@ class _WebOrderDetailLayout extends ConsumerWidget {
       backgroundColor: AppColors.surface,
       body: Column(
         children: [
-          _WebOrderHeader(
+          OrderDetailWebHeader(
             orderId: orderId,
             order: order,
             tabController: tabController,
@@ -38,7 +49,7 @@ class _WebOrderDetailLayout extends ConsumerWidget {
                 Expanded(child: buildBody(context, false)),
                 const PanelDivider(),
                 Expanded(
-                  child: _WebRightPanel(
+                  child: OrderDetailWebRightPanel(
                     orderId: orderId,
                     order: order,
                     currentTab: tabController.index,
@@ -54,8 +65,8 @@ class _WebOrderDetailLayout extends ConsumerWidget {
 }
 
 /// 56px header bar for web order detail.
-class _WebOrderHeader extends StatelessWidget {
-  const _WebOrderHeader({
+class OrderDetailWebHeader extends StatelessWidget {
+  const OrderDetailWebHeader({
     required this.orderId,
     required this.order,
     required this.tabController,
@@ -142,7 +153,7 @@ class _WebOrderHeader extends StatelessWidget {
               ],
             ),
           ),
-          _WebTabSwitcher(
+          OrderDetailWebTabSwitcher(
             tabController: tabController,
             orderId: orderId,
             onTabChanged: onTabChanged,
@@ -154,8 +165,8 @@ class _WebOrderHeader extends StatelessWidget {
 }
 
 /// Pill tab switcher matching SegmentedTabBar style.
-class _WebTabSwitcher extends ConsumerWidget {
-  const _WebTabSwitcher({
+class OrderDetailWebTabSwitcher extends ConsumerWidget {
+  const OrderDetailWebTabSwitcher({
     required this.tabController,
     required this.orderId,
     required this.onTabChanged,

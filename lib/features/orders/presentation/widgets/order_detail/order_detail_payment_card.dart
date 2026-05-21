@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../shared/providers/preferred_currency_provider.dart';
-import '../../domain/entities/payment_request_view.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/utils/currency_formatter.dart';
+import 'package:go_customer/shared/providers/preferred_currency_provider.dart';
+import 'package:go_customer/features/orders/domain/entities/payment_request_view.dart';
 
 String? formatOrderDetailDeadline(DateTime deadlineAt) {
   final now = DateTime.now();

@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../chat/presentation/providers/chat_providers.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/features/chat/presentation/providers/chat_providers.dart';
 
 /// Premium pill-style segmented control for order detail tabs (pinned below AppBar).
-class SegmentedTabBar extends ConsumerStatefulWidget {
+class OrderDetailSegmentedTabBar extends ConsumerStatefulWidget {
   final TabController controller;
   final String orderId;
   final GlobalKey? chatTabKey;
   final GlobalKey? documentsTabKey;
 
-  const SegmentedTabBar({
+  const OrderDetailSegmentedTabBar({
     super.key,
     required this.controller,
     required this.orderId,
@@ -21,10 +21,12 @@ class SegmentedTabBar extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<SegmentedTabBar> createState() => _SegmentedTabBarState();
+  ConsumerState<OrderDetailSegmentedTabBar> createState() =>
+      _OrderDetailSegmentedTabBarState();
 }
 
-class _SegmentedTabBarState extends ConsumerState<SegmentedTabBar> {
+class _OrderDetailSegmentedTabBarState
+    extends ConsumerState<OrderDetailSegmentedTabBar> {
   @override
   void initState() {
     super.initState();
@@ -33,7 +35,7 @@ class _SegmentedTabBarState extends ConsumerState<SegmentedTabBar> {
   }
 
   @override
-  void didUpdateWidget(SegmentedTabBar oldWidget) {
+  void didUpdateWidget(OrderDetailSegmentedTabBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onControllerTick);

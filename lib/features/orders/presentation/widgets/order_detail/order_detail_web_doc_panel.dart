@@ -1,7 +1,13 @@
-part of 'package:go_customer/features/orders/presentation/screens/order_detail_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_router/go_router.dart';
 
-class _WebDocProgressCard extends ConsumerWidget {
-  const _WebDocProgressCard({required this.orderId});
+import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/features/documents/presentation/providers/documents_providers.dart';
+
+class OrderDetailWebDocProgressCard extends ConsumerWidget {
+  const OrderDetailWebDocProgressCard({required this.orderId});
   final String orderId;
 
   @override
@@ -54,8 +60,8 @@ class _WebDocProgressCard extends ConsumerWidget {
   }
 }
 
-class _WebDocHelpCard extends StatelessWidget {
-  const _WebDocHelpCard({required this.orderId});
+class OrderDetailWebDocHelpCard extends StatelessWidget {
+  const OrderDetailWebDocHelpCard({required this.orderId});
   final String orderId;
 
   @override
