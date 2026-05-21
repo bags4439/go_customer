@@ -8,12 +8,21 @@ import '../../../../core/utils/responsive_layout.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../delivery/presentation/providers/delivery_providers.dart';
 import '../../../orders/data/models/buyer_review_model.dart';
+import '../providers/order_detail_providers.dart';
 import '../providers/order_providers.dart';
+import '../widgets/order_detail/order_detail_web_panel_chrome.dart';
 
 class BuyerReviewScreen extends ConsumerStatefulWidget {
-  const BuyerReviewScreen({super.key, required this.orderId});
+  const BuyerReviewScreen({
+    super.key,
+    required this.orderId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
+  });
 
   final String orderId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
 
   @override
   ConsumerState<BuyerReviewScreen> createState() => _BuyerReviewScreenState();
@@ -70,48 +79,27 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
     final existingReview = reviewAsync?.valueOrNull;
 
     if (existingReview != null) {
-      return _SubmittedScreen(orderId: widget.orderId, review: existingReview);
+      return _SubmittedScreen(
+        orderId: widget.orderId,
+        review: existingReview,
+        embedInWebPanel: widget.embedInWebPanel,
+        onClosePanel: widget.onClosePanel,
+      );
     }
 
-    return PopScope(
-      canPop: !_isSubmitting,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-            color: AppColors.textPrimary,
-            onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-            style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
-          ),
-          title: Text(
-            'Rate your experience',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontSize: 18,
-              color: AppColors.primary,
-            ),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(0.5),
-            child: Container(height: 0.5, color: AppColors.borderSolid),
-          ),
+    final form = Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: ResponsiveLayout.contentMaxWidth(context),
         ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: ResponsiveLayout.contentMaxWidth(context),
-            ),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                20,
-                20,
-                20 + MediaQuery.paddingOf(context).bottom,
-              ),
-              child: Column(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            20 + MediaQuery.paddingOf(context).bottom,
+          ),
+          child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
@@ -265,7 +253,45 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
               ),
             ),
           ),
+    );
+
+    if (widget.embedInWebPanel) {
+      final orderRef = order?.orderRef ?? widget.orderId;
+      return OrderDetailWebPanelChrome(
+        title: 'Rate your experience',
+        orderRef: orderRef,
+        onBack: widget.onClosePanel ?? () => resetWebOrderPanelTask(ref),
+        child: form,
+      );
+    }
+
+    return PopScope(
+      canPop: !_isSubmitting,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+            color: AppColors.textPrimary,
+            onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+            style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
+          ),
+          title: Text(
+            'Rate your experience',
+            style: AppTextStyles.titleMedium.copyWith(
+              fontSize: 18,
+              color: AppColors.primary,
+            ),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(0.5),
+            child: Container(height: 0.5, color: AppColors.borderSolid),
+          ),
         ),
+        body: form,
       ),
     );
   }
@@ -293,7 +319,15 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
     if (mounted) setState(() => _isSubmitting = false);
     if (!mounted) return;
 
-    result.fold((f) => _snackError(f.message), (_) => context.go('/home'));
+    result.fold(
+      (f) => _snackError(f.message),
+      (_) {
+        if (widget.embedInWebPanel) {
+          resetWebOrderPanelTask(ref);
+        }
+        context.go('/home');
+      },
+    );
   }
 }
 
@@ -358,11 +392,18 @@ class _RatingRow extends StatelessWidget {
   }
 }
 
-class _SubmittedScreen extends StatelessWidget {
+class _SubmittedScreen extends ConsumerWidget {
   final String orderId;
   final BuyerReviewModel review;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
 
-  const _SubmittedScreen({required this.orderId, required this.review});
+  const _SubmittedScreen({
+    required this.orderId,
+    required this.review,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
+  });
 
   static String _formatDate(DateTime dt) {
     const months = [
@@ -383,46 +424,22 @@ class _SubmittedScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final stars = review.overallRating.round().clamp(1, 5);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          color: AppColors.textPrimary,
-          onPressed: () => Navigator.of(context).pop(),
-          style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
+    final body = Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: ResponsiveLayout.contentMaxWidth(context),
         ),
-        title: Text(
-          'Your review',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontSize: 18,
-            color: AppColors.primary,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            28,
+            20,
+            24 + MediaQuery.paddingOf(context).bottom,
           ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: ResponsiveLayout.contentMaxWidth(context),
-          ),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              28,
-              20,
-              24 + MediaQuery.paddingOf(context).bottom,
-            ),
-            child: Column(
+          child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Container(
@@ -538,7 +555,13 @@ class _SubmittedScreen extends StatelessWidget {
                 SizedBox(
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () {
+                      if (embedInWebPanel) {
+                        resetWebOrderPanelTask(ref);
+                      } else {
+                        Navigator.of(context).pop();
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
@@ -557,7 +580,42 @@ class _SubmittedScreen extends StatelessWidget {
             ),
           ),
         ),
+    );
+
+    if (embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Your review',
+        orderRef: orderId,
+        onBack: onClosePanel ?? () => resetWebOrderPanelTask(ref),
+        child: body,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          color: AppColors.textPrimary,
+          onPressed: () => Navigator.of(context).pop(),
+          style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
+        ),
+        title: Text(
+          'Your review',
+          style: AppTextStyles.titleMedium.copyWith(
+            fontSize: 18,
+            color: AppColors.primary,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
+        ),
       ),
+      body: body,
     );
   }
 }

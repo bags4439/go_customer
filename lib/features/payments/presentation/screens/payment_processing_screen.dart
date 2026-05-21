@@ -2,26 +2,80 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../providers/payment_providers.dart';
 
 class PaymentProcessingScreen extends ConsumerWidget {
   final String orderId;
   final String requestId;
   final String paymentId;
+  final bool embedInWebPanel;
 
   const PaymentProcessingScreen({
     super.key,
     required this.orderId,
     required this.requestId,
     required this.paymentId,
+    this.embedInWebPanel = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final paymentAsync = ref.watch(paymentStatusProvider(paymentId));
     final timeoutState = ref.watch(paymentTimeoutProvider);
+
+    final content = timeoutState.isTimedOut
+        ? _TimeoutBody(
+            onTryAgain: () {
+              ref.read(paymentTimeoutProvider.notifier).reset();
+              ref.read(paymentTimeoutProvider.notifier).start(paymentId);
+            },
+          )
+        : paymentAsync.when(
+            data: (payment) {
+              if (payment?.isConfirmed == true) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ref.read(paymentTimeoutProvider.notifier).reset();
+                  ref.read(activePaymentProvider(orderId).notifier).state =
+                      null;
+                  if (AppBreakpoints.isWeb(context)) {
+                    OrderDetailWebNavigation.openPaymentConfirmed(
+                      ref,
+                      orderId: orderId,
+                      requestId: requestId,
+                      paymentId: paymentId,
+                    );
+                  } else {
+                    context.go(
+                      '/order/$orderId/payment-request/$requestId/confirmed?paymentId=$paymentId',
+                    );
+                  }
+                });
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.secondary,
+                  ),
+                );
+              }
+              return const _ProcessingBody();
+            },
+            loading: () => const _ProcessingBody(),
+            error: (e, _) => _TimeoutBody(
+              onTryAgain: () => ref.refresh(paymentStatusProvider(paymentId)),
+            ),
+          );
+
+    if (embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Processing payment',
+        onBack: () => OrderDetailWebNavigation.closePanel(ref),
+        child: content,
+      );
+    }
 
     return PopScope(
       canPop: false,
@@ -37,38 +91,7 @@ class PaymentProcessingScreen extends ConsumerWidget {
           ),
           centerTitle: true,
         ),
-        body: timeoutState.isTimedOut
-            ? _TimeoutBody(
-                onTryAgain: () {
-                  ref.read(paymentTimeoutProvider.notifier).reset();
-                  ref.read(paymentTimeoutProvider.notifier).start(paymentId);
-                },
-              )
-            : paymentAsync.when(
-                data: (payment) {
-                  if (payment?.isConfirmed == true) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      ref.read(paymentTimeoutProvider.notifier).reset();
-                      ref.read(activePaymentProvider(orderId).notifier).state =
-                          null;
-                      context.go(
-                        '/order/$orderId/payment-request/$requestId/confirmed?paymentId=$paymentId',
-                      );
-                    });
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.secondary,
-                      ),
-                    );
-                  }
-                  return const _ProcessingBody();
-                },
-                loading: () => const _ProcessingBody(),
-                error: (e, _) => _TimeoutBody(
-                  onTryAgain: () =>
-                      ref.refresh(paymentStatusProvider(paymentId)),
-                ),
-              ),
+        body: content,
       ),
     );
   }

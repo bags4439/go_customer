@@ -9,7 +9,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
+import '../../../orders/presentation/providers/order_detail_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../../domain/entities/payment.dart';
 import '../providers/payment_providers.dart';
 
@@ -17,12 +19,16 @@ class PaymentConfirmedScreen extends ConsumerStatefulWidget {
   final String orderId;
   final String requestId;
   final String paymentId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
 
   const PaymentConfirmedScreen({
     super.key,
     required this.orderId,
     required this.requestId,
     required this.paymentId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
   });
 
   @override
@@ -64,10 +70,7 @@ class _PaymentConfirmedScreenState
         final agentName = agentAsync.valueOrNull?.fullName ?? 'Agent';
         final currency = ref.watch(preferredCurrencyProvider);
 
-        return Scaffold(
-          backgroundColor: const Color(0xFF0A1628),
-          body: SafeArea(
-            child: SingleChildScrollView(
+        final scroll = SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -141,8 +144,13 @@ class _PaymentConfirmedScreenState
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: () =>
-                          context.go('/order/${widget.orderId}'),
+                      onPressed: () {
+                        if (widget.embedInWebPanel) {
+                          resetWebOrderPanelTask(ref);
+                        } else {
+                          context.go('/order/${widget.orderId}');
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondary,
                         foregroundColor: Colors.white,
@@ -160,7 +168,12 @@ class _PaymentConfirmedScreenState
                   const SizedBox(height: 10),
                   Center(
                     child: TextButton(
-                      onPressed: () => context.go('/home'),
+                      onPressed: () {
+                        if (widget.embedInWebPanel) {
+                          resetWebOrderPanelTask(ref);
+                        }
+                        context.go('/home');
+                      },
                       child: Text(
                         'Back to home',
                         style: AppTextStyles.bodySmall.copyWith(
@@ -171,8 +184,23 @@ class _PaymentConfirmedScreenState
                   ),
                 ],
               ),
+            );
+
+        if (widget.embedInWebPanel) {
+          return OrderDetailWebPanelChrome(
+            title: 'Payment confirmed',
+            orderRef: orderRef,
+            onBack: widget.onClosePanel ?? () => resetWebOrderPanelTask(ref),
+            child: ColoredBox(
+              color: const Color(0xFF0A1628),
+              child: scroll,
             ),
-          ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF0A1628),
+          body: SafeArea(child: scroll),
         );
       },
       loading: () =>

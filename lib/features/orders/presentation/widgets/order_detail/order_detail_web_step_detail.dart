@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
-import 'package:go_router/go_router.dart';
-
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/features/orders/data/models/order_timeline_model.dart';
 import 'package:go_customer/features/orders/domain/entities/order_view.dart';
@@ -17,12 +15,14 @@ class OrderDetailWebStepDetail extends ConsumerWidget {
     required this.order,
     required this.stageKey,
     required this.onBack,
+    this.onChatTap,
   });
 
   final String orderId;
   final OrderView? order;
   final String stageKey;
   final VoidCallback onBack;
+  final VoidCallback? onChatTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,7 +62,7 @@ class OrderDetailWebStepDetail extends ConsumerWidget {
         shipping: shipping,
         clearance: clearance,
         repairJob: repairJob,
-        onChatTap: () => context.go('/order/$orderId?tab=chat'),
+        onChatTap: onChatTap,
       );
     }
 

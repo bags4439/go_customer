@@ -9,12 +9,15 @@ import 'package:go_customer/features/orders/presentation/providers/order_provide
 
 class OrderDetailWebQuickActionsCard extends ConsumerWidget {
   const OrderDetailWebQuickActionsCard({
+    super.key,
     required this.orderId,
     required this.onPaymentTap,
   });
 
   final String orderId;
-  final VoidCallback onPaymentTap;
+
+  /// [paymentRequestId] when a pending request exists.
+  final void Function(String? paymentRequestId) onPaymentTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +42,7 @@ class OrderDetailWebQuickActionsCard extends ConsumerWidget {
           Text('QUICK ACTIONS', style: AppTextStyles.sectionLabel),
           const SizedBox(height: 10),
           GestureDetector(
-            onTap: onPaymentTap,
+            onTap: () => onPaymentTap(payment.id),
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(

@@ -13,6 +13,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../orders/core/constants/order_timeline_constants.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/providers/order_timeline_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../../domain/entities/shipping.dart';
 import '../providers/shipping_providers.dart';
 
@@ -22,14 +23,54 @@ final _dateFmt = DateFormat('d MMM yyyy');
 
 class ShippingScreen extends ConsumerWidget {
   final String orderId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
 
-  const ShippingScreen({super.key, required this.orderId});
+  const ShippingScreen({
+    super.key,
+    required this.orderId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final shippingAsync = ref.watch(orderShippingProvider(orderId));
     final orderAsync = ref.watch(orderProvider(orderId));
     final orderRef = orderAsync.valueOrNull?.orderRef ?? orderId;
+
+    final body = shippingAsync.when(
+      data: (shipping) {
+        if (shipping == null) {
+          return _NotArranged(orderId: orderId);
+        }
+        final state = ref.watch(shippingScreenStateProvider(orderId));
+        final entity = shipping.toEntity();
+        switch (state) {
+          case ShippingScreenState.notArranged:
+            return _NotArranged(orderId: orderId);
+          case ShippingScreenState.booked:
+            return _BookedState(orderId: orderId, shipping: entity);
+          case ShippingScreenState.inTransit:
+            return _InTransitState(orderId: orderId, shipping: entity);
+          case ShippingScreenState.arrived:
+            return _ArrivedState(orderId: orderId, shipping: entity);
+          case ShippingScreenState.released:
+            return _ReleasedState(orderId: orderId, shipping: entity);
+        }
+      },
+      loading: () => const _ShippingLoadingState(),
+      error: (e, _) => _ErrorState(orderId: orderId, message: e.toString()),
+    );
+
+    if (embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Shipping tracker',
+        orderRef: orderRef,
+        onBack: onClosePanel ?? () {},
+        child: body,
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -64,29 +105,7 @@ class ShippingScreen extends ConsumerWidget {
           child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
-      body: shippingAsync.when(
-        data: (shipping) {
-          if (shipping == null) {
-            return _NotArranged(orderId: orderId);
-          }
-          final state = ref.watch(shippingScreenStateProvider(orderId));
-          final entity = shipping.toEntity();
-          switch (state) {
-            case ShippingScreenState.notArranged:
-              return _NotArranged(orderId: orderId);
-            case ShippingScreenState.booked:
-              return _BookedState(orderId: orderId, shipping: entity);
-            case ShippingScreenState.inTransit:
-              return _InTransitState(orderId: orderId, shipping: entity);
-            case ShippingScreenState.arrived:
-              return _ArrivedState(orderId: orderId, shipping: entity);
-            case ShippingScreenState.released:
-              return _ReleasedState(orderId: orderId, shipping: entity);
-          }
-        },
-        loading: () => const _ShippingLoadingState(),
-        error: (e, _) => _ErrorState(orderId: orderId, message: e.toString()),
-      ),
+      body: body,
     );
   }
 }

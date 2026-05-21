@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -7,10 +7,11 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../shipping/data/models/shipping_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
+import 'order_detail/order_detail_web_navigation.dart';
 
 /// Inline shipping status card shown inside the active shipping timeline
 /// step. Tappable for all statuses — opens the full shipping tracker.
-class ShippingStatusCard extends StatelessWidget {
+class ShippingStatusCard extends ConsumerWidget {
   final ShippingModel shipping;
   final String orderId;
 
@@ -21,9 +22,10 @@ class ShippingStatusCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => context.push('/order/$orderId/shipping'),
+      onTap: () =>
+          OrderDetailWebNavigation.openShipping(context, ref, orderId),
       child: Container(
         margin: const EdgeInsets.only(top: 10),
         decoration: BoxDecoration(

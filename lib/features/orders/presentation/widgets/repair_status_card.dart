@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/utils/date_formatter.dart';
 import '../../../repairs/data/models/repair_job_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
+import 'order_detail/order_detail_web_navigation.dart';
 
 const _kSurface = 0xFFF5F4F0;
 const _kPrimary = 0xFF378ADD;
@@ -13,17 +14,17 @@ const _kTextSecondary = 0xFF666666;
 const _kSuccess = 0xFF1D9E75;
 
 /// Repair step when repair_jobs exists (no pending repair payment).
-class RepairStatusCard extends StatefulWidget {
+class RepairStatusCard extends ConsumerStatefulWidget {
   final RepairJobModel? repairJob;
   final String orderId;
 
   const RepairStatusCard({super.key, required this.orderId, this.repairJob});
 
   @override
-  State<RepairStatusCard> createState() => _RepairStatusCardState();
+  ConsumerState<RepairStatusCard> createState() => _RepairStatusCardState();
 }
 
-class _RepairStatusCardState extends State<RepairStatusCard>
+class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulse;
 
@@ -47,7 +48,11 @@ class _RepairStatusCardState extends State<RepairStatusCard>
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.push('/order/${widget.orderId}/repair'),
+      onTap: () => OrderDetailWebNavigation.openRepair(
+        context,
+        ref,
+        widget.orderId,
+      ),
       child: Container(
         margin: const EdgeInsets.only(top: 10),
         padding: const EdgeInsets.all(12),
@@ -151,8 +156,11 @@ class _RepairStatusCardState extends State<RepairStatusCard>
             TextButton(
               onPressed: () {
                 // final id = j.orderId;
-                // context.push('/order/$id?tab=chat');
-                context.push('/order/${widget.orderId}/repair');
+                OrderDetailWebNavigation.openRepair(
+                  context,
+                  ref,
+                  widget.orderId,
+                );
               },
               style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
               child: Text(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/models/currency_model.dart';
@@ -8,6 +7,7 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../clearance/data/models/duty_clearance_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
+import 'order_detail/order_detail_web_navigation.dart';
 
 const _kSurface = 0xFFF5F4F0;
 const _kPrimary = 0xFF378ADD;
@@ -34,7 +34,8 @@ class ClearanceStatusCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final preferredCurrency = ref.watch(preferredCurrencyProvider);
     return GestureDetector(
-      onTap: () => context.push('/order/$orderId/clearance'),
+      onTap: () =>
+          OrderDetailWebNavigation.openClearance(context, ref, orderId),
       behavior: HitTestBehavior.opaque,
       child: Container(
         margin: const EdgeInsets.only(top: 10),

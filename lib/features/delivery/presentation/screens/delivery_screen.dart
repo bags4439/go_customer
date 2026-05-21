@@ -25,12 +25,24 @@ import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../../payments/data/models/payment_request_model.dart';
 import '../../core/constants/delivery_constants.dart';
 import '../../domain/entities/delivery.dart';
+import '../../../orders/presentation/providers/order_detail_providers.dart';
+import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../providers/delivery_providers.dart';
 
 class DeliveryScreen extends ConsumerStatefulWidget {
-  const DeliveryScreen({super.key, required this.orderId});
+  const DeliveryScreen({
+    super.key,
+    required this.orderId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
+    this.onOpenPaymentRequest,
+  });
 
   final String orderId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
+  final void Function(String paymentRequestId)? onOpenPaymentRequest;
 
   @override
   ConsumerState<DeliveryScreen> createState() => _DeliveryScreenState();
@@ -140,6 +152,49 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
     );
     final delivery = deliveryAsync.valueOrNull;
 
+    final orderRef =
+        ref.watch(orderProvider(widget.orderId)).valueOrNull?.orderRef ??
+        widget.orderId;
+
+    final stackBody = Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: _buildBody(
+            context,
+            screenState,
+            delivery,
+            deliveryAsync,
+          ),
+        ),
+        if (showCoachMark && _showDeliveryLocationCoach(delivery))
+          CoachMarkOverlay(
+            guideKey: GuideKeys.stageDelivery,
+            targetKey: _locationSectionKey,
+            title: 'Set your delivery address',
+            body:
+                'Tell us where to bring your car. Your agent will deliver it directly'
+                ' to this address.',
+            spotlightShape: SpotlightShape.roundedRect,
+            onDismiss: hideCoachMark,
+            onFaqTap: () {
+              hideCoachMark();
+              GuideFaqSheet.show(context);
+            },
+          ),
+      ],
+    );
+
+    if (widget.embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Delivery',
+        orderRef: orderRef,
+        onBack: widget.onClosePanel ??
+            () => resetWebOrderPanelTask(ref),
+        child: stackBody,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -152,54 +207,18 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
             size: 18,
           ),
           color: AppColors.textPrimary,
-          onPressed: () => context.go('/home'),
+          onPressed: () => context.pop(),
         ),
-        title: Text(
-          'Delivery',
-          style: AppTextStyles.appBarTitle,
-        ),
+        title: Text('Delivery', style: AppTextStyles.appBarTitle),
         actions: [
-          GuideHelpButton(
-            onShowGuide: showCoachMarkManually,
-          ),
+          GuideHelpButton(onShowGuide: showCoachMarkManually),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            height: 0.5,
-            color: AppColors.borderSolid,
-          ),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: _buildBody(
-              context,
-              screenState,
-              delivery,
-              deliveryAsync,
-            ),
-          ),
-          if (showCoachMark &&
-              _showDeliveryLocationCoach(delivery))
-            CoachMarkOverlay(
-              guideKey: GuideKeys.stageDelivery,
-              targetKey: _locationSectionKey,
-              title: 'Set your delivery address',
-              body:
-                  'Tell us where to bring your car. Your agent will deliver it directly'
-                  ' to this address.',
-              spotlightShape: SpotlightShape.roundedRect,
-              onDismiss: hideCoachMark,
-              onFaqTap: () {
-                hideCoachMark();
-                GuideFaqSheet.show(context);
-              },
-            ),
-        ],
-      ),
+      body: stackBody,
     );
   }
 
@@ -268,7 +287,10 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
       case DeliveryScreenState.awaitingPaymentClearance:
         return _wrapScrollable(
           context,
-          _State2AwaitingPayment(orderId: widget.orderId),
+          _State2AwaitingPayment(
+            orderId: widget.orderId,
+            onOpenPaymentRequest: widget.onOpenPaymentRequest,
+          ),
         );
 
       case DeliveryScreenState.addressEntry:
@@ -1121,9 +1143,13 @@ class _DeliveryOptionCard extends ConsumerWidget {
 }
 
 class _State2AwaitingPayment extends ConsumerWidget {
-  const _State2AwaitingPayment({required this.orderId});
+  const _State2AwaitingPayment({
+    required this.orderId,
+    this.onOpenPaymentRequest,
+  });
 
   final String orderId;
+  final void Function(String paymentRequestId)? onOpenPaymentRequest;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1220,6 +1246,7 @@ class _State2AwaitingPayment extends ConsumerWidget {
                             payment: p,
                             preferredCurrency: preferredCurrency,
                             orderId: orderId,
+                            onOpenPaymentRequest: onOpenPaymentRequest,
                           ),
                         ),
                       ],
@@ -1240,11 +1267,13 @@ class _PaymentRequestMiniCard extends StatelessWidget {
     required this.payment,
     required this.preferredCurrency,
     required this.orderId,
+    this.onOpenPaymentRequest,
   });
 
   final PaymentRequestModel payment;
   final CurrencyModel preferredCurrency;
   final String orderId;
+  final void Function(String paymentRequestId)? onOpenPaymentRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -1309,9 +1338,15 @@ class _PaymentRequestMiniCard extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () => context.push(
-              '/order/$orderId/payment-request/${payment.id}',
-            ),
+            onPressed: () {
+              if (onOpenPaymentRequest != null) {
+                onOpenPaymentRequest!(payment.id);
+              } else {
+                context.push(
+                  '/order/$orderId/payment-request/${payment.id}',
+                );
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.secondary,
               foregroundColor: AppColors.background,

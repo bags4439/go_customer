@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -9,6 +8,7 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../orders/core/constants/order_timeline_constants.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../data/models/payment_request_model.dart';
 
 const _kBorder = 0xFFE0DFD8;
@@ -361,8 +361,11 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                             : () async {
                                 setState(() => _payLoading = true);
                                 if (!context.mounted) return;
-                                context.push(
-                                  '/order/${widget.orderId}/payment-request/${pr.id}',
+                                OrderDetailWebNavigation.openPaymentRequest(
+                                  context,
+                                  ref,
+                                  orderId: widget.orderId,
+                                  requestId: pr.id,
                                 );
                                 if (mounted) {
                                   setState(() => _payLoading = false);

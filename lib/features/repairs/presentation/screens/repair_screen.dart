@@ -21,14 +21,33 @@ import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../providers/repair_providers.dart';
+
+VoidCallback repairScreenChatTap(
+  BuildContext context,
+  String orderId,
+  VoidCallback? onOpenChat,
+) =>
+    onOpenChat ?? () => context.go('/order/$orderId?tab=chat');
 
 final _dateFormat = DateFormat('d MMM yyyy');
 
 class RepairScreen extends ConsumerStatefulWidget {
   final String orderId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
+  final VoidCallback? onOpenChat;
+  final VoidCallback? onOpenDelivery;
 
-  const RepairScreen({super.key, required this.orderId});
+  const RepairScreen({
+    super.key,
+    required this.orderId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
+    this.onOpenChat,
+    this.onOpenDelivery,
+  });
 
   @override
   ConsumerState<RepairScreen> createState() => _RepairScreenState();
@@ -71,6 +90,67 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
     final isLoading = jobAsync.isLoading || dutyAsync.isLoading;
     final hasError = jobAsync.hasError || dutyAsync.hasError;
 
+    final orderRef =
+        ref.watch(orderProvider(widget.orderId)).valueOrNull?.orderRef ??
+        widget.orderId;
+
+    final stackBody = Stack(
+      fit: StackFit.expand,
+      children: [
+        KeyedSubtree(
+          key: _repairCoachKey,
+          child: hasError
+              ? _RepairErrorCard(
+                  orderId: widget.orderId,
+                  onRetry: () {
+                    ref.invalidate(repairJobProvider(widget.orderId));
+                    ref.invalidate(dutyClearanceProvider(widget.orderId));
+                  },
+                )
+              : isLoading
+              ? const _RepairLoadingBody()
+              : AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _RepairBody(
+                    key: ValueKey(screenState),
+                    orderId: widget.orderId,
+                    screenState: screenState,
+                    job: jobAsync.valueOrNull,
+                    dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
+                    currency: currency,
+                    onOpenChat: widget.onOpenChat,
+                    onOpenDelivery: widget.onOpenDelivery,
+                  ),
+                ),
+        ),
+        if (_showRepairCoach && _repairCoachEligible(screenState))
+          CoachMarkOverlay(
+            guideKey: GuideKeys.stageRepair,
+            targetKey: _repairCoachKey,
+            title: 'Review your repair quote',
+            body:
+                'Your agent sent a repair quote. '
+                'Check the details carefully — '
+                'no work begins until you approve it.',
+            spotlightShape: SpotlightShape.roundedRect,
+            onDismiss: () => setState(() => _showRepairCoach = false),
+            onFaqTap: () {
+              setState(() => _showRepairCoach = false);
+              GuideFaqSheet.show(context);
+            },
+          ),
+      ],
+    );
+
+    if (widget.embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Repairs',
+        orderRef: orderRef,
+        onBack: widget.onClosePanel ?? () {},
+        child: stackBody,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -95,66 +175,17 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
-              child: ref
-                  .watch(orderProvider(widget.orderId))
-                  .when(
-                    data: (order) => Text(
-                      order?.orderRef ?? widget.orderId,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.primary.withValues(alpha: 0.7),
-                      ),
-                    ),
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
+              child: Text(
+                orderRef,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.primary.withValues(alpha: 0.7),
+                ),
+              ),
             ),
           ),
         ],
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          KeyedSubtree(
-            key: _repairCoachKey,
-            child: hasError
-                ? _RepairErrorCard(
-                    orderId: widget.orderId,
-                    onRetry: () {
-                      ref.invalidate(repairJobProvider(widget.orderId));
-                      ref.invalidate(dutyClearanceProvider(widget.orderId));
-                    },
-                  )
-                : isLoading
-                    ? const _RepairLoadingBody()
-                    : AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: _RepairBody(
-                          key: ValueKey(screenState),
-                          orderId: widget.orderId,
-                          screenState: screenState,
-                          job: jobAsync.valueOrNull,
-                          dutyClearedAt: dutyAsync.valueOrNull?.clearedAt,
-                          currency: currency,
-                        ),
-                      ),
-          ),
-          if (_showRepairCoach && _repairCoachEligible(screenState))
-            CoachMarkOverlay(
-              guideKey: GuideKeys.stageRepair,
-              targetKey: _repairCoachKey,
-              title: 'Review your repair quote',
-              body: 'Your agent sent a repair quote. '
-                  'Check the details carefully — '
-                  'no work begins until you approve it.',
-              spotlightShape: SpotlightShape.roundedRect,
-              onDismiss: () => setState(() => _showRepairCoach = false),
-              onFaqTap: () {
-                setState(() => _showRepairCoach = false);
-                GuideFaqSheet.show(context);
-              },
-            ),
-        ],
-      ),
+      body: stackBody,
     );
   }
 }
@@ -269,6 +300,8 @@ class _RepairBody extends StatelessWidget {
   final RepairJob? job;
   final DateTime? dutyClearedAt;
   final CurrencyModel currency;
+  final VoidCallback? onOpenChat;
+  final VoidCallback? onOpenDelivery;
 
   const _RepairBody({
     super.key,
@@ -277,6 +310,8 @@ class _RepairBody extends StatelessWidget {
     required this.job,
     required this.dutyClearedAt,
     required this.currency,
+    this.onOpenChat,
+    this.onOpenDelivery,
   });
 
   @override
@@ -291,29 +326,32 @@ class _RepairBody extends StatelessWidget {
           currency: currency,
         );
       case RepairScreenState.awaitingQuote:
-        return _StateAwaitingQuote(orderId: orderId);
+        return _StateAwaitingQuote(orderId: orderId, onOpenChat: onOpenChat);
       case RepairScreenState.quoteSent:
         return _State2QuoteReceived(
           orderId: orderId,
           job: job!,
           currency: currency,
+          onOpenChat: onOpenChat,
         );
       case RepairScreenState.quoteDeclined:
-        return _State2BQuoteDeclined(orderId: orderId);
+        return _State2BQuoteDeclined(orderId: orderId, onOpenChat: onOpenChat);
       case RepairScreenState.inProgress:
         return _State3InProgress(
           orderId: orderId,
           job: job!,
           currency: currency,
+          onOpenChat: onOpenChat,
         );
       case RepairScreenState.complete:
         return _State4Complete(
           orderId: orderId,
           job: job!,
           currency: currency,
+          onOpenDelivery: onOpenDelivery,
         );
       case RepairScreenState.noRepair:
-        return _State5NoRepair(orderId: orderId);
+        return _State5NoRepair(orderId: orderId, onOpenChat: onOpenChat);
     }
   }
 }
@@ -875,11 +913,13 @@ class _State2QuoteReceived extends ConsumerStatefulWidget {
   final String orderId;
   final RepairJob job;
   final CurrencyModel currency;
+  final VoidCallback? onOpenChat;
 
   const _State2QuoteReceived({
     required this.orderId,
     required this.job,
     required this.currency,
+    this.onOpenChat,
   });
 
   @override
@@ -1184,7 +1224,11 @@ class _State2QuoteReceivedState extends ConsumerState<_State2QuoteReceived> {
                 ],
                 const SizedBox(height: 8),
                 InkWell(
-                  onTap: () => context.go('/order/${widget.orderId}?tab=chat'),
+                  onTap: repairScreenChatTap(
+                    context,
+                    widget.orderId,
+                    widget.onOpenChat,
+                  ),
                   child: Text(
                     RepairConstants.askSecondQuote(agentName),
                     style: AppTextStyles.link.copyWith(fontSize: 12),
@@ -1258,8 +1302,9 @@ class _GarageInfoRow extends StatelessWidget {
 
 class _State2BQuoteDeclined extends ConsumerWidget {
   final String orderId;
+  final VoidCallback? onOpenChat;
 
-  const _State2BQuoteDeclined({required this.orderId});
+  const _State2BQuoteDeclined({required this.orderId, this.onOpenChat});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1303,7 +1348,7 @@ class _State2BQuoteDeclined extends ConsumerWidget {
           SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: () => context.go('/order/$orderId?tab=chat'),
+              onPressed: repairScreenChatTap(context, orderId, onOpenChat),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
@@ -1373,11 +1418,13 @@ class _State3InProgress extends ConsumerStatefulWidget {
   final String orderId;
   final RepairJob job;
   final CurrencyModel currency;
+  final VoidCallback? onOpenChat;
 
   const _State3InProgress({
     required this.orderId,
     required this.job,
     required this.currency,
+    this.onOpenChat,
   });
 
   @override
@@ -1591,7 +1638,11 @@ class _State3InProgressState extends ConsumerState<_State3InProgress>
           SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: () => context.go('/order/${widget.orderId}?tab=chat'),
+              onPressed: repairScreenChatTap(
+                context,
+                widget.orderId,
+                widget.onOpenChat,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
@@ -1610,11 +1661,13 @@ class _State4Complete extends ConsumerStatefulWidget {
   final String orderId;
   final RepairJob job;
   final CurrencyModel currency;
+  final VoidCallback? onOpenDelivery;
 
   const _State4Complete({
     required this.orderId,
     required this.job,
     required this.currency,
+    this.onOpenDelivery,
   });
 
   @override
@@ -1677,7 +1730,11 @@ class _State4CompleteState extends ConsumerState<_State4Complete> {
           ],
           if (_sectionVisible[3]) ...[
             const SizedBox(height: 12),
-            _State4DeliveryCard(orderId: widget.orderId, agentName: agentName),
+            _State4DeliveryCard(
+              orderId: widget.orderId,
+              agentName: agentName,
+              onOpenDelivery: widget.onOpenDelivery,
+            ),
           ],
           const SizedBox(height: 32),
         ],
@@ -2103,8 +2160,13 @@ class _DoneRow extends StatelessWidget {
 class _State4DeliveryCard extends StatelessWidget {
   final String orderId;
   final String agentName;
+  final VoidCallback? onOpenDelivery;
 
-  const _State4DeliveryCard({required this.orderId, required this.agentName});
+  const _State4DeliveryCard({
+    required this.orderId,
+    required this.agentName,
+    this.onOpenDelivery,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2135,7 +2197,9 @@ class _State4DeliveryCard extends StatelessWidget {
           SizedBox(
             height: 44,
             child: ElevatedButton(
-              onPressed: () => context.push('/order/$orderId/delivery'),
+              onPressed:
+                  onOpenDelivery ??
+                  () => context.push('/order/$orderId/delivery'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
@@ -2156,8 +2220,9 @@ class _State4DeliveryCard extends StatelessWidget {
 
 class _State5NoRepair extends ConsumerWidget {
   final String orderId;
+  final VoidCallback? onOpenChat;
 
-  const _State5NoRepair({required this.orderId});
+  const _State5NoRepair({required this.orderId, this.onOpenChat});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -2220,7 +2285,7 @@ class _State5NoRepair extends ConsumerWidget {
           SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: () => context.go('/order/$orderId?tab=chat'),
+              onPressed: repairScreenChatTap(context, orderId, onOpenChat),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
@@ -2427,8 +2492,9 @@ class _RepairTimelineStage extends StatelessWidget {
 
 class _StateAwaitingQuote extends ConsumerWidget {
   final String orderId;
+  final VoidCallback? onOpenChat;
 
-  const _StateAwaitingQuote({required this.orderId});
+  const _StateAwaitingQuote({required this.orderId, this.onOpenChat});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -2480,7 +2546,7 @@ class _StateAwaitingQuote extends ConsumerWidget {
           SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: () => context.go('/order/$orderId?tab=chat'),
+              onPressed: repairScreenChatTap(context, orderId, onOpenChat),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF378ADD),
                 foregroundColor: Colors.white,

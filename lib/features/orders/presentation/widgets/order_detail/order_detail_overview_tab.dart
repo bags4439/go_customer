@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/layout/app_breakpoints.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
-import 'package:go_router/go_router.dart';
-
 import 'package:go_customer/core/constants/app_constants.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/features/orders/core/constants/order_timeline_constants.dart';
-import 'package:go_customer/features/orders/presentation/providers/order_detail_providers.dart';
 import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
+import 'order_detail_web_navigation.dart';
 import 'package:go_customer/features/orders/presentation/widgets/order_timeline_widget.dart';
 import 'package:go_customer/features/payments/data/models/payment_request_model.dart';
 import 'order_detail_car_card.dart';
@@ -36,8 +34,6 @@ class OrderDetailOverviewTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(orderProvider(orderId));
     final paymentAsync = ref.watch(activePaymentRequestProvider(orderId));
-    final router = GoRouter.of(context);
-
     return orderAsync.when(
       data: (order) {
         if (order == null) {
@@ -74,8 +70,12 @@ class OrderDetailOverviewTab extends ConsumerWidget {
                         payment: p,
                         typeLabel: typeLabel,
                         deadlineText: deadlineStr,
-                        onPayPressed: () => router.go(
-                          '/order/${order.id}/payment-request/${p.id}',
+                        onPayPressed: () =>
+                            OrderDetailWebNavigation.openPaymentRequest(
+                          context,
+                          ref,
+                          orderId: order.id,
+                          requestId: p.id,
                         ),
                       ),
                     ),
@@ -102,10 +102,8 @@ class OrderDetailOverviewTab extends ConsumerWidget {
                 suppressStageCoachMarks: suppressTimelineStageCoaches,
                 onChatTap: onChatTap,
                 onStepTapped: AppBreakpoints.isWeb(context)
-                    ? (stageKey) {
-                        ref.read(webSelectedStepProvider.notifier).state =
-                            stageKey;
-                      }
+                    ? (stageKey) =>
+                        OrderDetailWebNavigation.openTimelineStep(ref, stageKey)
                     : null,
               ),
             ),

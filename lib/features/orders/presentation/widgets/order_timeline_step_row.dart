@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,6 +23,7 @@ import '../../data/models/order_timeline_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import '../providers/order_providers.dart';
 import '../utils/timeline_payment_resolver.dart';
+import 'order_detail/order_detail_web_navigation.dart';
 import 'clearance_status_card.dart';
 import 'repair_status_card.dart';
 import 'shipping_status_card.dart';
@@ -480,7 +480,7 @@ class _ActiveStageContent extends StatelessWidget {
 /// Stage-specific sub-actions for the order timeline (payment, shipping,
 /// clearance, repair, delivery, chat fallbacks). Used by the active row
 /// and by the web order-detail right panel.
-class OrderTimelineSubActionArea extends StatelessWidget {
+class OrderTimelineSubActionArea extends ConsumerWidget {
   final OrderTimelineModel stage;
   final String orderId;
   final OrderView order;
@@ -503,7 +503,7 @@ class OrderTimelineSubActionArea extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (stage.stageKey == 'preferences_submitted') {
       return const SizedBox.shrink();
     }
@@ -548,7 +548,7 @@ class OrderTimelineSubActionArea extends StatelessWidget {
             onChatTap: onChatTap,
           );
         }
-        return _chooseClearance(context);
+        return _chooseClearance(context, ref);
       case 'repair':
         final job = repairJob;
         if (job != null &&
@@ -590,11 +590,12 @@ class OrderTimelineSubActionArea extends StatelessWidget {
     return _chatFallback(context, stage.stageKey);
   }
 
-  Widget _chooseClearance(BuildContext context) {
+  Widget _chooseClearance(BuildContext context, WidgetRef ref) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () => context.push('/order/$orderId/clearance'),
+        onPressed: () =>
+            OrderDetailWebNavigation.openClearance(context, ref, orderId),
         icon: const Icon(
           Icons.account_balance_outlined,
           size: 15,
@@ -695,10 +696,8 @@ class _DeliveryActionCard extends ConsumerWidget {
                   'Choose delivery '
                   'option →',
               buttonColor: AppColors.secondary,
-              onTap: () => context.push(
-                '/order/$orderId'
-                '/delivery',
-              ),
+              onTap: () =>
+                  OrderDetailWebNavigation.openDelivery(context, ref, orderId),
             );
 
           // Waiting for payment
@@ -722,10 +721,8 @@ class _DeliveryActionCard extends ConsumerWidget {
                         'cleared.',
               buttonLabel: 'View payment details →',
               buttonColor: AppColors.secondary,
-              onTap: () => context.push(
-                '/order/$orderId'
-                '/delivery',
-              ),
+              onTap: () =>
+                  OrderDetailWebNavigation.openDelivery(context, ref, orderId),
             );
 
           // Payments cleared — needs
@@ -743,10 +740,8 @@ class _DeliveryActionCard extends ConsumerWidget {
                   'can arrange delivery.',
               buttonLabel: 'Set delivery address →',
               buttonColor: AppColors.secondary,
-              onTap: () => context.push(
-                '/order/$orderId'
-                '/delivery',
-              ),
+              onTap: () =>
+                  OrderDetailWebNavigation.openDelivery(context, ref, orderId),
             );
 
           // Address set — waiting
@@ -794,9 +789,10 @@ class _DeliveryActionCard extends ConsumerWidget {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () => context.push(
-                      '/order/$orderId'
-                      '/delivery',
+                    onPressed: () => OrderDetailWebNavigation.openDelivery(
+                      context,
+                      ref,
+                      orderId,
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
@@ -847,10 +843,8 @@ class _DeliveryActionCard extends ConsumerWidget {
                         'point →'
                   : 'View details →',
               buttonColor: AppColors.secondary,
-              onTap: () => context.push(
-                '/order/$orderId'
-                '/delivery',
-              ),
+              onTap: () =>
+                  OrderDetailWebNavigation.openDelivery(context, ref, orderId),
             );
 
           // Delivery confirmed
@@ -1032,7 +1026,8 @@ class _DeliveredCard extends ConsumerWidget {
               return SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => context.push('/order/$orderId/review'),
+                  onPressed: () =>
+                      OrderDetailWebNavigation.openReview(context, ref, orderId),
                   icon: const Icon(
                     Icons.star_outline_rounded,
                     size: 16,
@@ -1063,18 +1058,18 @@ class _DeliveredCard extends ConsumerWidget {
   }
 }
 
-class _SubmittedReviewCard extends StatelessWidget {
+class _SubmittedReviewCard extends ConsumerWidget {
   final BuyerReviewModel review;
   final String orderId;
 
   const _SubmittedReviewCard({required this.review, required this.orderId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final stars = review.overallRating.round().clamp(1, 5);
 
     return InkWell(
-      onTap: () => context.push('/order/$orderId/review'),
+      onTap: () => OrderDetailWebNavigation.openReview(context, ref, orderId),
       borderRadius: BorderRadius.circular(10),
       child: Container(
         width: double.infinity,

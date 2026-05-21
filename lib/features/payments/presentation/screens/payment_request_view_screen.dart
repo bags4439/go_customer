@@ -16,18 +16,25 @@ import '../../data/services/paystack_payment_service.dart'
 import '../../domain/entities/payment_request.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/payment_providers.dart';
 
 class PaymentRequestViewScreen extends ConsumerStatefulWidget {
   final String orderId;
   final String requestId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
 
   const PaymentRequestViewScreen({
     super.key,
     required this.orderId,
     required this.requestId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
   });
 
   @override
@@ -48,26 +55,7 @@ class _PaymentRequestViewScreenState
     final orderAsync = ref.watch(orderProvider(widget.orderId));
     final orderRef = orderAsync.valueOrNull?.orderRef ?? widget.orderId;
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Payment request', style: AppTextStyles.appBarTitle),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(child: Text(orderRef, style: AppTextStyles.caption)),
-          ),
-        ],
-      ),
-      body: requestAsync.when(
+    final body = requestAsync.when(
         data: (request) {
           if (request == null) {
             return Center(
@@ -245,7 +233,37 @@ class _PaymentRequestViewScreenState
         ),
         error: (e, _) =>
             Center(child: Text('Error: $e', style: AppTextStyles.bodyMedium)),
+      );
+
+    if (widget.embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Payment request',
+        orderRef: orderRef,
+        onBack: widget.onClosePanel ?? () {},
+        child: body,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => context.pop(),
+        ),
+        title: Text('Payment request', style: AppTextStyles.appBarTitle),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(child: Text(orderRef, style: AppTextStyles.caption)),
+          ),
+        ],
       ),
+      body: body,
     );
   }
 
@@ -302,9 +320,18 @@ class _PaymentRequestViewScreenState
       );
 
       if (mounted) {
-        context.push(
-          '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${result.paymentId}',
-        );
+        if (AppBreakpoints.isWeb(context)) {
+          OrderDetailWebNavigation.openPaymentProcessing(
+            ref,
+            orderId: widget.orderId,
+            requestId: widget.requestId,
+            paymentId: result.paymentId,
+          );
+        } else {
+          context.push(
+            '/order/${widget.orderId}/payment-request/${widget.requestId}/processing?paymentId=${result.paymentId}',
+          );
+        }
       }
     } finally {
       if (mounted) {

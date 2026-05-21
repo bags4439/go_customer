@@ -14,14 +14,24 @@ import '../../core/constants/clearance_constants.dart';
 import '../../domain/entities/duty_clearance.dart';
 import '../../../shipping/domain/entities/shipping.dart';
 import '../../../shipping/presentation/providers/shipping_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../providers/clearance_providers.dart';
 
 final _arrivalDateFormat = DateFormat('d MMMM yyyy');
 
 class ClearanceScreen extends ConsumerWidget {
   final String orderId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
+  final VoidCallback? onOpenChat;
 
-  const ClearanceScreen({super.key, required this.orderId});
+  const ClearanceScreen({
+    super.key,
+    required this.orderId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
+    this.onOpenChat,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,27 +42,7 @@ class ClearanceScreen extends ConsumerWidget {
     final isLoading = shippingAsync.isLoading || dutyAsync.isLoading;
     final hasError = shippingAsync.hasError || dutyAsync.hasError;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          color: AppColors.textPrimary,
-          onPressed: () => context.go('/home'),
-        ),
-        title: Text(
-          'Clearance',
-          style: AppTextStyles.appBarTitle,
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
-      ),
-      body: hasError
+    final body = hasError
           ? _ClearanceErrorCard(
               orderId: orderId,
               onRetry: () {
@@ -67,7 +57,35 @@ class ClearanceScreen extends ConsumerWidget {
               screenState: screenState,
               shipping: shippingAsync.valueOrNull,
               duty: dutyAsync.valueOrNull,
-            ),
+              onOpenChat: onOpenChat,
+            );
+
+    if (embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Clearance',
+        onBack: onClosePanel ?? () {},
+        child: body,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          color: AppColors.textPrimary,
+          onPressed: () => context.pop(),
+        ),
+        title: Text('Clearance', style: AppTextStyles.appBarTitle),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
+        ),
+      ),
+      body: body,
     );
   }
 }
@@ -181,12 +199,14 @@ class _ClearanceBody extends StatelessWidget {
   final ClearanceScreenState screenState;
   final Shipping? shipping;
   final DutyClearance? duty;
+  final VoidCallback? onOpenChat;
 
   const _ClearanceBody({
     required this.orderId,
     required this.screenState,
     required this.shipping,
     required this.duty,
+    this.onOpenChat,
   });
 
   @override

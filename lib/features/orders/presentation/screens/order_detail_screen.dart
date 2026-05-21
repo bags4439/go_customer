@@ -115,7 +115,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     _tabController.animateTo(index);
     setState(() => _isChatTabActive = index == 1);
     if (index != 0) {
-      ref.read(webSelectedStepProvider.notifier).state = null;
+      resetWebOrderPanelTask(ref);
     }
   }
 
