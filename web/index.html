@@ -65,6 +65,25 @@
   </script>
 </head>
 <body>
+  <script>
+    function openPaystackCheckoutPopup(url) {
+      const width = 520;
+      const height = 720;
+      const left = Math.max(0, Math.round((screen.width - width) / 2));
+      const top = Math.max(0, Math.round((screen.height - height) / 2));
+      const features = [
+        'popup=yes',
+        'width=' + width,
+        'height=' + height,
+        'left=' + left,
+        'top=' + top,
+        'scrollbars=yes',
+        'resizable=yes',
+      ].join(',');
+      const popup = window.open(url, 'paystack_checkout', features);
+      return !!(popup && !popup.closed);
+    }
+  </script>
   <script src="flutter_bootstrap.js"
           async></script>
 </body>

@@ -69,122 +69,110 @@ class _PaymentConfirmedScreenState
         final typeLabel = paymentRequestTypeLabel(payment.type);
         final agentName = agentAsync.valueOrNull?.fullName ?? 'Agent';
         final currency = ref.watch(preferredCurrencyProvider);
+        final lightPanel = widget.embedInWebPanel;
 
         final scroll = SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _SuccessHero(
-                    payment: payment,
-                    agentName: agentName,
-                    currency: currency,
-                  ),
-                  const SizedBox(height: 16),
-                  _ReceiptCard(
-                    payment: payment,
-                    orderRef: orderRef,
-                    typeLabel: typeLabel,
-                    currency: currency,
-                  ),
-                  if (payment.type ==
-                          AppConstants.paymentRequestTypeVehicleBalanceAndShipping &&
-                      requestAsync.valueOrNull?.depositDeductedUsd != null) ...[
-                    const SizedBox(height: 12),
-                    _DepositNote(
-                      depositDeductedUsd:
-                          requestAsync.valueOrNull!.depositDeductedUsd!,
-                      totalVehicleCost: payment.amountUsd +
-                          requestAsync.valueOrNull!.depositDeductedUsd!,
-                    ),
-                  ],
-                  if (payment.type ==
-                      AppConstants.paymentRequestTypeRepairFee) ...[
-                    const SizedBox(height: 12),
-                    const _RepairNote(),
-                  ],
-                  const SizedBox(height: 16),
-                  const _WhatHappensNext(),
-                  const SizedBox(height: 24),
-                  // Receipt note
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.receipt_long_rounded,
-                          size: 14,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Your receipt has been saved to your order '
-                            'documents tab.',
-                            style: AppTextStyles.caption.copyWith(
-                              color: Colors.white.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (widget.embedInWebPanel) {
-                          resetWebOrderPanelTask(ref);
-                        } else {
-                          context.go('/order/${widget.orderId}');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        'View order →',
-                        style: AppTextStyles.buttonLarge,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        if (widget.embedInWebPanel) {
-                          resetWebOrderPanelTask(ref);
-                        }
-                        context.go('/home');
-                      },
-                      child: Text(
-                        'Back to home',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+          padding: EdgeInsets.fromLTRB(
+            20,
+            lightPanel ? 16 : 24,
+            20,
+            32,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SuccessHero(
+                payment: payment,
+                agentName: agentName,
+                currency: currency,
+                lightTheme: lightPanel,
               ),
-            );
+              const SizedBox(height: 16),
+              _ReceiptCard(
+                payment: payment,
+                orderRef: orderRef,
+                typeLabel: typeLabel,
+                currency: currency,
+                lightTheme: lightPanel,
+              ),
+              if (payment.type ==
+                      AppConstants
+                          .paymentRequestTypeVehicleBalanceAndShipping &&
+                  requestAsync.valueOrNull?.depositDeductedUsd != null) ...[
+                const SizedBox(height: 12),
+                _DepositNote(
+                  depositDeductedUsd:
+                      requestAsync.valueOrNull!.depositDeductedUsd!,
+                  totalVehicleCost: payment.amountUsd +
+                      requestAsync.valueOrNull!.depositDeductedUsd!,
+                  lightTheme: lightPanel,
+                ),
+              ],
+              if (payment.type == AppConstants.paymentRequestTypeRepairFee) ...[
+                const SizedBox(height: 12),
+                _RepairNote(lightTheme: lightPanel),
+              ],
+              const SizedBox(height: 16),
+              _WhatHappensNext(lightTheme: lightPanel),
+              const SizedBox(height: 24),
+              _ReceiptSavedNote(lightTheme: lightPanel),
+              const SizedBox(height: 12),
+              if (lightPanel)
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: widget.onClosePanel ??
+                        () => resetWebOrderPanelTask(ref),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Done',
+                      style: AppTextStyles.buttonLarge,
+                    ),
+                  ),
+                )
+              else ...[
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        context.go('/order/${widget.orderId}'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text(
+                      'View order →',
+                      style: AppTextStyles.buttonLarge,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: TextButton(
+                    onPressed: () => context.go('/home'),
+                    child: Text(
+                      'Back to home',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.white.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
 
         if (widget.embedInWebPanel) {
           return OrderDetailWebPanelChrome(
@@ -192,7 +180,7 @@ class _PaymentConfirmedScreenState
             orderRef: orderRef,
             onBack: widget.onClosePanel ?? () => resetWebOrderPanelTask(ref),
             child: ColoredBox(
-              color: const Color(0xFF0A1628),
+              color: AppColors.surface,
               child: scroll,
             ),
           );
@@ -213,13 +201,60 @@ class _PaymentConfirmedScreenState
   }
 }
 
+class _ReceiptSavedNote extends StatelessWidget {
+  const _ReceiptSavedNote({required this.lightTheme});
+
+  final bool lightTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: lightTheme
+            ? AppColors.infoBackground
+            : Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: lightTheme
+              ? AppColors.borderSolid
+              : Colors.white.withValues(alpha: 0.1),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.receipt_long_rounded,
+            size: 14,
+            color: lightTheme ? AppColors.infoText : Colors.white.withValues(alpha: 0.5),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Your receipt has been saved to your order documents tab.',
+              style: AppTextStyles.caption.copyWith(
+                color: lightTheme
+                    ? AppColors.infoText
+                    : Colors.white.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DepositNote extends ConsumerWidget {
   final double depositDeductedUsd;
   final double totalVehicleCost;
+  final bool lightTheme;
 
   const _DepositNote({
     required this.depositDeductedUsd,
     required this.totalVehicleCost,
+    this.lightTheme = false,
   });
 
   @override
@@ -237,16 +272,29 @@ class _DepositNote extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.15),
+        color: lightTheme
+            ? AppColors.successMutedBackground
+            : AppColors.success.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
-        border: const Border(
+        border: Border(
           left: BorderSide(color: AppColors.success, width: 4),
+          top: lightTheme
+              ? const BorderSide(color: AppColors.successMutedBorder)
+              : BorderSide.none,
+          right: lightTheme
+              ? const BorderSide(color: AppColors.successMutedBorder)
+              : BorderSide.none,
+          bottom: lightTheme
+              ? const BorderSide(color: AppColors.successMutedBorder)
+              : BorderSide.none,
         ),
       ),
       child: Text(
         'Your deposit of $depositStr was deducted. Total vehicle cost: $totalStr — fully paid.',
         style: AppTextStyles.bodySmall.copyWith(
-          color: Colors.white.withValues(alpha: 0.9),
+          color: lightTheme
+              ? AppColors.successMutedForeground
+              : Colors.white.withValues(alpha: 0.9),
         ),
       ),
     );
@@ -259,11 +307,13 @@ class _SuccessHero extends StatelessWidget {
     required this.payment,
     required this.agentName,
     required this.currency,
+    this.lightTheme = false,
   });
 
   final Payment payment;
   final String agentName;
   final CurrencyModel currency;
+  final bool lightTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -300,13 +350,13 @@ class _SuccessHero extends StatelessWidget {
             color: Colors.white,
             size: 40,
           ),
-        ),
+         ),
         const SizedBox(height: 16),
         Text(
           'Payment confirmed!',
           style: AppTextStyles.titleLarge.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
+            color: lightTheme ? AppColors.textPrimary : Colors.white,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 6),
@@ -314,7 +364,9 @@ class _SuccessHero extends StatelessWidget {
           '$amountStr received. $agentName has been notified.',
           textAlign: TextAlign.center,
           style: AppTextStyles.bodySmall.copyWith(
-            color: Colors.white.withValues(alpha: 0.6),
+            color: lightTheme
+                ? AppColors.textSecondary
+                : Colors.white.withValues(alpha: 0.6),
             height: 1.5,
           ),
         ),
@@ -330,12 +382,14 @@ class _ReceiptCard extends StatelessWidget {
     required this.orderRef,
     required this.typeLabel,
     required this.currency,
+    this.lightTheme = false,
   });
 
   final Payment payment;
   final String orderRef;
   final String typeLabel;
   final CurrencyModel currency;
+  final bool lightTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -346,25 +400,40 @@ class _ReceiptCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(20),
+        color: lightTheme ? AppColors.background : Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(lightTheme ? 12 : 20),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
+          color: lightTheme
+              ? AppColors.borderSolid
+              : Colors.white.withValues(alpha: 0.12),
           width: 0.5,
         ),
+        boxShadow: lightTheme
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1D9E75).withValues(alpha: 0.15),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+              color: lightTheme
+                  ? AppColors.successMutedBackground
+                  : const Color(0xFF1D9E75).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(lightTheme ? 12 : 20),
               ),
               border: Border(
                 bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: lightTheme
+                      ? AppColors.successMutedBorder
+                      : Colors.white.withValues(alpha: 0.08),
                 ),
               ),
             ),
@@ -374,42 +443,50 @@ class _ReceiptCard extends StatelessWidget {
                 Text(
                   'Amount paid',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: lightTheme
+                        ? AppColors.successMutedForeground
+                        : Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
                 Text(
                   amountStr,
                   style: AppTextStyles.amountMedium.copyWith(
-                    color: const Color(0xFF27C28D),
+                    color: AppColors.success,
                   ),
                 ),
               ],
             ),
           ),
-          _DarkReceiptRow(
+          _ReceiptRow(
             label: 'Payment method',
             value: _methodLabelStatic(payment.method),
+            lightTheme: lightTheme,
           ),
-          _DarkReceiptRow(
+          _ReceiptRow(
             label: 'Date & time',
             value: payment.confirmedAt != null
                 ? DateFormat('d MMM yyyy, h:mm a').format(payment.confirmedAt!)
                 : '—',
+            lightTheme: lightTheme,
           ),
-          _DarkReceiptRow(
+          _ReceiptRow(
             label: 'Order',
             value: orderRef,
+            lightTheme: lightTheme,
           ),
-          _DarkReceiptRow(
+          _ReceiptRow(
             label: 'For',
             value: typeLabel,
+            lightTheme: lightTheme,
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
             child: Text(
               'Ref: ${payment.providerRef ?? '—'}',
               style: AppTextStyles.caption.copyWith(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: lightTheme
+                    ? AppColors.textTertiary
+                    : Colors.white.withValues(alpha: 0.3),
                 fontSize: 10,
               ),
             ),
@@ -439,14 +516,16 @@ class _ReceiptCard extends StatelessWidget {
   }
 }
 
-class _DarkReceiptRow extends StatelessWidget {
-  const _DarkReceiptRow({
+class _ReceiptRow extends StatelessWidget {
+  const _ReceiptRow({
     required this.label,
     required this.value,
+    this.lightTheme = false,
   });
 
   final String label;
   final String value;
+  final bool lightTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -454,7 +533,9 @@ class _DarkReceiptRow extends StatelessWidget {
       children: [
         Container(
           height: 0.5,
-          color: Colors.white.withValues(alpha: 0.07),
+          color: lightTheme
+              ? AppColors.borderSolid
+              : Colors.white.withValues(alpha: 0.07),
           margin: const EdgeInsets.symmetric(horizontal: 16),
         ),
         Padding(
@@ -465,13 +546,18 @@ class _DarkReceiptRow extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: lightTheme
+                      ? AppColors.textSecondary
+                      : Colors.white.withValues(alpha: 0.5),
                 ),
               ),
-              Text(
-                value,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: Colors.white,
+              Flexible(
+                child: Text(
+                  value,
+                  textAlign: TextAlign.end,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: lightTheme ? AppColors.textPrimary : Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -484,17 +570,21 @@ class _DarkReceiptRow extends StatelessWidget {
 
 /// What happens next section.
 class _WhatHappensNext extends StatelessWidget {
-  const _WhatHappensNext();
+  const _WhatHappensNext({this.lightTheme = false});
+
+  final bool lightTheme;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        color: lightTheme ? AppColors.surface : Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: lightTheme
+              ? AppColors.borderSolid
+              : Colors.white.withValues(alpha: 0.08),
           width: 0.5,
         ),
       ),
@@ -504,20 +594,22 @@ class _WhatHappensNext extends StatelessWidget {
           Text(
             'WHAT HAPPENS NEXT',
             style: AppTextStyles.sectionLabel.copyWith(
-              color: Colors.white.withValues(alpha: 0.4),
+              color: lightTheme
+                  ? AppColors.textTertiary
+                  : Colors.white.withValues(alpha: 0.4),
             ),
           ),
           const SizedBox(height: 12),
-          const _NextStep(
+          _NextStep(
             done: true,
-            label:
-                'Your agent has been notified of your payment',
+            label: 'Your agent has been notified of your payment',
+            lightTheme: lightTheme,
           ),
           const SizedBox(height: 8),
-          const _NextStep(
+          _NextStep(
             done: false,
-            label:
-                'Your order will progress to the next stage',
+            label: 'Your order will progress to the next stage',
+            lightTheme: lightTheme,
           ),
         ],
       ),
@@ -529,10 +621,12 @@ class _NextStep extends StatelessWidget {
   const _NextStep({
     required this.done,
     required this.label,
+    this.lightTheme = false,
   });
 
   final bool done;
   final String label;
+  final bool lightTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -576,7 +670,9 @@ class _NextStep extends StatelessWidget {
           child: Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: lightTheme
+                  ? AppColors.textPrimary
+                  : Colors.white.withValues(alpha: 0.7),
               height: 1.5,
             ),
           ),
@@ -587,14 +683,18 @@ class _NextStep extends StatelessWidget {
 }
 
 class _RepairNote extends StatelessWidget {
-  const _RepairNote();
+  const _RepairNote({this.lightTheme = false});
+
+  final bool lightTheme;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.15),
+        color: lightTheme
+            ? AppColors.successMutedBackground
+            : AppColors.success.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
         border: const Border(
           left: BorderSide(
@@ -606,7 +706,9 @@ class _RepairNote extends StatelessWidget {
       child: Text(
         'Repair payment confirmed. Your agent will coordinate delivery once work is complete.',
         style: AppTextStyles.bodySmall.copyWith(
-          color: Colors.white,
+          color: lightTheme
+              ? AppColors.successMutedForeground
+              : Colors.white,
         ),
       ),
     );

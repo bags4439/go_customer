@@ -163,6 +163,18 @@ class _PaymentRequestViewScreenState
                     ),
                   ],
                 ),
+                if (widget.embedInWebPanel) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    'Paystack opens in a popup. Complete payment there — '
+                    'this order updates automatically.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 14),
                 SizedBox(
                   height: 52,
@@ -327,7 +339,7 @@ class _PaymentRequestViewScreenState
       if (!checkoutOpened) {
         ref.read(paymentTimeoutProvider.notifier).reset();
         _showError(
-          'Could not open Paystack checkout. '
+          'Could not open the Paystack popup. '
           'Allow pop-ups for this site and try again.',
         );
         return;
