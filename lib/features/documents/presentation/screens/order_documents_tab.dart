@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/constants/route_constants.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../auth/domain/entities/app_user.dart';
@@ -90,7 +89,7 @@ class _DocumentsBody extends StatelessWidget {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           sliver: SliverToBoxAdapter(
-            child: _IdDocumentRow(user: user),
+            child: _IdDocumentRow(orderId: orderId, user: user),
           ),
         ),
         SliverPadding(
@@ -149,20 +148,28 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _IdDocumentRow extends StatelessWidget {
-  const _IdDocumentRow({required this.user});
+class _IdDocumentRow extends ConsumerWidget {
+  const _IdDocumentRow({required this.orderId, required this.user});
 
+  final String orderId;
   final AppUser? user;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hasId = user?.hasIdDocument ?? false;
     final docLabel = user?.idDocumentLabel ?? 'Identity document';
+    final task = ref.watch(webOrderPanelTaskProvider);
+    final isSelected =
+        task is WebOrderPanelIdDocument && task.orderId == orderId;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.pushNamed(RouteConstants.idVerification),
+        onTap: () => OrderDetailWebNavigation.openIdDocument(
+          context,
+          ref,
+          orderId: orderId,
+        ),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(14),
@@ -170,10 +177,12 @@ class _IdDocumentRow extends StatelessWidget {
             color: AppColors.background,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: hasId
-                  ? AppColors.success.withValues(alpha: 0.3)
-                  : AppColors.borderSolid,
-              width: 0.5,
+              color: isSelected
+                  ? AppColors.secondary
+                  : hasId
+                      ? AppColors.success.withValues(alpha: 0.3)
+                      : AppColors.borderSolid,
+              width: isSelected ? 1.5 : 0.5,
             ),
           ),
           child: Row(

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import '../../../../core/constants/route_constants.dart';
 import '../../../auth/domain/entities/app_user.dart';
+import '../navigation/profile_id_verification_navigation.dart';
 
 /// Tappable row linking to identity document add/update from profile.
 class GhanaCardProfileRow extends StatelessWidget {
@@ -40,7 +39,7 @@ class GhanaCardProfileRow extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.pushNamed(RouteConstants.idVerification),
+        onTap: () => ProfileIdVerificationNavigation.open(context),
         child: Container(
           constraints: const BoxConstraints(minHeight: 52),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

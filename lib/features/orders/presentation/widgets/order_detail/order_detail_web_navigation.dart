@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/constants/route_constants.dart';
 import '../../../../../core/layout/app_breakpoints.dart';
 import '../../models/web_order_panel_task.dart';
 import '../../providers/order_detail_providers.dart';
@@ -114,6 +115,19 @@ abstract final class OrderDetailWebNavigation {
       resetWebOrderPanelTask(ref);
     }
     context.go('/order/$orderId?tab=chat');
+  }
+
+  static void openIdDocument(
+    BuildContext context,
+    WidgetRef ref, {
+    required String orderId,
+  }) {
+    if (_isWeb(context)) {
+      ref.read(webOrderPanelTaskProvider.notifier).state =
+          WebOrderPanelIdDocument(orderId: orderId);
+      return;
+    }
+    context.pushNamed(RouteConstants.idVerification);
   }
 
   static void openDocument(

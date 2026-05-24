@@ -11,6 +11,7 @@ import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../../core/widgets/web_dashboard_right_panel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
+import '../../../profile/presentation/navigation/profile_id_verification_navigation.dart';
 import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
 import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
 import '../../../guide/presentation/widgets/guide_help_button.dart';
@@ -773,7 +774,7 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
         if (orderId != null) context.push('/order/$orderId/clearance');
         break;
       case 'id_reminder':
-        context.push('/profile/id-verification');
+        ProfileIdVerificationNavigation.open(context);
         break;
       case 'system':
         if (orderId != null) context.push('/order/$orderId');

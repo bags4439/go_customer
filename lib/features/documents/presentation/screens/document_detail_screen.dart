@@ -17,7 +17,9 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../orders/presentation/providers/order_detail_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
+import '../../../profile/presentation/navigation/profile_id_verification_navigation.dart';
 import '../../core/constants/document_constants.dart';
 import '../../domain/entities/document_entity.dart';
 import '../providers/documents_providers.dart';
@@ -60,6 +62,7 @@ class DocumentDetailScreen extends ConsumerWidget {
         final orderRef = orderAsync.valueOrNull?.orderRef ?? orderId;
         return _DocumentDetailContent(
           document: document,
+          orderId: orderId,
           orderRef: orderRef,
           embedInWebPanel: embedInWebPanel,
           onClosePanel: onClosePanel,
@@ -120,12 +123,14 @@ class DocumentDetailScreen extends ConsumerWidget {
 
 class _DocumentDetailContent extends ConsumerStatefulWidget {
   final DocumentEntity document;
+  final String orderId;
   final String orderRef;
   final bool embedInWebPanel;
   final VoidCallback? onClosePanel;
 
   const _DocumentDetailContent({
     required this.document,
+    required this.orderId,
     required this.orderRef,
     this.embedInWebPanel = false,
     this.onClosePanel,
@@ -220,7 +225,17 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
         if (doc.uploadedByRole == 'buyer' && doc.isRejected) ...[
           const SizedBox(height: 12),
           TextButton(
-            onPressed: () => context.push('/profile/id-verification'),
+            onPressed: () {
+              if (widget.embedInWebPanel) {
+                OrderDetailWebNavigation.openIdDocument(
+                  context,
+                  ref,
+                  orderId: widget.orderId,
+                );
+              } else {
+                ProfileIdVerificationNavigation.open(context);
+              }
+            },
             child: Text(DocumentConstants.reUpload),
           ),
         ],

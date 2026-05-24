@@ -64,7 +64,9 @@ class _OverviewColumn extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (task is! WebOrderPanelDefault && task is! WebOrderPanelDocument) {
+    if (task is! WebOrderPanelDefault &&
+        task is! WebOrderPanelDocument &&
+        task is! WebOrderPanelIdDocument) {
       return OrderDetailWebPanelContent(
         orderId: orderId,
         order: order,
@@ -136,7 +138,7 @@ class _ChatColumn extends StatelessWidget {
   }
 }
 
-class _DocumentsColumn extends StatelessWidget {
+class _DocumentsColumn extends ConsumerWidget {
   const _DocumentsColumn({
     required this.orderId,
     required this.order,
@@ -148,8 +150,8 @@ class _DocumentsColumn extends StatelessWidget {
   final WebOrderPanelTask task;
 
   @override
-  Widget build(BuildContext context) {
-    if (task is WebOrderPanelDocument) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (task is WebOrderPanelDocument || task is WebOrderPanelIdDocument) {
       return OrderDetailWebPanelContent(
         orderId: orderId,
         order: order,

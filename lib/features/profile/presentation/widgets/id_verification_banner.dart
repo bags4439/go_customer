@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import '../../../../core/constants/route_constants.dart';
+import '../navigation/profile_id_verification_navigation.dart';
 import '../../../auth/domain/entities/app_user.dart';
 
 /// Profile home banner when the user has not added identity document data.
@@ -32,7 +31,7 @@ class IdVerificationBanner extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => context.pushNamed(RouteConstants.idVerification),
+          onTap: () => ProfileIdVerificationNavigation.open(context),
           borderRadius: BorderRadius.circular(10),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

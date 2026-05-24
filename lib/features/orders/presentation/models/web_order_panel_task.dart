@@ -79,7 +79,7 @@ final class WebOrderPanelReview extends WebOrderPanelTask {
   final String orderId;
 }
 
-/// Document viewer (Documents tab).
+/// Order vault document viewer (Documents tab).
 final class WebOrderPanelDocument extends WebOrderPanelTask {
   const WebOrderPanelDocument({
     required this.orderId,
@@ -88,4 +88,11 @@ final class WebOrderPanelDocument extends WebOrderPanelTask {
 
   final String orderId;
   final String documentId;
+}
+
+/// Buyer identity document (Ghana Card / passport) from profile data.
+final class WebOrderPanelIdDocument extends WebOrderPanelTask {
+  const WebOrderPanelIdDocument({required this.orderId});
+
+  final String orderId;
 }
