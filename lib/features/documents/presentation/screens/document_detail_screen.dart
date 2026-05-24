@@ -15,7 +15,9 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
+import '../../../orders/presentation/providers/order_detail_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../../core/constants/document_constants.dart';
 import '../../domain/entities/document_entity.dart';
 import '../providers/documents_providers.dart';
@@ -23,11 +25,15 @@ import '../providers/documents_providers.dart';
 class DocumentDetailScreen extends ConsumerWidget {
   final String orderId;
   final String documentId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
 
   const DocumentDetailScreen({
     super.key,
     required this.orderId,
     required this.documentId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
   });
 
   @override
@@ -38,6 +44,14 @@ class DocumentDetailScreen extends ConsumerWidget {
     return docAsync.when(
       data: (document) {
         if (document == null) {
+          if (embedInWebPanel) {
+            return OrderDetailWebPanelChrome(
+              title: 'Document',
+              orderRef: orderAsync.valueOrNull?.orderRef ?? orderId,
+              onBack: onClosePanel ?? () => resetWebOrderPanelTask(ref),
+              child: const Center(child: Text('Document not found')),
+            );
+          }
           return Scaffold(
             appBar: AppBar(title: const Text('Document')),
             body: const Center(child: Text('Document not found')),
@@ -47,24 +61,59 @@ class DocumentDetailScreen extends ConsumerWidget {
         return _DocumentDetailContent(
           document: document,
           orderRef: orderRef,
+          embedInWebPanel: embedInWebPanel,
+          onClosePanel: onClosePanel,
         );
       },
-      loading: () => _DocumentDetailLoading(),
-      error: (e, _) => Scaffold(
-        appBar: AppBar(title: const Text('Document')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(DocumentConstants.errorLoadDocuments),
-              TextButton(
-                onPressed: () => ref.invalidate(documentDetailProvider(documentId)),
-                child: const Text(DocumentConstants.retry),
+      loading: () {
+        if (embedInWebPanel) {
+          return OrderDetailWebPanelChrome(
+            title: 'Document',
+            orderRef: orderAsync.valueOrNull?.orderRef ?? orderId,
+            onBack: onClosePanel ?? () => resetWebOrderPanelTask(ref),
+            child: _DocumentDetailLoading(),
+          );
+        }
+        return _DocumentDetailLoading();
+      },
+      error: (e, _) {
+        if (embedInWebPanel) {
+          return OrderDetailWebPanelChrome(
+            title: 'Document',
+            orderRef: orderAsync.valueOrNull?.orderRef ?? orderId,
+            onBack: onClosePanel ?? () => resetWebOrderPanelTask(ref),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(DocumentConstants.errorLoadDocuments),
+                  TextButton(
+                    onPressed: () =>
+                        ref.invalidate(documentDetailProvider(documentId)),
+                    child: const Text(DocumentConstants.retry),
+                  ),
+                ],
               ),
-            ],
+            ),
+          );
+        }
+        return Scaffold(
+          appBar: AppBar(title: const Text('Document')),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(DocumentConstants.errorLoadDocuments),
+                TextButton(
+                  onPressed: () =>
+                      ref.invalidate(documentDetailProvider(documentId)),
+                  child: const Text(DocumentConstants.retry),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -72,10 +121,14 @@ class DocumentDetailScreen extends ConsumerWidget {
 class _DocumentDetailContent extends ConsumerStatefulWidget {
   final DocumentEntity document;
   final String orderRef;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
 
   const _DocumentDetailContent({
     required this.document,
     required this.orderRef,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
   });
 
   @override
@@ -95,18 +148,96 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
             ? DocumentConstants.statusPending
             : DocumentConstants.statusRejected;
     final statusBg = doc.status == 'verified'
-        ? const Color(0xFFEAF3DE)
+        ? AppColors.successMutedBackground
         : doc.status == 'pending'
-            ? const Color(0xFFFAEEDA)
-            : const Color(0xFFFCEBEB);
+            ? AppColors.amberBackground
+            : AppColors.dangerMutedBackground;
     final statusFg = doc.status == 'verified'
-        ? const Color(0xFF27500A)
+        ? AppColors.successMutedForeground
         : doc.status == 'pending'
-            ? const Color(0xFF633806)
-            : const Color(0xFFA32D2D);
+            ? AppColors.amberText
+            : AppColors.dangerMutedText;
+
+    final body = ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        if (widget.embedInWebPanel) ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusBg,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                statusLabel,
+                style: AppTextStyles.badgeText.copyWith(
+                  color: statusFg,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        _PreviewArea(
+          document: doc,
+          embedInWebPanel: widget.embedInWebPanel,
+        ),
+        const SizedBox(height: 16),
+        _MetadataCard(document: doc, orderRef: widget.orderRef),
+        if (doc.isRejected) ...[
+          const SizedBox(height: 16),
+          _RejectionReasonCard(
+            reason: doc.rejectionReason,
+            orderId: doc.orderId,
+          ),
+        ],
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.download_outlined,
+                label: DocumentConstants.download,
+                inProgress: _downloadInProgress,
+                onTap: doc.fileUrl != null ? () => _onDownload(context) : null,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.share_outlined,
+                label: DocumentConstants.share,
+                inProgress: _shareInProgress,
+                onTap: doc.fileUrl != null ? () => _onShare(context) : null,
+              ),
+            ),
+          ],
+        ),
+        if (doc.uploadedByRole == 'buyer' && doc.isRejected) ...[
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () => context.push('/profile/id-verification'),
+            child: Text(DocumentConstants.reUpload),
+          ),
+        ],
+      ],
+    );
+
+    if (widget.embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: doc.label,
+        orderRef: widget.orderRef,
+        onBack: widget.onClosePanel ?? () => resetWebOrderPanelTask(ref),
+        child: ColoredBox(color: AppColors.background, child: body),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -124,7 +255,7 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
           preferredSize: const Size.fromHeight(0.5),
           child: Container(
             height: 0.5,
-            color: const Color(0xFFE0DFD8),
+            color: AppColors.borderSolid,
           ),
         ),
         actions: [
@@ -151,54 +282,7 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(14),
-        children: [
-          _PreviewArea(document: doc),
-          const SizedBox(height: 16),
-          _MetadataCard(document: doc, orderRef: widget.orderRef),
-          if (doc.isRejected) ...[
-            const SizedBox(height: 16),
-            _RejectionReasonCard(
-              reason: doc.rejectionReason,
-              orderId: doc.orderId,
-            ),
-          ],
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _ActionButton(
-                  icon: Icons.download_outlined,
-                  label: DocumentConstants.download,
-                  inProgress: _downloadInProgress,
-                  onTap: doc.fileUrl != null
-                      ? () => _onDownload(context)
-                      : null,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _ActionButton(
-                  icon: Icons.share_outlined,
-                  label: DocumentConstants.share,
-                  inProgress: _shareInProgress,
-                  onTap: doc.fileUrl != null
-                      ? () => _onShare(context)
-                      : null,
-                ),
-              ),
-            ],
-          ),
-          if (doc.uploadedByRole == 'buyer' && doc.isRejected) ...[
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () => context.push('/profile/id-verification'),
-              child: Text(DocumentConstants.reUpload),
-            ),
-          ],
-        ],
-      ),
+      body: body,
     );
   }
 
@@ -281,8 +365,12 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
 
 class _PreviewArea extends StatefulWidget {
   final DocumentEntity document;
+  final bool embedInWebPanel;
 
-  const _PreviewArea({required this.document});
+  const _PreviewArea({
+    required this.document,
+    this.embedInWebPanel = false,
+  });
 
   @override
   State<_PreviewArea> createState() => _PreviewAreaState();
@@ -457,6 +545,48 @@ class _PreviewAreaState extends State<_PreviewArea> {
   }
 
   void _openFullScreenPdf(BuildContext context, String url) {
+    if (widget.embedInWebPanel) {
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          backgroundColor: AppColors.background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900, maxHeight: 720),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.document.label,
+                          style: AppTextStyles.titleSmall,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: SfPdfViewer.network(url),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => Scaffold(
@@ -507,6 +637,60 @@ class _PreviewAreaState extends State<_PreviewArea> {
   }
 
   void _openFullScreenImage(BuildContext context, String url, String docId) {
+    if (widget.embedInWebPanel) {
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          backgroundColor: AppColors.background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900, maxHeight: 720),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.document.label,
+                          style: AppTextStyles.titleSmall,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: Hero(
+                    tag: 'document_preview_$docId',
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: Center(
+                        child: CachedNetworkImage(
+                          imageUrl: url,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => Scaffold(

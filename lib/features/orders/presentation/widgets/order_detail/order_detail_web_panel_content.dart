@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_customer/features/documents/presentation/screens/document_detail_screen.dart';
 import 'package:go_customer/features/clearance/presentation/screens/clearance_screen.dart';
 import 'package:go_customer/features/delivery/presentation/screens/delivery_screen.dart';
 import 'package:go_customer/features/orders/domain/entities/order_view.dart';
@@ -108,6 +109,13 @@ class OrderDetailWebPanelContent extends ConsumerWidget {
         embedInWebPanel: true,
         onClosePanel: onClose,
       ),
+      WebOrderPanelDocument(:final orderId, :final documentId) =>
+        DocumentDetailScreen(
+          orderId: orderId,
+          documentId: documentId,
+          embedInWebPanel: true,
+          onClosePanel: onClose,
+        ),
     };
   }
 }

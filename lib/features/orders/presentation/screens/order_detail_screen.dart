@@ -114,9 +114,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
   void _onWebTabChanged(int index) {
     _tabController.animateTo(index);
     setState(() => _isChatTabActive = index == 1);
-    if (index != 0) {
-      resetWebOrderPanelTask(ref);
-    }
+    resetWebOrderPanelTask(ref);
   }
 
   @override

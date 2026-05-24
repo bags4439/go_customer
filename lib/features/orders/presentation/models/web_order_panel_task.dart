@@ -78,3 +78,14 @@ final class WebOrderPanelReview extends WebOrderPanelTask {
 
   final String orderId;
 }
+
+/// Document viewer (Documents tab).
+final class WebOrderPanelDocument extends WebOrderPanelTask {
+  const WebOrderPanelDocument({
+    required this.orderId,
+    required this.documentId,
+  });
+
+  final String orderId;
+  final String documentId;
+}

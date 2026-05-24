@@ -8,6 +8,9 @@ import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../auth/domain/entities/app_user.dart';
+import '../../../orders/presentation/models/web_order_panel_task.dart';
+import '../../../orders/presentation/providers/order_detail_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../core/constants/document_constants.dart';
 import '../../domain/entities/document_entity.dart';
@@ -272,7 +275,7 @@ class _NoAgentDocuments extends StatelessWidget {
   }
 }
 
-class _AgentDocumentTile extends StatelessWidget {
+class _AgentDocumentTile extends ConsumerWidget {
   const _AgentDocumentTile({
     required this.orderId,
     required this.doc,
@@ -301,16 +304,20 @@ class _AgentDocumentTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final verified = doc.status == 'verified';
     final rejected = doc.status == 'rejected';
+    final task = ref.watch(webOrderPanelTaskProvider);
+    final isSelected = task is WebOrderPanelDocument &&
+        task.documentId == doc.id &&
+        task.orderId == orderId;
 
     final hasAccent = verified || rejected;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => _openDocument(context),
+        onTap: () => _openDocument(context, ref),
         borderRadius: BorderRadius.circular(12),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
@@ -331,27 +338,13 @@ class _AgentDocumentTile extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.background,
-                    border: hasAccent
-                        ? const Border(
-                            top: BorderSide(
-                              color: AppColors.borderSolid,
-                              width: 0.5,
-                            ),
-                            right: BorderSide(
-                              color: AppColors.borderSolid,
-                              width: 0.5,
-                            ),
-                            bottom: BorderSide(
-                              color: AppColors.borderSolid,
-                              width: 0.5,
-                            ),
-                          )
-                        : const Border.fromBorderSide(
-                            BorderSide(
-                              color: AppColors.borderSolid,
-                              width: 0.5,
-                            ),
-                          ),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.secondary
+                          : AppColors.borderSolid,
+                      width: isSelected ? 1.5 : 0.5,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -433,14 +426,13 @@ class _AgentDocumentTile extends StatelessWidget {
     );
   }
 
-  void _openDocument(BuildContext context) {
+  void _openDocument(BuildContext context, WidgetRef ref) {
     if (doc.id.isEmpty) return;
-    context.pushNamed(
-      RouteConstants.documentDetail,
-      pathParameters: {
-        'orderId': orderId,
-        'documentId': doc.id,
-      },
+    OrderDetailWebNavigation.openDocument(
+      context,
+      ref,
+      orderId: orderId,
+      documentId: doc.id,
     );
   }
 }

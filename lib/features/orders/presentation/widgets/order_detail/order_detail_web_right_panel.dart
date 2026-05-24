@@ -40,7 +40,11 @@ class OrderDetailWebRightPanel extends ConsumerWidget {
           task: task,
         ),
         1 => _ChatColumn(orderId: orderId, order: order),
-        2 => _DocumentsColumn(orderId: orderId, order: order),
+        2 => _DocumentsColumn(
+          orderId: orderId,
+          order: order,
+          task: task,
+        ),
         _ => const SizedBox.shrink(),
       },
     );
@@ -60,7 +64,7 @@ class _OverviewColumn extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (task is! WebOrderPanelDefault) {
+    if (task is! WebOrderPanelDefault && task is! WebOrderPanelDocument) {
       return OrderDetailWebPanelContent(
         orderId: orderId,
         order: order,
@@ -133,13 +137,26 @@ class _ChatColumn extends StatelessWidget {
 }
 
 class _DocumentsColumn extends StatelessWidget {
-  const _DocumentsColumn({required this.orderId, required this.order});
+  const _DocumentsColumn({
+    required this.orderId,
+    required this.order,
+    required this.task,
+  });
 
   final String orderId;
   final OrderView? order;
+  final WebOrderPanelTask task;
 
   @override
   Widget build(BuildContext context) {
+    if (task is WebOrderPanelDocument) {
+      return OrderDetailWebPanelContent(
+        orderId: orderId,
+        order: order,
+        task: task,
+      );
+    }
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

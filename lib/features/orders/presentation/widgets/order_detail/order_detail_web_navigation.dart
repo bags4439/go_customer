@@ -116,6 +116,23 @@ abstract final class OrderDetailWebNavigation {
     context.go('/order/$orderId?tab=chat');
   }
 
+  static void openDocument(
+    BuildContext context,
+    WidgetRef ref, {
+    required String orderId,
+    required String documentId,
+  }) {
+    if (_isWeb(context)) {
+      ref.read(webOrderPanelTaskProvider.notifier).state =
+          WebOrderPanelDocument(
+        orderId: orderId,
+        documentId: documentId,
+      );
+      return;
+    }
+    context.push('/order/$orderId/documents/$documentId');
+  }
+
   static void closePanel(WidgetRef ref) {
     resetWebOrderPanelTask(ref);
   }
