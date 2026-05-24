@@ -275,9 +275,6 @@ class _State0NotAvailable extends StatelessWidget {
                 onPressed: () => context.go('/order/$orderId'),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppColors.borderSolid),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
                 child: Text(
                   ClearanceConstants.state0BackButton,
@@ -735,9 +732,6 @@ class _ConfirmButton extends StatelessWidget {
               : AppColors.primary.withValues(alpha: 0.6),
           disabledBackgroundColor: AppColors.surface,
           disabledForegroundColor: AppColors.primary.withValues(alpha: 0.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
           elevation: 0,
         ),
         child: isSubmitting
@@ -921,9 +915,6 @@ class _State2AgentManagedState extends ConsumerState<_State2AgentManaged>
               foregroundColor: Colors.white,
               elevation: 0,
               minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
             ),
             child: Text(
               ClearanceConstants.askAgentButton(agentName),
@@ -1391,9 +1382,6 @@ class _State3SelfClearedState extends ConsumerState<_State3SelfCleared> {
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                     ),
                     child: Text(
                       ClearanceConstants.state3AskAgentButton(agentName),

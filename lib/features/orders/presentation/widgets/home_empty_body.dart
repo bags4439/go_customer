@@ -140,9 +140,6 @@ class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
                                       backgroundColor: HomeColors.primary,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
                                     ),
                                     child: Row(
                                       mainAxisAlignment:

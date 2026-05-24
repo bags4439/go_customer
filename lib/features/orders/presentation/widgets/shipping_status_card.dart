@@ -283,9 +283,6 @@ class _InTransitBody extends StatelessWidget {
                 foregroundColor: AppColors.secondary,
                 side: const BorderSide(color: AppColors.secondary, width: 1),
                 minimumSize: const Size(0, 44),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
               child: Text(
                 OrderTimelineConstants.trackShipment,

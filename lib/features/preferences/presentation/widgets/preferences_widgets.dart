@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../catalogue/domain/entities/car_make.dart';
@@ -110,7 +111,7 @@ class PreferencesPrimaryButton extends StatelessWidget {
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: canTap ? AppColors.secondary : AppColors.borderSolid,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppTheme.pillBorderRadius(52),
           boxShadow: canTap
               ? [
                   BoxShadow(
@@ -125,7 +126,7 @@ class PreferencesPrimaryButton extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: canTap ? onTap : null,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppTheme.pillBorderRadius(52),
             splashColor: Colors.white.withValues(alpha: 0.15),
             highlightColor: Colors.white.withValues(alpha: 0.08),
             child: Center(

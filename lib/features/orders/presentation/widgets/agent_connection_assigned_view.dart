@@ -344,9 +344,6 @@ class _AgentConnectionAssignedViewState
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
                           ).copyWith(
                             overlayColor: WidgetStateProperty.all(
                               Colors.white.withValues(alpha: 0.1),
@@ -370,9 +367,6 @@ class _AgentConnectionAssignedViewState
                           width: 1,
                         ),
                         padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
                       ),
                       child: const Icon(
                         Icons.call_rounded,

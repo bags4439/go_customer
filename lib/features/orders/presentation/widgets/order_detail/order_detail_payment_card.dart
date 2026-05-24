@@ -143,9 +143,6 @@ class OrderDetailPaymentCard extends ConsumerWidget {
                 backgroundColor: AppColors.background,
                 foregroundColor: AppColors.secondary,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
               ),
               child: Text(
                 'Pay now →',

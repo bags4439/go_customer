@@ -230,9 +230,6 @@ class _IdVerificationFormState extends ConsumerState<IdVerificationForm> {
                     foregroundColor: AppColors.background,
                     disabledBackgroundColor: AppColors.borderSolid,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
                   ).copyWith(
                     elevation: WidgetStateProperty.resolveWith((s) {
                       if (s.contains(WidgetState.disabled)) return 0;

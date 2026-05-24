@@ -613,9 +613,6 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
           side: const BorderSide(color: Color(_kPrimary), width: 1),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           minimumSize: const Size(0, 44),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
         ),
       ),
     );
@@ -799,9 +796,6 @@ class _DeliveryActionCard extends ConsumerWidget {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                     ),
                     child: Text(
                       'Track delivery →',
@@ -904,9 +898,6 @@ class _DeliveryActionCard extends ConsumerWidget {
               foregroundColor: Colors.white,
               elevation: 0,
               minimumSize: const Size(double.infinity, 48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
             ),
             child: Text(buttonLabel, style: AppTextStyles.buttonMedium),
           ),
@@ -942,7 +933,6 @@ Widget _buildChatButton(
         side: const BorderSide(color: Color(_kPrimary), width: 1),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         minimumSize: const Size(0, 44),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     ),
   );
@@ -1044,9 +1034,6 @@ class _DeliveredCard extends ConsumerWidget {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                   ),
                 ),
               );
@@ -1247,9 +1234,6 @@ class _AgentPendingCard extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.secondary,
                 side: const BorderSide(color: AppColors.secondary, width: 0.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
               ),
             ),
           ),
@@ -1400,9 +1384,6 @@ class _AgentDetailCard extends StatelessWidget {
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                     ),
                   ),
                 ),
@@ -1432,9 +1413,6 @@ class _AgentDetailCard extends StatelessWidget {
                         side: const BorderSide(
                           color: AppColors.secondary,
                           width: 0.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),

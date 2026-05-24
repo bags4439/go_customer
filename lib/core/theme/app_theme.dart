@@ -8,8 +8,12 @@ class AppTheme {
   static const double radiusLg = 12;
   static const double radiusXl = 16;
 
-  /// Standard pill (stadium) for filled / elevated / outlined / text buttons.
+  /// Standard pill (stadium) for Material buttons via [ThemeData].
   static const OutlinedBorder buttonPillShape = StadiumBorder();
+
+  /// Pill corners for custom [InkWell] / [DecoratedBox] buttons (half of height).
+  static BorderRadius pillBorderRadius(double height) =>
+      BorderRadius.circular(height / 2);
 
   /// Minimum tap height (WCAG-friendly); width grows with label.
   static const Size buttonMinimumSize = Size(64, 48);

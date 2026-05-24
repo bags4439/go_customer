@@ -230,9 +230,6 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                         disabledBackgroundColor: AppColors.borderSolid,
                         disabledForegroundColor: AppColors.textTertiary,
                         minimumSize: const Size(double.infinity, 52),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                       ),
                       child: _isSubmitting
                           ? const SizedBox(
@@ -566,9 +563,6 @@ class _SubmittedScreen extends ConsumerWidget {
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                     ),
                     child: Text(
                       'Back to order',

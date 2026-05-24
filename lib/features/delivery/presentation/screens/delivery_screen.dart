@@ -770,9 +770,6 @@ class _State0NotAvailable extends StatelessWidget {
                 onPressed: () => context.go('/order/$orderId'),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppColors.borderSolid),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
                 child: Text(
                   DeliveryConstants.state0BackButton,
@@ -912,9 +909,6 @@ class _State1ChoiceState extends ConsumerState<_State1Choice> {
                 disabledBackgroundColor: AppColors.surface,
                 disabledForegroundColor: AppColors.textTertiary,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 minimumSize: const Size(double.infinity, 52),
               ),
               child: _isSubmitting
@@ -1352,9 +1346,6 @@ class _PaymentRequestMiniCard extends StatelessWidget {
               foregroundColor: AppColors.background,
               elevation: 0,
               minimumSize: const Size(72, 40),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
             ),
             child: Text(
               'Pay',
@@ -1672,9 +1663,6 @@ class _State5SelfPickupState extends ConsumerState<_State5SelfPickup> {
                                       backgroundColor: AppColors.secondary,
                                       foregroundColor: AppColors.background,
                                       elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
                                     ),
                                   ),
                                 ),
@@ -1704,9 +1692,6 @@ class _State5SelfPickupState extends ConsumerState<_State5SelfPickup> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.secondary,
                         side: const BorderSide(color: AppColors.secondary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
                       ),
                     ),
                   ),
@@ -1739,9 +1724,6 @@ class _State5SelfPickupState extends ConsumerState<_State5SelfPickup> {
                 foregroundColor: AppColors.background,
                 elevation: 0,
                 minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
               child: _isConfirming
                   ? const SizedBox(
@@ -1969,9 +1951,6 @@ class _LocationInputState extends StatelessWidget {
                 disabledBackgroundColor: AppColors.borderSolid,
                 disabledForegroundColor: AppColors.textTertiary,
                 minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
               child: isSaving
                   ? const SizedBox(
@@ -2088,9 +2067,6 @@ class _LocationSetState extends StatelessWidget {
                           foregroundColor: AppColors.secondary,
                           side: const BorderSide(color: AppColors.secondary),
                           minimumSize: const Size(0, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
                         ),
                       ),
                     ),
@@ -2110,9 +2086,6 @@ class _LocationSetState extends StatelessWidget {
                           foregroundColor: AppColors.textSecondary,
                           side: const BorderSide(color: AppColors.borderSolid),
                           minimumSize: const Size(0, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
                         ),
                       ),
                     ),
@@ -2164,9 +2137,6 @@ class _LocationSetState extends StatelessWidget {
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: AppColors.borderSolid,
                 minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
               child: isConfirming
                   ? const SizedBox(
@@ -2546,9 +2516,6 @@ class _ConfirmedState extends StatelessWidget {
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
               child: Text(
                 'Leave feedback →',
@@ -2589,9 +2556,6 @@ class _OptionButton extends StatelessWidget {
         ),
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: color.withValues(alpha: 0.45)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           minimumSize: const Size(double.infinity, 52),

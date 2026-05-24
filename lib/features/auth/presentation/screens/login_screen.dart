@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/route_constants.dart';
@@ -411,9 +412,6 @@ class _LoginWebActionPanel extends StatelessWidget {
                         vertical: 8,
                       ),
                       minimumSize: const Size(0, 34),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(
@@ -608,7 +606,7 @@ class _AuthPrimaryButton extends StatelessWidget {
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: canTap ? const Color(0xFF378ADD) : const Color(0xFFE0DFD8),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppTheme.pillBorderRadius(52),
           boxShadow: canTap
               ? [
                   BoxShadow(
@@ -623,7 +621,7 @@ class _AuthPrimaryButton extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: canTap ? onTap : null,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppTheme.pillBorderRadius(52),
             splashColor: Colors.white.withValues(alpha: 0.15),
             highlightColor: Colors.white.withValues(alpha: 0.08),
             child: Center(
@@ -3549,8 +3547,7 @@ class _WebContextTile extends StatelessWidget {
               children: [
                 Text(
                   tile.label,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 11,
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w500,
                   ),

@@ -477,9 +477,6 @@ class _ProfilePhoneChangeSheetState
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: AppColors.borderSolid,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
                 child: _busy
                     ? const SizedBox(
@@ -600,9 +597,6 @@ class _ProfilePhoneChangeSheetState
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: AppColors.borderSolid,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
                 child: _busy
                     ? const SizedBox(

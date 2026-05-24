@@ -1013,9 +1013,6 @@ class _WebActionPanel extends StatelessWidget {
                       vertical: 8,
                     ),
                     minimumSize: const Size(0, 34),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
@@ -1163,9 +1160,6 @@ class _WebActionPanel extends StatelessWidget {
                         backgroundColor: slide.accentColor,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,

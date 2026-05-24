@@ -127,9 +127,6 @@ class _PaymentConfirmedScreenState
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                     ),
                     child: Text(
                       'Done',
@@ -147,9 +144,6 @@ class _PaymentConfirmedScreenState
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
                     ),
                     child: Text(
                       'View order →',

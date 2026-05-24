@@ -393,9 +393,6 @@ class _State0NotAvailable extends StatelessWidget {
                 onPressed: () => context.go('/order/$orderId'),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppColors.borderSolid),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
                 child: Text(
                   RepairConstants.state0BackButton,
@@ -887,9 +884,6 @@ class _RepairConfirmButton extends StatelessWidget {
           disabledForegroundColor: AppColors.textTertiary,
           elevation: 0,
           minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
         child: isSubmitting
             ? const SizedBox(

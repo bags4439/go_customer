@@ -189,9 +189,6 @@ class OrderDetailWebAgentCardContent extends ConsumerWidget {
                           backgroundColor: AppColors.secondary,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
                         ),
                       ),
                     ),
@@ -227,9 +224,6 @@ class OrderDetailWebAgentCardContent extends ConsumerWidget {
                           side: const BorderSide(
                             color: AppColors.secondary,
                             width: 0.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                       ),

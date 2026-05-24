@@ -105,9 +105,6 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                         alpha: 0.6,
                       ),
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                     ),
                     child: _paying
                         ? const SizedBox(
@@ -395,9 +392,6 @@ class _EmailGateSheetState extends State<_EmailGateSheet> {
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
               child: _isSaving
                   ? const SizedBox(

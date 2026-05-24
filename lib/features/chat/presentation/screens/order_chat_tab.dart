@@ -683,9 +683,6 @@ class _ImagePreviewStrip extends ConsumerWidget {
                   backgroundColor: const Color(0xFF378ADD),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1959,9 +1956,6 @@ class _DeleteConfirmSheet extends StatelessWidget {
                   backgroundColor: const Color(0xFFE24B4A),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
                 child: Text(
                   'Delete for everyone',
@@ -1978,9 +1972,6 @@ class _DeleteConfirmSheet extends StatelessWidget {
                 onPressed: onCancel,
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF888888),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
                 child: Text(
                   'Cancel',

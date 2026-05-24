@@ -49,9 +49,6 @@ class AgentConnectionErrorView extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.secondary,
                     side: const BorderSide(color: AppColors.secondary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
                   ),
                   child: Text(
                     'Try again',
