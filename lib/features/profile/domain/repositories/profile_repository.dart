@@ -32,10 +32,10 @@ abstract class ProfileRepository {
   );
   Future<Either<Failure, Unit>> updateGhanaIdAfterUpload(
     String userId,
-    String storagePath,
+    String photoUrl,
   );
 
-  /// Uploads file to Storage and updates user with storage path (not URL).
+  /// Uploads file to Storage and updates user with the download URL.
   /// [onProgress] is called with 0.0 to 1.0 during upload.
   Future<Either<Failure, Unit>> uploadIdDocument(
     String userId,

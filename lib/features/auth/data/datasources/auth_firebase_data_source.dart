@@ -4,20 +4,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/onesignal_web_helper.dart';
 import '../../domain/entities/app_user.dart';
 import '../models/user_model.dart';
+import '../storage/id_document_storage.dart';
 
 class AuthFirebaseDataSource {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
+  late final IdDocumentStorage _idDocumentStorage;
 
-  const AuthFirebaseDataSource(this._auth, this._firestore, this._storage);
+  AuthFirebaseDataSource(this._auth, this._firestore, this._storage) {
+    _idDocumentStorage = IdDocumentStorage(_storage);
+  }
 
   Stream<String?> authStateChanges() {
     return _auth.authStateChanges().map((user) => user?.uid);
@@ -139,22 +142,29 @@ class AuthFirebaseDataSource {
     required String localFilePath,
     required String extension,
   }) async {
-    final path = 'users/$userId/id_document.$extension';
-    final ref = _storage.ref().child(path);
-    final xFile = XFile(localFilePath);
-    final bytes = await xFile.readAsBytes();
-    await ref.putData(
-      bytes,
-      SettableMetadata(
-        contentType: 'image/${extension.toLowerCase()}',
-      ),
+    final url = await _idDocumentStorage.upload(
+      userId: userId,
+      localFilePath: localFilePath,
+      extension: extension,
     );
-    final url = await ref.getDownloadURL();
 
     await _firestore.collection(FirestoreCollections.users).doc(userId).update({
       'ghanaCardPhotoUrl': url,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  /// Uploads an ID photo without updating Firestore (for combined saves).
+  Future<String> uploadIdDocumentPhoto({
+    required String userId,
+    required String localFilePath,
+    String? extension,
+  }) {
+    return _idDocumentStorage.upload(
+      userId: userId,
+      localFilePath: localFilePath,
+      extension: extension ?? IdDocumentStorage.extensionFromLocalPath(localFilePath),
+    );
   }
 
   Future<void> signOut() async {

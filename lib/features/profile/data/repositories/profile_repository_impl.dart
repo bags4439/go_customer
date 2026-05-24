@@ -177,10 +177,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, Unit>> updateGhanaIdAfterUpload(
     String userId,
-    String storagePath,
+    String photoUrl,
   ) async {
     try {
-      await _profileDataSource.updateGhanaIdAfterUpload(userId, storagePath);
+      await _profileDataSource.updateGhanaIdAfterUpload(userId, photoUrl);
       return right(unit);
     } catch (e) {
       return left(FirestoreFailure(message: 'Could not save.', cause: e));
@@ -195,13 +195,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
     void Function(double)? onProgress,
   }) async {
     try {
-      final path = await _profileDataSource.uploadIdDocument(
+      final photoUrl = await _profileDataSource.uploadIdDocument(
         userId: userId,
         localFilePath: localFilePath,
         extension: extension,
         onProgress: onProgress,
       );
-      await _profileDataSource.updateGhanaIdAfterUpload(userId, path);
+      await _profileDataSource.updateGhanaIdAfterUpload(userId, photoUrl);
       return right(unit);
     } catch (e) {
       return left(StorageFailure(message: 'Could not upload.', cause: e));

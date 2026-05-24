@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/firestore_collections.dart';
 import '../../../../core/error/failures.dart';
@@ -310,18 +308,10 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       if (photoPath != null && photoPath.isNotEmpty) {
-        final ref = FirebaseStorage.instance.ref().child(
-          'id_documents/$uid.jpg',
+        data['ghanaCardPhotoUrl'] = await _dataSource.uploadIdDocumentPhoto(
+          userId: uid,
+          localFilePath: photoPath,
         );
-        // Use XFile.readAsBytes() which works on both mobile and web.
-        // putFile uses dart:io which is not available on web.
-        final xFile = XFile(photoPath);
-        final bytes = await xFile.readAsBytes();
-        await ref.putData(
-          bytes,
-          SettableMetadata(contentType: 'image/jpeg'),
-        );
-        data['ghanaCardPhotoUrl'] = await ref.getDownloadURL();
       }
 
       if (data.length > 1) {
@@ -333,6 +323,14 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       return const Right(unit);
     } on FirebaseException catch (e) {
+      if (e.plugin == 'storage') {
+        return Left(
+          StorageFailure(
+            message: e.message ?? 'Could not upload your identity document.',
+            cause: e,
+          ),
+        );
+      }
       return Left(
         FirestoreFailure(
           message: e.message ?? 'Could not save identity document.',

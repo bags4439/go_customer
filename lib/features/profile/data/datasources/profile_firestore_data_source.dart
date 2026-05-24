@@ -1,15 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../auth/data/models/user_model.dart';
+import '../../../auth/data/storage/id_document_storage.dart';
 
 class ProfileFirestoreDataSource {
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
+  late final IdDocumentStorage _idDocumentStorage;
 
-  const ProfileFirestoreDataSource(this._firestore, this._storage);
+  ProfileFirestoreDataSource(this._firestore, this._storage) {
+    _idDocumentStorage = IdDocumentStorage(_storage);
+  }
 
   Stream<UserModel?> watchUser(String userId) {
     return _firestore
@@ -98,10 +101,10 @@ class ProfileFirestoreDataSource {
 
   Future<void> updateGhanaIdAfterUpload(
     String userId,
-    String storagePath,
+    String photoUrl,
   ) async {
     await _firestore.collection(FirestoreCollections.users).doc(userId).update({
-      'ghanaCardPhotoUrl': storagePath,
+      'ghanaCardPhotoUrl': photoUrl,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -112,27 +115,11 @@ class ProfileFirestoreDataSource {
     required String extension,
     void Function(double)? onProgress,
   }) async {
-    final path = 'users/$userId/id_document.$extension';
-    final storageRef = _storage.ref().child(path);
-    final xFile = XFile(localFilePath);
-    final bytes = await xFile.readAsBytes();
-    final uploadTask = storageRef.putData(
-      bytes,
-      SettableMetadata(
-        contentType: 'image/${extension.toLowerCase()}',
-      ),
+    // Progress callbacks are not wired for putData uploads; kept for API stability.
+    return _idDocumentStorage.upload(
+      userId: userId,
+      localFilePath: localFilePath,
+      extension: extension,
     );
-    if (onProgress != null) {
-      uploadTask.snapshotEvents.listen((snapshot) {
-        final total = snapshot.totalBytes;
-        if (total > 0) {
-          onProgress(
-            (snapshot.bytesTransferred / total).clamp(0.0, 1.0),
-          );
-        }
-      });
-    }
-    await uploadTask;
-    return path;
   }
 }
