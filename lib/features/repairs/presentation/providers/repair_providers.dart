@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
@@ -28,7 +29,7 @@ final repairDataSourceProvider = Provider<RepairFirestoreDataSource>((ref) {
 final repairRepositoryProvider = Provider<RepairRepository>((ref) {
   return RepairRepositoryImpl(
     ref.watch(repairDataSourceProvider),
-    ref.watch(functionsProvider),
+    FirebaseFunctions.instanceFor(region: 'europe-west1'),
   );
 });
 

@@ -550,36 +550,7 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
         }
         return _chooseClearance(context, ref);
       case 'repair':
-        final job = repairJob;
-        if (job != null &&
-            job.status == RepairStatus.notStarted &&
-            !job.optedIn) {
-          return Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.borderSolid, width: 0.5),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.directions_car_rounded,
-                  size: 16,
-                  color: AppColors.textTertiary,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'No repairs — delivering as-is',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return RepairStatusCard(orderId: orderId, repairJob: job);
+        return RepairStatusCard(orderId: orderId, repairJob: repairJob);
       case 'delivery':
         if (order.status == FirestoreEnumValues.orderStatusDelivered) {
           return _DeliveredCard(orderId: orderId);

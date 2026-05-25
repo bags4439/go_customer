@@ -24,7 +24,7 @@ class RepairConstants {
 
   // State 1 – choice
   static const String state1Heading = 'Would you like us to arrange repairs?';
-  static const String optionYesTitle = 'Yes — arrange repairs for me';
+  static const String optionYesTitle = 'Yes, arrange repairs for me';
   static const String optionYesPriceLabel =
       'Coordination fee · excludes garage quote';
   static const String optionYesBullet1 = 'A garage quote is sent to you before any work starts';
@@ -32,7 +32,7 @@ class RepairConstants {
   static const String optionYesBullet3 = 'Car delivered to you once repairs are complete';
   static const String optionYesBullet4 = 'Before and after photos sent to you in chat';
 
-  static const String optionNoTitle = 'No — deliver as-is';
+  static const String optionNoTitle = 'No, deliver as-is';
   static const String optionNoPriceLabel = 'No coordination fee';
   static const String optionNoBullet1 =
       'Your car proceeds to delivery without repairs';
@@ -45,8 +45,8 @@ class RepairConstants {
   static String infoNoteSuffix(String agentFirstName) =>
       '$agentFirstName for a second quote if you are not satisfied.';
 
-  static const String confirmYesButton = 'Confirm — get me a quote →';
-  static const String confirmNoButton = 'Confirm — deliver as-is →';
+  static const String confirmYesButton = 'Confirm - get me a quote →';
+  static const String confirmNoButton = 'Confirm - deliver as-is →';
   static const String confirmButtonSelectOption = 'Select an option';
   static const String seeGaragePartners = 'See our garage partners →';
 
@@ -62,7 +62,7 @@ class RepairConstants {
   static const String totalLabel = 'Total';
   static const String repairWorkLabel = 'Repair work';
   static const String acceptQuoteButton = 'Accept quote →';
-  static const String declineQuoteButton = 'Decline — request another quote';
+  static const String declineQuoteButton = 'Decline - request another quote';
   static const String garageLabel = 'Garage';
   static const String locationLabel = 'Location';
   static const String vettedBadge = '✓ Vetted partner';
@@ -80,7 +80,7 @@ class RepairConstants {
   static const String state3HeroTitle = 'Repairs in progress';
   static const String state3EstCompletionPrefix = 'Est. completion:';
   static const String state3DaysLeft = 'days left';
-  static const String state3FinishingUp = 'Finishing up — almost ready';
+  static const String state3FinishingUp = 'Finishing up - almost ready';
   static const String garageDetailsLabel = 'GARAGE DETAILS';
   static const String startedLabel = 'Started';
   static const String estCompletionShortLabel = 'Est. completion';

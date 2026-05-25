@@ -153,6 +153,7 @@ class RepairFirestoreDataSource {
         .get();
     if (snapshot.docs.isNotEmpty) {
       await snapshot.docs.first.reference.update({
+        'optedIn': true,
         'status': FirestoreEnumValues.repairStatusNotStarted,
       });
     }

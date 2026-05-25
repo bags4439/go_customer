@@ -17,22 +17,26 @@ class RepairRepositoryImpl implements RepairRepository {
     return _dataSource.watchRepairJob(orderId);
   }
 
+  Future<void> _submitRepairChoice({
+    required String orderId,
+    required bool optedIn,
+  }) async {
+    await _functions.httpsCallable('notifyAgentRepairChoice').call({
+      'orderId': orderId,
+      'optedIn': optedIn,
+    });
+  }
+
   @override
   Future<Either<Failure, Unit>> confirmRepairs({
     required String orderId,
     required bool optedIn,
   }) async {
     try {
-      final existing = await _dataSource.getRepairJob(orderId);
-      if (existing != null) return const Right(unit);
-      await _dataSource.confirmRepairsOptIn(orderId, optedIn);
-      try {
-        await _functions.httpsCallable('notifyAgentRepairChoice').call({
-          'orderId': orderId,
-          'optedIn': optedIn,
-        });
-      } catch (_) {}
+      await _submitRepairChoice(orderId: orderId, optedIn: optedIn);
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e, st) {
       return Left(FirestoreFailure(message: e.toString(), cause: st));
     }
@@ -43,7 +47,9 @@ class RepairRepositoryImpl implements RepairRepository {
     try {
       await _dataSource.acceptQuote(orderId);
       try {
-        await _functions.httpsCallable('onRepairQuoteAccepted').call({'orderId': orderId});
+        await _functions.httpsCallable('onRepairQuoteAccepted').call({
+          'orderId': orderId,
+        });
       } catch (_) {}
       return const Right(unit);
     } catch (e, st) {
@@ -56,7 +62,9 @@ class RepairRepositoryImpl implements RepairRepository {
     try {
       await _dataSource.declineQuote(orderId);
       try {
-        await _functions.httpsCallable('onRepairQuoteDeclined').call({'orderId': orderId});
+        await _functions.httpsCallable('onRepairQuoteDeclined').call({
+          'orderId': orderId,
+        });
       } catch (_) {}
       return const Right(unit);
     } catch (e, st) {
@@ -67,14 +75,10 @@ class RepairRepositoryImpl implements RepairRepository {
   @override
   Future<Either<Failure, Unit>> switchToRepairs(String orderId) async {
     try {
-      await _dataSource.switchToRepairs(orderId);
-      try {
-        await _functions.httpsCallable('notifyAgentRepairChoice').call({
-          'orderId': orderId,
-          'optedIn': true,
-        });
-      } catch (_) {}
+      await _submitRepairChoice(orderId: orderId, optedIn: true);
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e, st) {
       return Left(FirestoreFailure(message: e.toString(), cause: st));
     }

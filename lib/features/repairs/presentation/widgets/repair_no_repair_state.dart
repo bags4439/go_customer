@@ -9,7 +9,7 @@ import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../providers/repair_providers.dart';
 import 'repair_navigation.dart';
 
-class RepairNoRepairState extends ConsumerWidget {
+class RepairNoRepairState extends ConsumerStatefulWidget {
   const RepairNoRepairState({
     super.key,
     required this.orderId,
@@ -20,9 +20,99 @@ class RepairNoRepairState extends ConsumerWidget {
   final VoidCallback? onOpenChat;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RepairNoRepairState> createState() =>
+      _RepairNoRepairStateState();
+}
+
+class _RepairNoRepairStateState extends ConsumerState<RepairNoRepairState> {
+  void _showSwitchSheet(BuildContext context) {
+    var switching = false;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (ctx, setSheetState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  RepairConstants.switchSheetTitle,
+                  style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  RepairConstants.switchSheetBody,
+                  style: AppTextStyles.bodyMedium,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: switching
+                            ? null
+                            : () => Navigator.of(sheetContext).pop(),
+                        child: const Text(RepairConstants.switchSheetCancel),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: switching
+                            ? null
+                            : () async {
+                                setSheetState(() => switching = true);
+                                final result = await ref
+                                    .read(repairRepositoryProvider)
+                                    .switchToRepairs(widget.orderId);
+                                if (!context.mounted) return;
+                                result.fold(
+                                  (_) {
+                                    setSheetState(() => switching = false);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          RepairConstants.writeErrorMessage,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  (_) => Navigator.of(sheetContext).pop(),
+                                );
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: switching
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(RepairConstants.switchSheetConfirm),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final agentName =
-        ref.watch(agentFirstNameProvider(orderId)).valueOrNull ?? 'Your agent';
+        ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
+        'Your agent';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -80,7 +170,11 @@ class RepairNoRepairState extends ConsumerWidget {
           SizedBox(
             height: 48,
             child: ElevatedButton(
-              onPressed: repairScreenChatTap(context, orderId, onOpenChat),
+              onPressed: repairScreenChatTap(
+                context,
+                widget.orderId,
+                widget.onOpenChat,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
@@ -90,7 +184,7 @@ class RepairNoRepairState extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           InkWell(
-            onTap: () => _showSwitchSheet(context, ref),
+            onTap: () => _showSwitchSheet(context),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
@@ -106,67 +200,6 @@ class RepairNoRepairState extends ConsumerWidget {
           ),
           const SizedBox(height: 32),
         ],
-      ),
-    );
-  }
-
-  void _showSwitchSheet(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                RepairConstants.switchSheetTitle,
-                style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                RepairConstants.switchSheetBody,
-                style: AppTextStyles.bodyMedium,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: const Text(RepairConstants.switchSheetCancel),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.of(ctx).pop();
-                        final result = await ref
-                            .read(repairRepositoryProvider)
-                            .switchToRepairs(orderId);
-                        if (ctx.mounted) {
-                          result.fold(
-                            (_) => ScaffoldMessenger.of(ctx).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  RepairConstants.writeErrorMessage,
-                                ),
-                              ),
-                            ),
-                            (_) {},
-                          );
-                        }
-                      },
-                      child: const Text(RepairConstants.switchSheetConfirm),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

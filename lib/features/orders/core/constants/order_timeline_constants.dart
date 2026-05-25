@@ -117,5 +117,8 @@ class OrderTimelineConstants {
   static const String repairGaragePrefix = 'Garage: ';
   static const String repairEstCompletion = 'Est. completion: ';
   static const String repairCompleteTitle = '✅ Repairs complete';
+  static const String repairNoRepairsTitle = 'No repairs — delivering as-is';
+  static const String repairNoRepairsSub =
+      'Tap to review or arrange agent-managed repairs';
   static const String partnerGarage = 'Partner garage';
 }

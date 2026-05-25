@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/utils/date_formatter.dart';
@@ -8,7 +9,6 @@ import '../../../repairs/data/models/repair_job_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import 'order_detail/order_detail_web_navigation.dart';
 
-const _kSurface = 0xFFF5F4F0;
 const _kPrimary = 0xFF378ADD;
 const _kTextSecondary = 0xFF666666;
 const _kSuccess = 0xFF1D9E75;
@@ -48,6 +48,7 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      borderRadius: BorderRadius.circular(10),
       onTap: () => OrderDetailWebNavigation.openRepair(
         context,
         ref,
@@ -57,8 +58,15 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
         margin: const EdgeInsets.only(top: 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(_kSurface),
           borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            width: 1,
+            color: widget.repairJob != null &&
+                    widget.repairJob!.status == RepairStatus.notStarted &&
+                    !widget.repairJob!.optedIn
+                ? AppColors.borderSolid
+                : AppColors.surface,
+          ),
         ),
         child: widget.repairJob == null
             ? _buildNullState(context)
@@ -141,6 +149,9 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
   Widget _buildBody(BuildContext context) {
     switch (j.status) {
       case RepairStatus.notStarted:
+        if (!j.optedIn) {
+          return _buildNoRepairsState(context);
+        }
         return _textBlock(
           OrderTimelineConstants.repairQuotePending,
           OrderTimelineConstants.repairQuotePendingSub,
@@ -262,6 +273,38 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
           ],
         );
     }
+  }
+
+  Widget _buildNoRepairsState(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.directions_car_rounded,
+          size: 16,
+          color: AppColors.textTertiary,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                OrderTimelineConstants.repairNoRepairsTitle,
+                style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                OrderTimelineConstants.repairNoRepairsSub,
+                style: AppTextStyles.caption.copyWith(
+                  color: const Color(_kTextSecondary),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.chevron_right, size: 16, color: Color(_kPrimary)),
+      ],
+    );
   }
 
   Widget _textBlock(String title, String sub) {

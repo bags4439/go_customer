@@ -48,7 +48,12 @@ class RepairConfirmButton extends StatelessWidget {
                   color: Colors.white,
                 ),
               )
-            : Text(label, style: AppTextStyles.buttonLarge),
+            : Text(
+                label,
+                style: choice == null
+                    ? AppTextStyles.buttonLarge.copyWith(color: AppColors.textPrimary)
+                    : AppTextStyles.buttonLarge,
+              ),
       ),
     );
   }
