@@ -64,6 +64,7 @@ abstract final class OrderDetailWebNavigation {
     context.push('/order/$orderId/review');
   }
 
+  /// Opens checkout in-panel when already on web order detail; otherwise navigates.
   static void openPaymentRequest(
     BuildContext context,
     WidgetRef ref, {
@@ -75,6 +76,22 @@ abstract final class OrderDetailWebNavigation {
           WebOrderPanelPaymentRequest(
         orderId: orderId,
         requestId: requestId,
+      );
+      return;
+    }
+    context.push('/order/$orderId/payment-request/$requestId');
+  }
+
+  /// Entry from home, notifications, chat, etc. Web → order detail + panel.
+  static void navigateToPaymentRequest(
+    BuildContext context, {
+    required String orderId,
+    required String requestId,
+  }) {
+    if (_isWeb(context)) {
+      context.go(
+        '/order/$orderId'
+        '?${RouteConstants.paymentRequestQuery}=$requestId',
       );
       return;
     }

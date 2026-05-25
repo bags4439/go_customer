@@ -11,6 +11,7 @@ import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../../core/widgets/web_dashboard_right_panel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../../profile/presentation/navigation/profile_id_verification_navigation.dart';
 import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
 import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
@@ -748,7 +749,11 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
       case 'payment_request':
         final requestId = _extractRequestId(n.actionUrl);
         if (orderId != null && requestId != null) {
-          context.push('/order/$orderId/payment-request/$requestId');
+          OrderDetailWebNavigation.navigateToPaymentRequest(
+            context,
+            orderId: orderId,
+            requestId: requestId,
+          );
         }
         break;
       case 'payment_confirmed':

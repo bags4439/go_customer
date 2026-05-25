@@ -33,5 +33,8 @@ class RouteConstants {
 
   static const String profile = 'profile';
   static const String idVerification = 'id-verification';
+
+  /// Web deep link: opens payment checkout in the order-detail right panel.
+  static const String paymentRequestQuery = 'paymentRequest';
 }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'order_detail/order_detail_web_navigation.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -114,7 +114,7 @@ class HomeOrderStatusBadge extends StatelessWidget {
           text = HomeColors.warning;
           break;
         case FirestoreEnumValues.orderStatusBidWon:
-          label = 'Won auction';
+          label = 'Vehicle found';
           bg = HomeColors.successBg;
           text = HomeColors.success;
           break;
@@ -280,9 +280,11 @@ class HomeOrderPaymentInlineCta extends ConsumerWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => GoRouter.of(
+            onTap: () => OrderDetailWebNavigation.navigateToPaymentRequest(
               context,
-            ).push('/order/$orderId/payment-request/${payment.id}'),
+              orderId: orderId,
+              requestId: payment.id,
+            ),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(

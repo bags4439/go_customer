@@ -6,6 +6,7 @@ import 'package:go_customer/core/layout/app_breakpoints.dart';
 import 'package:go_customer/core/layout/web_app_shell.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/features/chat/presentation/providers/chat_providers.dart';
+import 'package:go_customer/features/orders/presentation/models/web_order_panel_task.dart';
 import 'package:go_customer/features/orders/presentation/providers/order_detail_providers.dart';
 import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_guide.dart';
 import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_mobile_app_bar.dart';
@@ -17,10 +18,14 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
     super.key,
     required this.orderId,
     this.initialTab = 'overview',
+    this.initialPaymentRequestId,
   });
 
   final String orderId;
   final String initialTab;
+
+  /// Web: `?paymentRequest=` opens checkout in the right panel.
+  final String? initialPaymentRequestId;
 
   int get _initialIndex {
     switch (initialTab) {
@@ -60,7 +65,32 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     );
     _tabController.addListener(_onTabChanged);
     _isChatTabActive = widget._initialIndex == 1;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrapGuides());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_applyPaymentDeepLinkIfNeeded()) {
+        _bootstrapGuides();
+      }
+    });
+  }
+
+  /// Web deep link from home/notifications: open payment panel, strip query.
+  bool _applyPaymentDeepLinkIfNeeded() {
+    final requestId = widget.initialPaymentRequestId;
+    if (requestId == null || requestId.isEmpty) return false;
+    if (!AppBreakpoints.isWeb(context)) return false;
+
+    ref.read(webOrderPanelTaskProvider.notifier).state =
+        WebOrderPanelPaymentRequest(
+      orderId: widget.orderId,
+      requestId: requestId,
+    );
+    _tabController.index = 0;
+    _isChatTabActive = false;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.go('/order/${widget.orderId}');
+    });
+    return true;
   }
 
   Future<void> _bootstrapGuides() async {
@@ -94,6 +124,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialTab != widget.initialTab) {
       _tabController.animateTo(widget._initialIndex);
+    }
+    if (oldWidget.initialPaymentRequestId != widget.initialPaymentRequestId &&
+        widget.initialPaymentRequestId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyPaymentDeepLinkIfNeeded();
+      });
     }
   }
 

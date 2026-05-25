@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/constants/route_constants.dart';
+import 'core/layout/app_breakpoints.dart';
 import 'core/widgets/buyer_dashboard_shell.dart';
 import 'features/auth/presentation/screens/account_created_screen.dart';
 import 'features/auth/presentation/screens/id_upload_screen.dart';
@@ -146,6 +147,8 @@ final router = GoRouter(
       builder: (context, state) => OrderDetailScreen(
         orderId: state.pathParameters['orderId']!,
         initialTab: state.uri.queryParameters['tab'] ?? 'overview',
+        initialPaymentRequestId:
+            state.uri.queryParameters[RouteConstants.paymentRequestQuery],
       ),
       routes: [
         GoRoute(
@@ -157,6 +160,13 @@ final router = GoRouter(
         GoRoute(
           name: RouteConstants.paymentRequest,
           path: 'payment-request/:requestId',
+          redirect: (context, state) {
+            if (!AppBreakpoints.isWeb(context)) return null;
+            final orderId = state.pathParameters['orderId']!;
+            final requestId = state.pathParameters['requestId']!;
+            return '/order/$orderId'
+                '?${RouteConstants.paymentRequestQuery}=$requestId';
+          },
           builder: (context, state) => PaymentRequestViewScreen(
             orderId: state.pathParameters['orderId']!,
             requestId: state.pathParameters['requestId']!,
