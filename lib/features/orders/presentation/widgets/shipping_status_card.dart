@@ -29,7 +29,6 @@ class ShippingStatusCard extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(top: 10),
         decoration: BoxDecoration(
-          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: AppColors.secondary.withValues(alpha: 0.25),
@@ -306,7 +305,6 @@ class _AgentNoteStrip extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
         border: const Border(
           left: BorderSide(color: AppColors.secondary, width: 3),
