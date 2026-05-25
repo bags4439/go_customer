@@ -41,7 +41,6 @@ class ClearanceStatusCard extends ConsumerWidget {
         margin: const EdgeInsets.only(top: 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(_kSurface),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: const Color(0x66378ADD), width: 0.8),
         ),
