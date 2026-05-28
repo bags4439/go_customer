@@ -31,6 +31,7 @@ class RepairGarageInfoRow extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(width: 16,),
           Expanded(
             child: Text(
               value,

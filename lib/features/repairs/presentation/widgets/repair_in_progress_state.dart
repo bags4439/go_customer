@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/widgets/card_container.dart';
 
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -118,67 +119,55 @@ class _RepairInProgressStateState extends ConsumerState<RepairInProgressState>
             ),
           ),
           const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+          CardContainer(
+            paddingType: CardContainerPaddingType.xlarge,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  RepairConstants.garageDetailsLabel,
-                  style: AppTextStyles.sectionLabel.copyWith(
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.2,
-                    fontSize: 10,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.75),
-                  ),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                RepairConstants.garageDetailsLabel,
+                style: AppTextStyles.sectionLabel.copyWith(
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.2,
+                  fontSize: 10,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.75),
                 ),
-                const SizedBox(height: 12),
-                RepairGarageInfoRow(
-                  label: RepairConstants.garageLabel,
-                  value: garageName,
-                ),
-                RepairGarageInfoRow(
-                  label: RepairConstants.locationLabel,
-                  value: widget.job.garageLocation ?? '—',
-                ),
-                RepairGarageInfoRow(
-                  label: RepairConstants.startedLabel,
-                  value: widget.job.startDate != null
-                      ? repairDisplayDateFormat.format(widget.job.startDate!)
-                      : '—',
-                ),
-                RepairGarageInfoRow(
-                  label: RepairConstants.estCompletionShortLabel,
-                  value: estCompletion != null
-                      ? repairDisplayDateFormat.format(estCompletion)
-                      : '—',
-                ),
-                RepairGarageInfoRow(
-                  label: RepairConstants.approvedQuoteLabel,
-                  value: widget.job.totalQuotedGhs != null
-                      ? CurrencyFormatter.format(
-                          widget.job.totalQuotedGhs! *
-                              widget.currency.usdToRate,
-                          widget.currency,
-                        )
-                      : '—',
-                ),
-              ],
-            ),
-          ),
+              ),
+              const SizedBox(height: 12),
+              RepairGarageInfoRow(
+                label: RepairConstants.garageLabel,
+                value: garageName,
+              ),
+              RepairGarageInfoRow(
+                label: RepairConstants.locationLabel,
+                value: widget.job.garageLocation ?? '—',
+              ),
+              RepairGarageInfoRow(
+                label: RepairConstants.startedLabel,
+                value: widget.job.startDate != null
+                    ? repairDisplayDateFormat.format(widget.job.startDate!)
+                    : '—',
+              ),
+              RepairGarageInfoRow(
+                label: RepairConstants.estCompletionShortLabel,
+                value: estCompletion != null
+                    ? repairDisplayDateFormat.format(estCompletion)
+                    : '—',
+              ),
+              RepairGarageInfoRow(
+                label: RepairConstants.approvedQuoteLabel,
+                value: widget.job.totalQuotedGhs != null
+                    ? CurrencyFormatter.format(
+                  widget.job.totalQuotedGhs! *
+                      widget.currency.usdToRate,
+                  widget.currency,
+                )
+                    : '—',
+              ),
+            ],
+          ),),
           const SizedBox(height: 24),
           RepairTimelineStage(
             index: 0,
