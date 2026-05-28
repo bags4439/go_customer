@@ -109,7 +109,12 @@ class OrderTimelineConstants {
       'Review the quote in chat and approve to start repairs.';
   static const String repairQuoteApproved = 'Quote approved';
   static const String repairQuoteApprovedSub =
-      'Deposit payment is being arranged.';
+      'Your agent is preparing the deposit payment request.';
+  static const String repairDepositPaid = 'Deposit paid ✓';
+  static const String repairDepositPaidSub =
+      'Your agent will start repairs shortly.';
+  static const String repairDepositConfirmingSub =
+      'Confirming your payment — repairs will start once cleared.';
   static const String repairQuoteDeclined = 'Quote declined';
   static const String repairQuoteDeclinedSub =
       'Your agent will send an updated quote shortly.';

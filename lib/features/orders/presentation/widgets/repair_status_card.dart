@@ -184,10 +184,7 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
           ],
         );
       case RepairStatus.quoteApproved:
-        return _textBlock(
-          OrderTimelineConstants.repairQuoteApproved,
-          OrderTimelineConstants.repairQuoteApprovedSub,
-        );
+        return _buildQuoteApprovedState(context);
       case RepairStatus.quoteDeclined:
         return _textBlock(
           OrderTimelineConstants.repairQuoteDeclined,
@@ -273,6 +270,40 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
           ],
         );
     }
+  }
+
+  Widget _buildQuoteApprovedState(BuildContext context) {
+    if (j.depositPaid) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.check_circle_outline,
+            size: 16,
+            color: Color(_kSuccess),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _textBlock(
+              OrderTimelineConstants.repairDepositPaid,
+              OrderTimelineConstants.repairDepositPaidSub,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (j.depositPaymentRequestId != null) {
+      return _textBlock(
+        OrderTimelineConstants.repairQuoteApproved,
+        OrderTimelineConstants.repairDepositConfirmingSub,
+      );
+    }
+
+    return _textBlock(
+      OrderTimelineConstants.repairQuoteApproved,
+      OrderTimelineConstants.repairQuoteApprovedSub,
+    );
   }
 
   Widget _buildNoRepairsState(BuildContext context) {

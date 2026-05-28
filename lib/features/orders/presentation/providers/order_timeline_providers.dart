@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -90,8 +91,65 @@ final orderRepairJobProvider = StreamProvider.family<RepairJobModel?, String>((
       .where('orderId', isEqualTo: orderId)
       .limit(1)
       .snapshots()
-      .map(
-        (s) =>
-            s.docs.isEmpty ? null : RepairJobModel.fromFirestore(s.docs.first),
-      );
+      .asyncMap((s) async {
+        if (s.docs.isEmpty) return null;
+        final doc = s.docs.first;
+        var model = RepairJobModel.fromFirestore(doc);
+        if (!model.depositPaid) {
+          await _syncRepairDepositPaidIfNeeded(
+            firestore,
+            orderId,
+            doc.reference,
+            model,
+          );
+          final refreshed = await doc.reference.get();
+          if (refreshed.exists) {
+            model = RepairJobModel.fromFirestore(refreshed);
+          }
+        }
+        return model;
+      });
 });
+
+/// Backfills [depositPaid] when deposit was confirmed but never linked on
+/// [repair_jobs] (legacy repair_fee payments).
+Future<void> _syncRepairDepositPaidIfNeeded(
+  FirebaseFirestore firestore,
+  String orderId,
+  DocumentReference<Map<String, dynamic>> repairRef,
+  RepairJobModel job,
+) async {
+  if (job.depositPaid) return;
+
+  final depositRequestId = job.depositPaymentRequestId;
+  if (depositRequestId != null) {
+    final pr = await firestore
+        .collection(FirestoreCollections.paymentRequests)
+        .doc(depositRequestId)
+        .get();
+    if (pr.data()?['status'] == 'paid') {
+      await repairRef.update({
+        'depositPaid': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      return;
+    }
+  }
+
+  final paySnap = await firestore
+      .collection(FirestoreCollections.payments)
+      .where('orderId', isEqualTo: orderId)
+      .where('type', isEqualTo: AppConstants.paymentRequestTypeRepairFee)
+      .where('status', isEqualTo: 'confirmed')
+      .limit(1)
+      .get();
+  if (paySnap.docs.isEmpty) return;
+
+  final paymentRequestId =
+      paySnap.docs.first.data()['paymentRequestId'] as String?;
+  await repairRef.update({
+    'depositPaid': true,
+    if (paymentRequestId != null) 'depositPaymentRequestId': paymentRequestId,
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
+}
