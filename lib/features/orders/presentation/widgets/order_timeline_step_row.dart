@@ -22,6 +22,7 @@ import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../../data/models/order_timeline_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import '../providers/order_providers.dart';
+import '../utils/repair_timeline_resolver.dart';
 import '../utils/timeline_payment_resolver.dart';
 import 'order_detail/order_detail_web_navigation.dart';
 import 'clearance_status_card.dart';
@@ -125,7 +126,12 @@ class OrderTimelineStepRow extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.only(right: 16, bottom: 8),
                 child: isComplete
-                    ? _CompletedRow(stage: stage, isLast: isLast)
+                    ? _CompletedRow(
+                        stage: stage,
+                        isLast: isLast,
+                        orderId: orderId,
+                        repairJob: repairJob,
+                      )
                     : isActive
                     ? _ActiveStageContent(
                         stage: stage,
@@ -255,11 +261,18 @@ class _UpcomingDot extends StatelessWidget {
   }
 }
 
-class _CompletedRow extends StatelessWidget {
+class _CompletedRow extends ConsumerWidget {
   final OrderTimelineModel stage;
   final bool isLast;
+  final String orderId;
+  final RepairJobModel? repairJob;
 
-  const _CompletedRow({required this.stage, required this.isLast});
+  const _CompletedRow({
+    required this.stage,
+    required this.isLast,
+    required this.orderId,
+    this.repairJob,
+  });
 
   String _formatDate(DateTime? dt) {
     if (dt == null) return '';
@@ -281,8 +294,78 @@ class _CompletedRow extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final dateStr = _formatDate(stage.completedAt);
+    final isRepairComplete =
+        stage.stageKey == 'repair' &&
+        repairJob?.status == RepairStatus.completed;
+
+    if (isRepairComplete) {
+      return Padding(
+        padding: EdgeInsets.only(top: 8, bottom: isLast ? 4 : 0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => OrderDetailWebNavigation.openRepair(
+              context,
+              ref,
+              orderId,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.successMutedBackground,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.successMutedBorder,
+                  width: 0.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    size: 16,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stage.label,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          OrderTimelineConstants.repairCompletedRowSub,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (dateStr.isNotEmpty)
+                    Text(dateStr, style: AppTextStyles.caption),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 16,
+                    color: AppColors.secondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Padding(
       padding: EdgeInsets.only(top: 10, bottom: isLast ? 4 : 0),
@@ -362,6 +445,24 @@ class _ActiveStageContent extends StatelessWidget {
   }
 
   Widget _buildActiveCard(BuildContext context) {
+    final pendingRepairPay = RepairTimelineResolver.pendingRepairPayment(
+      pendingPayments,
+    );
+    final isRepairStage = stage.stageKey == 'repair';
+    final repairBadge = isRepairStage
+        ? RepairTimelineResolver.activeBadge(
+            repairJob,
+            pendingPayment: pendingRepairPay,
+          )
+        : null;
+    final repairDetail = isRepairStage
+        ? RepairTimelineResolver.summaryDetail(
+            repairJob,
+            pendingPayment: pendingRepairPay,
+          )
+        : null;
+    final badgeStyle = _repairBadgeStyle(repairBadge);
+
     return Container(
       margin: const EdgeInsets.only(top: 8, bottom: 12),
       decoration: BoxDecoration(
@@ -389,33 +490,25 @@ class _ActiveStageContent extends StatelessWidget {
                 Expanded(
                   child: Text(stage.label, style: AppTextStyles.titleSmall),
                 ),
-                Builder(
-                  builder: (context) {
-                    final isNoRepairs =
-                        stage.stageKey == 'repair' &&
-                        repairJob != null &&
-                        !repairJob!.optedIn;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isNoRepairs
-                            ? AppColors.surface
-                            : AppColors.infoBackground,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        isNoRepairs ? 'No repairs' : 'In progress',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: isNoRepairs
-                              ? AppColors.textSecondary
-                              : AppColors.infoText,
-                        ),
-                      ),
-                    );
-                  },
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: repairBadge != null
+                        ? badgeStyle.bg
+                        : AppColors.infoBackground,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    repairBadge ?? 'In progress',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: repairBadge != null
+                          ? badgeStyle.fg
+                          : AppColors.infoText,
+                    ),
+                  ),
                 ),
                 if (AppBreakpoints.isWeb(context) && onStepTapped != null) ...[
                   const SizedBox(width: 8),
@@ -443,11 +536,11 @@ class _ActiveStageContent extends StatelessWidget {
               ],
             ),
           ),
-          if (stage.detail != null && stage.detail!.isNotEmpty)
+          if ((repairDetail ?? stage.detail)?.isNotEmpty == true)
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
               child: Text(
-                stage.detail!,
+                repairDetail ?? stage.detail!,
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.secondary,
                 ),
@@ -474,6 +567,30 @@ class _ActiveStageContent extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  ({Color bg, Color fg}) _repairBadgeStyle(String? badge) {
+    if (badge == OrderTimelineConstants.repairBadgeNoRepairs) {
+      return (bg: AppColors.surface, fg: AppColors.textSecondary);
+    }
+    if (badge == OrderTimelineConstants.repairBadgeComplete ||
+        badge == OrderTimelineConstants.repairBadgeDepositPaid ||
+        badge == OrderTimelineConstants.repairBadgeQuoteApproved) {
+      return (
+        bg: AppColors.success.withValues(alpha: 0.12),
+        fg: AppColors.success,
+      );
+    }
+    if (badge == OrderTimelineConstants.repairBadgeReviewQuote ||
+        badge == OrderTimelineConstants.repairBadgeDepositDue ||
+        badge == OrderTimelineConstants.repairBadgeBalanceDue ||
+        badge == OrderTimelineConstants.repairBadgeAction) {
+      return (bg: AppColors.amberBackground, fg: AppColors.amberText);
+    }
+    if (badge == OrderTimelineConstants.repairBadgeDeclined) {
+      return (bg: AppColors.amberBackground, fg: AppColors.amberText);
+    }
+    return (bg: AppColors.infoBackground, fg: AppColors.infoText);
   }
 }
 
@@ -514,7 +631,17 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
 
     final pay = resolvePendingPaymentForStage(stage.stageKey, pendingPayments);
     if (pay != null) {
-      return PaymentRequestCard(paymentRequest: pay, orderId: orderId);
+      final card = PaymentRequestCard(paymentRequest: pay, orderId: orderId);
+      if (stage.stageKey == 'repair') {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            RepairTimelinePaymentContext(payment: pay),
+            card,
+          ],
+        );
+      }
+      return card;
     }
 
     switch (stage.stageKey) {
@@ -550,7 +677,13 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
         }
         return _chooseClearance(context, ref);
       case 'repair':
-        return RepairStatusCard(orderId: orderId, repairJob: repairJob);
+        return RepairStatusCard(
+          orderId: orderId,
+          repairJob: repairJob,
+          pendingPayment: RepairTimelineResolver.pendingRepairPayment(
+            pendingPayments,
+          ),
+        );
       case 'delivery':
         if (order.status == FirestoreEnumValues.orderStatusDelivered) {
           return _DeliveredCard(orderId: orderId);

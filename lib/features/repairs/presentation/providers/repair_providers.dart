@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/providers/firebase_providers.dart';
 import '../../../../shared/providers/system_settings_provider.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/providers/order_timeline_providers.dart';
+import '../../../orders/presentation/utils/timeline_payment_resolver.dart';
+import '../../../payments/data/models/payment_request_model.dart';
 import '../../data/datasources/repair_firestore_data_source.dart';
 import '../../data/repositories/repair_repository_impl.dart';
 import '../../domain/entities/garage.dart';
@@ -17,6 +20,7 @@ enum RepairScreenState {
   awaitingQuote,
   quoteSent,
   quoteDeclined,
+  quoteApproved,
   inProgress,
   complete,
   noRepair,
@@ -64,7 +68,8 @@ final repairScreenStateProvider =
   }
   if (job.isQuoteSent) return RepairScreenState.quoteSent;
   if (job.isQuoteDeclined) return RepairScreenState.quoteDeclined;
-  if (job.isQuoteApproved || job.isInProgress) return RepairScreenState.inProgress;
+  if (job.isQuoteApproved) return RepairScreenState.quoteApproved;
+  if (job.isInProgress) return RepairScreenState.inProgress;
   if (job.isCompleted) return RepairScreenState.complete;
   return RepairScreenState.choice;
 });
@@ -91,4 +96,13 @@ final repairChoiceProvider = StateProvider.family<bool?, String>((ref, orderId) 
 final repairServiceFeeProvider = FutureProvider<double>((ref) async {
   final settings = await ref.watch(systemSettingsProvider.future);
   return ref.read(repairDataSourceProvider).getRepairServiceFeeUsd(settings);
+});
+
+/// Pending repair-stage payment (deposit or balance) from the standard
+/// payment_requests flow — same resolver as order timeline.
+final repairPendingPaymentProvider =
+    Provider.family<AsyncValue<PaymentRequestModel?>, String>((ref, orderId) {
+  return ref.watch(pendingPaymentRequestsProvider(orderId)).whenData(
+        (pending) => resolvePendingPaymentForStage('repair', pending),
+      );
 });

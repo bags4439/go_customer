@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../orders/core/constants/order_timeline_constants.dart';
 import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import '../../domain/entities/garage.dart';
@@ -116,6 +117,8 @@ class RepairFirestoreDataSource {
     );
   }
 
+  /// Sets buyer approval only. Cloud Function [onRepairQuoteAccepted]
+  /// sets repair_jobs.status, quoteApprovedAt, and orders.status.
   Future<void> acceptQuote(String orderId) async {
     final snapshot = await _firestore
         .collection(FirestoreCollections.repairJobs)
@@ -125,10 +128,11 @@ class RepairFirestoreDataSource {
     if (snapshot.docs.isEmpty) return;
     await snapshot.docs.first.reference.update({
       'quoteApprovedByBuyer': true,
-      'quoteApprovedAt': FieldValue.serverTimestamp(),
-      'status': FirestoreEnumValues.repairStatusQuoteApproved,
     });
-    await updateOrderStatus(orderId, FirestoreEnumValues.orderStatusRepairInProgress);
+    await _updateRepairTimelineDetail(
+      orderId,
+      OrderTimelineConstants.repairTimelineDetailQuoteApproved,
+    );
   }
 
   Future<void> declineQuote(String orderId) async {
@@ -141,6 +145,27 @@ class RepairFirestoreDataSource {
     await snapshot.docs.first.reference.update({
       'quoteDeclinedAt': FieldValue.serverTimestamp(),
       'status': FirestoreEnumValues.repairStatusQuoteDeclined,
+    });
+    await _updateRepairTimelineDetail(
+      orderId,
+      OrderTimelineConstants.repairTimelineDetailQuoteDeclined,
+    );
+  }
+
+  Future<void> _updateRepairTimelineDetail(
+    String orderId,
+    String detail,
+  ) async {
+    final snap = await _firestore
+        .collection(FirestoreCollections.orderTimeline)
+        .where('orderId', isEqualTo: orderId)
+        .where('stageKey', isEqualTo: 'repair')
+        .limit(1)
+        .get();
+    if (snap.docs.isEmpty) return;
+    await snap.docs.first.reference.update({
+      'detail': detail,
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 

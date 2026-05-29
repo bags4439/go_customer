@@ -15,6 +15,9 @@ import '../../core/constants/order_timeline_constants.dart';
 import '../../data/models/order_timeline_model.dart';
 import '../providers/order_providers.dart';
 import '../providers/order_timeline_providers.dart';
+import '../../../payments/data/models/payment_request_model.dart';
+import '../../../repairs/data/models/repair_job_model.dart';
+import '../utils/repair_timeline_resolver.dart';
 import 'order_timeline_step_row.dart';
 
 /// Firestore-driven order journey timeline with staggered entrance.
@@ -100,13 +103,13 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     super.dispose();
   }
 
-  List<OrderTimelineModel> _visibleStages(List<OrderTimelineModel> raw) {
-    // All stages are always visible.
-    // The repair stage is shown
-    // regardless of repairOptedIn —
-    // the agent controls stage
-    // advancement manually.
-    return raw;
+  List<OrderTimelineModel> _visibleStages(
+    List<OrderTimelineModel> raw,
+    OrderView order,
+    RepairJobModel? repairJob,
+  ) {
+    if (order.repairOptedIn) return raw;
+    return raw.where((s) => s.stageKey != 'repair').toList();
   }
 
   void _ensureEntranceStarted(int count) {
@@ -130,6 +133,8 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
         return GuideKeys.stageShipping;
       case 7:
         return GuideKeys.stageClearance;
+      case 8:
+        return GuideKeys.stageRepair;
       default:
         return null;
     }
@@ -216,6 +221,13 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
             'paperwork and duty on your behalf. '
             'We\'ll keep you updated at every step.';
         break;
+      case GuideKeys.stageRepair:
+        title = 'Review your repair quote';
+        body =
+            'When your agent sends a repair quote, '
+            'review it here before approving. '
+            'No work begins until you say yes.';
+        break;
       default:
         title = '';
         body = '';
@@ -234,6 +246,25 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     );
   }
 
+  String _resolveStatusLine({
+    required OrderTimelineModel activeStage,
+    required RepairJobModel? repairJob,
+    required List<PaymentRequestModel> pending,
+    required int stageNumber,
+    required int totalStages,
+  }) {
+    if (activeStage.stageKey == 'repair') {
+      return RepairTimelineResolver.summaryDetail(
+        repairJob,
+        pendingPayment: RepairTimelineResolver.pendingRepairPayment(pending),
+      );
+    }
+    if (activeStage.detail?.isNotEmpty == true) {
+      return activeStage.detail!;
+    }
+    return 'Step $stageNumber of $totalStages';
+  }
+
   @override
   Widget build(BuildContext context) {
     final timelineAsync = ref.watch(orderTimelineProvider(widget.orderId));
@@ -246,19 +277,18 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
 
     return timelineAsync.when(
       data: (stages) {
-        final visible = _visibleStages(stages);
+        final repairJob = repairAsync.valueOrNull;
+        final visible = _visibleStages(stages, widget.order, repairJob);
 
         if (pendingAsync.isLoading ||
             shippingAsync.isLoading ||
-            clearanceAsync.isLoading ||
-            repairAsync.isLoading) {
+            clearanceAsync.isLoading) {
           return _TimelineShimmer();
         }
 
         final pending = pendingAsync.valueOrNull ?? [];
         final shipping = shippingAsync.valueOrNull;
         final clearance = clearanceAsync.valueOrNull;
-        final repairJob = repairAsync.valueOrNull;
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _ensureEntranceStarted(visible.length);
@@ -277,10 +307,13 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
 
         final statusLine = activeStage == null
             ? ''
-            : (activeStage.detail?.isNotEmpty == true
-                  ? activeStage.detail!
-                  : 'Step ${widget.order.stageNumber} '
-                        'of ${visible.length}');
+            : _resolveStatusLine(
+                activeStage: activeStage,
+                repairJob: repairJob,
+                pending: pending,
+                stageNumber: widget.order.stageNumber,
+                totalStages: visible.length,
+              );
 
         Widget rowContent(OrderTimelineModel s, bool isLast) {
           final row = OrderTimelineStepRow(

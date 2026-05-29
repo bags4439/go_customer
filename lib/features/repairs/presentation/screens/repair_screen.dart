@@ -71,10 +71,17 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
     final currency = ref.watch(preferredCurrencyProvider);
     final screenState = ref.watch(repairScreenStateProvider(widget.orderId));
     final jobAsync = ref.watch(repairJobProvider(widget.orderId));
-    final dutyAsync = ref.watch(dutyClearanceProvider(widget.orderId));
+    final order = ref.watch(orderProvider(widget.orderId)).valueOrNull;
+    final needsDutyClearance =
+        (order?.stageNumber ?? 0) >= 8 && jobAsync.valueOrNull == null;
+    final dutyAsync = needsDutyClearance
+        ? ref.watch(dutyClearanceProvider(widget.orderId))
+        : const AsyncValue.data(null);
 
-    final isLoading = jobAsync.isLoading || dutyAsync.isLoading;
-    final hasError = jobAsync.hasError || dutyAsync.hasError;
+    final isLoading =
+        jobAsync.isLoading || (needsDutyClearance && dutyAsync.isLoading);
+    final hasError =
+        jobAsync.hasError || (needsDutyClearance && dutyAsync.hasError);
 
     final orderRef =
         ref.watch(orderProvider(widget.orderId)).valueOrNull?.orderRef ??
@@ -89,7 +96,9 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
               ? RepairErrorCard(
                   onRetry: () {
                     ref.invalidate(repairJobProvider(widget.orderId));
-                    ref.invalidate(dutyClearanceProvider(widget.orderId));
+                    if (needsDutyClearance) {
+                      ref.invalidate(dutyClearanceProvider(widget.orderId));
+                    }
                   },
                 )
               : isLoading

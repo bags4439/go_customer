@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../providers/order_providers.dart';
+import '../providers/order_timeline_providers.dart';
 import 'home_order_status.dart';
 import 'home_theme.dart';
 
@@ -53,6 +54,14 @@ class HomeOrderCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = GoRouter.of(context);
     final paymentAsync = ref.watch(activePaymentRequestProvider(order.id));
+    final repairAsync = ref.watch(orderRepairJobProvider(order.id));
+    final pendingAsync = ref.watch(pendingPaymentRequestsProvider(order.id));
+
+    final statusDescription = homeOrderStatusDescription(
+      order,
+      repairJob: repairAsync.valueOrNull,
+      pendingPayments: pendingAsync.valueOrNull,
+    );
 
     final accentColor = order.needsPayment
         ? HomeColors.danger
@@ -159,7 +168,7 @@ class HomeOrderCard extends ConsumerWidget {
                               data: (p) {
                                 if (p == null) {
                                   return Text(
-                                    homeOrderStatusDescription(order),
+                                    statusDescription,
                                     style: homeTextStyle(
                                       size: 12,
                                       color: HomeColors.textSecondary,
@@ -173,7 +182,7 @@ class HomeOrderCard extends ConsumerWidget {
                               },
                               loading: () => const SizedBox(height: 14),
                               error: (_, __) => Text(
-                                homeOrderStatusDescription(order),
+                                statusDescription,
                                 style: homeTextStyle(
                                   size: 12,
                                   color: HomeColors.textSecondary,

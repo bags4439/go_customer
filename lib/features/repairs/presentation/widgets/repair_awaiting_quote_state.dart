@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../core/constants/repair_constants.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import 'repair_navigation.dart';
 
@@ -28,7 +30,7 @@ class RepairAwaitingQuoteState extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFE6F1FB),
+              color: AppColors.infoBackground,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFB5D4F4)),
             ),
@@ -37,24 +39,22 @@ class RepairAwaitingQuoteState extends ConsumerWidget {
                 const Icon(
                   Icons.build_outlined,
                   size: 40,
-                  color: Color(0xFF185FA5),
+                  color: AppColors.infoText,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Waiting for garage quote',
+                  RepairConstants.awaitingQuoteTitle,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.titleSmall.copyWith(
-                    color: const Color(0xFF185FA5),
+                    color: AppColors.infoText,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '$agentName has been notified and will send '
-                  'you a garage quote shortly. You will be '
-                  'notified when it arrives.',
+                  RepairConstants.awaitingQuoteBody(agentName),
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: const Color(0xFF185FA5),
+                    color: AppColors.infoText,
                     height: 1.5,
                   ),
                 ),
@@ -67,11 +67,11 @@ class RepairAwaitingQuoteState extends ConsumerWidget {
             child: ElevatedButton(
               onPressed: repairScreenChatTap(context, orderId, onOpenChat),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF378ADD),
+                backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
               ),
               child: Text(
-                'Chat with $agentName →',
+                RepairConstants.chatWithAgentButton(agentName),
                 style: AppTextStyles.buttonMedium.copyWith(
                   fontWeight: FontWeight.w500,
                 ),

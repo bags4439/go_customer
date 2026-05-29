@@ -10,6 +10,7 @@ import 'repair_in_progress_state.dart';
 import 'repair_no_repair_state.dart';
 import 'repair_not_available_state.dart';
 import 'repair_quote_declined_state.dart';
+import 'repair_quote_approved_state.dart';
 import 'repair_quote_received_state.dart';
 
 class RepairBody extends StatelessWidget {
@@ -58,6 +59,13 @@ class RepairBody extends StatelessWidget {
       case RepairScreenState.quoteDeclined:
         return RepairQuoteDeclinedState(
           orderId: orderId,
+          onOpenChat: onOpenChat,
+        );
+      case RepairScreenState.quoteApproved:
+        return RepairQuoteApprovedState(
+          orderId: orderId,
+          job: job!,
+          currency: currency,
           onOpenChat: onOpenChat,
         );
       case RepairScreenState.inProgress:

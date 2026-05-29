@@ -81,6 +81,7 @@ final orderClearanceProvider =
           );
     });
 
+/// Live repair_jobs stream for timeline — read-only; no orphan payment backfill.
 final orderRepairJobProvider = StreamProvider.family<RepairJobModel?, String>((
   ref,
   orderId,
@@ -96,60 +97,43 @@ final orderRepairJobProvider = StreamProvider.family<RepairJobModel?, String>((
         final doc = s.docs.first;
         var model = RepairJobModel.fromFirestore(doc);
         if (!model.depositPaid) {
-          await _syncRepairDepositPaidIfNeeded(
+          final synced = await _syncDepositPaidFromLinkedRequest(
             firestore,
-            orderId,
             doc.reference,
             model,
           );
-          final refreshed = await doc.reference.get();
-          if (refreshed.exists) {
-            model = RepairJobModel.fromFirestore(refreshed);
+          if (synced) {
+            final refreshed = await doc.reference.get();
+            if (refreshed.exists) {
+              model = RepairJobModel.fromFirestore(refreshed);
+            }
           }
         }
         return model;
       });
 });
 
-/// Backfills [depositPaid] when deposit was confirmed but never linked on
-/// [repair_jobs] (legacy repair_fee payments).
-Future<void> _syncRepairDepositPaidIfNeeded(
+/// Only marks [depositPaid] when the linked [depositPaymentRequestId] is paid.
+Future<bool> _syncDepositPaidFromLinkedRequest(
   FirebaseFirestore firestore,
-  String orderId,
   DocumentReference<Map<String, dynamic>> repairRef,
   RepairJobModel job,
 ) async {
-  if (job.depositPaid) return;
+  if (job.depositPaid) return false;
 
-  final depositRequestId = job.depositPaymentRequestId;
-  if (depositRequestId != null) {
-    final pr = await firestore
-        .collection(FirestoreCollections.paymentRequests)
-        .doc(depositRequestId)
-        .get();
-    if (pr.data()?['status'] == 'paid') {
-      await repairRef.update({
-        'depositPaid': true,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      return;
-    }
-  }
+  final depositRequestId = job.depositPaymentRequestId?.trim();
+  if (depositRequestId == null || depositRequestId.isEmpty) return false;
 
-  final paySnap = await firestore
-      .collection(FirestoreCollections.payments)
-      .where('orderId', isEqualTo: orderId)
-      .where('type', isEqualTo: AppConstants.paymentRequestTypeRepairFee)
-      .where('status', isEqualTo: 'confirmed')
-      .limit(1)
+  final pr = await firestore
+      .collection(FirestoreCollections.paymentRequests)
+      .doc(depositRequestId)
       .get();
-  if (paySnap.docs.isEmpty) return;
+  if (!pr.exists) return false;
+  if (pr.data()?['status'] != 'paid') return false;
 
-  final paymentRequestId =
-      paySnap.docs.first.data()['paymentRequestId'] as String?;
   await repairRef.update({
     'depositPaid': true,
-    if (paymentRequestId != null) 'depositPaymentRequestId': paymentRequestId,
     'updatedAt': FieldValue.serverTimestamp(),
   });
+  return true;
 }

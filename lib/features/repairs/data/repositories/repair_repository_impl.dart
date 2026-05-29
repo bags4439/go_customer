@@ -46,11 +46,6 @@ class RepairRepositoryImpl implements RepairRepository {
   Future<Either<Failure, Unit>> acceptQuote(String orderId) async {
     try {
       await _dataSource.acceptQuote(orderId);
-      try {
-        await _functions.httpsCallable('onRepairQuoteAccepted').call({
-          'orderId': orderId,
-        });
-      } catch (_) {}
       return const Right(unit);
     } catch (e, st) {
       return Left(FirestoreFailure(message: e.toString(), cause: st));
@@ -61,11 +56,6 @@ class RepairRepositoryImpl implements RepairRepository {
   Future<Either<Failure, Unit>> declineQuote(String orderId) async {
     try {
       await _dataSource.declineQuote(orderId);
-      try {
-        await _functions.httpsCallable('onRepairQuoteDeclined').call({
-          'orderId': orderId,
-        });
-      } catch (_) {}
       return const Right(unit);
     } catch (e, st) {
       return Left(FirestoreFailure(message: e.toString(), cause: st));

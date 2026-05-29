@@ -1,24 +1,29 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_customer/core/theme/app_colors.dart';
-import 'package:go_customer/core/theme/app_text_styles.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../payments/data/models/payment_request_model.dart';
 import '../../../repairs/data/models/repair_job_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
+import '../utils/repair_timeline_resolver.dart';
 import 'order_detail/order_detail_web_navigation.dart';
 
-const _kPrimary = 0xFF378ADD;
-const _kTextSecondary = 0xFF666666;
-const _kSuccess = 0xFF1D9E75;
-
-/// Repair step when repair_jobs exists (no pending repair payment).
+/// Timeline repair sub-card — driven by [repair_jobs] status and payments.
 class RepairStatusCard extends ConsumerStatefulWidget {
-  final RepairJobModel? repairJob;
-  final String orderId;
+  const RepairStatusCard({
+    super.key,
+    required this.orderId,
+    this.repairJob,
+    this.pendingPayment,
+  });
 
-  const RepairStatusCard({super.key, required this.orderId, this.repairJob});
+  final String orderId;
+  final RepairJobModel? repairJob;
+  final PaymentRequestModel? pendingPayment;
 
   @override
   ConsumerState<RepairStatusCard> createState() => _RepairStatusCardState();
@@ -43,63 +48,328 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
     super.dispose();
   }
 
-  RepairJobModel get j => widget.repairJob!;
+  RepairJobModel? get j => widget.repairJob;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: () => OrderDetailWebNavigation.openRepair(
-        context,
-        ref,
-        widget.orderId,
-      ),
-      child: Container(
-        margin: const EdgeInsets.only(top: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            width: 1,
-            color: widget.repairJob != null &&
-                    widget.repairJob!.status == RepairStatus.notStarted &&
-                    !widget.repairJob!.optedIn
-                ? AppColors.borderSolid
-                : AppColors.surface,
-          ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        onTap: () => OrderDetailWebNavigation.openRepair(
+          context,
+          ref,
+          widget.orderId,
         ),
-        child: widget.repairJob == null
-            ? _buildNullState(context)
-            : _buildBody(context),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            border: Border.all(color: AppColors.borderSolid),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: j == null ? _buildNullState() : _buildBody(),
+        ),
       ),
     );
   }
 
-  Widget _buildNullState(BuildContext context) {
+  Widget _buildNullState() {
     return Row(
       children: [
-        const Icon(Icons.build_outlined, size: 16, color: Color(_kPrimary)),
-        const SizedBox(width: 8),
+        _iconCircle(Icons.build_outlined, AppColors.infoBackground, AppColors.secondary),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Arrange repairs',
-                style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
+                OrderTimelineConstants.repairTimelineNoJobDetail,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 'Tap to confirm your repair preference',
                 style: AppTextStyles.caption.copyWith(
-                  color: const Color(_kTextSecondary),
+                  color: AppColors.textSecondary,
+                  height: 1.4,
                 ),
               ),
             ],
           ),
         ),
-        const Icon(Icons.chevron_right, size: 16, color: Color(_kPrimary)),
+        const Icon(Icons.chevron_right, size: 18, color: AppColors.secondary),
       ],
+    );
+  }
+
+  Widget _buildBody() {
+    final phase = RepairTimelineResolver.phase(
+      j,
+      pendingPayment: widget.pendingPayment,
+    );
+
+    return switch (phase) {
+      RepairTimelinePhase.noRepairs => _noRepairs(),
+      RepairTimelinePhase.quotePending => _statusTile(
+          icon: Icons.hourglass_empty_rounded,
+          iconBg: AppColors.surface,
+          iconColor: AppColors.textSecondary,
+          title: OrderTimelineConstants.repairQuotePending,
+          subtitle: OrderTimelineConstants.repairQuotePendingSub,
+        ),
+      RepairTimelinePhase.quoteSent => _quoteSent(),
+      RepairTimelinePhase.quoteDeclined => _statusTile(
+          icon: Icons.refresh_rounded,
+          iconBg: AppColors.amberBackground,
+          iconColor: AppColors.amberText,
+          title: OrderTimelineConstants.repairQuoteDeclined,
+          subtitle: OrderTimelineConstants.repairQuoteDeclinedSub,
+        ),
+      RepairTimelinePhase.quoteApprovedAwaitingRequest => _statusTile(
+          icon: Icons.check_circle_outline,
+          iconBg: AppColors.success.withValues(alpha: 0.12),
+          iconColor: AppColors.success,
+          title: OrderTimelineConstants.repairQuoteApproved,
+          subtitle: OrderTimelineConstants.repairQuoteApprovedSub,
+        ),
+      RepairTimelinePhase.quoteApprovedDepositDue => _statusTile(
+          icon: Icons.payments_outlined,
+          iconBg: AppColors.amberBackground,
+          iconColor: AppColors.amberText,
+          title: OrderTimelineConstants.repairDepositDueTimelineDetail,
+          subtitle: OrderTimelineConstants.repairQuoteApprovedSub,
+        ),
+      RepairTimelinePhase.quoteApprovedDepositPaid => _statusTile(
+          icon: Icons.check_circle_outline,
+          iconBg: AppColors.success.withValues(alpha: 0.12),
+          iconColor: AppColors.success,
+          title: OrderTimelineConstants.repairDepositPaid,
+          subtitle: OrderTimelineConstants.repairDepositPaidSub,
+        ),
+      RepairTimelinePhase.inProgress => _inProgress(pulsing: true),
+      RepairTimelinePhase.inProgressBalanceDue => _inProgress(
+          balanceNote: OrderTimelineConstants.repairBalanceDueTimelineDetail,
+          pulsing: true,
+        ),
+      RepairTimelinePhase.inProgressBalancePaid => _inProgress(
+          balanceNote: OrderTimelineConstants.repairBalancePaidSub,
+          pulsing: true,
+        ),
+      RepairTimelinePhase.completed => _completed(),
+      _ => _statusTile(
+          icon: Icons.build_outlined,
+          iconBg: AppColors.infoBackground,
+          iconColor: AppColors.secondary,
+          title: OrderTimelineConstants.repairQuotePending,
+          subtitle: OrderTimelineConstants.repairQuotePendingSub,
+        ),
+    };
+  }
+
+  Widget _quoteSent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _statusTile(
+          icon: Icons.description_outlined,
+          iconBg: AppColors.amberBackground,
+          iconColor: AppColors.amberText,
+          title: OrderTimelineConstants.repairQuoteSent,
+          subtitle: OrderTimelineConstants.repairQuoteSentSub,
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 44,
+          child: ElevatedButton(
+            onPressed: () => OrderDetailWebNavigation.openRepair(
+              context,
+              ref,
+              widget.orderId,
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              ),
+            ),
+            child: Text(
+              OrderTimelineConstants.viewQuote,
+              style: AppTextStyles.labelSmall.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _inProgress({String? balanceNote, bool pulsing = false}) {
+    final job = j!;
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _statusTile(
+          icon: Icons.build_outlined,
+          iconBg: AppColors.infoBackground,
+          iconColor: AppColors.infoText,
+          title: OrderTimelineConstants.repairInProgressTitle,
+          subtitle:
+              '${OrderTimelineConstants.repairGaragePrefix}${job.garageNameCustom ?? OrderTimelineConstants.partnerGarage}',
+        ),
+        if (job.estimatedCompletion != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            '${OrderTimelineConstants.repairEstCompletion}${DateFormatter.formatDate(job.estimatedCompletion)}',
+            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+        if (balanceNote != null) ...[
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              balanceNote,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+        _photoRow(job.beforePhotoUrlsJson ?? const []),
+      ],
+    );
+
+    if (!pulsing) return content;
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.82, end: 1).animate(
+        CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
+      ),
+      child: content,
+    );
+  }
+
+  Widget _completed() {
+    final job = j!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _statusTile(
+          icon: Icons.check_circle_outline,
+          iconBg: AppColors.success.withValues(alpha: 0.12),
+          iconColor: AppColors.success,
+          title: OrderTimelineConstants.repairCompleteTitle,
+          subtitle: OrderTimelineConstants.repairCompleteTimelineDetail,
+        ),
+        _photoRow(job.afterPhotoUrlsJson ?? const []),
+        const SizedBox(height: 8),
+        Text(
+          OrderTimelineConstants.repairViewSummary,
+          style: AppTextStyles.link.copyWith(fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  Widget _noRepairs() {
+    return Row(
+      children: [
+        _iconCircle(
+          Icons.directions_car_rounded,
+          AppColors.surface,
+          AppColors.textTertiary,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                OrderTimelineConstants.repairNoRepairsTitle,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                OrderTimelineConstants.repairNoRepairsSub,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.chevron_right, size: 18, color: AppColors.secondary),
+      ],
+    );
+  }
+
+  Widget _statusTile({
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _iconCircle(icon, iconBg, iconColor),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _iconCircle(IconData icon, Color bg, Color color) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      child: Icon(icon, size: 18, color: color),
     );
   }
 
@@ -109,14 +379,14 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
     final show = urls.take(maxShow).toList();
     final more = urls.length - show.length;
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.only(top: 10),
       child: Row(
         children: [
           ...show.map(
             (u) => Padding(
               padding: const EdgeInsets.only(right: 6),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(8),
                 child: CachedNetworkImage(
                   imageUrl: u,
                   width: 52,
@@ -130,14 +400,14 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(6),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 OrderTimelineConstants.morePhotos.replaceAll('[n]', '$more'),
                 style: AppTextStyles.caption.copyWith(
                   fontSize: 10,
-                  color: const Color(_kTextSecondary),
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
@@ -145,215 +415,53 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
       ),
     );
   }
+}
 
-  Widget _buildBody(BuildContext context) {
-    switch (j.status) {
-      case RepairStatus.notStarted:
-        if (!j.optedIn) {
-          return _buildNoRepairsState(context);
-        }
-        return _textBlock(
-          OrderTimelineConstants.repairQuotePending,
-          OrderTimelineConstants.repairQuotePendingSub,
-        );
-      case RepairStatus.quoteSent:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _textBlock(
-              OrderTimelineConstants.repairQuoteSent,
-              OrderTimelineConstants.repairQuoteSentSub,
-            ),
-            TextButton(
-              onPressed: () {
-                // final id = j.orderId;
-                OrderDetailWebNavigation.openRepair(
-                  context,
-                  ref,
-                  widget.orderId,
-                );
-              },
-              style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
-              child: Text(
-                OrderTimelineConstants.viewQuote,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: const Color(_kPrimary),
-                ),
-              ),
-            ),
-          ],
-        );
-      case RepairStatus.quoteApproved:
-        return _buildQuoteApprovedState(context);
-      case RepairStatus.quoteDeclined:
-        return _textBlock(
-          OrderTimelineConstants.repairQuoteDeclined,
-          OrderTimelineConstants.repairQuoteDeclinedSub,
-        );
-      case RepairStatus.inProgress:
-        return FadeTransition(
-          opacity: Tween<double>(
-            begin: 0.75,
-            end: 1,
-          ).animate(CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.build_outlined,
-                    size: 16,
-                    color: Color(_kPrimary),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          OrderTimelineConstants.repairInProgressTitle,
-                          style: AppTextStyles.cardValue.copyWith(
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${OrderTimelineConstants.repairGaragePrefix}${j.garageNameCustom ?? OrderTimelineConstants.partnerGarage}',
-                          style: AppTextStyles.caption.copyWith(
-                            color: const Color(_kTextSecondary),
-                          ),
-                        ),
-                        if (j.estimatedCompletion != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            '${OrderTimelineConstants.repairEstCompletion}${DateFormatter.formatDate(j.estimatedCompletion)}',
-                            style: AppTextStyles.caption.copyWith(
-                              color: const Color(_kTextSecondary),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              _photoRow(j.beforePhotoUrlsJson ?? const []),
-            ],
-          ),
-        );
-      case RepairStatus.completed:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.check_circle_outline,
-                  size: 16,
-                  color: Color(_kSuccess),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    OrderTimelineConstants.repairCompleteTitle,
-                    style: AppTextStyles.cardValue.copyWith(
-                      color: const Color(_kSuccess),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            _photoRow(j.afterPhotoUrlsJson ?? const []),
-          ],
-        );
-    }
-  }
+/// Context strip shown above a repair-stage payment card on the timeline.
+class RepairTimelinePaymentContext extends StatelessWidget {
+  const RepairTimelinePaymentContext({
+    super.key,
+    required this.payment,
+  });
 
-  Widget _buildQuoteApprovedState(BuildContext context) {
-    if (j.depositPaid) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  final PaymentRequestModel payment;
+
+  @override
+  Widget build(BuildContext context) {
+    final isBalance = payment.type == PaymentRequestType.repairBalance;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.infoBackground,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(
+          color: AppColors.secondary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
         children: [
-          const Icon(
-            Icons.check_circle_outline,
+          Icon(
+            isBalance ? Icons.build_outlined : Icons.check_circle_outline,
             size: 16,
-            color: Color(_kSuccess),
+            color: AppColors.infoText,
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: _textBlock(
-              OrderTimelineConstants.repairDepositPaid,
-              OrderTimelineConstants.repairDepositPaidSub,
+            child: Text(
+              isBalance
+                  ? OrderTimelineConstants.repairPaymentContextBalance
+                  : OrderTimelineConstants.repairPaymentContextDeposit,
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.infoText,
+                height: 1.35,
+              ),
             ),
           ),
         ],
-      );
-    }
-
-    if (j.depositPaymentRequestId != null) {
-      return _textBlock(
-        OrderTimelineConstants.repairQuoteApproved,
-        OrderTimelineConstants.repairDepositConfirmingSub,
-      );
-    }
-
-    return _textBlock(
-      OrderTimelineConstants.repairQuoteApproved,
-      OrderTimelineConstants.repairQuoteApprovedSub,
-    );
-  }
-
-  Widget _buildNoRepairsState(BuildContext context) {
-    return Row(
-      children: [
-        const Icon(
-          Icons.directions_car_rounded,
-          size: 16,
-          color: AppColors.textTertiary,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                OrderTimelineConstants.repairNoRepairsTitle,
-                style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                OrderTimelineConstants.repairNoRepairsSub,
-                style: AppTextStyles.caption.copyWith(
-                  color: const Color(_kTextSecondary),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Icon(Icons.chevron_right, size: 16, color: Color(_kPrimary)),
-      ],
-    );
-  }
-
-  Widget _textBlock(String title, String sub) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: AppTextStyles.cardValue.copyWith(color: Colors.black87),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          sub,
-          style: AppTextStyles.caption.copyWith(
-            color: const Color(_kTextSecondary),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -9,6 +9,10 @@ class RepairJob {
   final String? garageNameCustom;
   final String? garageLocation;
   final String? workDescription;
+  final double? totalInvoiceGhs;
+  final double? partsDepositGhs;
+  final double? workmanshipBalanceGhs;
+  final double? platformFeeGhs;
   final double? quoteGhs;
   final double? platformServiceFeeGhs;
   final double? totalQuotedGhs;
@@ -16,6 +20,10 @@ class RepairJob {
   final bool? quoteApprovedByBuyer;
   final DateTime? quoteApprovedAt;
   final DateTime? quoteDeclinedAt;
+  final String? depositPaymentRequestId;
+  final String? balancePaymentRequestId;
+  final bool depositPaid;
+  final bool balancePaid;
   final String status;
   final DateTime? startDate;
   final DateTime? estimatedCompletion;
@@ -33,6 +41,10 @@ class RepairJob {
     this.garageNameCustom,
     this.garageLocation,
     this.workDescription,
+    this.totalInvoiceGhs,
+    this.partsDepositGhs,
+    this.workmanshipBalanceGhs,
+    this.platformFeeGhs,
     this.quoteGhs,
     this.platformServiceFeeGhs,
     this.totalQuotedGhs,
@@ -40,6 +52,10 @@ class RepairJob {
     this.quoteApprovedByBuyer,
     this.quoteApprovedAt,
     this.quoteDeclinedAt,
+    this.depositPaymentRequestId,
+    this.balancePaymentRequestId,
+    this.depositPaid = false,
+    this.balancePaid = false,
     required this.status,
     this.startDate,
     this.estimatedCompletion,
@@ -56,4 +72,31 @@ class RepairJob {
   bool get isInProgress => status == 'in_progress';
   bool get isCompleted => status == 'completed';
   bool get isNotStarted => status == 'not_started';
+
+  /// Platform fee snapshot — prefers [platformFeeGhs], falls back to legacy field.
+  double? get effectivePlatformFeeGhs =>
+      platformFeeGhs ?? platformServiceFeeGhs;
+
+  /// Garage invoice total — prefers [totalInvoiceGhs], falls back to [quoteGhs].
+  double? get effectiveInvoiceGhs => totalInvoiceGhs ?? quoteGhs;
+
+  /// Workmanship = garage invoice minus parts deposit (when both exist).
+  double? get effectiveWorkmanshipGhs {
+    final invoice = effectiveInvoiceGhs;
+    final parts = partsDepositGhs;
+    if (workmanshipBalanceGhs != null) return workmanshipBalanceGhs;
+    if (invoice == null || parts == null) return null;
+    return invoice - parts;
+  }
+
+  /// Request 1 total: parts deposit + platform fee.
+  double? get depositDueGhs {
+    final parts = partsDepositGhs;
+    final fee = effectivePlatformFeeGhs;
+    if (parts == null && fee == null) return null;
+    return (parts ?? 0) + (fee ?? 0);
+  }
+
+  bool get hasInvoiceSplit =>
+      partsDepositGhs != null && effectiveWorkmanshipGhs != null;
 }

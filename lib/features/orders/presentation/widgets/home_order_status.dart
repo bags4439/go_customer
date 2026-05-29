@@ -7,12 +7,34 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../domain/entities/order_view.dart';
 import '../../domain/entities/payment_request_view.dart';
+import '../../../payments/data/models/payment_request_model.dart';
+import '../../../repairs/data/models/repair_job_model.dart';
+import '../utils/repair_timeline_resolver.dart';
 import 'home_theme.dart';
 
-String homeOrderStatusDescription(OrderView order) {
+String homeOrderStatusDescription(
+  OrderView order, {
+  RepairJobModel? repairJob,
+  List<PaymentRequestModel>? pendingPayments,
+}) {
   if (order.needsPayment) return 'Payment required to continue';
   if (order.isCompleted) return 'Delivered · order complete';
   if (order.isCancelled) return 'This order was cancelled';
+
+  final isRepairStatus =
+      order.status == FirestoreEnumValues.orderStatusRepairPending ||
+      order.status == FirestoreEnumValues.orderStatusRepairInProgress ||
+      order.status == FirestoreEnumValues.orderStatusRepairComplete;
+
+  if (isRepairStatus) {
+    final repairLine = RepairTimelineResolver.homeStatusLine(
+      repairJob,
+      pendingPayment: pendingPayments == null
+          ? null
+          : RepairTimelineResolver.pendingRepairPayment(pendingPayments),
+    );
+    if (repairLine != null) return repairLine;
+  }
 
   switch (order.status) {
     case FirestoreEnumValues.orderStatusOpen:

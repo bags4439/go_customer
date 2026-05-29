@@ -5,7 +5,6 @@ import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/currency_formatter.dart';
 import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
@@ -13,7 +12,6 @@ import '../providers/repair_providers.dart';
 import 'repair_formatters.dart';
 import 'repair_garage_info_row.dart';
 import 'repair_navigation.dart';
-import 'repair_quote_line_row.dart';
 
 class RepairQuoteReceivedState extends ConsumerStatefulWidget {
   const RepairQuoteReceivedState({
@@ -47,7 +45,8 @@ class _RepairQuoteReceivedStateState
     final garageAsync = ref.watch(garageDetailsProvider(widget.job.garageId));
     final garage = garageAsync.valueOrNull;
     final garageName = widget.job.garageNameCustom ?? garage?.name ?? '—';
-    final garageLocation = widget.job.garageLocation ?? garage?.location ?? '—';
+    final garageLocation =
+        widget.job.garageLocation ?? garage?.location ?? '—';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -135,10 +134,42 @@ class _RepairQuoteReceivedStateState
                     ),
                   ],
                 ),
+                if (garage?.isVetted == true) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      RepairConstants.vettedBadge,
+                      style: AppTextStyles.sectionLabel.copyWith(
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.2,
+                        fontSize: 10,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ),
+                ],
+                if (widget.job.estimatedCompletion != null) ...[
+                  const SizedBox(height: 8),
+                  RepairGarageInfoRow(
+                    label: RepairConstants.estCompletionLabel,
+                    value: repairDisplayDateFormat.format(
+                      widget.job.estimatedCompletion!,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 if (widget.job.workDescription != null &&
                     widget.job.workDescription!.isNotEmpty)
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.job.workDescription!,
@@ -146,59 +177,22 @@ class _RepairQuoteReceivedStateState
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                     ],
                   ),
-                if (widget.job.platformServiceFeeGhs != null) ...[
-                  const SizedBox(height: 8),
-                  RepairQuoteLineRow(
-                    label: RepairConstants.platformServiceFeeLabel,
-                    value: CurrencyFormatter.format(
-                      widget.job.platformServiceFeeGhs! *
-                          widget.currency.usdToRate,
-                      widget.currency,
-                    ),
-                  ),
-                ],
-                const Divider(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      RepairConstants.totalLabel,
-                      style: AppTextStyles.labelLarge,
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          widget.job.totalQuotedGhs != null
-                              ? CurrencyFormatter.format(
-                                  widget.job.totalQuotedGhs! *
-                                      widget.currency.usdToRate,
-                                  widget.currency,
-                                )
-                              : '—',
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                        if (widget.currency.code != 'USD' &&
-                            widget.job.totalQuotedGhs != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            '≈ ${CurrencyFormatter.formatUsd(
-                              widget.job.totalQuotedGhs!,
-                            )}',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+                RepairQuotePricingSection(
+                  job: widget.job,
+                  currency: widget.currency,
+                  showPaymentSplit: true,
+                  showPaymentTiming: true,
+                ),
+                const SizedBox(height: 16),
+                RepairDepositDueSummary(
+                  job: widget.job,
+                  currency: widget.currency,
+                  title: RepairConstants.repairDepositAfterApprovalLabel,
+                  subtitle: RepairConstants.repairDepositAfterApprovalSub,
+                  accentStyle: RepairDepositSummaryStyle.afterApproval,
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -276,73 +270,16 @@ class _RepairQuoteReceivedStateState
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(10),
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: repairScreenChatTap(
+              context,
+              widget.orderId,
+              widget.onOpenChat,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RepairGarageInfoRow(
-                  label: RepairConstants.garageLabel,
-                  value: garageName,
-                ),
-                RepairGarageInfoRow(
-                  label: RepairConstants.locationLabel,
-                  value: garageLocation,
-                ),
-                if (garage?.isVetted == true) ...[
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      RepairConstants.vettedBadge,
-                      style: AppTextStyles.sectionLabel.copyWith(
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.2,
-                        fontSize: 10,
-                        color: AppColors.success,
-                      ),
-                    ),
-                  ),
-                ],
-                if (garage?.rating != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    '★ ${garage!.rating!.toStringAsFixed(1)}',
-                    style: AppTextStyles.cardLabel,
-                  ),
-                ],
-                if (widget.job.estimatedCompletion != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    '${RepairConstants.estCompletionLabel}: ${repairDisplayDateFormat.format(widget.job.estimatedCompletion!)}',
-                    style: AppTextStyles.cardLabel,
-                  ),
-                ],
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: repairScreenChatTap(
-                    context,
-                    widget.orderId,
-                    widget.onOpenChat,
-                  ),
-                  child: Text(
-                    RepairConstants.askSecondQuote(agentName),
-                    style: AppTextStyles.link.copyWith(fontSize: 12),
-                  ),
-                ),
-              ],
+            child: Text(
+              RepairConstants.askSecondQuote(agentName),
+              style: AppTextStyles.link.copyWith(fontSize: 12),
             ),
           ),
           const SizedBox(height: 32),

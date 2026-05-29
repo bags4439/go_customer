@@ -59,7 +59,30 @@ class RepairConstants {
       'Review the details below. Work only starts after you approve.';
   static const String quoteBadge = 'Awaiting your approval';
   static const String platformServiceFeeLabel = 'Platform service fee';
+  static const String platformServiceFeeSub =
+      'AutoImport coordination · separate from garage costs';
+  static const String garageInvoiceLabel = 'Garage invoice';
+  static const String garageCostsSectionLabel = 'GARAGE COSTS';
+  static const String autoImportFeeSectionLabel = 'AUTOIMPORT FEE';
+  static const String invoiceSplitHint =
+      'Split across two payments that make up the garage invoice';
+  static const String partsDepositLabel = 'Parts deposit';
+  static const String partsDepositTiming = 'Pay now · spare parts';
+  static const String workmanshipBalanceLabel = 'Workmanship balance';
+  static const String workmanshipTiming = 'Pay after work is complete';
   static const String totalLabel = 'Total';
+  static const String totalYouPayLabel = 'Total you pay';
+  static const String totalYouPaySub = 'Garage invoice + platform fee';
+  static const String repairDepositDueLabel = 'Repair deposit due';
+  static const String repairDepositDueSub =
+      'Parts deposit + platform fee — due before work starts';
+  static const String repairDepositAfterApprovalLabel =
+      'Your first payment after approval';
+  static const String repairDepositAfterApprovalSub =
+      'Parts deposit + platform fee — sent once you approve this quote';
+  static const String repairDepositPartsLine = 'Parts deposit';
+  static const String repairDepositPlatformLine = 'Platform service fee';
+  static const String repairDepositTotalLine = 'Deposit total';
   static const String repairWorkLabel = 'Repair work';
   static const String acceptQuoteButton = 'Accept quote →';
   static const String declineQuoteButton = 'Decline - request another quote';
@@ -69,6 +92,28 @@ class RepairConstants {
   static const String estCompletionLabel = 'Est. completion';
   static String askSecondQuote(String agentFirstName) =>
       'Not satisfied? Ask $agentFirstName for a second quote →';
+
+  // State 1.5 – awaiting quote
+  static const String awaitingQuoteTitle = 'Waiting for garage quote';
+  static String awaitingQuoteBody(String agentFirstName) =>
+      '$agentFirstName has been notified and will send you a garage quote '
+      'shortly. You will be notified when it arrives.';
+  static String chatWithAgentButton(String agentFirstName) =>
+      'Chat with $agentFirstName →';
+
+  // State 2A – quote approved (deposit phase)
+  static const String quoteApprovedHeroTitle = 'Quote approved';
+  static const String quoteApprovedDepositPendingSub =
+      'Your agent will send a repair deposit request before work begins.';
+  static const String quoteApprovedDepositDueSub =
+      'Pay your repair deposit from your order overview or timeline to proceed.';
+  static const String quoteApprovedDepositConfirmingSub =
+      'Confirming your payment — repairs will start once cleared.';
+  static const String quoteApprovedDepositPaidSub =
+      'Deposit paid — your agent will start repairs shortly.';
+  static const String payRepairDepositButton = 'Pay repair deposit →';
+  static const String payRepairBalanceButton = 'Pay repair balance →';
+  static const String approvedQuoteSummaryLabel = 'Approved quote';
 
   // State 2B
   static const String state2BHeading = 'Quote declined';
@@ -86,10 +131,12 @@ class RepairConstants {
   static const String estCompletionShortLabel = 'Est. completion';
   static const String approvedQuoteLabel = 'Approved quote';
   static const String stageQuoteApproved = 'Quote approved';
-  static const String stageCarDropped = 'Car dropped at garage';
+  static const String stageDepositPaid = 'Deposit paid';
   static const String stageWorkInProgress = 'Work in progress';
-  static const String stageQualityCheck = 'Quality check';
-  static const String stageReadyForDelivery = 'Ready for delivery';
+  static const String stageRepairsComplete = 'Repairs complete';
+  static const String state3BalanceDueSub =
+      'A repair balance payment is due — pay from your order overview or timeline.';
+  static const String state3BalancePaidSub = 'Repair balance paid ✓';
   static const String state3PhotoNote =
       'Before and after photos will be sent to you in chat once repairs are complete.';
 

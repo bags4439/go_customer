@@ -4,10 +4,10 @@ import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/currency_formatter.dart';
 import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import 'repair_done_row.dart';
+import 'repair_formatters.dart';
 
 class RepairCompleteWorkCard extends StatelessWidget {
   const RepairCompleteWorkCard({
@@ -52,47 +52,15 @@ class RepairCompleteWorkCard extends StatelessWidget {
           const SizedBox(height: 12),
           if (job.workDescription != null && job.workDescription!.isNotEmpty)
             RepairDoneRow(label: job.workDescription!),
-          if (job.platformServiceFeeGhs != null)
-            RepairDoneRow(
-              label:
-                  '${RepairConstants.platformServiceFeeLabel} ${CurrencyFormatter.format(
-                job.platformServiceFeeGhs! * currency.usdToRate,
-                currency,
-              )}',
-            ),
-          const Divider(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                RepairConstants.totalPaidLabel,
-                style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    totalPaid != null
-                        ? CurrencyFormatter.format(
-                            totalPaid * currency.usdToRate,
-                            currency,
-                          )
-                        : '—',
-                    style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
-                  ),
-                  if (currency.code != 'USD' && totalPaid != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      '≈ ${CurrencyFormatter.formatUsd(totalPaid)}',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
+          const SizedBox(height: 8),
+          RepairQuotePricingSection(
+            job: job,
+            currency: currency,
+            showPaymentSplit: true,
+            showPaymentTiming: false,
+            totalLabel: RepairConstants.totalPaidLabel,
+            totalSubLabel: RepairConstants.totalYouPaySub,
+            totalAmountGhs: totalPaid,
           ),
         ],
       ),

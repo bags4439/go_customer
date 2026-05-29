@@ -136,6 +136,27 @@ class CurrencyFormatter {
     );
   }
 
+  /// Formats an amount stored in GHS (repair_jobs *Ghs fields) for display
+  /// in the user's preferred currency.
+  static CurrencyDisplay formatGhsForDisplay({
+    required double amountGhs,
+    required CurrencyModel preferredCurrency,
+  }) {
+    if (preferredCurrency.code == 'GHS') {
+      final usdAmount = ghsToUsd(amountGhs, preferredCurrency.usdToRate);
+      return CurrencyDisplay(
+        primary: formatGhs(amountGhs),
+        secondary: usdAmount > 0 ? '≈ ${formatUsd(usdAmount)}' : null,
+      );
+    }
+
+    final usdAmount = ghsToUsd(amountGhs, preferredCurrency.usdToRate);
+    return formatForDisplay(
+      usdAmount: usdAmount,
+      preferredCurrency: preferredCurrency,
+    );
+  }
+
   static double ghsToUsd(
     double amountGhs,
     double rateUsdToGhs,

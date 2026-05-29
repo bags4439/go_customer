@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../core/constants/repair_constants.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
+import '../../../orders/presentation/providers/order_providers.dart';
 import '../providers/repair_providers.dart';
 import 'repair_cleared_bar.dart';
 import 'repair_confirm_button.dart';
@@ -41,6 +42,17 @@ class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     )..forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _prefillChoiceFromOrder());
+  }
+
+  void _prefillChoiceFromOrder() {
+    if (!mounted) return;
+    final current = ref.read(repairChoiceProvider(widget.orderId));
+    if (current != null) return;
+    final order = ref.read(orderProvider(widget.orderId)).valueOrNull;
+    if (order == null) return;
+    ref.read(repairChoiceProvider(widget.orderId).notifier).state =
+        order.repairOptedIn;
   }
 
   @override
@@ -71,16 +83,17 @@ class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
   @override
   Widget build(BuildContext context) {
     final choice = ref.watch(repairChoiceProvider(widget.orderId));
+    final order = ref.watch(orderProvider(widget.orderId)).valueOrNull;
     final agentName =
         ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
         'Your agent';
     final estimateAsync = ref.watch(repairEstimateProvider(widget.orderId));
-    final estimate = estimateAsync.valueOrNull;
-    final estimateStr = estimate != null
-        ? '~${CurrencyFormatter.format(
-            estimate * widget.currency.usdToRate,
-            widget.currency,
-          )}'
+    final estimateGhs = estimateAsync.valueOrNull;
+    final estimateStr = estimateGhs != null
+        ? '~${CurrencyFormatter.formatGhsForDisplay(
+            amountGhs: estimateGhs,
+            preferredCurrency: widget.currency,
+          ).primary}'
         : RepairConstants.estVaries;
     final repairFeeAsync = ref.watch(repairServiceFeeProvider);
     final repairFeeUsd =
@@ -91,6 +104,11 @@ class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
             preferredCurrency: widget.currency,
           )
         : null;
+    final preferenceReminder = order == null
+        ? null
+        : order.repairOptedIn
+            ? RepairConstants.reminderOptedIn
+            : RepairConstants.reminderOptedOut;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -102,6 +120,23 @@ class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
             animation: _clearedBarController,
             clearedAt: widget.dutyClearedAt,
           ),
+          if (preferenceReminder != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.infoBackground,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                border: Border.all(
+                  color: AppColors.secondary.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Text(
+                preferenceReminder,
+                style: AppTextStyles.cardLabel.copyWith(height: 1.5),
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           Text(
             RepairConstants.state1Heading,

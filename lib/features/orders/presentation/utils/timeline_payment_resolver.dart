@@ -26,7 +26,17 @@ PaymentRequestModel? resolvePendingPaymentForStage(
     case 'clearance':
       return pick((r) => r.timelineStageKey == 'clearance');
     case 'repair':
-      return pick((r) => r.type == PaymentRequestType.repairFee) ??
+      return pick(
+            (r) =>
+                r.timelineStageKey == 'repair' &&
+                r.type == PaymentRequestType.repairFee,
+          ) ??
+          pick((r) => r.type == PaymentRequestType.repairFee) ??
+          pick(
+            (r) =>
+                r.timelineStageKey == 'repair' &&
+                r.type == PaymentRequestType.repairBalance,
+          ) ??
           pick((r) => r.type == PaymentRequestType.repairBalance);
     case 'delivery':
       return pick((r) => r.timelineStageKey == 'delivery');

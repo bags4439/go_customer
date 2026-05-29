@@ -106,7 +106,9 @@ class OrderTimelineConstants {
       'Your agent is preparing a repair quote.';
   static const String repairQuoteSent = 'Repair quote sent';
   static const String repairQuoteSentSub =
-      'Review the quote in chat and approve to start repairs.';
+      'Review the quote and approve before work starts.';
+  static const String repairQuoteSentTimelineDetail =
+      'Repair quote ready — tap to review and approve';
   static const String repairQuoteApproved = 'Quote approved';
   static const String repairQuoteApprovedSub =
       'Your agent is preparing the deposit payment request.';
@@ -122,6 +124,56 @@ class OrderTimelineConstants {
   static const String repairGaragePrefix = 'Garage: ';
   static const String repairEstCompletion = 'Est. completion: ';
   static const String repairCompleteTitle = '✅ Repairs complete';
+  static const String repairCompleteTimelineDetail =
+      'Repairs complete — delivery is next';
+  static const String repairInProgressTimelineDetail =
+      'Your vehicle is being repaired at the garage';
+  static const String repairDepositDueTimelineDetail =
+      'Repair deposit due — pay to proceed';
+  static const String repairBalanceDueTimelineDetail =
+      'Repair balance due — pay when ready';
+  static const String repairBalancePaidSub = 'Repair balance paid ✓';
+  static const String repairTimelineNoJobDetail =
+      'Confirm whether you want agent-managed repairs';
+  static const String repairTimelineDetailQuoteApproved =
+      'Quote approved — deposit request coming next';
+  static const String repairTimelineDetailQuoteDeclined =
+      'Quote declined — awaiting updated quote';
+
+  static const String repairBadgeAction = 'Action needed';
+  static const String repairBadgeNoRepairs = 'No repairs';
+  static const String repairBadgeAwaitingQuote = 'Awaiting quote';
+  static const String repairBadgeReviewQuote = 'Review quote';
+  static const String repairBadgeDeclined = 'Quote declined';
+  static const String repairBadgeQuoteApproved = 'Quote approved';
+  static const String repairBadgeDepositDue = 'Deposit due';
+  static const String repairBadgeDepositPaid = 'Deposit paid';
+  static const String repairBadgeInProgress = 'In progress';
+  static const String repairBadgeBalanceDue = 'Balance due';
+  static const String repairBadgeComplete = 'Complete';
+
+  static const String repairPaymentContextDeposit =
+      'Quote approved — repair deposit payment';
+  static const String repairPaymentContextBalance =
+      'Repairs in progress — balance payment';
+  static const String repairCompletedRowSub =
+      'Tap to view repair summary and photos';
+  static const String repairViewSummary = 'View repair summary →';
+
+  static const String homeRepairQuoteSent =
+      'Repair quote ready — review and approve';
+  static const String homeRepairQuoteApproved =
+      'Quote approved — awaiting deposit request';
+  static const String homeRepairDepositDue =
+      'Repair deposit due — tap to pay';
+  static const String homeRepairDepositPaid =
+      'Repair deposit paid — work starting soon';
+  static const String homeRepairInProgress = 'Repairs in progress at garage';
+  static const String homeRepairBalanceDue =
+      'Repair balance due — tap to pay';
+  static const String homeRepairComplete =
+      'Repairs complete · delivery next';
+
   static const String repairNoRepairsTitle = 'No repairs — delivering as-is';
   static const String repairNoRepairsSub =
       'Tap to review or arrange agent-managed repairs';
