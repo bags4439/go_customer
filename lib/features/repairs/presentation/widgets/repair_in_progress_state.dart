@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/widgets/card_container.dart';
@@ -12,6 +11,8 @@ import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../providers/repair_providers.dart';
+import 'repair_complete_photos_row.dart';
+import 'repair_photo_thumbnail_strip.dart';
 import 'repair_formatters.dart';
 import 'repair_garage_info_row.dart';
 import 'repair_navigation.dart';
@@ -234,36 +235,16 @@ class _RepairInProgressStateState extends ConsumerState<RepairInProgressState>
             date: widget.job.actualCompletion,
             visible: _stageVisible[3],
           ),
-          if (beforePhotos.isNotEmpty) ...[
+          if (beforePhotos.isNotEmpty ||
+              widget.job.afterPhotoUrls.isNotEmpty) ...[
             const SizedBox(height: 20),
-            Text(
-              RepairConstants.beforeLabel,
-              style: AppTextStyles.sectionLabel.copyWith(
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.2,
-                fontSize: 10,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 72,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: beforePhotos.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                    child: CachedNetworkImage(
-                      imageUrl: beforePhotos[index],
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
-                    ),
-                  );
-                },
-              ),
+            RepairJobPhotoStrip(
+              beforeUrls: beforePhotos,
+              afterUrls: widget.job.afterPhotoUrls,
+              galleryId: widget.job.id,
+              size: RepairPhotoThumbnailSize.standard,
+              maxVisible: 5,
+              showSectionHint: true,
             ),
           ] else ...[
             const SizedBox(height: 20),

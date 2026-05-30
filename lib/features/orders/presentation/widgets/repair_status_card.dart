@@ -1,7 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../repairs/presentation/widgets/repair_complete_photos_row.dart';
+import '../../../repairs/presentation/widgets/repair_photo_thumbnail_strip.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -256,7 +257,10 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
             ),
           ),
         ],
-        _photoRow(job.beforePhotoUrlsJson ?? const []),
+        _photoStrip(
+          job.beforePhotoUrlsJson ?? const [],
+          job.afterPhotoUrlsJson ?? const [],
+        ),
       ],
     );
 
@@ -281,7 +285,7 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
           title: OrderTimelineConstants.repairCompleteTitle,
           subtitle: OrderTimelineConstants.repairCompleteTimelineDetail,
         ),
-        _photoRow(job.afterPhotoUrlsJson ?? const []),
+        _photoStrip(const [], job.afterPhotoUrlsJson ?? const []),
         const SizedBox(height: 8),
         Text(
           OrderTimelineConstants.repairViewSummary,
@@ -373,45 +377,22 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
     );
   }
 
-  Widget _photoRow(List<String> urls) {
-    if (urls.isEmpty) return const SizedBox.shrink();
-    const maxShow = 3;
-    final show = urls.take(maxShow).toList();
-    final more = urls.length - show.length;
+  Widget _photoStrip(List<String> beforeUrls, List<String> afterUrls) {
+    if (beforeUrls.isEmpty && afterUrls.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Padding(
       padding: const EdgeInsets.only(top: 10),
-      child: Row(
-        children: [
-          ...show.map(
-            (u) => Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: u,
-                  width: 52,
-                  height: 52,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          if (more > 0)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                OrderTimelineConstants.morePhotos.replaceAll('[n]', '$more'),
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 10,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-        ],
+      child: GestureDetector(
+        onTap: () {},
+        behavior: HitTestBehavior.opaque,
+        child: RepairJobPhotoStrip(
+          beforeUrls: beforeUrls,
+          afterUrls: afterUrls,
+          galleryId: widget.repairJob?.id ?? widget.orderId,
+          size: RepairPhotoThumbnailSize.compact,
+          maxVisible: 4,
+        ),
       ),
     );
   }
