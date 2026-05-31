@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/providers/guide_providers.dart';
@@ -316,12 +317,20 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
               );
 
         Widget rowContent(OrderTimelineModel s, bool isLast) {
+          final deliveryComplete = s.stageKey == 'delivery' &&
+              (s.completedAt != null ||
+                  widget.order.status ==
+                      AppConstants.statusDeliveryConfirmed ||
+                  widget.order.status == AppConstants.statusDelivered);
+          final stageComplete =
+              s.stageNumber < widget.order.stageNumber || deliveryComplete;
+
           final row = OrderTimelineStepRow(
             stage: s,
             orderId: widget.orderId,
             order: widget.order,
             isLast: isLast,
-            lineAfterIsComplete: s.stageNumber < widget.order.stageNumber,
+            lineAfterIsComplete: stageComplete,
             pendingPayments: pending,
             shipping: shipping,
             clearance: clearance,

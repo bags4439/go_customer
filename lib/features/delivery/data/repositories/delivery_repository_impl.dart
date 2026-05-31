@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
@@ -9,9 +10,14 @@ import '../../domain/repositories/delivery_repository.dart';
 import '../datasources/delivery_firestore_data_source.dart';
 
 class DeliveryRepositoryImpl implements DeliveryRepository {
-  DeliveryRepositoryImpl(this._ds);
+  DeliveryRepositoryImpl(this._ds, this._functions);
 
   final DeliveryFirestoreDataSource _ds;
+  final FirebaseFunctions _functions;
+
+  Future<void> _call(String name, Map<String, dynamic> data) async {
+    await _functions.httpsCallable(name).call(data);
+  }
 
   @override
   Stream<Either<Failure, Delivery?>> watchDelivery(String orderId) {
@@ -73,68 +79,74 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
     String? locationLabel,
   }) async {
     try {
-      await _ds.saveDeliveryLocation(
-        orderId: orderId,
-        address: address,
-        city: city,
-        locationSource: locationSource,
-        latitude: latitude,
-        longitude: longitude,
-        locationLabel: locationLabel,
-      );
+      await _call('saveBuyerDeliveryLocation', {
+        'orderId': orderId,
+        'address': address,
+        'city': city,
+        'locationSource': locationSource,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (locationLabel != null) 'locationLabel': locationLabel,
+      });
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e) {
-      return Left(
-        FirestoreFailure(message: e.toString(), cause: e),
-      );
+      return Left(FirestoreFailure(message: e.toString(), cause: e));
     }
   }
 
   @override
   Future<Either<Failure, Unit>> confirmDelivery(String orderId) async {
     try {
-      await _ds.confirmDelivery(orderId);
+      await _call('confirmBuyerReceipt', {'orderId': orderId});
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e) {
-      return Left(
-        FirestoreFailure(message: e.toString(), cause: e),
-      );
+      return Left(FirestoreFailure(message: e.toString(), cause: e));
     }
   }
 
   @override
   Future<Either<Failure, Unit>> confirmAgentDelivery(String orderId) async {
     try {
-      await _ds.confirmAgentDelivery(orderId: orderId);
+      await _call('submitBuyerDeliveryChoice', {
+        'orderId': orderId,
+        'handledBy': 'agent',
+      });
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e) {
-      return Left(
-        FirestoreFailure(message: e.toString(), cause: e),
-      );
+      return Left(FirestoreFailure(message: e.toString(), cause: e));
     }
   }
 
   @override
   Future<Either<Failure, Unit>> confirmSelfPickup(String orderId) async {
     try {
-      await _ds.confirmSelfPickup(orderId: orderId);
+      await _call('submitBuyerDeliveryChoice', {
+        'orderId': orderId,
+        'handledBy': 'self',
+      });
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e) {
-      return Left(
-        FirestoreFailure(message: e.toString(), cause: e),
-      );
+      return Left(FirestoreFailure(message: e.toString(), cause: e));
     }
   }
 
   @override
   Future<Either<Failure, Unit>> confirmSelfCollection(String orderId) async {
     try {
-      await _ds.confirmSelfCollection(orderId);
+      await _call('confirmBuyerReceipt', {'orderId': orderId});
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e) {
-      return Left(
-        FirestoreFailure(message: e.toString(), cause: e),
-      );
+      return Left(FirestoreFailure(message: e.toString(), cause: e));
     }
   }
 
@@ -144,27 +156,20 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
     required String buyerId,
     required String agentId,
     required double overallRating,
-    required double agentRating,
-    required double communicationRating,
-    required double speedRating,
     String? comment,
   }) async {
     try {
-      await _ds.submitReviewAndClose(
-        orderId: orderId,
-        buyerId: buyerId,
-        agentId: agentId,
-        overallRating: overallRating,
-        agentRating: agentRating,
-        communicationRating: communicationRating,
-        speedRating: speedRating,
-        comment: comment,
-      );
+      await _call('submitBuyerReview', {
+        'orderId': orderId,
+        'overallRating': overallRating,
+        if (comment != null && comment.trim().isNotEmpty)
+          'comment': comment.trim(),
+      });
       return const Right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      return Left(FirestoreFailure(message: e.message ?? e.code));
     } catch (e) {
-      return Left(
-        FirestoreFailure(message: e.toString(), cause: e),
-      );
+      return Left(FirestoreFailure(message: e.toString(), cause: e));
     }
   }
 }

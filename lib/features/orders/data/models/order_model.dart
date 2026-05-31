@@ -24,11 +24,20 @@ enum OrderStatus {
   repairPending,
   repairInProgress,
   repairComplete,
+  deliveryInProgress,
+  deliveryConfirmed,
   delivered,
   cancelled,
   dormant;
 
+  static const _firestoreAliases = {
+    'delivery_in_progress': OrderStatus.deliveryInProgress,
+    'delivery_confirmed': OrderStatus.deliveryConfirmed,
+  };
+
   static OrderStatus fromString(String value) {
+    final alias = _firestoreAliases[value];
+    if (alias != null) return alias;
     return OrderStatus.values.firstWhere(
       (e) => e.name == value,
       orElse: () => OrderStatus.open,

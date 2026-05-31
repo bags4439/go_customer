@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -18,9 +19,14 @@ final deliveryDataSourceProvider = Provider<DeliveryFirestoreDataSource>((ref) {
   );
 });
 
+final deliveryFunctionsProvider = Provider<FirebaseFunctions>((ref) {
+  return FirebaseFunctions.instanceFor(region: 'europe-west1');
+});
+
 final deliveryRepositoryProvider = Provider<DeliveryRepository>((ref) {
   return DeliveryRepositoryImpl(
     ref.watch(deliveryDataSourceProvider),
+    ref.watch(deliveryFunctionsProvider),
   );
 });
 

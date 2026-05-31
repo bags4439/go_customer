@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -30,9 +31,6 @@ class BuyerReviewScreen extends ConsumerStatefulWidget {
 
 class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
   double _overallRating = 0;
-  double _agentRating = 0;
-  double _communicationRating = 0;
-  double _speedRating = 0;
   final _commentCtrl = TextEditingController();
   bool _isSubmitting = false;
 
@@ -42,11 +40,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
     super.dispose();
   }
 
-  bool get _canSubmit =>
-      _overallRating > 0 &&
-      _agentRating > 0 &&
-      _communicationRating > 0 &&
-      _speedRating > 0;
+  bool get _canSubmit => _overallRating > 0;
 
   void _snackError(String message) {
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -71,6 +65,9 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
     final orderAsync = ref.watch(orderProvider(widget.orderId));
     final order = orderAsync.valueOrNull;
     final userId = ref.watch(authStateProvider).value;
+    final deliveryAsync = ref.watch(deliveryProvider(widget.orderId));
+    final delivery = deliveryAsync.valueOrNull;
+
     final reviewAsync = userId != null
         ? ref.watch(
             buyerReviewProvider((orderId: widget.orderId, buyerId: userId)),
@@ -82,6 +79,17 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
       return _SubmittedScreen(
         orderId: widget.orderId,
         review: existingReview,
+        embedInWebPanel: widget.embedInWebPanel,
+        onClosePanel: widget.onClosePanel,
+      );
+    }
+
+    final canReview = order?.status == AppConstants.statusDeliveryConfirmed ||
+        delivery?.isConfirmed == true;
+
+    if (order != null && !canReview) {
+      return _GateScreen(
+        orderId: widget.orderId,
         embedInWebPanel: widget.embedInWebPanel,
         onClosePanel: widget.onClosePanel,
       );
@@ -100,156 +108,177 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
             20 + MediaQuery.paddingOf(context).bottom,
           ),
           child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.successMutedBackground,
-                      borderRadius: BorderRadius.circular(16),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFEAF3DE), Color(0xFFF5FAF0)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.success.withValues(alpha: 0.2),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.success.withValues(alpha: 0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.local_shipping_rounded,
-                          size: 48,
-                          color: AppColors.success,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Your vehicle has been delivered!',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.titleSmall.copyWith(
-                            fontSize: 16,
-                            color: const Color(0xFF1A4731),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: AppColors.success,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.success.withValues(alpha: 0.35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Please rate your experience to complete your order.',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: const Color(0xFF2D6A4F),
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  _RatingRow(
-                    label: 'Overall experience',
-                    description: 'How satisfied are you overall?',
-                    rating: _overallRating,
-                    onRatingChanged: (r) => setState(() => _overallRating = r),
-                  ),
-                  const SizedBox(height: 20),
-                  _RatingRow(
-                    label: 'Agent performance',
-                    description: 'How well did your agent serve you?',
-                    rating: _agentRating,
-                    onRatingChanged: (r) => setState(() => _agentRating = r),
-                  ),
-                  const SizedBox(height: 20),
-                  _RatingRow(
-                    label: 'Communication',
-                    description: 'Was your agent responsive and clear?',
-                    rating: _communicationRating,
-                    onRatingChanged: (r) =>
-                        setState(() => _communicationRating = r),
-                  ),
-                  const SizedBox(height: 20),
-                  _RatingRow(
-                    label: 'Speed of service',
-                    description: 'How timely was the overall process?',
-                    rating: _speedRating,
-                    onRatingChanged: (r) => setState(() => _speedRating = r),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'ADDITIONAL COMMENTS (OPTIONAL)',
-                    style: AppTextStyles.labelSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _commentCtrl,
-                    maxLines: 4,
-                    minLines: 3,
-                    maxLength: 500,
-                    style: AppTextStyles.bodyMedium,
-                    decoration: InputDecoration(
-                      hintText: 'Share your experience...',
-                      hintStyle: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textTertiary,
+                        ],
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          color: AppColors.borderSolid,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          color: AppColors.borderSolid,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          color: AppColors.secondary,
-                          width: 1.5,
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(14),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (!_canSubmit)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        'Please rate all categories to submit.',
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.textTertiary,
-                        ),
+                      child: const Icon(
+                        Icons.star_rounded,
+                        size: 34,
+                        color: Colors.white,
                       ),
                     ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: (!_canSubmit || _isSubmitting || order == null)
-                          ? null
-                          : () => _submit(order),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: AppColors.borderSolid,
-                        disabledForegroundColor: AppColors.textTertiary,
-                        minimumSize: const Size(double.infinity, 52),
+                    const SizedBox(height: 16),
+                    Text(
+                      'How was your experience?',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1A4731),
                       ),
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              'Submit & complete order →',
-                              style: AppTextStyles.buttonLarge,
-                            ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      'Your feedback helps us improve and recognises '
+                      'your agent\'s work.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: const Color(0xFF2D6A4F),
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 32),
+              Text(
+                'OVERALL RATING',
+                style: AppTextStyles.labelSmall.copyWith(
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _PremiumStarRow(
+                rating: _overallRating,
+                onRatingChanged: (r) => setState(() => _overallRating = r),
+              ),
+              if (_overallRating > 0) ...[
+                const SizedBox(height: 12),
+                Center(
+                  child: Text(
+                    _ratingLabel(_overallRating),
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: AppColors.success,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 28),
+              Text(
+                'COMMENTS (OPTIONAL)',
+                style: AppTextStyles.labelSmall.copyWith(
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _commentCtrl,
+                maxLines: 4,
+                minLines: 3,
+                maxLength: 500,
+                style: AppTextStyles.bodyMedium,
+                decoration: InputDecoration(
+                  hintText: 'Tell us what stood out…',
+                  hintStyle: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppColors.borderSolid,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppColors.borderSolid,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppColors.secondary,
+                      width: 1.5,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: (!_canSubmit || _isSubmitting || order == null)
+                      ? null
+                      : () => _submit(order),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.borderSolid,
+                    disabledForegroundColor: AppColors.textTertiary,
+                    elevation: _canSubmit ? 2 : 0,
+                    shadowColor: AppColors.secondary.withValues(alpha: 0.3),
+                    minimumSize: const Size(double.infinity, 52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Submit & complete order →',
+                          style: AppTextStyles.buttonLarge,
+                        ),
+                ),
+              ),
+            ],
           ),
+        ),
+      ),
     );
 
     if (widget.embedInWebPanel) {
@@ -293,6 +322,17 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
     );
   }
 
+  String _ratingLabel(double rating) {
+    return switch (rating.round()) {
+      5 => 'Excellent — thank you!',
+      4 => 'Great experience',
+      3 => 'Good, with room to improve',
+      2 => 'Below expectations',
+      1 => 'Poor experience',
+      _ => '',
+    };
+  }
+
   Future<void> _submit(OrderView order) async {
     final buyerId = ref.read(authStateProvider).value;
     if (buyerId == null) return;
@@ -305,9 +345,6 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
       buyerId: buyerId,
       agentId: order.agentId ?? '',
       overallRating: _overallRating,
-      agentRating: _agentRating,
-      communicationRating: _communicationRating,
-      speedRating: _speedRating,
       comment: _commentCtrl.text.trim().isEmpty
           ? null
           : _commentCtrl.text.trim(),
@@ -328,63 +365,172 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
   }
 }
 
-class _RatingRow extends StatelessWidget {
-  const _RatingRow({
-    required this.label,
-    required this.description,
+class _PremiumStarRow extends StatelessWidget {
+  const _PremiumStarRow({
     required this.rating,
     required this.onRatingChanged,
   });
 
-  final String label;
-  final String description;
   final double rating;
   final void Function(double) onRatingChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary),
-        ),
-        const SizedBox(height: 2),
-        Text(description, style: AppTextStyles.cardLabel),
-        const SizedBox(height: 10),
-        Row(
-          children: List.generate(5, (i) {
-            final star = i + 1;
-            final filled = star <= rating;
-            return Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => onRatingChanged(star.toDouble()),
-                  borderRadius: BorderRadius.circular(8),
-                  child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Center(
-                      child: Icon(
-                        filled
-                            ? Icons.star_rounded
-                            : Icons.star_outline_rounded,
-                        size: 36,
-                        color: filled
-                            ? const Color(0xFFFFB800)
-                            : AppColors.borderSolid,
-                      ),
-                    ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (i) {
+        final star = i + 1;
+        final filled = star <= rating;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => onRatingChanged(star.toDouble()),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: filled
+                      ? const Color(0xFFFFB800).withValues(alpha: 0.12)
+                      : AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: filled
+                        ? const Color(0xFFFFB800).withValues(alpha: 0.5)
+                        : AppColors.borderSolid,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    filled ? Icons.star_rounded : Icons.star_outline_rounded,
+                    size: 32,
+                    color: filled
+                        ? const Color(0xFFFFB800)
+                        : AppColors.textTertiary,
                   ),
                 ),
               ),
-            );
-          }),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _GateScreen extends StatelessWidget {
+  const _GateScreen({
+    required this.orderId,
+    this.embedInWebPanel = false,
+    this.onClosePanel,
+  });
+
+  final String orderId;
+  final bool embedInWebPanel;
+  final VoidCallback? onClosePanel;
+
+  @override
+  Widget build(BuildContext context) {
+    final body = Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: ResponsiveLayout.contentMaxWidth(context),
         ),
-      ],
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.infoBackground,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.local_shipping_outlined,
+                  size: 36,
+                  color: AppColors.infoText,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Confirm receipt first',
+                style: AppTextStyles.titleSmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Please confirm you received your vehicle before '
+                'leaving a review.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.45,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (embedInWebPanel) {
+                      onClosePanel?.call();
+                    } else {
+                      context.push('/order/$orderId/delivery');
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Go to delivery →',
+                    style: AppTextStyles.buttonMedium,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (embedInWebPanel) {
+      return OrderDetailWebPanelChrome(
+        title: 'Rate your experience',
+        orderRef: orderId,
+        onBack: onClosePanel ?? () {},
+        child: body,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Rate your experience',
+          style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
+        ),
+      ),
+      body: body,
     );
   }
 }
@@ -404,18 +550,8 @@ class _SubmittedScreen extends ConsumerWidget {
 
   static String _formatDate(DateTime dt) {
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }
@@ -437,143 +573,130 @@ class _SubmittedScreen extends ConsumerWidget {
             24 + MediaQuery.paddingOf(context).bottom,
           ),
           child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F9F4),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.successMutedBorder,
-                      width: 0.5,
-                    ),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFF0F9F4), Color(0xFFEAF3DE)],
                   ),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: const BoxDecoration(
-                          color: AppColors.successMutedBackground,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check_circle_rounded,
-                          size: 28,
-                          color: AppColors.success,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Thank you for your\nfeedback!',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.amountMedium.copyWith(
-                          height: 1.25,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Your review has been submitted\n'
-                        'and helps us improve.',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodySmall.copyWith(height: 1.5),
-                      ),
-                    ],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.successMutedBorder,
                   ),
                 ),
-                const SizedBox(height: 28),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
-                    Text('YOUR RATING', style: AppTextStyles.labelSmall),
-                    if (review.createdAt != null)
-                      Text(
-                        _SubmittedScreen._formatDate(review.createdAt!),
-                        style: AppTextStyles.caption,
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: const BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        size: 32,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Thank you!',
+                      style: AppTextStyles.titleSmall.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Your review has been submitted.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: List.generate(
-                    5,
-                    (i) => Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: Icon(
-                        i < stars
-                            ? Icons.star_rounded
-                            : Icons.star_outline_rounded,
-                        size: 36,
-                        color: i < stars
-                            ? const Color(0xFFFFB800)
-                            : AppColors.borderSolid,
-                      ),
+              ),
+              const SizedBox(height: 28),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('YOUR RATING', style: AppTextStyles.labelSmall),
+                  if (review.createdAt != null)
+                    Text(
+                      _formatDate(review.createdAt!),
+                      style: AppTextStyles.caption,
                     ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _ReadOnlyRatingRow(
-                  label: 'Agent performance',
-                  rating: review.agentRating,
-                ),
-                const SizedBox(height: 12),
-                _ReadOnlyRatingRow(
-                  label: 'Communication',
-                  rating: review.communicationRating,
-                ),
-                const SizedBox(height: 12),
-                _ReadOnlyRatingRow(
-                  label: 'Speed of service',
-                  rating: review.speedRating,
-                ),
-                if (review.comment != null && review.comment!.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Text('YOUR COMMENT', style: AppTextStyles.labelSmall),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: AppColors.borderSolid,
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Text(
-                      review.comment!,
-                      style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
-                    ),
-                  ),
                 ],
-                const SizedBox(height: 32),
-                SizedBox(
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (embedInWebPanel) {
-                        resetWebOrderPanelTask(ref);
-                      } else {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: List.generate(
+                  5,
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      i < stars
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      size: 36,
+                      color: i < stars
+                          ? const Color(0xFFFFB800)
+                          : AppColors.borderSolid,
                     ),
-                    child: Text(
-                      'Back to order',
-                      style: AppTextStyles.buttonLarge,
-                    ),
+                  ),
+                ),
+              ),
+              if (review.comment != null && review.comment!.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Text('YOUR COMMENT', style: AppTextStyles.labelSmall),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderSolid),
+                  ),
+                  child: Text(
+                    review.comment!,
+                    style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                   ),
                 ),
               ],
-            ),
+              const SizedBox(height: 32),
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (embedInWebPanel) {
+                      resetWebOrderPanelTask(ref);
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    'Back to order',
+                    style: AppTextStyles.buttonLarge,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
+      ),
     );
 
     if (embedInWebPanel) {
@@ -590,12 +713,10 @@ class _SubmittedScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
           color: AppColors.textPrimary,
           onPressed: () => Navigator.of(context).pop(),
-          style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
         ),
         title: Text(
           'Your review',
@@ -604,46 +725,8 @@ class _SubmittedScreen extends ConsumerWidget {
             color: AppColors.primary,
           ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
       ),
       body: body,
-    );
-  }
-}
-
-class _ReadOnlyRatingRow extends StatelessWidget {
-  final String label;
-  final double rating;
-
-  const _ReadOnlyRatingRow({required this.label, required this.rating});
-
-  @override
-  Widget build(BuildContext context) {
-    final stars = rating.round().clamp(1, 5);
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: AppTextStyles.bodySmall.copyWith(fontSize: 13.5),
-          ),
-        ),
-        Row(
-          children: List.generate(
-            5,
-            (i) => Icon(
-              i < stars ? Icons.star_rounded : Icons.star_outline_rounded,
-              size: 16,
-              color: i < stars
-                  ? const Color(0xFFFFB800)
-                  : AppColors.borderSolid,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
