@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
@@ -11,7 +10,7 @@ import '../../../auth/domain/entities/country.dart';
 import '../../../auth/presentation/providers/auth_providers.dart'
     show startPhoneVerificationUseCaseProvider, verifyOtpUseCaseProvider;
 import '../../../auth/presentation/providers/countries_providers.dart';
-import '../../../auth/presentation/widgets/country_picker_sheet.dart';
+import '../../../auth/presentation/widgets/phone_dial_input_field.dart';
 import '../../core/constants/profile_constants.dart';
 import '../providers/profile_providers.dart';
 import 'profile_ui_tokens.dart';
@@ -180,7 +179,6 @@ class ProfilePhoneChangeSheet extends ConsumerStatefulWidget {
 class _ProfilePhoneChangeSheetState
     extends ConsumerState<ProfilePhoneChangeSheet> {
   int _step = 0;
-  final _phoneCtrl = TextEditingController();
   final _otpCtrl = TextEditingController();
   bool _busy = false;
   String? _verificationId;
@@ -188,6 +186,7 @@ class _ProfilePhoneChangeSheetState
   String? _newPhone;
   int _countdown = 0;
   String _otpCode = '';
+  String _phoneDigits = '';
   Timer? _countdownTimer;
   String _dialCode = '+233';
   String _countryFlag = '🇬🇭';
@@ -209,7 +208,6 @@ class _ProfilePhoneChangeSheetState
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    _phoneCtrl.dispose();
     _otpCtrl.dispose();
     super.dispose();
   }
@@ -234,22 +232,6 @@ class _ProfilePhoneChangeSheetState
     return (match != null && match.flag.isNotEmpty) ? match.flag : '🇬🇭';
   }
 
-  Future<void> _openDialCodePicker() async {
-    final country = await CountryPickerSheet.show(
-      context,
-      selectedIsoCode: '',
-      sheetTitle: 'Select country code',
-      sheetSubtitle: 'Choose the country for this phone number.',
-    );
-    if (!mounted) return;
-    if (country != null && country.dialCode.isNotEmpty) {
-      setState(() {
-        _dialCode = country.dialCode;
-        _countryFlag = country.flag;
-      });
-    }
-  }
-
   void _startCountdown() {
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -269,7 +251,7 @@ class _ProfilePhoneChangeSheetState
   }
 
   Future<void> _sendOtp() async {
-    final digits = _phoneCtrl.text.replaceAll(RegExp(r'\D'), '');
+    final digits = _phoneDigits.replaceAll(RegExp(r'\D'), '');
     if (digits.length < 7 || digits.length > 15) {
       showErrorSnackBar(context, 'Enter a valid phone number');
       return;
@@ -386,86 +368,18 @@ class _ProfilePhoneChangeSheetState
               style: AppTextStyles.bodySmall.copyWith(height: 1.5),
             ),
             const SizedBox(height: 20),
-            Container(
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderSolid, width: 0.5),
-              ),
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _busy ? null : _openDialCodePicker,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(11),
-                        bottomLeft: Radius.circular(11),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _countryFlag,
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _dialCode,
-                              style: AppTextStyles.titleSmall.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 18,
-                              color: AppColors.textTertiary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 0.5,
-                    height: 24,
-                    color: AppColors.borderSolid,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _phoneCtrl,
-                      autofocus: true,
-                      keyboardType: TextInputType.phone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(15),
-                      ],
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontSize: 15,
-                        color: AppColors.textPrimary,
-                        height: null,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Phone number',
-                        hintStyle: AppTextStyles.bodyLarge.copyWith(
-                          fontSize: 15,
-                          color: AppColors.textTertiary,
-                          height: null,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            PhoneDialInputField(
+              dialCode: _dialCode,
+              countryFlag: _countryFlag,
+              initialDigits: _phoneDigits,
+              onDigitsChanged: (digits) => setState(() => _phoneDigits = digits),
+              onDialCodeChanged: (code, flag) => setState(() {
+                _dialCode = code;
+                _countryFlag = flag;
+              }),
+              onSubmit: _busy ? null : _sendOtp,
+              autofocus: true,
+              pickerSubtitle: 'Choose the country for this phone number.',
             ),
             const SizedBox(height: 20),
             SizedBox(

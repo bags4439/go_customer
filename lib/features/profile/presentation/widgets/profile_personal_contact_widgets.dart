@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/countries_providers.dart';
-import '../../../auth/presentation/widgets/country_picker_sheet.dart';
+import '../../../auth/presentation/widgets/phone_dial_input_field.dart';
 import '../../core/constants/profile_constants.dart';
 import '../providers/profile_providers.dart';
 import 'ghana_card_profile_row.dart';
@@ -406,19 +404,11 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
   late String _dialCode;
   late String _flag;
   late String _digits;
-  late TextEditingController _ctrl;
-  bool _pickerOpen = false;
 
   @override
   void initState() {
     super.initState();
     _initFromValue(widget.value);
-    _ctrl = TextEditingController(text: _digits);
-    _ctrl.addListener(() {
-      setState(() {
-        _digits = _ctrl.text;
-      });
-    });
   }
 
   @override
@@ -426,14 +416,7 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
     super.didUpdateWidget(old);
     if (widget.expanded && !old.expanded) {
       _initFromValue(widget.value);
-      _ctrl.text = _digits;
     }
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
   }
 
   /// Parses a saved E.164 value into dial code + digits.
@@ -462,24 +445,6 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
     _dialCode = '+233';
     _flag = '🇬🇭';
     _digits = raw.replaceAll(RegExp(r'\D'), '');
-  }
-
-  Future<void> _openPicker() async {
-    setState(() => _pickerOpen = true);
-    final country = await CountryPickerSheet.show(
-      context,
-      selectedIsoCode: '',
-      sheetTitle: 'Select country code',
-      sheetSubtitle: 'Choose the country for this phone number.',
-    );
-    if (!mounted) return;
-    setState(() => _pickerOpen = false);
-    if (country != null && country.dialCode.isNotEmpty) {
-      setState(() {
-        _dialCode = country.dialCode;
-        _flag = country.flag;
-      });
-    }
   }
 
   @override
@@ -540,95 +505,31 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                            color: _pickerOpen
-                                ? ProfileUi.primary
-                                : ProfileUi.border,
-                            width: _pickerOpen ? 1.5 : 1.0,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: _openPicker,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(7),
-                                  bottomLeft: Radius.circular(7),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        _flag,
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        _dialCode,
-                                        style: AppTextStyles.labelMedium
-                                            .copyWith(
-                                              color: AppColors.textPrimary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                        size: 16,
-                                        color: ProfileUi.textTertiary,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        width: 1,
-                                        height: 22,
-                                        color: ProfileUi.border,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: TextFormField(
-                                controller: _ctrl,
-                                autofocus: true,
-                                keyboardType: TextInputType.phone,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(15),
-                                ],
-                                decoration: InputDecoration(
-                                  hintText: 'XX XXX XXXX',
-                                  hintStyle: AppTextStyles.bodySmall.copyWith(
-                                    color: ProfileUi.textTertiary,
-                                  ),
-                                  isDense: true,
-                                  border: InputBorder.none,
-                                  errorText: widget.errorMessage,
-                                  errorStyle: AppTextStyles.caption.copyWith(
-                                    color: ProfileUi.danger,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      PhoneDialInputField(
+                        dialCode: _dialCode,
+                        countryFlag: _flag,
+                        initialDigits: _digits,
+                        onDigitsChanged: (value) =>
+                            setState(() => _digits = value),
+                        onDialCodeChanged: (code, flag) => setState(() {
+                          _dialCode = code;
+                          _flag = flag;
+                        }),
+                        hasError: widget.errorMessage != null,
+                        autofocus: true,
+                        hintText: 'XX XXX XXXX',
+                        pickerSubtitle:
+                            'Choose the country for this phone number.',
                       ),
+                      if (widget.errorMessage != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          widget.errorMessage!,
+                          style: AppTextStyles.caption.copyWith(
+                            color: ProfileUi.danger,
+                          ),
+                        ),
+                      ],
                       if (widget.subtitle != null) ...[
                         const SizedBox(height: 6),
                         Text(

@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Single source of truth for all
-/// web onboarding slide content.
-///
-/// To change any slide text or
-/// tiles edit only this file.
-/// Mobile content is unchanged —
-/// it lives in onboarding_screen.dart
-
-class OnboardingWebSlide {
-  const OnboardingWebSlide({
+/// Single source of truth for all onboarding slide content (all breakpoints).
+class OnboardingSlide {
+  const OnboardingSlide({
+    required this.imagePath,
     required this.eyebrow,
     required this.title,
     required this.subtitle,
@@ -19,35 +13,18 @@ class OnboardingWebSlide {
     this.quote,
   });
 
-  /// Small all-caps label above
-  /// title. e.g. 'STEP 1 · YOUR
-  /// PREFERENCES'
+  final String imagePath;
   final String eyebrow;
-
-  /// Large heading — supports
-  /// newlines with \n
   final String title;
-
-  /// Body text below title
   final String subtitle;
-
-  /// CTA button label
   final String buttonLabel;
-
-  /// Accent colour for dots and
-  /// button background
   final Color accentColor;
-
-  /// 3 feature tiles per slide
-  final List<OnboardingWebTile> tiles;
-
-  /// Optional agent quote tile —
-  /// only used on slide 2
-  final OnboardingWebQuote? quote;
+  final List<OnboardingTile> tiles;
+  final OnboardingQuote? quote;
 }
 
-class OnboardingWebTile {
-  const OnboardingWebTile({
+class OnboardingTile {
+  const OnboardingTile({
     required this.icon,
     required this.iconBg,
     required this.iconColor,
@@ -60,8 +37,8 @@ class OnboardingWebTile {
   final String label;
 }
 
-class OnboardingWebQuote {
-  const OnboardingWebQuote({
+class OnboardingQuote {
+  const OnboardingQuote({
     required this.initials,
     required this.name,
     required this.text,
@@ -72,11 +49,9 @@ class OnboardingWebQuote {
   final String text;
 }
 
-/// All four onboarding slides for
-/// the web layout. Edit here to
-/// update web slide content.
-const List<OnboardingWebSlide> kOnboardingWebSlides = [
-  OnboardingWebSlide(
+const List<OnboardingSlide> kOnboardingSlides = [
+  OnboardingSlide(
+    imagePath: 'assets/onboarding_preference.jpg',
     eyebrow: 'STEP 1 · YOUR PREFERENCES',
     title: 'Tell us what\nyou want.',
     subtitle:
@@ -86,31 +61,28 @@ const List<OnboardingWebSlide> kOnboardingWebSlides = [
     buttonLabel: 'Get started',
     accentColor: Color(0xFF234A83),
     tiles: [
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.directions_car_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
-        label:
-            'Choose make, model'
-            ' and condition',
+        label: 'Choose make, model and condition',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.attach_money_rounded,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
-        label: 'Set your budget in USD',
+        label: 'Set your budget range',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.public_rounded,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
-        label:
-            'Pick your preferred'
-            ' import source',
+        label: 'Pick your preferred import source',
       ),
     ],
   ),
-  OnboardingWebSlide(
+  OnboardingSlide(
+    imagePath: 'assets/onboarding_agent.jpg',
     eyebrow: 'STEP 2 · YOUR AGENT',
     title: 'Your personal\nagent.',
     subtitle:
@@ -121,32 +93,26 @@ const List<OnboardingWebSlide> kOnboardingWebSlides = [
     buttonLabel: 'Continue',
     accentColor: Color(0xFF0F6A25),
     tiles: [
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.search_rounded,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
-        label:
-            'Searches auctions across'
-            ' US, Dubai and China',
+        label: 'Searches auctions across US, Dubai and China',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.chat_bubble_outline_rounded,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
-        label:
-            'Communicates via chat'
-            ' and call directly',
+        label: 'Communicates via chat and call directly',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.description_outlined,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
-        label:
-            'Sends real options with'
-            ' condition reports',
+        label: 'Sends real options with condition reports',
       ),
     ],
-    quote: OnboardingWebQuote(
+    quote: OnboardingQuote(
       initials: 'EB',
       name: 'Ernest · Senior Agent',
       text:
@@ -156,7 +122,8 @@ const List<OnboardingWebSlide> kOnboardingWebSlides = [
           ' reports."',
     ),
   ),
-  OnboardingWebSlide(
+  OnboardingSlide(
+    imagePath: 'assets/onboarding_journey.jpg',
     eyebrow: 'STEP 3 · THE JOURNEY',
     title: 'We handle\nthe journey.',
     subtitle:
@@ -167,64 +134,54 @@ const List<OnboardingWebSlide> kOnboardingWebSlides = [
     buttonLabel: 'Continue',
     accentColor: Color(0xFF8C6B00),
     tiles: [
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.directions_boat_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
-        label:
-            'Shipping booked'
-            ' and tracked',
+        label: 'Shipping booked and tracked',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.account_balance_outlined,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
-        label:
-            'Port clearance and'
-            ' duty handled',
+        label: 'Port clearance and duty handled',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.build_outlined,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
-        label:
-            'Repairs arranged'
-            ' if needed',
+        label: 'Repairs arranged if needed',
       ),
     ],
   ),
-  OnboardingWebSlide(
+  OnboardingSlide(
+    imagePath: 'assets/onboarding_ready.jpg',
     eyebrow: 'STEP 4 · ROAD READY',
     title: 'Road ready.\nDelivered.',
     subtitle:
         'Your car arrives road-ready'
-        ' at your door. Keys in hand'
-        ' — just the way you'
-        ' imagined it.',
-    buttonLabel: 'Create account',
+        ' — delivered to you or ready'
+        ' for collection. Keys in hand.',
+    buttonLabel: 'Continue',
     accentColor: Color(0xFF378ADD),
     tiles: [
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.verified_outlined,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
-        label:
-            'Car inspected and'
-            ' road-ready',
+        label: 'Car inspected and road-ready',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.home_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
-        label:
-            'Delivered to your door',
+        label: 'Delivery or collection',
       ),
-      OnboardingWebTile(
+      OnboardingTile(
         icon: Icons.star_outline_rounded,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
-        label:
-            'Rate your experience',
+        label: 'Rate your experience',
       ),
     ],
   ),

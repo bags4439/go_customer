@@ -23,6 +23,7 @@ import '../notifiers/login_state.dart';
 import '../providers/countries_providers.dart';
 import '../providers/login_providers.dart';
 import '../widgets/country_picker_sheet.dart';
+import '../widgets/phone_dial_input_field.dart';
 
 // ─────────────────────────────────────────────────────────────
 // LoginScreen
@@ -264,13 +265,6 @@ class _LoginWebPhotoPanel extends StatelessWidget {
             ),
           ),
         ),
-        if (!_isSetupStep())
-          Positioned(
-            bottom: 100,
-            left: 20,
-            right: 20,
-            child: _LoginPhotoPanelContent(step: step),
-          ),
         if (_isSetupStep())
           Positioned(
             top: 20,
@@ -396,33 +390,9 @@ class _LoginWebActionPanel extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-            child: Row(
+            child: const Row(
               children: [
-                const AuthAppLogo(fontSize: 16),
-                const Spacer(),
-                if (!_isSetupStep)
-                  OutlinedButton(
-                    onPressed: () => context.goNamed(RouteConstants.onboarding),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.secondary,
-                      side: BorderSide(color: AppColors.borderSolid, width: .5),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      minimumSize: const Size(0, 34),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'Create account',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                AuthAppLogo(fontSize: 16),
               ],
             ),
           ),
@@ -460,41 +430,36 @@ class _LoginWebActionPanel extends StatelessWidget {
               ),
             ),
           Expanded(child: stepWidget),
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: AppColors.borderSolid, width: .5),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _isSetupStep
-                      ? 'Already have an account? '
-                      : 'New to AutoImport GH? ',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+          if (_isSetupStep)
+            Container(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: AppColors.borderSolid, width: .5),
                 ),
-                GestureDetector(
-                  onTap: () => context.goNamed(
-                    _isSetupStep
-                        ? RouteConstants.login
-                        : RouteConstants.onboarding,
-                  ),
-                  child: Text(
-                    _isSetupStep ? 'Sign in' : 'Create account',
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Already have an account? ',
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.secondary,
-                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
                     ),
                   ),
-                ),
-              ],
+                  GestureDetector(
+                    onTap: () => context.goNamed(RouteConstants.login),
+                    child: Text(
+                      'Sign in',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -1584,334 +1549,6 @@ class _PhoneTermsRichTextState extends State<_PhoneTermsRichText> {
   }
 }
 
-class _PhoneInputField extends ConsumerStatefulWidget {
-  final String initialDigits;
-  final String dialCode;
-  final String countryFlag;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onSubmit;
-  final void Function(String dialCode, String flag) onDialSelected;
-
-  const _PhoneInputField({
-    required this.initialDigits,
-    required this.dialCode,
-    required this.countryFlag,
-    required this.onChanged,
-    required this.onSubmit,
-    required this.onDialSelected,
-  });
-
-  @override
-  ConsumerState<_PhoneInputField> createState() => _PhoneInputFieldState();
-}
-
-class _PhoneInputFieldState extends ConsumerState<_PhoneInputField> {
-  final _focus = FocusNode();
-  late final TextEditingController _controller;
-  bool _focused = false;
-  bool _pickerOpen = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialDigits);
-    _controller.addListener(() => widget.onChanged(_controller.text));
-    _focus.addListener(() => setState(() => _focused = _focus.hasFocus));
-  }
-
-  @override
-  void didUpdateWidget(_PhoneInputField old) {
-    super.didUpdateWidget(old);
-    if (widget.initialDigits != old.initialDigits &&
-        widget.initialDigits != _controller.text) {
-      _controller.value = TextEditingValue(
-        text: widget.initialDigits,
-        selection: TextSelection.collapsed(offset: widget.initialDigits.length),
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _focus.dispose();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _openPicker() async {
-    setState(() => _pickerOpen = true);
-    final country = await CountryPickerSheet.show(
-      context,
-      selectedIsoCode: '',
-      sheetTitle: 'Select country code',
-      sheetSubtitle: 'Choose your country to set the dial code.',
-    );
-    if (!mounted) return;
-    setState(() => _pickerOpen = false);
-    if (country != null && country.dialCode.isNotEmpty) {
-      widget.onDialSelected(country.dialCode, country.flag);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(
-          color: _focused || _pickerOpen
-              ? AppColors.secondary
-              : AppColors.borderSolid,
-          width: (_focused || _pickerOpen) ? 1.5 : 1.0,
-        ),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _openPicker,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(13),
-                bottomLeft: Radius.circular(13),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.countryFlag,
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      widget.dialCode,
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18,
-                      color: AppColors.textTertiary,
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 1,
-                      height: 26,
-                      color: AppColors.borderSolid,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: TextFormField(
-              controller: _controller,
-              focusNode: _focus,
-              autofocus: true,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(15),
-              ],
-              onFieldSubmitted: (_) => widget.onSubmit(),
-              textInputAction: TextInputAction.done,
-              style: AppTextStyles.bodyLarge,
-              decoration: InputDecoration(
-                hintText: 'Phone number',
-                hintStyle: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textTertiary,
-                  height: null,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-              ),
-            ),
-          ),
-          SizedBox(width: 16),
-        ],
-      ),
-    );
-  }
-}
-
-class _PhoneFieldWithDialCode extends ConsumerStatefulWidget {
-  final String initialDialCode;
-  final String initialFlag;
-  final String initialDigits;
-  final void Function(String dialCode, String flag) onDialCodeChanged;
-  final void Function(String digits) onDigitsChanged;
-  final bool hasError;
-
-  const _PhoneFieldWithDialCode({
-    required this.initialDialCode,
-    required this.initialFlag,
-    required this.initialDigits,
-    required this.onDialCodeChanged,
-    required this.onDigitsChanged,
-    this.hasError = false,
-  });
-
-  @override
-  ConsumerState<_PhoneFieldWithDialCode> createState() =>
-      _PhoneFieldWithDialCodeState();
-}
-
-class _PhoneFieldWithDialCodeState
-    extends ConsumerState<_PhoneFieldWithDialCode> {
-  final _focus = FocusNode();
-  late final TextEditingController _controller;
-  late String _dialCode;
-  late String _flag;
-  bool _focused = false;
-  bool _pickerOpen = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _dialCode = widget.initialDialCode;
-    _flag = widget.initialFlag;
-    _controller = TextEditingController(text: widget.initialDigits);
-    _controller.addListener(() => widget.onDigitsChanged(_controller.text));
-    _focus.addListener(() => setState(() => _focused = _focus.hasFocus));
-  }
-
-  @override
-  void didUpdateWidget(_PhoneFieldWithDialCode old) {
-    super.didUpdateWidget(old);
-    if (widget.initialDialCode != old.initialDialCode) {
-      _dialCode = widget.initialDialCode;
-    }
-    if (widget.initialFlag != old.initialFlag) {
-      _flag = widget.initialFlag;
-    }
-    if (widget.initialDigits != old.initialDigits &&
-        widget.initialDigits != _controller.text) {
-      _controller.value = TextEditingValue(
-        text: widget.initialDigits,
-        selection: TextSelection.collapsed(offset: widget.initialDigits.length),
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focus.dispose();
-    super.dispose();
-  }
-
-  Future<void> _openDialCodePicker() async {
-    setState(() => _pickerOpen = true);
-    final country = await CountryPickerSheet.show(
-      context,
-      selectedIsoCode: '',
-      sheetTitle: 'Select country code',
-      sheetSubtitle: 'Choose the country for this phone number.',
-    );
-    if (!mounted) return;
-    setState(() => _pickerOpen = false);
-    if (country != null && country.dialCode.isNotEmpty) {
-      setState(() {
-        _dialCode = country.dialCode;
-        _flag = country.flag;
-      });
-      widget.onDialCodeChanged(country.dialCode, country.flag);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      height: 60,
-      decoration: BoxDecoration(
-        color: widget.hasError ? AppColors.dangerMutedBackground : Colors.white,
-        border: Border.all(
-          color: widget.hasError
-              ? AppColors.danger
-              : _pickerOpen
-              ? AppColors.secondary
-              : AppColors.borderSolid,
-          width: (widget.hasError || _focused || _pickerOpen) ? 1.5 : 1.0,
-        ),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _openDialCodePicker,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(13),
-                bottomLeft: Radius.circular(13),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_flag, style: const TextStyle(fontSize: 20)),
-                    const SizedBox(width: 6),
-                    Text(
-                      _dialCode,
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18,
-                      color: AppColors.textTertiary,
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 1,
-                      height: 26,
-                      color: AppColors.borderSolid,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: TextFormField(
-              controller: _controller,
-              focusNode: _focus,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              textInputAction: TextInputAction.next,
-              style: AppTextStyles.bodyLarge,
-              decoration: InputDecoration(
-                hintText: 'XX XXX XXXX',
-                hintStyle: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textTertiary,
-                  height: null,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-    );
-  }
-}
-
 // ─────────────────────────────────────────────────────────────
 // Steps
 // ─────────────────────────────────────────────────────────────
@@ -2102,13 +1739,16 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                     ),
                   ),
                   const SizedBox(height: 8),
-                  _PhoneInputField(
-                    initialDigits: state.phone,
+                  PhoneDialInputField(
                     dialCode: state.dialCode,
                     countryFlag: state.countryFlag,
-                    onChanged: notifier.updatePhone,
+                    initialDigits: state.phone,
+                    onDigitsChanged: notifier.updatePhone,
                     onSubmit: notifier.requestOtp,
-                    onDialSelected: notifier.updateDialCode,
+                    onDialCodeChanged: notifier.updateDialCode,
+                    autofocus: true,
+                    pickerSubtitle:
+                        'Choose your country to set the dial code.',
                   ),
                   _InlineError(error: showError ? state.error : null),
                   if (!showError) ...[
@@ -3297,18 +2937,19 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                               isRequired: true,
                             ),
                             const SizedBox(height: 8),
-                            _PhoneFieldWithDialCode(
-                              initialDialCode: state.smsDialCode,
-                              initialFlag: state.smsCountryFlag,
+                            PhoneDialInputField(
+                              dialCode: state.smsDialCode,
+                              countryFlag: state.smsCountryFlag,
                               initialDigits: state.smsPhone,
-                              onDialCodeChanged: (code, flag) =>
-                                  notifier.updateSmsDialCode(code, flag),
+                              onDialCodeChanged: notifier.updateSmsDialCode,
                               onDigitsChanged: notifier.updateSmsPhone,
                               hasError:
                                   hasError &&
                                   state.smsPhone
                                       .replaceAll(RegExp(r'\D'), '')
                                       .isEmpty,
+                              pickerSubtitle:
+                                  'Choose the country for this phone number.',
                             ),
                             _InlineError(
                               error:
@@ -3333,13 +2974,15 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                               isRequired: false,
                             ),
                             const SizedBox(height: 8),
-                            _PhoneFieldWithDialCode(
-                              initialDialCode: state.whatsappDialCode,
-                              initialFlag: state.whatsappCountryFlag,
+                            PhoneDialInputField(
+                              dialCode: state.whatsappDialCode,
+                              countryFlag: state.whatsappCountryFlag,
                               initialDigits: state.whatsappPhone,
-                              onDialCodeChanged: (code, flag) =>
-                                  notifier.updateWhatsappDialCode(code, flag),
+                              onDialCodeChanged: notifier.updateWhatsappDialCode,
                               onDigitsChanged: notifier.updateWhatsappPhone,
+                              hintText: 'XX XXX XXXX',
+                              pickerSubtitle:
+                                  'Choose the country for this phone number.',
                             ),
                             const SizedBox(height: 6),
                             Text(
@@ -3558,148 +3201,6 @@ class _WebContextTile extends StatelessWidget {
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 10,
                       color: AppColors.textTertiary,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Content overlaid on the photo
-/// panel for login and OTP steps.
-/// Shows eyebrow, heading,
-/// subheading and accent-border
-/// tiles on the dark photo.
-class _LoginPhotoPanelContent extends StatelessWidget {
-  const _LoginPhotoPanelContent({required this.step});
-
-  final LoginStep step;
-
-  @override
-  Widget build(BuildContext context) {
-    assert(
-      step == LoginStep.phone || step == LoginStep.otp,
-      '_LoginPhotoPanelContent is only for phone/otp steps',
-    );
-    final panel = kLoginWebPanels['login']!;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          panel.eyebrow,
-          style: AppTextStyles.sectionLabel.copyWith(
-            color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 9,
-            letterSpacing: .7,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          panel.heading,
-          style: AppTextStyles.titleLarge.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            height: 1.25,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          panel.subheading,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 11,
-            height: 1.6,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-              width: .5,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < panel.tiles.length; i++)
-                _DarkContextTile(tile: panel.tiles[i], isFirst: i == 0),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// A single context tile rendered
-/// on the dark photo panel.
-/// Uses white-tinted colours
-/// instead of coloured backgrounds.
-class _DarkContextTile extends StatelessWidget {
-  const _DarkContextTile({required this.tile, required this.isFirst});
-
-  final LoginWebTile tile;
-  final bool isFirst;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(color: tile.accentColor, width: 2.5),
-          top: isFirst
-              ? BorderSide.none
-              : BorderSide(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  width: .5,
-                ),
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
-      child: Row(
-        children: [
-          Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: tile.accentColor.withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              tile.icon,
-              size: 13,
-              color: Colors.white.withValues(alpha: 0.85),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tile.label,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 11,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                if (tile.sublabel != null)
-                  Text(
-                    tile.sublabel!,
-                    style: AppTextStyles.caption.copyWith(
-                      fontSize: 10,
-                      color: Colors.white.withValues(alpha: 0.55),
                     ),
                   ),
               ],
