@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/models/currency_model.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../clearance/data/models/duty_clearance_model.dart';
+import '../../../clearance/presentation/utils/clearance_timeline_helper.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import 'order_detail/order_detail_web_navigation.dart';
 
-const _kSurface = 0xFFF5F4F0;
-const _kPrimary = 0xFF378ADD;
 const _kPrimaryText = 0xFF185FA5;
 const _kInfoBg = 0xFFE6F1FB;
 const _kTextSecondary = 0xFF666666;
@@ -33,61 +33,92 @@ class ClearanceStatusCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final preferredCurrency = ref.watch(preferredCurrencyProvider);
+    final updateCaption = clearanceTimelineUpdateCaption(clearance);
+    final agentNote = clearance.notes?.trim();
+    final hasAgentNote = agentNote != null && agentNote.isNotEmpty;
+
     return GestureDetector(
       onTap: () =>
           OrderDetailWebNavigation.openClearance(context, ref, orderId),
       behavior: HitTestBehavior.opaque,
       child: Container(
         margin: const EdgeInsets.only(top: 10),
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0x66378ADD), width: 0.8),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.secondary.withValues(alpha: 0.25),
+            width: 1,
+          ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _statusBlock(preferredCurrency),
-            if (clearance.handledBy == 'agent') ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(_kInfoBg),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  OrderTimelineConstants.managedByAgent,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontSize: 9,
-                    color: const Color(_kPrimaryText),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (updateCaption != null) ...[
+                    Text(
+                      updateCaption,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.amberText,
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  _statusBlock(preferredCurrency),
+                  if (clearance.handledBy == 'agent') ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(_kInfoBg),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        OrderTimelineConstants.managedByAgent,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          fontSize: 9,
+                          color: const Color(_kPrimaryText),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (hasAgentNote) _ClearanceAgentNoteStrip(note: agentNote),
+            const _ClearanceViewDetailsRow(),
+            if (clearance.handledBy == 'agent' && onChatTap != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: onChatTap,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 8,
+                      ),
+                      minimumSize: const Size(48, 48),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      OrderTimelineConstants.questionsChat,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.secondary,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ],
-            if (clearance.handledBy == 'agent') ...[
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: onChatTap,
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 8,
-                  ),
-                  minimumSize: const Size(48, 48),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  OrderTimelineConstants.questionsChat,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(_kPrimary),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -106,7 +137,7 @@ class ClearanceStatusCard extends ConsumerWidget {
       case GraStatus.submitted:
         return _row(
           Icons.upload_file_outlined,
-          const Color(_kPrimary),
+          AppColors.secondary,
           OrderTimelineConstants.clearanceSubmittedTitle,
           OrderTimelineConstants.clearanceSubmittedSub,
         );
@@ -132,7 +163,7 @@ class ClearanceStatusCard extends ConsumerWidget {
       case GraStatus.paid:
         return _row(
           Icons.payments_outlined,
-          const Color(_kPrimary),
+          AppColors.secondary,
           OrderTimelineConstants.clearancePaidTitle,
           OrderTimelineConstants.clearancePaidSub,
         );
@@ -171,6 +202,83 @@ class ClearanceStatusCard extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ClearanceAgentNoteStrip extends StatelessWidget {
+  const _ClearanceAgentNoteStrip({required this.note});
+
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: const Border(
+          left: BorderSide(color: AppColors.secondary, width: 3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            OrderTimelineConstants.agentNoteLabel,
+            style: AppTextStyles.badgeText.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            note,
+            style: AppTextStyles.cardLabel.copyWith(
+              fontStyle: FontStyle.italic,
+              height: 1.45,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClearanceViewDetailsRow extends StatelessWidget {
+  const _ClearanceViewDetailsRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: AppColors.secondary.withValues(alpha: 0.15),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            OrderTimelineConstants.clearanceViewDetails,
+            style: AppTextStyles.labelSmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(width: 2),
+          const Icon(
+            Icons.arrow_forward_rounded,
+            size: 13,
+            color: AppColors.secondary,
+          ),
+        ],
+      ),
     );
   }
 }

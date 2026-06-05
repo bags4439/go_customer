@@ -4,13 +4,93 @@ import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
+import '../../../clearance/presentation/providers/clearance_timeline_providers.dart';
+import '../../../clearance/presentation/utils/clearance_timeline_helper.dart';
 import '../../../vehicle_options/core/constants/vehicle_option_constants.dart';
 import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
+import '../../core/constants/order_timeline_constants.dart';
 import 'order_detail/order_detail_web_navigation.dart';
 import '../providers/order_providers.dart';
 import '../providers/order_timeline_providers.dart';
 import 'home_order_status.dart';
 import 'home_theme.dart';
+
+class HomeOrderClearanceUpdateCta extends ConsumerWidget {
+  const HomeOrderClearanceUpdateCta({
+    super.key,
+    required this.orderId,
+  });
+
+  final String orderId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: HomeColors.infoBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: HomeColors.primary.withValues(alpha: 0.25),
+          width: 0.5,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  OrderTimelineConstants.clearanceHomeCtaTitle,
+                  style: homeTextStyle(
+                    size: 14,
+                    weight: FontWeight.w600,
+                    color: HomeColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  OrderTimelineConstants.clearanceHomeUpdateLine,
+                  style: homeTextStyle(
+                    size: 11,
+                    color: HomeColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => OrderDetailWebNavigation.openClearance(
+              context,
+              ref,
+              orderId,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: HomeColors.bgPrimary,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: HomeColors.primary.withValues(alpha: 0.35),
+                  width: 0.5,
+                ),
+              ),
+              child: Text(
+                OrderTimelineConstants.clearanceHomeCtaAction,
+                style: homeTextStyle(
+                  size: 12,
+                  weight: FontWeight.w600,
+                  color: HomeColors.primary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class HomeOrderVehicleFeedbackCta extends ConsumerWidget {
   const HomeOrderVehicleFeedbackCta({
@@ -137,18 +217,24 @@ class HomeOrderCard extends ConsumerWidget {
     final pendingAsync = ref.watch(pendingPaymentRequestsProvider(order.id));
     final pendingListings =
         ref.watch(pendingVehicleFeedbackCountProvider(order.id));
+    final clearanceAsync = ref.watch(orderClearanceProvider(order.id));
+    final clearanceUpdate = ref.watch(clearanceHasAgentUpdateProvider(order.id));
+    final clearance = clearanceAsync.valueOrNull;
 
     final statusDescription = homeOrderStatusDescription(
       order,
       repairJob: repairAsync.valueOrNull,
       pendingPayments: pendingAsync.valueOrNull,
       pendingVehicleListings: pendingListings,
+      clearanceStatusLine: clearanceHomeStatusLine(clearance),
     );
 
     final accentColor = order.needsPayment
         ? HomeColors.danger
         : pendingListings > 0
         ? HomeColors.warning
+        : clearanceUpdate
+        ? HomeColors.primary
         : order.isCompleted
         ? HomeColors.success
         : HomeColors.primary;
@@ -260,6 +346,11 @@ class HomeOrderCard extends ConsumerWidget {
                                   return HomeOrderVehicleFeedbackCta(
                                     orderId: order.id,
                                     pendingCount: pendingListings,
+                                  );
+                                }
+                                if (clearanceUpdate) {
+                                  return HomeOrderClearanceUpdateCta(
+                                    orderId: order.id,
                                   );
                                 }
                                 return Text(

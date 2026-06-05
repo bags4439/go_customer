@@ -100,6 +100,21 @@ class OrderTimelineConstants {
       '✅ Vehicle cleared from Tema port';
   static const String clearanceClearedSub =
       'Your vehicle has been released. Delivery is next.';
+  static const String clearanceViewDetails = 'View clearance details →';
+  static const String clearanceUpdateSubmitted =
+      'Update from your agent — documents submitted to GRA/ICUMS';
+  static const String clearanceUpdateAssessed =
+      'Update from your agent — duty assessed';
+  static const String clearanceUpdatePaid =
+      'Update from your agent — duty paid';
+  static const String clearanceUpdateCleared =
+      'Update from your agent — vehicle cleared from port';
+  static const String clearanceUpdateNote =
+      'Update from your agent — see note below';
+  static const String clearanceHomeUpdateLine =
+      'Clearance update from your agent · tap to view';
+  static const String clearanceHomeCtaTitle = 'Clearance update';
+  static const String clearanceHomeCtaAction = 'View details →';
 
   static const String repairQuotePending = 'Quote pending';
   static const String repairQuotePendingSub =

@@ -17,12 +17,16 @@ String homeOrderStatusDescription(
   RepairJobModel? repairJob,
   List<PaymentRequestModel>? pendingPayments,
   int pendingVehicleListings = 0,
+  String? clearanceStatusLine,
 }) {
   if (order.needsPayment) return 'Payment required to continue';
   if (pendingVehicleListings > 0) {
     return pendingVehicleListings == 1
         ? '1 option awaiting your feedback'
         : '$pendingVehicleListings options awaiting your feedback';
+  }
+  if (clearanceStatusLine != null && clearanceStatusLine.isNotEmpty) {
+    return clearanceStatusLine;
   }
   if (order.isCompleted) return 'Delivered · order complete';
   if (order.isCancelled) return 'This order was cancelled';
