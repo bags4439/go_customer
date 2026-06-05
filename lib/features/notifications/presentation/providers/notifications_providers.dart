@@ -196,6 +196,7 @@ List<NotificationEntity> filterNotifications(
                 'order_cancelled',
                 'arrival',
                 'shipping_update',
+                'vehicle_listing',
               ].contains(n.type))
           .toList();
     case NotificationFilter.messages:

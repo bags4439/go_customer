@@ -32,7 +32,8 @@ import 'features/profile/presentation/screens/id_verification_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/repairs/presentation/screens/repair_screen.dart';
 import 'features/shipping/presentation/screens/shipping_screen.dart';
-import 'features/vehicles/presentation/screens/vehicle_detail_screen.dart';
+import 'features/vehicle_options/presentation/screens/vehicle_option_detail_screen.dart';
+import 'features/vehicle_options/presentation/screens/vehicle_options_list_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -235,9 +236,16 @@ final router = GoRouter(
               BidStatusScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
+          name: RouteConstants.vehicleOptionsList,
+          path: 'vehicle-options',
+          builder: (context, state) => VehicleOptionsListScreen(
+            orderId: state.pathParameters['orderId']!,
+          ),
+        ),
+        GoRoute(
           name: RouteConstants.vehicleDetail,
           path: 'vehicle/:vehicleOptionId',
-          builder: (context, state) => VehicleDetailScreen(
+          builder: (context, state) => VehicleOptionDetailScreen(
             orderId: state.pathParameters['orderId']!,
             vehicleOptionId: state.pathParameters['vehicleOptionId']!,
           ),

@@ -735,15 +735,19 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
     NotificationEntity n,
   ) {
     ref.read(notificationsNotifierProvider.notifier).markRead(n.id);
-    _navigateForNotification(context, n);
+    _navigateForNotification(context, ref, n);
   }
 
   void _onActionTap(BuildContext context, WidgetRef ref, NotificationEntity n) {
     ref.read(notificationsNotifierProvider.notifier).markRead(n.id);
-    _navigateForNotification(context, n);
+    _navigateForNotification(context, ref, n);
   }
 
-  void _navigateForNotification(BuildContext context, NotificationEntity n) {
+  void _navigateForNotification(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationEntity n,
+  ) {
     final orderId = n.orderId;
     switch (n.type) {
       case 'payment_request':
@@ -777,6 +781,15 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
         break;
       case 'arrival':
         if (orderId != null) context.push('/order/$orderId/clearance');
+        break;
+      case 'vehicle_listing':
+        if (orderId != null) {
+          OrderDetailWebNavigation.openVehicleOptions(
+            context,
+            ref,
+            orderId: orderId,
+          );
+        }
         break;
       case 'id_reminder':
         ProfileIdVerificationNavigation.open(context);
@@ -1026,6 +1039,8 @@ class _NotificationItemCard extends StatelessWidget {
         return NotificationConstants.actionViewMessage;
       case 'agent_assigned':
         return NotificationConstants.actionMeetAgent;
+      case 'vehicle_listing':
+        return NotificationConstants.actionReviewOptions;
       default:
         return null;
     }
@@ -1085,6 +1100,14 @@ class _NotificationIcon extends StatelessWidget {
           Icons.person_outline,
           size: 16,
           color: Color(0xFF185FA5),
+        );
+        break;
+      case 'vehicle_listing':
+        bgColor = const Color(0xFFFAEEDA);
+        content = const Icon(
+          Icons.directions_car_outlined,
+          size: 16,
+          color: Color(0xFF633806),
         );
         break;
       case 'order_edited':

@@ -24,6 +24,7 @@ class NotificationConstants {
   static const String actionVerifyNow = 'Verify now →';
   static const String actionViewMessage = 'View message →';
   static const String actionMeetAgent = 'Chat with your agent →';
+  static const String actionReviewOptions = 'Review options →';
 
   static const String emptyAllTitle = 'No notifications yet';
   static const String emptyAllBody =

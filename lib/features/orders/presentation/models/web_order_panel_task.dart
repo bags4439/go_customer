@@ -96,3 +96,21 @@ final class WebOrderPanelIdDocument extends WebOrderPanelTask {
 
   final String orderId;
 }
+
+/// Agent-shared vehicle listings for the searching stage.
+final class WebOrderPanelVehicleOptions extends WebOrderPanelTask {
+  const WebOrderPanelVehicleOptions({required this.orderId});
+
+  final String orderId;
+}
+
+/// Single vehicle listing detail with interest / decline actions.
+final class WebOrderPanelVehicleOptionDetail extends WebOrderPanelTask {
+  const WebOrderPanelVehicleOptionDetail({
+    required this.orderId,
+    required this.vehicleOptionId,
+  });
+
+  final String orderId;
+  final String vehicleOptionId;
+}

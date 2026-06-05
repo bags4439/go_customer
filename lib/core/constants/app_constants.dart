@@ -167,24 +167,36 @@ class FirestoreEnumValues {
     vehicleConditionFairCondition,
   ];
 
-  // vehicle_options.source
+  // vehicle_options.source (agent-specified)
   static const String vehicleSourceCopart = 'copart';
   static const String vehicleSourceIaa = 'iaa';
+  static const String vehicleSourceDealer = 'dealer';
+  static const String vehicleSourceOther = 'other';
   static const List<String> vehicleSourceValues = [
     vehicleSourceCopart,
     vehicleSourceIaa,
+    vehicleSourceDealer,
+    vehicleSourceOther,
   ];
 
   // vehicle_options.status
   static const String vehicleOptionStatusDraft = 'draft';
   static const String vehicleOptionStatusSent = 'sent';
-  static const String vehicleOptionStatusConfirmed = 'confirmed';
-  static const String vehicleOptionStatusRejected = 'rejected';
+  static const String vehicleOptionStatusWithdrawn = 'withdrawn';
   static const List<String> vehicleOptionStatusValues = [
     vehicleOptionStatusDraft,
     vehicleOptionStatusSent,
-    vehicleOptionStatusConfirmed,
-    vehicleOptionStatusRejected,
+    vehicleOptionStatusWithdrawn,
+  ];
+
+  // vehicle_options.buyerResponse
+  static const String buyerVehicleResponsePending = 'pending';
+  static const String buyerVehicleResponseInterested = 'interested';
+  static const String buyerVehicleResponseDeclined = 'declined';
+  static const List<String> buyerVehicleResponseValues = [
+    buyerVehicleResponsePending,
+    buyerVehicleResponseInterested,
+    buyerVehicleResponseDeclined,
   ];
 
   // bid_outcomes.outcome

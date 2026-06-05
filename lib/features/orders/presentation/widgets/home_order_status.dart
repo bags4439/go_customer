@@ -16,8 +16,14 @@ String homeOrderStatusDescription(
   OrderView order, {
   RepairJobModel? repairJob,
   List<PaymentRequestModel>? pendingPayments,
+  int pendingVehicleListings = 0,
 }) {
   if (order.needsPayment) return 'Payment required to continue';
+  if (pendingVehicleListings > 0) {
+    return pendingVehicleListings == 1
+        ? '1 option awaiting your feedback'
+        : '$pendingVehicleListings options awaiting your feedback';
+  }
   if (order.isCompleted) return 'Delivered · order complete';
   if (order.isCancelled) return 'This order was cancelled';
 

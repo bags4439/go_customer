@@ -9,6 +9,7 @@ import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
 import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
 import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
+import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
 import '../../domain/entities/order_view.dart';
 import 'home_layout_utils.dart';
 import 'home_metric_card.dart';
@@ -20,6 +21,7 @@ class HomeMultiOrderBody extends ConsumerStatefulWidget {
   final List<OrderView> orders;
   final int pendingPayments;
   final int pendingReviews;
+  final int pendingVehicleListings;
   final String? currentUserName;
 
   const HomeMultiOrderBody({
@@ -27,6 +29,7 @@ class HomeMultiOrderBody extends ConsumerStatefulWidget {
     required this.orders,
     required this.pendingPayments,
     required this.pendingReviews,
+    required this.pendingVehicleListings,
     required this.currentUserName,
   });
 
@@ -59,12 +62,17 @@ class _HomeMultiOrderBodyState extends ConsumerState<HomeMultiOrderBody>
     final needsAction =
         widget.orders.where((o) => o.needsPayment).length +
         widget.pendingPayments +
-        widget.pendingReviews;
+        widget.pendingReviews +
+        widget.pendingVehicleListings;
 
     final sorted = [...widget.orders]
       ..sort((a, b) {
+        final aListings = ref.watch(pendingVehicleFeedbackCountProvider(a.id));
+        final bListings = ref.watch(pendingVehicleFeedbackCountProvider(b.id));
         if (a.needsPayment && !b.needsPayment) return -1;
         if (!a.needsPayment && b.needsPayment) return 1;
+        if (aListings > 0 && bListings == 0) return -1;
+        if (aListings == 0 && bListings > 0) return 1;
         if (!a.isCompleted && b.isCompleted) return -1;
         if (a.isCompleted && !b.isCompleted) return 1;
         return b.stageNumber.compareTo(a.stageNumber);

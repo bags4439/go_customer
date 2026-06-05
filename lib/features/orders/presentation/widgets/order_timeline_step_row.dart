@@ -21,6 +21,8 @@ import '../../../shipping/data/models/shipping_model.dart';
 import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../../data/models/order_timeline_model.dart';
 import '../../core/constants/order_timeline_constants.dart';
+import '../../../vehicle_options/core/constants/vehicle_option_constants.dart';
+import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
 import '../providers/order_providers.dart';
 import '../utils/repair_timeline_resolver.dart';
 import '../utils/timeline_payment_resolver.dart';
@@ -690,6 +692,15 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
             pendingPayments,
           ),
         );
+      case 'searching':
+        if (!ref.watch(isOrderOnSearchingStepProvider(orderId))) {
+          return _chatFallback(context, stage.stageKey);
+        }
+        final hasOptions = ref.watch(orderHasVehicleOptionsProvider(orderId));
+        if (hasOptions) {
+          return _ViewVehicleOptionsButton(orderId: orderId, order: order);
+        }
+        return _chatFallback(context, stage.stageKey);
       case 'delivery':
         if (order.status == FirestoreEnumValues.orderStatusDelivered) {
           return _DeliveredCard(orderId: orderId);
@@ -752,6 +763,81 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
           const SizedBox(height: 8),
         ],
         _buildChatButton(context, orderId, onChatTap),
+      ],
+    );
+  }
+}
+
+class _ViewVehicleOptionsButton extends ConsumerWidget {
+  const _ViewVehicleOptionsButton({
+    required this.orderId,
+    required this.order,
+  });
+
+  final String orderId;
+  final OrderView order;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final options =
+        ref.watch(orderVehicleOptionsProvider(orderId)).valueOrNull ?? const [];
+    final pendingCount = ref.watch(pendingVehicleFeedbackCountProvider(orderId));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          pendingCount > 0
+              ? VehicleOptionConstants.homeStatusLine(pendingCount)
+              : OrderTimelineConstants.searchingSubForOrder(
+                  purchaseOrigin: order.purchaseOrigin,
+                  isNewVehicle: order.isNewVehicle,
+                ),
+          style: AppTextStyles.caption.copyWith(
+            color: pendingCount > 0
+                ? AppColors.amberText
+                : const Color(_kTextSecondary),
+            height: 1.4,
+            fontWeight:
+                pendingCount > 0 ? FontWeight.w500 : FontWeight.w400,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: () => OrderDetailWebNavigation.openVehicleOptions(
+              context,
+              ref,
+              orderId: orderId,
+            ),
+            icon: Icon(
+              pendingCount > 0
+                  ? Icons.notifications_active_outlined
+                  : Icons.directions_car_outlined,
+              size: 16,
+            ),
+            label: Text(
+              VehicleOptionConstants.timelineButtonLabel(
+                pendingCount,
+                options.length,
+              ),
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(_kPrimary),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              minimumSize: const Size(0, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

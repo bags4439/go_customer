@@ -1,46 +1,17 @@
-import 'dart:ui' as ui;
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_customer/core/theme/app_text_styles.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../../../../core/utils/date_formatter.dart';
-import '../../../vehicles/core/constants/vehicle_detail_constants.dart';
-import '../../../vehicles/domain/entities/vehicle_option_entity.dart';
-import '../../../vehicles/presentation/providers/vehicle_detail_providers.dart';
-import '../../../../shared/providers/preferred_currency_provider.dart';
-import '../constants/vehicle_chat_card_constants.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
+import '../../../vehicle_options/domain/entities/vehicle_option.dart';
+import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
+import '../../../vehicle_options/presentation/widgets/listing_source_badge.dart';
+import '../../../vehicle_options/presentation/widgets/vehicle_option_response_badge.dart';
 
-const _kBorder = Color(0xFFE0DFD8);
-const _kPrimary = Color(0xFF378ADD);
-const _kSuccess = Color(0xFF1D9E75);
-const _kTextPrimary = Color(0xDE000000);
-const _kTextSecondary = Color(0xFF666666);
-const _kTextTertiary = Color(0xFFAAAAAA);
-const _kAmberBg = Color(0xFFFAEEDA);
-const _kAmberText = Color(0xFF633806);
-const _kWarn = Color(0xFFBA7517);
-const _kSurface = Color(0xFFF5F4F0);
-const _kNoteBg = Color(0xFFF9F8F5);
-const _kNoteAccent = Color(0xFF185FA5);
-const _kRunDriveBg = Color(0xFFEAF3DE);
-const _kRunDriveFg = Color(0xFF27500A);
-const _kRepairBg = Color(0xFFFAEEDA);
-const _kRepairFg = Color(0xFF633806);
-const _kRebuildBg = Color(0xFFFCEBEB);
-const _kRebuildFg = Color(0xFFA32D2D);
-const _kBinPillBg = Color(0xFFE6F1FB);
-const _kBinPillFg = Color(0xFF185FA5);
-
-/// In-chat vehicle option card with live Firestore data (display-only).
-class VehicleOptionChatCard extends ConsumerStatefulWidget {
+/// In-chat compact card linking to the full vehicle option detail screen.
+class VehicleOptionChatCard extends ConsumerWidget {
   const VehicleOptionChatCard({
     super.key,
     required this.orderId,
@@ -51,63 +22,25 @@ class VehicleOptionChatCard extends ConsumerStatefulWidget {
   final String vehicleOptionId;
 
   @override
-  ConsumerState<VehicleOptionChatCard> createState() =>
-      _VehicleOptionChatCardState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final optionAsync = ref.watch(vehicleOptionStreamProvider(vehicleOptionId));
 
-class _VehicleOptionChatCardState extends ConsumerState<VehicleOptionChatCard> {
-  late final PageController _pageController;
-  int _pageIndex = 0;
-  bool _damageExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final voAsync = ref.watch(vehicleOptionStreamProvider(widget.vehicleOptionId));
-
-    return voAsync.when(
-      data: (vo) {
-        if (vo == null) return const SizedBox.shrink();
+    return optionAsync.when(
+      data: (option) {
+        if (option == null || !option.isVisibleToBuyer) {
+          return const SizedBox.shrink();
+        }
         return Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 320),
-            child: _CardChrome(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _PhotoGallery(
-                    urls: _photoUrls(vo),
-                    pageController: _pageController,
-                    pageIndex: _pageIndex,
-                    onPageChanged: (i) => setState(() => _pageIndex = i),
-                  ),
-                  _VehicleHeader(vo: vo),
-                  _DamageSection(
-                    vo: vo,
-                    expanded: _damageExpanded,
-                    onToggleExpand: () =>
-                        setState(() => _damageExpanded = !_damageExpanded),
-                  ),
-                  if (vo.agentNote != null && vo.agentNote!.trim().isNotEmpty)
-                    _AgentNoteBlock(
-                      vehicleOptionId: widget.vehicleOptionId,
-                      note: vo.agentNote!.trim(),
-                    ),
-                  _PricingSummarySection(vo: vo),
-                  _ChatLinkSection(orderId: widget.orderId),
-                ],
+            child: _CompactCard(
+              orderId: orderId,
+              option: option,
+              onOpen: () => OrderDetailWebNavigation.openVehicleOptionDetail(
+                context,
+                ref,
+                orderId: orderId,
+                vehicleOptionId: vehicleOptionId,
               ),
             ),
           ),
@@ -116,7 +49,7 @@ class _VehicleOptionChatCardState extends ConsumerState<VehicleOptionChatCard> {
       loading: () => Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 320),
-          child: const _VehicleCardShimmer(),
+          child: const _CardShimmer(),
         ),
       ),
       error: (_, __) => const SizedBox.shrink(),
@@ -124,16 +57,16 @@ class _VehicleOptionChatCardState extends ConsumerState<VehicleOptionChatCard> {
   }
 }
 
-List<String> _photoUrls(VehicleOptionEntity vo) {
-  if (vo.photoUrls.isNotEmpty) return vo.photoUrls;
-  if (vo.photoUrl != null && vo.photoUrl!.isNotEmpty) return [vo.photoUrl!];
-  return const [];
-}
+class _CompactCard extends StatelessWidget {
+  const _CompactCard({
+    required this.orderId,
+    required this.option,
+    required this.onOpen,
+  });
 
-class _CardChrome extends StatelessWidget {
-  const _CardChrome({required this.child});
-
-  final Widget child;
+  final String orderId;
+  final VehicleOption option;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -142,720 +75,110 @@ class _CardChrome extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kBorder, width: 0.5),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
       ),
       clipBehavior: Clip.antiAlias,
-      child: child,
-    );
-  }
-}
-
-class _PhotoGallery extends StatelessWidget {
-  const _PhotoGallery({
-    required this.urls,
-    required this.pageController,
-    required this.pageIndex,
-    required this.onPageChanged,
-  });
-
-  final List<String> urls;
-  final PageController pageController;
-  final int pageIndex;
-  final ValueChanged<int> onPageChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    if (urls.isEmpty) {
-      return const SizedBox(
-        height: 180,
-        width: double.infinity,
-        child: ColoredBox(
-          color: _kSurface,
-          child: Icon(Icons.directions_car_outlined, size: 48, color: _kTextTertiary),
-        ),
-      );
-    }
-    return SizedBox(
-      height: 180,
-      width: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          PageView.builder(
-            controller: pageController,
-            onPageChanged: onPageChanged,
-            itemCount: urls.length,
-            itemBuilder: (context, i) {
-              return CachedNetworkImage(
-                imageUrl: urls[i],
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 180,
-                placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: Colors.grey.shade300,
-                  highlightColor: Colors.grey.shade100,
-                  child: Container(color: Colors.white, height: 180),
-                ),
-                errorWidget: (context, url, error) => const ColoredBox(
-                  color: _kSurface,
-                  child: Icon(Icons.directions_car_outlined, size: 48, color: _kTextTertiary),
-                ),
-              );
-            },
-          ),
-          if (urls.length > 1)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 8,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(urls.length, (i) {
-                  final active = i == pageIndex;
-                  return Padding(
-                    padding: EdgeInsets.only(left: i == 0 ? 0 : 4),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      width: active ? 8 : 6,
-                      height: active ? 8 : 6,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onOpen,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
                       decoration: BoxDecoration(
-                        color: active
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(active ? 4 : 3),
+                        color: AppColors.infoBackground,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car_outlined,
+                        size: 18,
+                        color: AppColors.secondary,
                       ),
                     ),
-                  );
-                }),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _VehicleHeader extends StatelessWidget {
-  const _VehicleHeader({required this.vo});
-
-  final VehicleOptionEntity vo;
-
-  @override
-  Widget build(BuildContext context) {
-    final title = _titleText(vo);
-    final source = (vo.source ?? '').toLowerCase();
-    final sourceLabel = source == 'iaa'
-        ? VehicleDetailConstants.sourceIaa
-        : VehicleDetailConstants.sourceCopart;
-    final loc = vo.auctionLocation?.trim().isNotEmpty == true
-        ? vo.auctionLocation!
-        : '—';
-    final dateSuffix = vo.isBuyItNow || vo.auctionDate == null
-        ? ''
-        : ' · ${VehicleDetailConstants.auctionLabel}: ${DateFormatter.format(vo.auctionDate)}';
-    final sub = '$sourceLabel · $loc$dateSuffix';
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title.isEmpty ? '—' : title,
-            style: AppTextStyles.titleSmall.copyWith(
-              fontSize: 16,
-              color: _kTextPrimary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            sub,
-            style: AppTextStyles.cardLabel,
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _conditionPill(vo.condition),
-                if (vo.mileage != null) ...[
-                  const SizedBox(width: 6),
-                  _mileagePill(vo.mileage!),
-                ],
-                if (vo.isBuyItNow) ...[
-                  const SizedBox(width: 6),
-                  _buyItNowPill(),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _titleText(VehicleOptionEntity vo) {
-    if (vo.yearMakeModel != null && vo.yearMakeModel!.trim().isNotEmpty) {
-      return vo.yearMakeModel!.trim();
-    }
-    final parts = <String>[];
-    if (vo.year != null) parts.add('${vo.year}');
-    if (vo.make != null && vo.make!.isNotEmpty) parts.add(vo.make!);
-    if (vo.model != null && vo.model!.isNotEmpty) parts.add(vo.model!);
-    if (vo.trim != null && vo.trim!.isNotEmpty) parts.add(vo.trim!);
-    return parts.join(' ');
-  }
-
-  Widget _conditionPill(String? condition) {
-    final c = (condition ?? '').toLowerCase();
-    Color bg;
-    Color fg;
-    String label;
-    switch (c) {
-      case 'repairable':
-        bg = _kRepairBg;
-        fg = _kRepairFg;
-        label = VehicleChatCardConstants.repairable;
-      case 'full_rebuild':
-        bg = _kRebuildBg;
-        fg = _kRebuildFg;
-        label = VehicleChatCardConstants.fullRebuild;
-      default:
-        bg = _kRunDriveBg;
-        fg = _kRunDriveFg;
-        label = VehicleChatCardConstants.runAndDrive;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _kBorder, width: 0.5),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.labelSmall.copyWith(color: fg),
-      ),
-    );
-  }
-
-  Widget _mileagePill(int mileage) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: _kSurface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _kBorder, width: 0.5),
-      ),
-      child: Text(
-        '${NumberFormat.decimalPattern().format(mileage)}${VehicleChatCardConstants.mileageSuffix}',
-        style: AppTextStyles.labelSmall.copyWith(color: _kTextPrimary),
-      ),
-    );
-  }
-
-  Widget _buyItNowPill() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: _kBinPillBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _kBorder, width: 0.5),
-      ),
-      child: Text(
-        'Buy It Now',
-        style: AppTextStyles.labelSmall.copyWith(color: _kBinPillFg),
-      ),
-    );
-  }
-}
-
-class _DamageSection extends StatelessWidget {
-  const _DamageSection({
-    required this.vo,
-    required this.expanded,
-    required this.onToggleExpand,
-  });
-
-  final VehicleOptionEntity vo;
-  final bool expanded;
-  final VoidCallback onToggleExpand;
-
-  @override
-  Widget build(BuildContext context) {
-    final desc = vo.damageDescription?.trim() ?? '';
-    final showClean = !vo.hasVehicleDamage;
-    final showDamage = vo.hasVehicleDamage && desc.isNotEmpty;
-
-    if (!showClean && !showDamage) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: showClean
-            ? Row(
-                children: [
-                  const Icon(Icons.check_circle_outline, size: 14, color: _kSuccess),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Text(
-                        VehicleChatCardConstants.cleanVehicle,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: _kSuccess,
-                        ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            option.displayTitle,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          if (option.source != null) ...[
+                            const SizedBox(height: 4),
+                            ListingSourceBadge(source: option.source),
+                          ],
+                        ],
                       ),
+                    ),
+                  ],
+                ),
+                if (option.agentNote != null &&
+                    option.agentNote!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    option.agentNote!.trim(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
                     ),
                   ),
                 ],
-              )
-            : _ExpandableDamageText(
-                description: desc,
-                expanded: expanded,
-                onToggleExpand: onToggleExpand,
-              ),
-      ),
-    );
-  }
-}
-
-class _ExpandableDamageText extends StatelessWidget {
-  const _ExpandableDamageText({
-    required this.description,
-    required this.expanded,
-    required this.onToggleExpand,
-  });
-
-  final String description;
-  final bool expanded;
-  final VoidCallback onToggleExpand;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          VehicleChatCardConstants.damageLabel,
-          style: AppTextStyles.badgeText.copyWith(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.6,
-            color: _kTextTertiary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final style = AppTextStyles.cardLabel.copyWith(
-                height: 1.5,
-              );
-              final textPainter = TextPainter(
-                text: TextSpan(text: description, style: style),
-                maxLines: 3,
-                textDirection: ui.TextDirection.ltr,
-              )..layout(maxWidth: constraints.maxWidth);
-              final overflow = textPainter.didExceedMaxLines;
-
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: _kSurface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      description,
-                      maxLines: expanded ? null : 3,
-                      overflow: expanded ? TextOverflow.visible : TextOverflow.ellipsis,
-                      style: style,
-                    ),
-                    if (overflow && !expanded)
-                      GestureDetector(
-                        onTap: onToggleExpand,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            VehicleChatCardConstants.showMore,
-                            style: AppTextStyles.caption.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: _kNoteAccent,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AgentNoteBlock extends ConsumerWidget {
-  const _AgentNoteBlock({
-    required this.vehicleOptionId,
-    required this.note,
-  });
-
-  final String vehicleOptionId;
-  final String note;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final agentAsync = ref.watch(agentForVehicleProvider(vehicleOptionId));
-    final title = agentAsync.when(
-      data: (a) {
-        final first = a?.firstName;
-        if (first != null && first.isNotEmpty) {
-          return "$first${VehicleChatCardConstants.agentNoteTitleSuffix}";
-        }
-        return VehicleChatCardConstants.agentNoteFallback;
-      },
-      loading: () => VehicleChatCardConstants.agentNoteFallback,
-      error: (_, __) => VehicleChatCardConstants.agentNoteFallback,
-    );
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: _kNoteBg,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(8),
-            bottomRight: Radius.circular(8),
-            bottomLeft: Radius.circular(8),
-          ),
-          border: Border(
-            left: BorderSide(color: _kPrimary, width: 3),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: AppTextStyles.badgeText.copyWith(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: _kNoteAccent,
-                letterSpacing: 0.6,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              note,
-              style: AppTextStyles.bodySmall.copyWith(
-                fontStyle: FontStyle.italic,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PricingSummarySection extends ConsumerWidget {
-  const _PricingSummarySection({required this.vo});
-
-  final VehicleOptionEntity vo;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currency = ref.watch(preferredCurrencyProvider);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Divider(height: 1, thickness: 0.5, color: _kBorder),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: vo.isBuyItNow
-                ? _binRows(vo, currency)
-                : _auctionRows(vo, currency),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _auctionRows(VehicleOptionEntity vo, CurrencyModel currency) {
-    final auctionUsd = vo.auctionPriceUsd ?? 0;
-    final pct = (vo.buyersPremiumPct ?? 0) / 100.0;
-    final fixed = vo.fixedPlatformFeesUsd ?? 0;
-    final feesUsd = auctionUsd * pct + fixed;
-    final totalUsd = auctionUsd + feesUsd;
-
-    String primary(double usd) => CurrencyFormatter.format(
-          usd * currency.usdToRate,
-          currency,
-        );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _priceRow('Auction price', primary(auctionUsd)),
-        const SizedBox(height: 4),
-        _priceRow(
-          'Auction fees (est.)',
-          primary(feesUsd),
-          subLabel: "Buyer's premium + Copart/IAAI fees",
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 6),
-          child: Divider(height: 0.5, thickness: 0.5, color: _kBorder),
-        ),
-        _totalRow('Est. total', primary(totalUsd)),
-        if (currency.code != 'USD') ...[
-          const SizedBox(height: 4),
-          _secondaryUsdRow(totalUsd),
-        ],
-        const SizedBox(height: 8),
-        _amberDisclaimer(),
-      ],
-    );
-  }
-
-  Widget _binRows(VehicleOptionEntity vo, CurrencyModel currency) {
-    final binUsd = vo.buyItNowPriceUsd ?? vo.auctionPriceUsd ?? 0;
-    final pct = (vo.buyersPremiumPct ?? 0) / 100.0;
-    final fixed = vo.fixedPlatformFeesUsd ?? 0;
-    final feesUsd = binUsd * pct + fixed;
-    final totalUsd = binUsd + feesUsd;
-
-    String primary(double usd) => CurrencyFormatter.format(
-          usd * currency.usdToRate,
-          currency,
-        );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _priceRow('Buy It Now price', primary(binUsd)),
-        const SizedBox(height: 4),
-        _priceRow('Auction fees', primary(feesUsd)),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 6),
-          child: Divider(height: 0.5, thickness: 0.5, color: _kBorder),
-        ),
-        _totalRow('Total', primary(totalUsd)),
-        if (currency.code != 'USD') ...[
-          const SizedBox(height: 4),
-          _secondaryUsdRow(totalUsd),
-        ],
-        const SizedBox(height: 8),
-        _amberDisclaimer(),
-      ],
-    );
-  }
-
-  Widget _secondaryUsdRow(double usdAmount) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text(
-          '≈ ${CurrencyFormatter.formatUsd(usdAmount)}',
-          style: AppTextStyles.caption.copyWith(color: _kTextTertiary),
-        ),
-      ],
-    );
-  }
-
-  Widget _priceRow(String label, String amount, {String? subLabel}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: AppTextStyles.cardLabel.copyWith(color: _kTextSecondary),
-              ),
-            ),
-            Text(
-              amount,
-              style: AppTextStyles.labelMedium.copyWith(color: _kTextPrimary),
-            ),
-          ],
-        ),
-        if (subLabel != null) ...[
-          const SizedBox(height: 2),
-          Text(
-            subLabel,
-            style: AppTextStyles.caption.copyWith(
-              fontSize: 10,
-              color: _kTextTertiary,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _totalRow(String label, String amount) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: AppTextStyles.labelLarge.copyWith(
-              fontSize: 13,
-              color: _kTextPrimary,
-            ),
-          ),
-        ),
-        Text(
-          amount,
-          style: AppTextStyles.titleSmall.copyWith(
-            color: _kSuccess,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _amberDisclaimer() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: _kAmberBg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.info_outline, size: 12, color: _kWarn),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 6),
-              child: Text(
-                VehicleDetailConstants.finalBidDisclaimer,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 10,
-                  color: _kAmberText,
-                  height: 1.35,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChatLinkSection extends StatelessWidget {
-  const _ChatLinkSection({required this.orderId});
-
-  final String orderId;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Divider(height: 1, thickness: 0.5, color: _kBorder),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-          child: SizedBox(
-            height: 44,
-            child: OutlinedButton(
-              onPressed: () => context.go('/order/$orderId?tab=chat'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _kPrimary,
-                side: const BorderSide(color: _kPrimary, width: 0.5),
-              ),
-              child: Text(
-                VehicleDetailConstants.chatWithAgentCta,
-                style: AppTextStyles.bodySmall
-                    .copyWith(fontWeight: FontWeight.w500),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _VehicleCardShimmer extends StatelessWidget {
-  const _VehicleCardShimmer();
-
-  @override
-  Widget build(BuildContext context) {
-    Widget shimmerBox(double h, {double? w, double r = 8}) {
-      return Shimmer.fromColors(
-        baseColor: AppColors.surface,
-        highlightColor: Colors.white,
-        child: Container(
-          height: h,
-          width: w ?? double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(r),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kBorder, width: 0.5),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          shimmerBox(180, r: 0),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                shimmerBox(16, w: 200),
-                const SizedBox(height: 8),
-                shimmerBox(12, w: 160),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   children: [
-                    shimmerBox(24, w: 72),
-                    const SizedBox(width: 6),
-                    shimmerBox(24, w: 88),
+                    VehicleOptionResponseBadge(response: option.buyerResponse),
+                    const Spacer(),
+                    Text(
+                      'View details →',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.secondary,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                shimmerBox(14, w: double.infinity),
-                const SizedBox(height: 8),
-                shimmerBox(12, w: double.infinity),
-                shimmerBox(12, w: double.infinity),
-                shimmerBox(12, w: 160),
-                const SizedBox(height: 12),
-                shimmerBox(44, w: double.infinity, r: 10),
               ],
             ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CardShimmer extends StatelessWidget {
+  const _CardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.surface,
+      highlightColor: Colors.white,
+      child: Container(
+        height: 110,
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
       ),
     );
   }

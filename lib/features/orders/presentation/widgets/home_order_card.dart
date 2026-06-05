@@ -4,10 +4,89 @@ import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
+import '../../../vehicle_options/core/constants/vehicle_option_constants.dart';
+import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
+import 'order_detail/order_detail_web_navigation.dart';
 import '../providers/order_providers.dart';
 import '../providers/order_timeline_providers.dart';
 import 'home_order_status.dart';
 import 'home_theme.dart';
+
+class HomeOrderVehicleFeedbackCta extends ConsumerWidget {
+  const HomeOrderVehicleFeedbackCta({
+    super.key,
+    required this.orderId,
+    required this.pendingCount,
+  });
+
+  final String orderId;
+  final int pendingCount;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: HomeColors.warningBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: HomeColors.warning.withValues(alpha: 0.25),
+          width: 0.5,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  VehicleOptionConstants.homeCtaTitle(pendingCount),
+                  style: homeTextStyle(
+                    size: 14,
+                    weight: FontWeight.w600,
+                    color: HomeColors.amberText,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  VehicleOptionConstants.pendingBannerBody,
+                  style: homeTextStyle(
+                    size: 11,
+                    color: HomeColors.amberText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => OrderDetailWebNavigation.openVehicleOptions(
+              context,
+              ref,
+              orderId: orderId,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: HomeColors.bgPrimary,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: HomeColors.warning, width: 0.5),
+              ),
+              child: Text(
+                VehicleOptionConstants.homeCtaAction,
+                style: homeTextStyle(
+                  size: 12,
+                  weight: FontWeight.w600,
+                  color: HomeColors.warning,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class HomeOrderOriginPill extends StatelessWidget {
   final String origin;
@@ -56,15 +135,20 @@ class HomeOrderCard extends ConsumerWidget {
     final paymentAsync = ref.watch(activePaymentRequestProvider(order.id));
     final repairAsync = ref.watch(orderRepairJobProvider(order.id));
     final pendingAsync = ref.watch(pendingPaymentRequestsProvider(order.id));
+    final pendingListings =
+        ref.watch(pendingVehicleFeedbackCountProvider(order.id));
 
     final statusDescription = homeOrderStatusDescription(
       order,
       repairJob: repairAsync.valueOrNull,
       pendingPayments: pendingAsync.valueOrNull,
+      pendingVehicleListings: pendingListings,
     );
 
     final accentColor = order.needsPayment
         ? HomeColors.danger
+        : pendingListings > 0
+        ? HomeColors.warning
         : order.isCompleted
         ? HomeColors.success
         : HomeColors.primary;
@@ -166,18 +250,24 @@ class HomeOrderCard extends ConsumerWidget {
                             const SizedBox(height: 10),
                             paymentAsync.when(
                               data: (p) {
-                                if (p == null) {
-                                  return Text(
-                                    statusDescription,
-                                    style: homeTextStyle(
-                                      size: 12,
-                                      color: HomeColors.textSecondary,
-                                    ),
+                                if (p != null) {
+                                  return HomeOrderPaymentInlineCta(
+                                    payment: p,
+                                    orderId: order.id,
                                   );
                                 }
-                                return HomeOrderPaymentInlineCta(
-                                  payment: p,
-                                  orderId: order.id,
+                                if (pendingListings > 0) {
+                                  return HomeOrderVehicleFeedbackCta(
+                                    orderId: order.id,
+                                    pendingCount: pendingListings,
+                                  );
+                                }
+                                return Text(
+                                  statusDescription,
+                                  style: homeTextStyle(
+                                    size: 12,
+                                    color: HomeColors.textSecondary,
+                                  ),
                                 );
                               },
                               loading: () => const SizedBox(height: 14),

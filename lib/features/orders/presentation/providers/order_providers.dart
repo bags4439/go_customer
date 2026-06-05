@@ -179,7 +179,7 @@ final vehicleOptionsSentProvider = FutureProvider.family<bool, String>((
   final snapshot = await firestore
       .collection(FirestoreCollections.vehicleOptions)
       .where('orderId', isEqualTo: orderId)
-      .where('status', whereIn: ['sent', 'confirmed'])
+      .where('status', isEqualTo: FirestoreEnumValues.vehicleOptionStatusSent)
       .limit(1)
       .get();
   return snapshot.docs.isNotEmpty;

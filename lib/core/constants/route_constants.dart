@@ -21,6 +21,7 @@ class RouteConstants {
   static const String orderReview = 'order-review';
   static const String bidStatus = 'bid-status';
   static const String vehicleDetail = 'vehicle-detail';
+  static const String vehicleOptionsList = 'vehicle-options';
   static const String documentDetail = 'document-detail';
   static const String orderPreferencesEdit = 'order-preferences-edit';
   static const String orderCancel = 'order-cancel';

@@ -49,7 +49,7 @@ class RepairFirestoreDataSource {
     final snapshot = await _firestore
         .collection(FirestoreCollections.vehicleOptions)
         .where('orderId', isEqualTo: orderId)
-        .where('status', isEqualTo: 'confirmed')
+        .where('buyerResponse', isEqualTo: 'interested')
         .limit(1)
         .get();
     if (snapshot.docs.isEmpty) return null;

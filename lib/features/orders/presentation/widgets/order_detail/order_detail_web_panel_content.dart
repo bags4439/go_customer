@@ -7,6 +7,7 @@ import 'package:go_customer/features/clearance/presentation/screens/clearance_sc
 import 'package:go_customer/features/delivery/presentation/screens/delivery_screen.dart';
 import 'package:go_customer/features/orders/domain/entities/order_view.dart';
 import 'package:go_customer/features/orders/presentation/models/web_order_panel_task.dart';
+import 'package:go_customer/features/orders/presentation/providers/order_detail_providers.dart';
 import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
 import 'package:go_customer/features/orders/presentation/screens/buyer_review_screen.dart';
 import 'package:go_customer/features/payments/presentation/screens/payment_confirmed_screen.dart';
@@ -14,6 +15,8 @@ import 'package:go_customer/features/payments/presentation/screens/payment_proce
 import 'package:go_customer/features/payments/presentation/screens/payment_request_view_screen.dart';
 import 'package:go_customer/features/repairs/presentation/screens/repair_screen.dart';
 import 'package:go_customer/features/shipping/presentation/screens/shipping_screen.dart';
+import 'package:go_customer/features/vehicle_options/presentation/screens/vehicle_option_detail_screen.dart';
+import 'package:go_customer/features/vehicle_options/presentation/screens/vehicle_options_list_screen.dart';
 import 'order_detail_web_navigation.dart';
 import 'order_detail_web_step_detail.dart';
 
@@ -121,6 +124,25 @@ class OrderDetailWebPanelContent extends ConsumerWidget {
         orderId: orderId,
         onClose: onClose,
       ),
+      WebOrderPanelVehicleOptions(:final orderId) => VehicleOptionsListScreen(
+        orderId: orderId,
+        embedInWebPanel: true,
+        onClosePanel: onClose,
+      ),
+      WebOrderPanelVehicleOptionDetail(
+        :final orderId,
+        :final vehicleOptionId,
+      ) =>
+        VehicleOptionDetailScreen(
+          orderId: orderId,
+          vehicleOptionId: vehicleOptionId,
+          embedInWebPanel: true,
+          onClosePanel: onClose,
+          onBackToList: () {
+            ref.read(webOrderPanelTaskProvider.notifier).state =
+                WebOrderPanelVehicleOptions(orderId: orderId);
+          },
+        ),
     };
   }
 }

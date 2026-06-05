@@ -5,6 +5,7 @@ import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
 import '../providers/order_providers.dart';
 import '../widgets/home_animated_body.dart';
 import '../widgets/home_empty_body.dart';
@@ -25,6 +26,8 @@ class HomeScreen extends ConsumerWidget {
     final currentUserAsync = ref.watch(currentUserProfileProvider);
     final pendingPayments = ref.watch(pendingPaymentCountProvider);
     final pendingReviews = ref.watch(pendingReviewCountProvider);
+    final pendingVehicleListings =
+        ref.watch(pendingVehicleFeedbackTotalProvider);
 
     ordersAsync.whenOrNull(
       error: (error, stack) {
@@ -49,6 +52,7 @@ class HomeScreen extends ConsumerWidget {
                 orders: orders,
                 pendingPayments: pendingPayments,
                 pendingReviews: pendingReviews,
+                pendingVehicleListings: pendingVehicleListings,
                 currentUserName: currentUserAsync.value?.fullName,
               ),
       ),

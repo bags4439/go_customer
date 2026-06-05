@@ -164,6 +164,42 @@ abstract final class OrderDetailWebNavigation {
     context.push('/order/$orderId/documents/$documentId');
   }
 
+  static void openVehicleOptions(
+    BuildContext context,
+    WidgetRef ref, {
+    required String orderId,
+  }) {
+    if (_isWeb(context)) {
+      final onOrderDetail = GoRouterState.of(
+        context,
+      ).matchedLocation.startsWith('/order/$orderId');
+      if (!onOrderDetail) {
+        context.go('/order/$orderId');
+      }
+      ref.read(webOrderPanelTaskProvider.notifier).state =
+          WebOrderPanelVehicleOptions(orderId: orderId);
+      return;
+    }
+    context.push('/order/$orderId/vehicle-options');
+  }
+
+  static void openVehicleOptionDetail(
+    BuildContext context,
+    WidgetRef ref, {
+    required String orderId,
+    required String vehicleOptionId,
+  }) {
+    if (_isWeb(context)) {
+      ref.read(webOrderPanelTaskProvider.notifier).state =
+          WebOrderPanelVehicleOptionDetail(
+        orderId: orderId,
+        vehicleOptionId: vehicleOptionId,
+      );
+      return;
+    }
+    context.push('/order/$orderId/vehicle/$vehicleOptionId');
+  }
+
   static void closePanel(WidgetRef ref) {
     resetWebOrderPanelTask(ref);
   }
