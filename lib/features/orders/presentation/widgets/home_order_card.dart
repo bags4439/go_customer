@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:go_customer/core/constants/app_constants.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../clearance/presentation/providers/clearance_timeline_providers.dart';
@@ -14,6 +15,86 @@ import '../providers/order_providers.dart';
 import '../providers/order_timeline_providers.dart';
 import 'home_order_status.dart';
 import 'home_theme.dart';
+
+class HomeOrderReviewCta extends ConsumerWidget {
+  const HomeOrderReviewCta({
+    super.key,
+    required this.orderId,
+  });
+
+  final String orderId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => OrderDetailWebNavigation.navigateToReview(
+          context,
+          orderId: orderId,
+        ),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+        decoration: BoxDecoration(
+          color: HomeColors.successBg,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: HomeColors.success.withValues(alpha: 0.25),
+            width: 0.5,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    OrderTimelineConstants.deliveryHomeCtaTitle,
+                    style: homeTextStyle(
+                      size: 14,
+                      weight: FontWeight.w600,
+                      color: HomeColors.success,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    OrderTimelineConstants.deliveryHomeCtaLine,
+                    style: homeTextStyle(
+                      size: 11,
+                      color: HomeColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: HomeColors.bgPrimary,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: HomeColors.success.withValues(alpha: 0.35),
+                  width: 0.5,
+                ),
+              ),
+              child: Text(
+                OrderTimelineConstants.deliveryHomeCtaAction,
+                style: homeTextStyle(
+                  size: 12,
+                  weight: FontWeight.w600,
+                  color: HomeColors.success,
+                ),
+              ),
+            ),
+          ],
+        ),
+        ),
+      ),
+    );
+  }
+}
 
 class HomeOrderClearanceUpdateCta extends ConsumerWidget {
   const HomeOrderClearanceUpdateCta({
@@ -229,10 +310,15 @@ class HomeOrderCard extends ConsumerWidget {
       clearanceStatusLine: clearanceHomeStatusLine(clearance),
     );
 
+    final needsReview =
+        order.status == AppConstants.statusDeliveryConfirmed;
+
     final accentColor = order.needsPayment
         ? HomeColors.danger
         : pendingListings > 0
         ? HomeColors.warning
+        : needsReview
+        ? HomeColors.success
         : clearanceUpdate
         ? HomeColors.primary
         : order.isCompleted
@@ -347,6 +433,9 @@ class HomeOrderCard extends ConsumerWidget {
                                     orderId: order.id,
                                     pendingCount: pendingListings,
                                   );
+                                }
+                                if (needsReview) {
+                                  return HomeOrderReviewCta(orderId: order.id);
                                 }
                                 if (clearanceUpdate) {
                                   return HomeOrderClearanceUpdateCta(

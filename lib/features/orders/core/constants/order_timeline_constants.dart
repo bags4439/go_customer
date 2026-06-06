@@ -193,4 +193,11 @@ class OrderTimelineConstants {
   static const String repairNoRepairsSub =
       'Tap to review or arrange agent-managed repairs';
   static const String partnerGarage = 'Partner garage';
+
+  static const String deliveryCompletedRowSub =
+      'Vehicle received — share your feedback';
+  static const String deliveryHomeCtaTitle = 'Rate your experience';
+  static const String deliveryHomeCtaAction = 'Leave feedback →';
+  static const String deliveryHomeCtaLine =
+      'Your vehicle was delivered · tap to share feedback';
 }

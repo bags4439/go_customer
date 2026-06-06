@@ -138,6 +138,7 @@ class OrderTimelineStepRow extends ConsumerWidget {
                         stage: stage,
                         isLast: isLast,
                         orderId: orderId,
+                        order: order,
                         repairJob: repairJob,
                       )
                     : isActive
@@ -273,12 +274,14 @@ class _CompletedRow extends ConsumerWidget {
   final OrderTimelineModel stage;
   final bool isLast;
   final String orderId;
+  final OrderView order;
   final RepairJobModel? repairJob;
 
   const _CompletedRow({
     required this.stage,
     required this.isLast,
     required this.orderId,
+    required this.order,
     this.repairJob,
   });
 
@@ -307,6 +310,89 @@ class _CompletedRow extends ConsumerWidget {
     final isRepairComplete =
         stage.stageKey == 'repair' &&
         repairJob?.status == RepairStatus.completed;
+
+    final isDeliveryPendingReview =
+        stage.stageKey == 'delivery' &&
+        order.status == AppConstants.statusDeliveryConfirmed;
+
+    if (isDeliveryPendingReview) {
+      final userId = ref.watch(authStateProvider).value;
+      if (userId != null) {
+        final reviewAsync = ref.watch(
+          buyerReviewProvider((orderId: orderId, buyerId: userId)),
+        );
+        final review = reviewAsync.valueOrNull;
+        if (review == null) {
+          return Padding(
+            padding: EdgeInsets.only(top: 8, bottom: isLast ? 4 : 0),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => OrderDetailWebNavigation.openReview(
+                  context,
+                  ref,
+                  orderId,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF3DE),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(_kSuccess).withValues(alpha: 0.25),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.star_outline_rounded,
+                        size: 16,
+                        color: Color(_kSuccess),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              stage.label,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              OrderTimelineConstants.deliveryCompletedRowSub,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (dateStr.isNotEmpty)
+                        Text(dateStr, style: AppTextStyles.caption),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: AppColors.secondary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+      }
+    }
 
     if (isRepairComplete) {
       return Padding(

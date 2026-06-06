@@ -57,8 +57,30 @@ abstract final class OrderDetailWebNavigation {
 
   static void openReview(BuildContext context, WidgetRef ref, String orderId) {
     if (_isWeb(context)) {
+      final onOrderDetail = GoRouterState.of(
+        context,
+      ).matchedLocation.startsWith('/order/$orderId');
+      if (!onOrderDetail) {
+        navigateToReview(context, orderId: orderId);
+        return;
+      }
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelReview(orderId: orderId);
+      return;
+    }
+    context.push('/order/$orderId/review');
+  }
+
+  /// Entry from home, notifications, etc. Web → order detail + review panel.
+  static void navigateToReview(
+    BuildContext context, {
+    required String orderId,
+  }) {
+    if (_isWeb(context)) {
+      context.go(
+        '/order/$orderId'
+        '?${RouteConstants.reviewPanelQuery}=1',
+      );
       return;
     }
     context.push('/order/$orderId/review');

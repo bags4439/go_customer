@@ -37,5 +37,8 @@ class RouteConstants {
 
   /// Web deep link: opens payment checkout in the order-detail right panel.
   static const String paymentRequestQuery = 'paymentRequest';
+
+  /// Web deep link: opens buyer review in the order-detail right panel.
+  static const String reviewPanelQuery = 'review';
 }
 

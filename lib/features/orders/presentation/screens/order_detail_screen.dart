@@ -19,6 +19,7 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
     required this.orderId,
     this.initialTab = 'overview',
     this.initialPaymentRequestId,
+    this.initialReviewPanel,
   });
 
   final String orderId;
@@ -26,6 +27,9 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
 
   /// Web: `?paymentRequest=` opens checkout in the right panel.
   final String? initialPaymentRequestId;
+
+  /// Web: `?review=1` opens buyer review in the right panel.
+  final String? initialReviewPanel;
 
   int get _initialIndex {
     switch (initialTab) {
@@ -66,7 +70,8 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     _tabController.addListener(_onTabChanged);
     _isChatTabActive = widget._initialIndex == 1;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_applyPaymentDeepLinkIfNeeded()) {
+      if (!_applyPaymentDeepLinkIfNeeded() &&
+          !_applyReviewDeepLinkIfNeeded()) {
         _bootstrapGuides();
       }
     });
@@ -83,6 +88,23 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
       orderId: widget.orderId,
       requestId: requestId,
     );
+    _tabController.index = 0;
+    _isChatTabActive = false;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.go('/order/${widget.orderId}');
+    });
+    return true;
+  }
+
+  /// Web deep link from home: open review panel, strip query.
+  bool _applyReviewDeepLinkIfNeeded() {
+    if (widget.initialReviewPanel != '1') return false;
+    if (!AppBreakpoints.isWeb(context)) return false;
+
+    ref.read(webOrderPanelTaskProvider.notifier).state =
+        WebOrderPanelReview(orderId: widget.orderId);
     _tabController.index = 0;
     _isChatTabActive = false;
 
@@ -129,6 +151,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
         widget.initialPaymentRequestId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _applyPaymentDeepLinkIfNeeded();
+      });
+    }
+    if (oldWidget.initialReviewPanel != widget.initialReviewPanel &&
+        widget.initialReviewPanel != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyReviewDeepLinkIfNeeded();
       });
     }
   }

@@ -150,6 +150,8 @@ final router = GoRouter(
         initialTab: state.uri.queryParameters['tab'] ?? 'overview',
         initialPaymentRequestId:
             state.uri.queryParameters[RouteConstants.paymentRequestQuery],
+        initialReviewPanel:
+            state.uri.queryParameters[RouteConstants.reviewPanelQuery],
       ),
       routes: [
         GoRoute(
