@@ -28,6 +28,8 @@ class ClearanceScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final screenState = ref.watch(clearanceScreenStateProvider(orderId));
+    final forceChoiceScreen =
+        ref.watch(clearanceChoiceSubmittingProvider(orderId));
     final shippingAsync = ref.watch(shippingProvider(orderId));
     final dutyAsync = ref.watch(dutyClearanceProvider(orderId));
 
@@ -49,6 +51,7 @@ class ClearanceScreen extends ConsumerWidget {
             shipping: shippingAsync.valueOrNull,
             duty: dutyAsync.valueOrNull,
             onOpenChat: onOpenChat,
+            forceChoiceScreen: forceChoiceScreen,
           );
 
     if (embedInWebPanel) {

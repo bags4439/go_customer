@@ -32,7 +32,6 @@ class ClearanceChoiceState extends ConsumerStatefulWidget {
 class _ClearanceChoiceStateState extends ConsumerState<ClearanceChoiceState>
     with SingleTickerProviderStateMixin {
   late AnimationController _arrivalController;
-  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -53,34 +52,46 @@ class _ClearanceChoiceStateState extends ConsumerState<ClearanceChoiceState>
     final option = ref
         .read(selectedClearanceOptionProvider(widget.orderId).notifier)
         .state;
-    if (option == null || _isSubmitting) return;
+    if (option == null) return;
+    if (ref.read(clearanceChoiceSubmittingProvider(widget.orderId))) return;
+
+    final submitting =
+        ref.read(clearanceChoiceSubmittingProvider(widget.orderId).notifier);
+    submitting.state = true;
+
     final repo = ref.read(dutyClearanceRepositoryProvider);
     final feeUsdAsync = ref.read(clearanceServiceFeeProvider);
     final feeUsd =
         feeUsdAsync.valueOrNull ?? ClearanceConstants.clearanceFeeFallbackUsd;
 
-    setState(() => _isSubmitting = true);
-    final result = option == ClearanceOption.agentHandles
-        ? await repo.confirmAgentClearance(
-            orderId: widget.orderId,
-            clearanceFeeUsd: feeUsd,
-          )
-        : await repo.confirmSelfClearance(widget.orderId);
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
-    result.fold(
-      (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ClearanceConstants.writeErrorMessage)),
-        );
-      },
-      (_) {},
-    );
+    try {
+      final result = option == ClearanceOption.agentHandles
+          ? await repo.confirmAgentClearance(
+              orderId: widget.orderId,
+              clearanceFeeUsd: feeUsd,
+            )
+          : await repo.confirmSelfClearance(widget.orderId);
+      if (!mounted) return;
+      result.fold(
+        (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(ClearanceConstants.writeErrorMessage)),
+          );
+        },
+        (_) {},
+      );
+    } finally {
+      if (mounted) {
+        submitting.state = false;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final option = ref.watch(selectedClearanceOptionProvider(widget.orderId));
+    final isSubmitting =
+        ref.watch(clearanceChoiceSubmittingProvider(widget.orderId));
     final feeAsync = ref.watch(clearanceServiceFeeProvider);
     final preferredCurrency = ref.watch(preferredCurrencyProvider);
     final agentName =
@@ -179,7 +190,7 @@ class _ClearanceChoiceStateState extends ConsumerState<ClearanceChoiceState>
           const SizedBox(height: 24),
           ClearanceConfirmButton(
             option: option,
-            isSubmitting: _isSubmitting,
+            isSubmitting: isSubmitting,
             onConfirm: _onConfirm,
             label: option == ClearanceOption.agentHandles
                 ? ClearanceConstants.confirmAgentButton

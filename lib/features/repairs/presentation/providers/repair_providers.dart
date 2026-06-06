@@ -66,6 +66,10 @@ final repairScreenStateProvider =
   if (job.isNotStarted) {
     return RepairScreenState.awaitingQuote;
   }
+  // Buyer approved client-side before CF sets status → quote_approved.
+  if (job.isQuoteSent && job.quoteApprovedByBuyer == true) {
+    return RepairScreenState.quoteApproved;
+  }
   if (job.isQuoteSent) return RepairScreenState.quoteSent;
   if (job.isQuoteDeclined) return RepairScreenState.quoteDeclined;
   if (job.isQuoteApproved) return RepairScreenState.quoteApproved;
@@ -88,6 +92,14 @@ final garageDetailsProvider =
 /// true = Option A (arrange repairs), false = Option B (deliver as-is), null = nothing selected.
 /// Pre-populate from car_preferences.repairOptedIn when choice screen loads.
 final repairChoiceProvider = StateProvider.family<bool?, String>((ref, orderId) => null);
+
+/// True while the buyer is confirming a repair choice — keeps choice UI mounted.
+final repairChoiceSubmittingProvider =
+    StateProvider.family<bool, String>((ref, orderId) => false);
+
+/// True while the buyer is accepting a repair quote — keeps quote UI mounted.
+final repairQuoteAcceptSubmittingProvider =
+    StateProvider.family<bool, String>((ref, orderId) => false);
 
 /// Repair coordination fee in USD.
 /// Convert to preferred currency for display using

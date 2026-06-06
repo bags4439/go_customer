@@ -5,6 +5,7 @@ import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/submitting_primary_button.dart';
 import '../../core/constants/repair_constants.dart';
 import '../../domain/entities/repair_job.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
@@ -34,11 +35,46 @@ class RepairQuoteReceivedState extends ConsumerStatefulWidget {
 
 class _RepairQuoteReceivedStateState
     extends ConsumerState<RepairQuoteReceivedState> {
-  bool _accepting = false;
   bool _declining = false;
+
+  Future<void> _onAcceptQuote() async {
+    if (ref.read(repairQuoteAcceptSubmittingProvider(widget.orderId))) return;
+
+    final submitting =
+        ref.read(repairQuoteAcceptSubmittingProvider(widget.orderId).notifier);
+    submitting.state = true;
+
+    final repo = ref.read(repairRepositoryProvider);
+    try {
+      final result = await repo.acceptQuote(widget.orderId);
+      if (!mounted) return;
+
+      await result.fold(
+        (_) async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(RepairConstants.writeErrorMessage)),
+          );
+        },
+        (_) async {
+          try {
+            await repo
+                .watchRepairJob(widget.orderId)
+                .firstWhere((job) => job?.quoteApprovedByBuyer == true)
+                .timeout(const Duration(seconds: 20));
+          } catch (_) {}
+        },
+      );
+    } finally {
+      if (mounted) {
+        submitting.state = false;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isAccepting =
+        ref.watch(repairQuoteAcceptSubmittingProvider(widget.orderId));
     final agentName =
         ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
         'Your agent';
@@ -195,50 +231,17 @@ class _RepairQuoteReceivedStateState
                   accentStyle: RepairDepositSummaryStyle.afterApproval,
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _accepting || _declining
-                        ? null
-                        : () async {
-                            setState(() => _accepting = true);
-                            final result = await ref
-                                .read(repairRepositoryProvider)
-                                .acceptQuote(widget.orderId);
-                            if (!mounted) return;
-                            setState(() => _accepting = false);
-                            result.fold(
-                              (_) => ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    RepairConstants.writeErrorMessage,
-                                  ),
-                                ),
-                              ),
-                              (_) {},
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: _accepting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(RepairConstants.acceptQuoteButton),
-                  ),
+                SubmittingPrimaryButton(
+                  label: RepairConstants.acceptQuoteButton,
+                  hasSelection: true,
+                  isSubmitting: isAccepting,
+                  onPressed: _declining ? null : _onAcceptQuote,
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 48,
                   child: OutlinedButton(
-                    onPressed: _accepting || _declining
+                    onPressed: isAccepting || _declining
                         ? null
                         : () async {
                             setState(() => _declining = true);

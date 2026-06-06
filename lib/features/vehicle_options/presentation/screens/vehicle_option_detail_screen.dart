@@ -204,7 +204,7 @@ class _LinkPreviewCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderSolid, width: 0.5),
       ),

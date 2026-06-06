@@ -69,6 +69,10 @@ final clearanceServiceFeeProvider = FutureProvider<double>((ref) async {
 final selectedClearanceOptionProvider =
     StateProvider.family<ClearanceOption?, String>((ref, orderId) => null);
 
+/// True while the buyer is confirming a clearance choice — keeps choice UI mounted.
+final clearanceChoiceSubmittingProvider =
+    StateProvider.family<bool, String>((ref, orderId) => false);
+
 /// First name of the agent assigned to this order (for copy like "Ask Kofi").
 final agentFirstNameProvider = FutureProvider.family<String, String>((
   ref,

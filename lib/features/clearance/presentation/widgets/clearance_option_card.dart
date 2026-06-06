@@ -36,11 +36,12 @@ class ClearanceOptionCard extends ConsumerWidget {
     final notifier = ref.read(
       selectedClearanceOptionProvider(orderId).notifier,
     );
+    final isSubmitting = ref.watch(clearanceChoiceSubmittingProvider(orderId));
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => notifier.state = type,
+        onTap: isSubmitting ? null : () => notifier.state = type,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

@@ -17,6 +17,7 @@ class ClearanceBody extends StatelessWidget {
     required this.shipping,
     required this.duty,
     this.onOpenChat,
+    this.forceChoiceScreen = false,
   });
 
   final String orderId;
@@ -24,9 +25,17 @@ class ClearanceBody extends StatelessWidget {
   final Shipping? shipping;
   final DutyClearance? duty;
   final VoidCallback? onOpenChat;
+  final bool forceChoiceScreen;
 
   @override
   Widget build(BuildContext context) {
+    if (forceChoiceScreen) {
+      if (shipping == null) {
+        return ClearanceNotAvailableState(orderId: orderId);
+      }
+      return ClearanceChoiceState(orderId: orderId, shipping: shipping!);
+    }
+
     switch (screenState) {
       case ClearanceScreenState.notAvailable:
         return ClearanceNotAvailableState(orderId: orderId);

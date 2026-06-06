@@ -33,7 +33,7 @@ class VehicleOptionAgentNote extends ConsumerWidget {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFFF9F8F5),
+        color:AppColors.background,
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(10),
           bottomRight: Radius.circular(10),

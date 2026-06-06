@@ -29,6 +29,7 @@ class RepairOptionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(repairChoiceProvider(orderId).notifier);
+    final isSubmitting = ref.watch(repairChoiceSubmittingProvider(orderId));
     final bullets = isYes
         ? [
             RepairConstants.optionYesBullet1,
@@ -45,7 +46,7 @@ class RepairOptionCard extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => notifier.state = isYes,
+        onTap: isSubmitting ? null : () => notifier.state = isYes,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

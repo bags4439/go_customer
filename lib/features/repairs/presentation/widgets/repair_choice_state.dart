@@ -33,7 +33,6 @@ class RepairChoiceState extends ConsumerStatefulWidget {
 class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
     with SingleTickerProviderStateMixin {
   late AnimationController _clearedBarController;
-  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -64,25 +63,47 @@ class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
   Future<void> _onConfirm() async {
     final choice = ref.read(repairChoiceProvider(widget.orderId).notifier).state;
     if (choice == null) return;
+    if (ref.read(repairChoiceSubmittingProvider(widget.orderId))) return;
+
+    final submitting =
+        ref.read(repairChoiceSubmittingProvider(widget.orderId).notifier);
+    submitting.state = true;
+
     final repo = ref.read(repairRepositoryProvider);
-    setState(() => _isSubmitting = true);
-    final result = await repo.confirmRepairs(
-      orderId: widget.orderId,
-      optedIn: choice,
-    );
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
-    result.fold(
-      (_) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(RepairConstants.writeErrorMessage)),
-      ),
-      (_) {},
-    );
+    try {
+      final result = await repo.confirmRepairs(
+        orderId: widget.orderId,
+        optedIn: choice,
+      );
+      if (!mounted) return;
+
+      await result.fold(
+        (failure) async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(RepairConstants.writeErrorMessage)),
+          );
+        },
+        (_) async {
+          try {
+            await repo
+                .watchRepairJob(widget.orderId)
+                .firstWhere((job) => job != null)
+                .timeout(const Duration(seconds: 20));
+          } catch (_) {}
+        },
+      );
+    } finally {
+      if (mounted) {
+        submitting.state = false;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final choice = ref.watch(repairChoiceProvider(widget.orderId));
+    final isSubmitting =
+        ref.watch(repairChoiceSubmittingProvider(widget.orderId));
     final order = ref.watch(orderProvider(widget.orderId)).valueOrNull;
     final agentName =
         ref.watch(agentFirstNameProvider(widget.orderId)).valueOrNull ??
@@ -182,7 +203,7 @@ class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
           const SizedBox(height: 24),
           RepairConfirmButton(
             choice: choice,
-            isSubmitting: _isSubmitting,
+            isSubmitting: isSubmitting,
             onConfirm: _onConfirm,
           ),
           const SizedBox(height: 32),
