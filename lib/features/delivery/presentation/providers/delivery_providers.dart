@@ -138,6 +138,14 @@ final deliveryScreenStateProvider =
   return DeliveryScreenState.locationSet;
 });
 
+/// True while the buyer is confirming deliver vs pickup — keeps choice UI mounted.
+final deliveryChoiceSubmittingProvider =
+    StateProvider.family<bool, String>((ref, orderId) => false);
+
+/// True while saving a delivery address — keeps address-entry UI mounted.
+final deliveryLocationSubmittingProvider =
+    StateProvider.family<bool, String>((ref, orderId) => false);
+
 /// Pending payment requests for
 /// delivery stage (delivery_fee
 /// and towing_fee types only).

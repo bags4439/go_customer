@@ -10,11 +10,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/currency_model.dart';
-import '../../../../core/constants/route_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/responsive_layout.dart';
+import '../../../../core/widgets/submitting_primary_button.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
@@ -27,6 +27,7 @@ import '../../core/constants/delivery_constants.dart';
 import '../../domain/entities/delivery.dart';
 import '../../../orders/presentation/providers/order_detail_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
+import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../providers/delivery_providers.dart';
 
@@ -54,7 +55,6 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
   final _addressCtrl = TextEditingController();
   final _cityCtrl = TextEditingController();
   final _searchCtrl = TextEditingController();
-  bool _isSavingLocation = false;
   bool _isConfirming = false;
   bool _isSearching = false;
   bool _editingLocation = false;
@@ -147,6 +147,17 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
     final screenState = ref.watch(
       deliveryScreenStateProvider(widget.orderId),
     );
+    final forceChoiceScreen =
+        ref.watch(deliveryChoiceSubmittingProvider(widget.orderId));
+    final forceAddressEntry =
+        ref.watch(deliveryLocationSubmittingProvider(widget.orderId));
+    final effectiveState = forceChoiceScreen
+        ? DeliveryScreenState.choice
+        : forceAddressEntry
+        ? DeliveryScreenState.addressEntry
+        : screenState;
+    final isSavingLocation =
+        ref.watch(deliveryLocationSubmittingProvider(widget.orderId));
     final deliveryAsync = ref.watch(
       deliveryProvider(widget.orderId),
     );
@@ -162,9 +173,10 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
         Positioned.fill(
           child: _buildBody(
             context,
-            screenState,
+            effectiveState,
             delivery,
             deliveryAsync,
+            isSavingLocation,
           ),
         ),
         if (showCoachMark && _showDeliveryLocationCoach(delivery))
@@ -227,6 +239,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
     DeliveryScreenState screenState,
     Delivery? delivery,
     AsyncValue<Delivery?> deliveryAsync,
+    bool isSavingLocation,
   ) {
     if (deliveryAsync.isLoading) {
       return const Center(
@@ -277,11 +290,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
       case DeliveryScreenState.choice:
         return _wrapScrollable(
           context,
-          _State1Choice(
-            orderId: widget.orderId,
-            onConfirmAgent: _confirmAgentDelivery,
-            onConfirmSelf: _confirmSelfPickup,
-          ),
+          _State1Choice(orderId: widget.orderId),
         );
 
       case DeliveryScreenState.awaitingPaymentClearance:
@@ -302,7 +311,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
               addressCtrl: _addressCtrl,
               cityCtrl: _cityCtrl,
               searchCtrl: _searchCtrl,
-              isSaving: _isSavingLocation,
+              isSaving: isSavingLocation,
               isSearching: _isSearching,
               suggestions: _suggestions,
               selectedLat: _selectedLat,
@@ -310,9 +319,8 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
               selectedLabel: _selectedLocationLabel,
               onSearchChanged: _onSearchChangedDebounced,
               onSuggestionSelected: _onSuggestionSelected,
-              onUseGps: _isSavingLocation ? null : _useGpsLocation,
-              onSaveManual:
-                  _isSavingLocation ? null : _saveManualLocation,
+              onUseGps: isSavingLocation ? null : _useGpsLocation,
+              onSaveManual: isSavingLocation ? null : _saveManualLocation,
             ),
           ),
         );
@@ -327,7 +335,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
                 addressCtrl: _addressCtrl,
                 cityCtrl: _cityCtrl,
                 searchCtrl: _searchCtrl,
-                isSaving: _isSavingLocation,
+                isSaving: isSavingLocation,
                 isSearching: _isSearching,
                 suggestions: _suggestions,
                 selectedLat: _selectedLat,
@@ -335,9 +343,8 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
                 selectedLabel: _selectedLocationLabel,
                 onSearchChanged: _onSearchChangedDebounced,
                 onSuggestionSelected: _onSuggestionSelected,
-                onUseGps: _isSavingLocation ? null : _useGpsLocation,
-                onSaveManual:
-                    _isSavingLocation ? null : _saveManualLocation,
+                onUseGps: isSavingLocation ? null : _useGpsLocation,
+                onSaveManual: isSavingLocation ? null : _saveManualLocation,
               ),
             ),
           );
@@ -371,26 +378,6 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
           _ConfirmedState(orderId: widget.orderId),
         );
     }
-  }
-
-  Future<void> _confirmAgentDelivery() async {
-    final repo = ref.read(deliveryRepositoryProvider);
-    final result = await repo.confirmAgentDelivery(widget.orderId);
-    if (!mounted) return;
-    result.fold(
-      (f) => _snackError(f.message),
-      (_) {},
-    );
-  }
-
-  Future<void> _confirmSelfPickup() async {
-    final repo = ref.read(deliveryRepositoryProvider);
-    final result = await repo.confirmSelfPickup(widget.orderId);
-    if (!mounted) return;
-    result.fold(
-      (f) => _snackError(f.message),
-      (_) {},
-    );
   }
 
   void _onSearchChangedDebounced(String query) {
@@ -481,7 +468,75 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
     await _saveSearchLocation(suggestion.description);
   }
 
+  Future<void> _waitForDeliveryLocation() async {
+    try {
+      await ref
+          .read(deliveryRepositoryProvider)
+          .watchDelivery(widget.orderId)
+          .map((either) => either.fold((_) => null, (d) => d))
+          .firstWhere((d) => d != null && d.hasLocation)
+          .timeout(const Duration(seconds: 20));
+    } catch (_) {}
+  }
+
+  Future<void> _persistDeliveryLocation({
+    required String address,
+    required String city,
+    required String locationSource,
+    double? latitude,
+    double? longitude,
+    String? locationLabel,
+    bool submittingAlreadyActive = false,
+  }) async {
+    if (!submittingAlreadyActive &&
+        ref.read(deliveryLocationSubmittingProvider(widget.orderId))) {
+      return;
+    }
+
+    final submitting =
+        ref.read(deliveryLocationSubmittingProvider(widget.orderId).notifier);
+    if (!submittingAlreadyActive) {
+      submitting.state = true;
+    }
+
+    final repo = ref.read(deliveryRepositoryProvider);
+    try {
+      final result = await repo.saveDeliveryLocation(
+        orderId: widget.orderId,
+        address: address,
+        city: city,
+        locationSource: locationSource,
+        latitude: latitude,
+        longitude: longitude,
+        locationLabel: locationLabel,
+      );
+      if (!mounted) return;
+
+      await result.fold(
+        (failure) async {
+          _snackError(failure.message);
+        },
+        (_) async {
+          await _waitForDeliveryLocation();
+          if (!mounted) return;
+          _snackSuccess('Location saved.');
+        },
+      );
+    } finally {
+      if (mounted) {
+        submitting.state = false;
+        setState(() => _editingLocation = false);
+      }
+    }
+  }
+
   Future<void> _useGpsLocation() async {
+    if (ref.read(deliveryLocationSubmittingProvider(widget.orderId))) return;
+
+    final submitting =
+        ref.read(deliveryLocationSubmittingProvider(widget.orderId).notifier);
+    submitting.state = true;
+
     try {
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -548,71 +603,37 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
         _cityCtrl.text = city ?? '';
       });
 
-      await _saveGpsLocation(
-        position.latitude,
-        position.longitude,
-        resolvedAddress,
-        city ?? '',
+      await _persistDeliveryLocation(
+        address: resolvedAddress,
+        city: city ?? '',
+        locationSource: 'gps',
+        latitude: position.latitude,
+        longitude: position.longitude,
+        locationLabel: resolvedAddress,
+        submittingAlreadyActive: true,
       );
     } catch (_) {
       if (mounted) {
         _snackError('Could not get location. Please try again.');
       }
+    } finally {
+      if (mounted &&
+          ref.read(deliveryLocationSubmittingProvider(widget.orderId))) {
+        ref
+            .read(deliveryLocationSubmittingProvider(widget.orderId).notifier)
+            .state = false;
+      }
     }
-  }
-
-  Future<void> _saveGpsLocation(
-    double lat,
-    double lng,
-    String address,
-    String city,
-  ) async {
-    setState(() => _isSavingLocation = true);
-    final repo = ref.read(deliveryRepositoryProvider);
-    final result = await repo.saveDeliveryLocation(
-      orderId: widget.orderId,
-      address: address,
-      city: city,
-      locationSource: 'gps',
-      latitude: lat,
-      longitude: lng,
-      locationLabel: address,
-    );
-    if (mounted) {
-      setState(() {
-        _isSavingLocation = false;
-        _editingLocation = false;
-      });
-    }
-    if (!mounted) return;
-    result.fold(
-      (f) => _snackError(f.message),
-      (_) => _snackSuccess('Location saved.'),
-    );
   }
 
   Future<void> _saveSearchLocation(String description) async {
-    setState(() => _isSavingLocation = true);
-    final repo = ref.read(deliveryRepositoryProvider);
-    final result = await repo.saveDeliveryLocation(
-      orderId: widget.orderId,
+    await _persistDeliveryLocation(
       address: description,
       city: '',
       locationSource: 'search',
       latitude: _selectedLat,
       longitude: _selectedLng,
       locationLabel: _selectedLocationLabel,
-    );
-    if (mounted) {
-      setState(() {
-        _isSavingLocation = false;
-        _editingLocation = false;
-      });
-    }
-    if (!mounted) return;
-    result.fold(
-      (f) => _snackError(f.message),
-      (_) => _snackSuccess('Location saved.'),
     );
   }
 
@@ -623,24 +644,10 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
       _snackError('Please enter your delivery address.');
       return;
     }
-    setState(() => _isSavingLocation = true);
-    final repo = ref.read(deliveryRepositoryProvider);
-    final result = await repo.saveDeliveryLocation(
-      orderId: widget.orderId,
+    await _persistDeliveryLocation(
       address: address,
       city: city,
       locationSource: 'manual',
-    );
-    if (mounted) {
-      setState(() {
-        _isSavingLocation = false;
-        _editingLocation = false;
-      });
-    }
-    if (!mounted) return;
-    result.fold(
-      (f) => _snackError(f.message),
-      (_) => _snackSuccess('Location saved.'),
     );
   }
 
@@ -787,41 +794,59 @@ class _State0NotAvailable extends StatelessWidget {
 }
 
 class _State1Choice extends ConsumerStatefulWidget {
-  const _State1Choice({
-    required this.orderId,
-    required this.onConfirmAgent,
-    required this.onConfirmSelf,
-  });
+  const _State1Choice({required this.orderId});
 
   final String orderId;
-  final Future<void> Function() onConfirmAgent;
-  final Future<void> Function() onConfirmSelf;
 
   @override
   ConsumerState<_State1Choice> createState() => _State1ChoiceState();
 }
 
 class _State1ChoiceState extends ConsumerState<_State1Choice> {
-  bool _isSubmitting = false;
-
   Future<void> _onConfirm() async {
     final choice = ref.read(deliveryChoiceProvider(widget.orderId));
-    if (choice == null || _isSubmitting) return;
-    setState(() => _isSubmitting = true);
+    if (choice == null) return;
+    if (ref.read(deliveryChoiceSubmittingProvider(widget.orderId))) return;
+
+    final submitting =
+        ref.read(deliveryChoiceSubmittingProvider(widget.orderId).notifier);
+    submitting.state = true;
+
+    final repo = ref.read(deliveryRepositoryProvider);
     try {
-      if (choice) {
-        await widget.onConfirmAgent();
-      } else {
-        await widget.onConfirmSelf();
-      }
+      final result = choice
+          ? await repo.confirmAgentDelivery(widget.orderId)
+          : await repo.confirmSelfPickup(widget.orderId);
+      if (!mounted) return;
+
+      await result.fold(
+        (failure) async {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(failure.message)),
+          );
+        },
+        (_) async {
+          try {
+            await repo
+                .watchDelivery(widget.orderId)
+                .map((either) => either.fold((_) => null, (d) => d))
+                .firstWhere((delivery) => delivery != null)
+                .timeout(const Duration(seconds: 20));
+          } catch (_) {}
+        },
+      );
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) {
+        submitting.state = false;
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final choice = ref.watch(deliveryChoiceProvider(widget.orderId));
+    final isSubmitting =
+        ref.watch(deliveryChoiceSubmittingProvider(widget.orderId));
     final feeAsync = ref.watch(deliveryServiceFeeProvider);
     final preferredCurrency = ref.watch(preferredCurrencyProvider);
     final feeUsd = feeAsync.valueOrNull ??
@@ -894,45 +919,15 @@ class _State1ChoiceState extends ConsumerState<_State1Choice> {
             ),
             const SizedBox(height: 16),
           ],
-          SizedBox(
-            height: 52,
-            child: ElevatedButton(
-              onPressed:
-                  choice != null && !_isSubmitting ? _onConfirm : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: choice != null
-                    ? AppColors.secondary
-                    : AppColors.surface,
-                foregroundColor: choice != null
-                    ? AppColors.background
-                    : AppColors.textTertiary,
-                disabledBackgroundColor: AppColors.surface,
-                disabledForegroundColor: AppColors.textTertiary,
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 52),
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.background,
-                      ),
-                    )
-                  : Text(
-                      choice == true
-                          ? DeliveryConstants.confirmDeliverButton
-                          : choice == false
-                              ? DeliveryConstants.confirmPickupButton
-                              : DeliveryConstants.confirmSelectOption,
-                      style: AppTextStyles.buttonLarge.copyWith(
-                        color: choice != null
-                            ? AppColors.background
-                            : AppColors.textTertiary,
-                      ),
-                    ),
-            ),
+          SubmittingPrimaryButton(
+            label: choice == true
+                ? DeliveryConstants.confirmDeliverButton
+                : choice == false
+                ? DeliveryConstants.confirmPickupButton
+                : DeliveryConstants.confirmSelectOption,
+            hasSelection: choice != null,
+            isSubmitting: isSubmitting,
+            onPressed: _onConfirm,
           ),
         ],
       ),
@@ -959,11 +954,12 @@ class _DeliveryOptionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier =
         ref.read(deliveryChoiceProvider(orderId).notifier);
+    final isSubmitting = ref.watch(deliveryChoiceSubmittingProvider(orderId));
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => notifier.state = isDeliver,
+        onTap: isSubmitting ? null : () => notifier.state = isDeliver,
         borderRadius: BorderRadius.circular(14),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -1810,6 +1806,7 @@ class _LocationInputState extends StatelessWidget {
             label: 'Use my current location',
             onTap: onUseGps,
             color: AppColors.secondary,
+            isLoading: isSaving,
           ),
           const SizedBox(height: 12),
           Text(
@@ -1941,31 +1938,11 @@ class _LocationInputState extends StatelessWidget {
             hint: 'e.g. Accra',
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            height: 52,
-            child: ElevatedButton(
-              onPressed: onSaveManual,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.borderSolid,
-                disabledForegroundColor: AppColors.textTertiary,
-                minimumSize: const Size(double.infinity, 52),
-              ),
-              child: isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      'Save delivery location →',
-                      style: AppTextStyles.buttonLarge,
-                    ),
-            ),
+          SubmittingPrimaryButton(
+            label: 'Save delivery location →',
+            hasSelection: true,
+            isSubmitting: isSaving,
+            onPressed: onSaveManual,
           ),
         ],
       ),
@@ -2463,13 +2440,13 @@ class _ProgressStep extends StatelessWidget {
   }
 }
 
-class _ConfirmedState extends StatelessWidget {
+class _ConfirmedState extends ConsumerWidget {
   const _ConfirmedState({required this.orderId});
 
   final String orderId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         24,
@@ -2508,10 +2485,8 @@ class _ConfirmedState extends StatelessWidget {
             height: 52,
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => context.pushNamed(
-                RouteConstants.orderReview,
-                pathParameters: {'orderId': orderId},
-              ),
+              onPressed: () =>
+                  OrderDetailWebNavigation.openReview(context, ref, orderId),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary,
                 foregroundColor: Colors.white,
@@ -2535,30 +2510,52 @@ class _OptionButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.color,
+    this.isLoading = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
   final Color color;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 52,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        icon: Icon(icon, size: 20, color: color),
-        label: Text(
-          label,
-          style: AppTextStyles.bodyMedium
-              .copyWith(color: color, fontWeight: FontWeight.w500),
-        ),
+      child: OutlinedButton(
+        onPressed: isLoading ? null : onTap,
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: color.withValues(alpha: 0.45)),
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           minimumSize: const Size(double.infinity, 52),
+          disabledForegroundColor: color,
+        ),
+        child: Row(
+          children: [
+            if (isLoading)
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: color,
+                ),
+              )
+            else
+              Icon(icon, size: 20, color: color),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
