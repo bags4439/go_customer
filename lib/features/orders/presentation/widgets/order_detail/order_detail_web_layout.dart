@@ -14,7 +14,8 @@ import 'order_detail_web_right_panel.dart';
 /// Full web layout for order detail.
 /// Left = tab content. Right = contextual (equal width).
 class OrderDetailWebLayout extends ConsumerWidget {
-  const OrderDetailWebLayout({super.key,
+  const OrderDetailWebLayout({
+    super.key,
     required this.orderId,
     required this.tabController,
     required this.onTabChanged,
@@ -25,7 +26,7 @@ class OrderDetailWebLayout extends ConsumerWidget {
   final TabController tabController;
   final void Function(int) onTabChanged;
   final Widget Function(BuildContext context, bool showSegmentedTabBar)
-  buildBody;
+      buildBody;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,7 +67,8 @@ class OrderDetailWebLayout extends ConsumerWidget {
 
 /// 56px header bar for web order detail.
 class OrderDetailWebHeader extends StatelessWidget {
-  const OrderDetailWebHeader({super.key,
+  const OrderDetailWebHeader({
+    super.key,
     required this.orderId,
     required this.order,
     required this.tabController,
@@ -166,7 +168,8 @@ class OrderDetailWebHeader extends StatelessWidget {
 
 /// Pill tab switcher matching SegmentedTabBar style.
 class OrderDetailWebTabSwitcher extends ConsumerWidget {
-  const OrderDetailWebTabSwitcher({super.key,
+  const OrderDetailWebTabSwitcher({
+    super.key,
     required this.tabController,
     required this.orderId,
     required this.onTabChanged,

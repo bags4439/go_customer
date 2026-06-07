@@ -4,6 +4,8 @@ import 'package:go_customer/core/layout/app_breakpoints.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_customer/core/constants/app_constants.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/features/guide/core/constants/guide_keys.dart';
+import 'package:go_customer/features/guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import 'package:go_customer/features/orders/core/constants/order_timeline_constants.dart';
 import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
 import 'order_detail_web_navigation.dart';
@@ -18,16 +20,10 @@ class OrderDetailOverviewTab extends ConsumerWidget {
   const OrderDetailOverviewTab({
     super.key,
     required this.orderId,
-    required this.timelineKey,
-    required this.paymentCardKey,
-    this.suppressTimelineStageCoaches = false,
     this.onChatTap,
   });
 
   final String orderId;
-  final GlobalKey timelineKey;
-  final GlobalKey paymentCardKey;
-  final bool suppressTimelineStageCoaches;
   final VoidCallback? onChatTap;
 
   @override
@@ -49,6 +45,7 @@ class OrderDetailOverviewTab extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
+            const GuideHint(guideKey: GuideKeys.orderTimeline),
             paymentAsync.when(
               data: (p) {
                 if (p == null) return const SizedBox.shrink();
@@ -64,19 +61,17 @@ class OrderDetailOverviewTab extends ConsumerWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    KeyedSubtree(
-                      key: paymentCardKey,
-                      child: OrderDetailPaymentCard(
-                        payment: p,
-                        typeLabel: typeLabel,
-                        deadlineText: deadlineStr,
-                        onPayPressed: () =>
-                            OrderDetailWebNavigation.openPaymentRequest(
-                          context,
-                          ref,
-                          orderId: order.id,
-                          requestId: p.id,
-                        ),
+                    const GuideHint(guideKey: GuideKeys.orderPaymentRequest),
+                    OrderDetailPaymentCard(
+                      payment: p,
+                      typeLabel: typeLabel,
+                      deadlineText: deadlineStr,
+                      onPayPressed: () =>
+                          OrderDetailWebNavigation.openPaymentRequest(
+                        context,
+                        ref,
+                        orderId: order.id,
+                        requestId: p.id,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -94,18 +89,14 @@ class OrderDetailOverviewTab extends ConsumerWidget {
               style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
             ),
             const SizedBox(height: 14),
-            KeyedSubtree(
-              key: timelineKey,
-              child: OrderTimelineWidget(
-                orderId: orderId,
-                order: order,
-                suppressStageCoachMarks: suppressTimelineStageCoaches,
-                onChatTap: onChatTap,
-                onStepTapped: AppBreakpoints.isWeb(context)
-                    ? (stageKey) =>
-                        OrderDetailWebNavigation.openTimelineStep(ref, stageKey)
-                    : null,
-              ),
+            OrderTimelineWidget(
+              orderId: orderId,
+              order: order,
+              onChatTap: onChatTap,
+              onStepTapped: AppBreakpoints.isWeb(context)
+                  ? (stageKey) =>
+                      OrderDetailWebNavigation.openTimelineStep(ref, stageKey)
+                  : null,
             ),
             if (ref.watch(canEditOrderProvider(order.id))) ...[
               const SizedBox(height: 20),

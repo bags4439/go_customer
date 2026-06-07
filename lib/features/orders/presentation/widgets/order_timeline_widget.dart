@@ -7,11 +7,6 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/providers/guide_providers.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import '../../data/models/order_timeline_model.dart';
 import '../providers/order_providers.dart';
@@ -25,7 +20,6 @@ import 'order_timeline_step_row.dart';
 class OrderTimelineWidget extends ConsumerStatefulWidget {
   final String orderId;
   final OrderView order;
-  final bool suppressStageCoachMarks;
   final VoidCallback? onChatTap;
   final void Function(String stageKey)? onStepTapped;
 
@@ -33,7 +27,6 @@ class OrderTimelineWidget extends ConsumerStatefulWidget {
     super.key,
     required this.orderId,
     required this.order,
-    this.suppressStageCoachMarks = false,
     this.onChatTap,
     this.onStepTapped,
   });
@@ -48,9 +41,6 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
   late AnimationController _entrance;
   bool _entranceStarted = false;
   final GlobalKey _activeStageKey = GlobalKey();
-  String? _stageCoachGuideKey;
-  bool _showStageCoach = false;
-  int? _stageCoachCheckedForStage;
 
   @override
   void initState() {
@@ -67,18 +57,8 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     if (oldWidget.orderId != widget.orderId) {
       _entranceStarted = false;
       _entrance.reset();
-      _stageCoachCheckedForStage = null;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _hideStageCoach();
-      });
     }
     if (oldWidget.order.stageNumber != widget.order.stageNumber) {
-      _stageCoachCheckedForStage = null;
-      if (_showStageCoach) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _hideStageCoach();
-        });
-      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           Future.delayed(const Duration(milliseconds: 300), () {
@@ -87,13 +67,6 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
             }
           });
         }
-      });
-    }
-    if (oldWidget.suppressStageCoachMarks != widget.suppressStageCoachMarks &&
-        widget.suppressStageCoachMarks &&
-        _showStageCoach) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _hideStageCoach();
       });
     }
   }
@@ -124,45 +97,6 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     });
   }
 
-  String? _guideKeyForStageNumber(int stageNumber) {
-    switch (stageNumber) {
-      case 4:
-        return GuideKeys.stageSearching;
-      case 5:
-        return GuideKeys.stageBid;
-      case 6:
-        return GuideKeys.stageShipping;
-      case 7:
-        return GuideKeys.stageClearance;
-      case 8:
-        return GuideKeys.stageRepair;
-      default:
-        return null;
-    }
-  }
-
-  Future<void> _checkStageCoach(String? guideKey) async {
-    if (guideKey == null || widget.suppressStageCoachMarks || !mounted) {
-      return;
-    }
-    final seen = await ref.read(hasSeenGuideProvider(guideKey).future);
-    if (!seen && mounted) {
-      setState(() {
-        _stageCoachGuideKey = guideKey;
-        _showStageCoach = true;
-      });
-    }
-  }
-
-  void _hideStageCoach() {
-    if (mounted) {
-      setState(() {
-        _showStageCoach = false;
-        _stageCoachGuideKey = null;
-      });
-    }
-  }
-
   void _scrollToActiveStage() {
     final ctx = _activeStageKey.currentContext;
     if (ctx == null) return;
@@ -171,79 +105,6 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
       duration: const Duration(milliseconds: 480),
       curve: Curves.easeOutCubic,
       alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
-    );
-  }
-
-  void _scheduleStageCoachIfNeeded() {
-    final sn = widget.order.stageNumber;
-    if (_stageCoachCheckedForStage == sn) return;
-    final key = _guideKeyForStageNumber(sn);
-    if (key == null) {
-      _stageCoachCheckedForStage = sn;
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted || widget.suppressStageCoachMarks) return;
-      if (_stageCoachCheckedForStage == sn) return;
-      _stageCoachCheckedForStage = sn;
-      await _checkStageCoach(key);
-    });
-  }
-
-  Widget _buildStageCoachOverlay(String guideKey) {
-    late final String title;
-    late final String body;
-    switch (guideKey) {
-      case GuideKeys.stageSearching:
-        title = 'Your agent is searching now';
-        body =
-            'Your agent is actively searching '
-            'auctions for your vehicle. You\'ll '
-            'get notified the moment options arrive.';
-        break;
-      case GuideKeys.stageBid:
-        title = 'Vehicle secured';
-        body =
-            'Your agent secured your vehicle. '
-            'Review the payment request to '
-            'move to the next step.';
-        break;
-      case GuideKeys.stageShipping:
-        title = 'Your car is on its way';
-        body =
-            'Your vehicle is being shipped to '
-            'Ghana. Tap the shipping stage to '
-            'track its journey.';
-        break;
-      case GuideKeys.stageClearance:
-        title = 'Port clearance in progress';
-        body =
-            'Your agent is handling all GRA '
-            'paperwork and duty on your behalf. '
-            'We\'ll keep you updated at every step.';
-        break;
-      case GuideKeys.stageRepair:
-        title = 'Review your repair quote';
-        body =
-            'When your agent sends a repair quote, '
-            'review it here before approving. '
-            'No work begins until you say yes.';
-        break;
-      default:
-        title = '';
-        body = '';
-    }
-    return CoachMarkOverlay(
-      guideKey: guideKey,
-      targetKey: _activeStageKey,
-      title: title,
-      body: body,
-      spotlightShape: SpotlightShape.roundedRect,
-      onDismiss: _hideStageCoach,
-      onFaqTap: () {
-        _hideStageCoach();
-        GuideFaqSheet.show(context);
-      },
     );
   }
 
@@ -295,8 +156,6 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
           if (mounted) _ensureEntranceStarted(visible.length);
         });
 
-        _scheduleStageCoachIfNeeded();
-
         final activeStage = visible.isEmpty
             ? null
             : visible.firstWhere(
@@ -345,12 +204,9 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
           return row;
         }
 
-        return Stack(
-          clipBehavior: Clip.none,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
                 if (visible.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _SummaryCard(
@@ -406,29 +262,6 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
                     );
                   },
                 ),
-              ],
-            ),
-            if (_showStageCoach &&
-                _stageCoachGuideKey != null &&
-                !widget.suppressStageCoachMarks)
-              Positioned.fill(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return OverflowBox(
-                      minWidth: constraints.maxWidth,
-                      maxWidth: constraints.maxWidth,
-                      minHeight: MediaQuery.sizeOf(context).height,
-                      maxHeight: MediaQuery.sizeOf(context).height,
-                      alignment: Alignment.topCenter,
-                      child: SizedBox(
-                        width: constraints.maxWidth,
-                        height: MediaQuery.sizeOf(context).height,
-                        child: _buildStageCoachOverlay(_stageCoachGuideKey!),
-                      ),
-                    );
-                  },
-                ),
-              ),
           ],
         );
       },

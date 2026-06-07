@@ -14,14 +14,12 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/responsive_layout.dart';
+import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../../core/widgets/submitting_primary_button.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/guide_help_button.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
+import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../payments/data/models/payment_request_model.dart';
 import '../../core/constants/delivery_constants.dart';
 import '../../domain/entities/delivery.dart';
@@ -49,9 +47,7 @@ class DeliveryScreen extends ConsumerStatefulWidget {
   ConsumerState<DeliveryScreen> createState() => _DeliveryScreenState();
 }
 
-class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
-    with CoachMarkMixin<DeliveryScreen> {
-  final _locationSectionKey = GlobalKey();
+class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
   final _addressCtrl = TextEditingController();
   final _cityCtrl = TextEditingController();
   final _searchCtrl = TextEditingController();
@@ -63,16 +59,6 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
   double? _selectedLng;
   String? _selectedLocationLabel;
   Timer? _searchDebounce;
-
-  @override
-  String get coachMarkKey => GuideKeys.stageDelivery;
-
-  bool _showDeliveryLocationCoach(Delivery? d) {
-    if (d == null) return false;
-    if (d.isConfirmed == true) return false;
-    if (d.hasLocation == true && !_editingLocation) return false;
-    return true;
-  }
 
   @override
   void dispose() {
@@ -167,34 +153,12 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
         ref.watch(orderProvider(widget.orderId)).valueOrNull?.orderRef ??
         widget.orderId;
 
-    final stackBody = Stack(
-      fit: StackFit.expand,
-      children: [
-        Positioned.fill(
-          child: _buildBody(
-            context,
-            effectiveState,
-            delivery,
-            deliveryAsync,
-            isSavingLocation,
-          ),
-        ),
-        if (showCoachMark && _showDeliveryLocationCoach(delivery))
-          CoachMarkOverlay(
-            guideKey: GuideKeys.stageDelivery,
-            targetKey: _locationSectionKey,
-            title: 'Set your delivery address',
-            body:
-                'Tell us where to bring your car. Your agent will deliver it directly'
-                ' to this address.',
-            spotlightShape: SpotlightShape.roundedRect,
-            onDismiss: hideCoachMark,
-            onFaqTap: () {
-              hideCoachMark();
-              GuideFaqSheet.show(context);
-            },
-          ),
-      ],
+    final body = _buildBody(
+      context,
+      effectiveState,
+      delivery,
+      deliveryAsync,
+      isSavingLocation,
     );
 
     if (widget.embedInWebPanel) {
@@ -203,7 +167,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
         orderRef: orderRef,
         onBack: widget.onClosePanel ??
             () => resetWebOrderPanelTask(ref),
-        child: stackBody,
+        child: body,
       );
     }
 
@@ -222,15 +186,12 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
           onPressed: () => context.pop(),
         ),
         title: Text('Delivery', style: AppTextStyles.appBarTitle),
-        actions: [
-          GuideHelpButton(onShowGuide: showCoachMarkManually),
-        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
-      body: stackBody,
+      body: body,
     );
   }
 
@@ -305,9 +266,11 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
       case DeliveryScreenState.addressEntry:
         return _wrapScrollable(
           context,
-          KeyedSubtree(
-            key: _locationSectionKey,
-            child: _LocationInputState(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const GuideHint(guideKey: GuideKeys.stageDelivery),
+              _LocationInputState(
               addressCtrl: _addressCtrl,
               cityCtrl: _cityCtrl,
               searchCtrl: _searchCtrl,
@@ -321,7 +284,8 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
               onSuggestionSelected: _onSuggestionSelected,
               onUseGps: isSavingLocation ? null : _useGpsLocation,
               onSaveManual: isSavingLocation ? null : _saveManualLocation,
-            ),
+              ),
+            ],
           ),
         );
 
@@ -329,9 +293,11 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
         if (_editingLocation) {
           return _wrapScrollable(
             context,
-            KeyedSubtree(
-              key: _locationSectionKey,
-              child: _LocationInputState(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const GuideHint(guideKey: GuideKeys.stageDelivery),
+                _LocationInputState(
                 addressCtrl: _addressCtrl,
                 cityCtrl: _cityCtrl,
                 searchCtrl: _searchCtrl,
@@ -345,7 +311,8 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen>
                 onSuggestionSelected: _onSuggestionSelected,
                 onUseGps: isSavingLocation ? null : _useGpsLocation,
                 onSaveManual: isSavingLocation ? null : _saveManualLocation,
-              ),
+                ),
+              ],
             ),
           );
         }

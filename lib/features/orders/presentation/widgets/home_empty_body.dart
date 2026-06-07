@@ -4,37 +4,21 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/widgets/coach_mark_card.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
+import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
 import 'home_empty_how_it_works.dart';
 import 'home_empty_illustrations.dart';
 import 'home_layout_utils.dart';
 import 'home_theme.dart';
 
-class HomeEmptyBody extends ConsumerStatefulWidget {
+class HomeEmptyBody extends ConsumerWidget {
   final String? firstName;
 
   const HomeEmptyBody({super.key, this.firstName});
 
   @override
-  ConsumerState<HomeEmptyBody> createState() => _HomeEmptyBodyState();
-}
-
-class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
-    with CoachMarkMixin<HomeEmptyBody> {
-  final _importButtonKey = GlobalKey();
-
-  @override
-  String get coachMarkKey => GuideKeys.homeEmpty;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        SafeArea(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
@@ -48,6 +32,7 @@ class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const GuideHint(guideKey: GuideKeys.homeEmpty),
                     Text(
                       homeTimeGreeting(),
                       style: AppTextStyles.sectionLabel.copyWith(
@@ -58,8 +43,8 @@ class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      widget.firstName != null
-                          ? 'Hi ${widget.firstName}'
+                      firstName != null
+                          ? 'Hi $firstName'
                           : 'Welcome',
                       style: AppTextStyles.displaySmall.copyWith(
                         fontSize: 26,
@@ -129,7 +114,6 @@ class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
                                 const SizedBox(height: 18),
 
                                 SizedBox(
-                                  key: _importButtonKey,
                                   width: double.infinity,
                                   height: 52,
                                   child: ElevatedButton(
@@ -233,26 +217,6 @@ class _HomeEmptyBodyState extends ConsumerState<HomeEmptyBody>
               ),
             ),
           ),
-        ),
-        if (showCoachMark)
-          CoachMarkOverlay(
-            guideKey: GuideKeys.homeEmpty,
-            targetKey: _importButtonKey,
-            title: 'Import your first car',
-            body:
-                'Tap here to tell us exactly what '
-                'car you want. No payment is ever '
-                'taken until your agent sends a '
-                'payment request.',
-            spotlightShape: SpotlightShape.roundedRect,
-            cardPosition: CardPosition.above,
-            onDismiss: hideCoachMark,
-            onFaqTap: () {
-              hideCoachMark();
-              GuideFaqSheet.show(context);
-            },
-          ),
-      ],
-    );
+        );
   }
 }

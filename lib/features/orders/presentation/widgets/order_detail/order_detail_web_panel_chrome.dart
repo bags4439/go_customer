@@ -12,6 +12,7 @@ class OrderDetailWebPanelChrome extends StatelessWidget {
     required this.child,
     this.orderRef,
     this.backLabel = 'Back',
+    this.trailing,
   });
 
   final String title;
@@ -19,6 +20,7 @@ class OrderDetailWebPanelChrome extends StatelessWidget {
   final String backLabel;
   final VoidCallback onBack;
   final Widget child;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,10 @@ class OrderDetailWebPanelChrome extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (trailing != null) ...[
+                    trailing!,
+                    if (orderRef != null) const SizedBox(width: 8),
+                  ],
                   if (orderRef != null)
                     Text(
                       orderRef!,

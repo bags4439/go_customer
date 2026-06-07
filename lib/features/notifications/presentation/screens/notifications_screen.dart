@@ -13,10 +13,8 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../../profile/presentation/navigation/profile_id_verification_navigation.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
+import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../guide/presentation/widgets/guide_help_button.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
 import '../../core/constants/notification_constants.dart';
 import '../../core/utils/notification_timestamp.dart';
 import '../../domain/entities/notification_entity.dart';
@@ -37,13 +35,7 @@ class NotificationsScreen extends ConsumerStatefulWidget {
       _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
-    with CoachMarkMixin<NotificationsScreen> {
-  final _firstNotificationKey = GlobalKey();
-
-  @override
-  String get coachMarkKey => GuideKeys.notifications;
-
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Future<void> _onMarkAllRead(BuildContext context, WidgetRef ref) async {
     final filter = ref.read(notificationFilterProvider);
     final items = ref.read(notificationListItemsProvider(filter));
@@ -106,7 +98,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
           ],
         ),
         actions: [
-          GuideHelpButton(onShowGuide: showCoachMarkManually),
+          const GuideHelpButton(),
           if (unreadCount > 0)
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -131,7 +123,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
         style: AppTextStyles.appBarTitle.copyWith(color: AppColors.primary),
       ),
       actions: [
-        GuideHelpButton(onShowGuide: showCoachMarkManually),
+        const GuideHelpButton(),
         if (unreadCount > 0)
           Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -148,41 +140,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
   @override
   Widget build(BuildContext context) {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
-    final filter = ref.watch(notificationFilterProvider);
-    final items = ref.watch(notificationListItemsProvider(filter));
-    final hasNotificationEntry = items.any(
-      (e) => e is NotificationListItemEntry,
-    );
-
-    final bodyStack = Stack(
-      fit: StackFit.expand,
-      children: [
-        Positioned.fill(
-          child: _NotificationsBody(
-            firstNotificationEntryKey: _firstNotificationKey,
-          ),
-        ),
-        if (showCoachMark && hasNotificationEntry)
-          CoachMarkOverlay(
-            guideKey: GuideKeys.notifications,
-            targetKey: _firstNotificationKey,
-            title: 'Stay in the loop',
-            body:
-                'Every update about your order '
-                'appears here. Tap any notification '
-                'to go directly to that part of '
-                'your order.',
-            spotlightShape: SpotlightShape.roundedRect,
-            onDismiss: hideCoachMark,
-            onFaqTap: () {
-              hideCoachMark();
-              GuideFaqSheet.show(context);
-            },
-          ),
-      ],
-    );
-
     final isWeb = AppBreakpoints.isWeb(context);
+    const body = _NotificationsBody();
 
     if (isWeb) {
       return Scaffold(
@@ -191,7 +150,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
         body: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(flex: 5, child: bodyStack),
+            Expanded(flex: 5, child: body),
             Container(width: 0.5, color: AppColors.borderSolid),
             Expanded(flex: 4,child: WebDashboardRightPanel(),)
           ],
@@ -202,7 +161,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: _buildAppBar(context, unreadCount),
-      body: bodyStack,
+      body: body,
     );
   }
 }
@@ -241,9 +200,7 @@ class _MarkAllReadButton extends ConsumerWidget {
 }
 
 class _NotificationsBody extends ConsumerWidget {
-  const _NotificationsBody({required this.firstNotificationEntryKey});
-
-  final GlobalKey firstNotificationEntryKey;
+  const _NotificationsBody();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -267,13 +224,14 @@ class _NotificationsBody extends ConsumerWidget {
         }
         return Column(
           children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: GuideHint(guideKey: GuideKeys.notifications),
+            ),
             const _FilterTabs(),
             Expanded(
               child: _NotificationsAnimatedBody(
-                child: _NotificationsList(
-                  key: ValueKey(filter),
-                  firstEntryKey: firstNotificationEntryKey,
-                ),
+                child: _NotificationsList(key: ValueKey(filter)),
               ),
             ),
           ],
@@ -549,9 +507,7 @@ class _FilterPill extends StatelessWidget {
 }
 
 class _NotificationsList extends ConsumerStatefulWidget {
-  const _NotificationsList({super.key, required this.firstEntryKey});
-
-  final GlobalKey firstEntryKey;
+  const _NotificationsList({super.key});
 
   @override
   ConsumerState<_NotificationsList> createState() => _NotificationsListState();
@@ -632,10 +588,6 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
       return _EmptyState(filter: filter);
     }
 
-    final firstEntryIndex = items.indexWhere(
-      (e) => e is NotificationListItemEntry,
-    );
-
     return ListView.builder(
       controller: _scrollController,
       padding: EdgeInsets.fromLTRB(
@@ -715,9 +667,6 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
               : null,
           markAllReadTotalCount: markAllReadTotal > 0 ? markAllReadTotal : null,
         );
-        if (index == firstEntryIndex) {
-          card = KeyedSubtree(key: widget.firstEntryKey, child: card);
-        }
         return _NotificationsStaggeredRow(
           index: index,
           child: Padding(

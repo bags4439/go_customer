@@ -5,11 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/providers/guide_providers.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/guide_help_button.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
+import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
@@ -40,30 +36,9 @@ class RepairScreen extends ConsumerStatefulWidget {
 }
 
 class _RepairScreenState extends ConsumerState<RepairScreen> {
-  final GlobalKey _repairCoachKey = GlobalKey();
-  bool _showRepairCoach = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowRepairCoach());
-  }
-
-  bool _repairCoachEligible(RepairScreenState state) {
+  bool _repairHintEligible(RepairScreenState state) {
     return state != RepairScreenState.notAvailable &&
         state != RepairScreenState.noRepair;
-  }
-
-  Future<void> _maybeShowRepairCoach() async {
-    if (!mounted) return;
-    final screenState = ref.read(repairScreenStateProvider(widget.orderId));
-    if (!_repairCoachEligible(screenState)) return;
-    final seen = await ref.read(
-      hasSeenGuideProvider(GuideKeys.stageRepair).future,
-    );
-    if (!seen && mounted) {
-      setState(() => _showRepairCoach = true);
-    }
   }
 
   @override
@@ -96,11 +71,12 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
         ref.watch(orderProvider(widget.orderId)).valueOrNull?.orderRef ??
         widget.orderId;
 
-    final stackBody = Stack(
-      fit: StackFit.expand,
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        KeyedSubtree(
-          key: _repairCoachKey,
+        if (_repairHintEligible(screenState))
+          const GuideHint(guideKey: GuideKeys.stageRepair),
+        Expanded(
           child: hasError
               ? RepairErrorCard(
                   onRetry: () {
@@ -126,22 +102,6 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
                   ),
                 ),
         ),
-        if (_showRepairCoach && _repairCoachEligible(screenState))
-          CoachMarkOverlay(
-            guideKey: GuideKeys.stageRepair,
-            targetKey: _repairCoachKey,
-            title: 'Review your repair quote',
-            body:
-                'Your agent sent a repair quote. '
-                'Check the details carefully — '
-                'no work begins until you approve it.',
-            spotlightShape: SpotlightShape.roundedRect,
-            onDismiss: () => setState(() => _showRepairCoach = false),
-            onFaqTap: () {
-              setState(() => _showRepairCoach = false);
-              GuideFaqSheet.show(context);
-            },
-          ),
       ],
     );
 
@@ -150,7 +110,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
         title: 'Repairs',
         orderRef: orderRef,
         onBack: widget.onClosePanel ?? () {},
-        child: stackBody,
+        child: body,
       );
     }
 
@@ -172,9 +132,6 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
           ),
         ),
         actions: [
-          GuideHelpButton(
-            onShowGuide: () => setState(() => _showRepairCoach = true),
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
@@ -188,7 +145,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
           ),
         ],
       ),
-      body: stackBody,
+      body: body,
     );
   }
 }

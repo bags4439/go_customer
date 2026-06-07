@@ -7,9 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
+import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../domain/entities/agent_detail_view.dart';
 import '../../domain/entities/order_view.dart';
 import 'agent_connection_agent_avatar.dart';
@@ -35,13 +33,7 @@ class AgentConnectionAssignedView extends ConsumerStatefulWidget {
 }
 
 class _AgentConnectionAssignedViewState
-    extends ConsumerState<AgentConnectionAssignedView>
-    with CoachMarkMixin<AgentConnectionAssignedView> {
-  final _agentCardKey = GlobalKey();
-
-  @override
-  String get coachMarkKey => GuideKeys.agentProfile;
-
+    extends ConsumerState<AgentConnectionAssignedView> {
   String get _firstName {
     final parts = widget.agent.fullName
         .trim()
@@ -87,12 +79,10 @@ class _AgentConnectionAssignedViewState
     final agent = widget.agent;
     final order = widget.order;
 
-    return Stack(
+    return ListView(
+      padding: EdgeInsets.fromLTRB(edge.left, 20, edge.right, 32),
       children: [
-        ListView(
-          padding: EdgeInsets.fromLTRB(edge.left, 20, edge.right, 32),
-          children: [
-            Row(
+        Row(
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -127,10 +117,10 @@ class _AgentConnectionAssignedViewState
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            KeyedSubtree(
-              key: _agentCardKey,
-              child: Container(
+        const SizedBox(height: 12),
+        const GuideHint(guideKey: GuideKeys.agentProfile),
+        const SizedBox(height: 12),
+        Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.background,
@@ -248,11 +238,10 @@ class _AgentConnectionAssignedViewState
                     ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(18),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: AppColors.background,
                 border: Border.all(color: AppColors.borderSolid, width: 0.5),
@@ -378,25 +367,6 @@ class _AgentConnectionAssignedViewState
                 ],
               ],
             ),
-          ],
-        ),
-        if (showCoachMark)
-          CoachMarkOverlay(
-            guideKey: GuideKeys.agentProfile,
-            targetKey: _agentCardKey,
-            title: 'Meet your dedicated agent',
-            body:
-                'This is the agent handling everything '
-                'for your import. They search, negotiate, '
-                'ship, clear and deliver — you just '
-                'approve and pay.',
-            spotlightShape: SpotlightShape.roundedRect,
-            onDismiss: hideCoachMark,
-            onFaqTap: () {
-              hideCoachMark();
-              GuideFaqSheet.show(context);
-            },
-          ),
       ],
     );
   }

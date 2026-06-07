@@ -8,7 +8,6 @@ import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/features/chat/presentation/providers/chat_providers.dart';
 import 'package:go_customer/features/orders/presentation/models/web_order_panel_task.dart';
 import 'package:go_customer/features/orders/presentation/providers/order_detail_providers.dart';
-import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_guide.dart';
 import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_mobile_app_bar.dart';
 import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_tab_body.dart';
 import 'package:go_customer/features/orders/presentation/widgets/order_detail/order_detail_web_layout.dart';
@@ -49,14 +48,6 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
 class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final _timelineKey = GlobalKey();
-  final _chatTabKey = GlobalKey();
-  final _docsTabKey = GlobalKey();
-  final _paymentCardKey = GlobalKey();
-
-  int _guideStep = 0;
-  bool _showPaymentCoach = false;
   bool _isChatTabActive = false;
 
   @override
@@ -70,18 +61,16 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     _tabController.addListener(_onTabChanged);
     _isChatTabActive = widget._initialIndex == 1;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_applyPaymentDeepLinkIfNeeded() &&
-          !_applyReviewDeepLinkIfNeeded()) {
-        _bootstrapGuides();
-      }
+      _applyPaymentDeepLinkIfNeeded();
+      _applyReviewDeepLinkIfNeeded();
     });
   }
 
   /// Web deep link from home/notifications: open payment panel, strip query.
-  bool _applyPaymentDeepLinkIfNeeded() {
+  void _applyPaymentDeepLinkIfNeeded() {
     final requestId = widget.initialPaymentRequestId;
-    if (requestId == null || requestId.isEmpty) return false;
-    if (!AppBreakpoints.isWeb(context)) return false;
+    if (requestId == null || requestId.isEmpty) return;
+    if (!AppBreakpoints.isWeb(context)) return;
 
     ref.read(webOrderPanelTaskProvider.notifier).state =
         WebOrderPanelPaymentRequest(
@@ -95,13 +84,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
       if (!mounted) return;
       context.go('/order/${widget.orderId}');
     });
-    return true;
   }
 
   /// Web deep link from home: open review panel, strip query.
-  bool _applyReviewDeepLinkIfNeeded() {
-    if (widget.initialReviewPanel != '1') return false;
-    if (!AppBreakpoints.isWeb(context)) return false;
+  void _applyReviewDeepLinkIfNeeded() {
+    if (widget.initialReviewPanel != '1') return;
+    if (!AppBreakpoints.isWeb(context)) return;
 
     ref.read(webOrderPanelTaskProvider.notifier).state =
         WebOrderPanelReview(orderId: widget.orderId);
@@ -112,33 +100,6 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
       if (!mounted) return;
       context.go('/order/${widget.orderId}');
     });
-    return true;
-  }
-
-  Future<void> _bootstrapGuides() async {
-    if (!mounted) return;
-    if (await OrderDetailGuideBootstrap.shouldShowPaymentCoach(
-      ref,
-      widget.orderId,
-    )) {
-      if (!mounted) return;
-      setState(() => _showPaymentCoach = true);
-      return;
-    }
-    final step = await OrderDetailGuideBootstrap.timelineStepIfNeeded(ref);
-    if (!mounted) return;
-    if (step != null) {
-      setState(() => _guideStep = step);
-    }
-  }
-
-  Future<void> _chainGuideAfterPaymentCoach() async {
-    setState(() => _showPaymentCoach = false);
-    final step = await OrderDetailGuideBootstrap.timelineStepIfNeeded(ref);
-    if (!mounted) return;
-    if (step != null) {
-      setState(() => _guideStep = step);
-    }
   }
 
   @override
@@ -188,29 +149,6 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     super.dispose();
   }
 
-  Widget _tabBody({required bool showSegmentedTabBar}) {
-    return OrderDetailTabBody(
-      orderId: widget.orderId,
-      tabController: _tabController,
-      showSegmentedTabBar: showSegmentedTabBar,
-      timelineKey: _timelineKey,
-      paymentCardKey: _paymentCardKey,
-      chatTabKey: _chatTabKey,
-      docsTabKey: _docsTabKey,
-      showPaymentCoach: _showPaymentCoach,
-      guideStep: _guideStep,
-      suppressTimelineStageCoaches: _showPaymentCoach || _guideStep != 0,
-      onPaymentCoachDismissed: () {
-        setState(() => _showPaymentCoach = false);
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _chainGuideAfterPaymentCoach(),
-        );
-      },
-      onGuideStepChanged: (step) => setState(() => _guideStep = step),
-      onSwitchToChat: () => _tabController.animateTo(1),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isWeb = AppBreakpoints.isWeb(context);
@@ -228,8 +166,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                 orderId: widget.orderId,
                 tabController: _tabController,
                 onTabChanged: _onWebTabChanged,
-                buildBody: (ctx, showSegBar) =>
-                    _tabBody(showSegmentedTabBar: showSegBar),
+                buildBody: (ctx, showSegBar) => OrderDetailTabBody(
+                  orderId: widget.orderId,
+                  tabController: _tabController,
+                  showSegmentedTabBar: showSegBar,
+                  onSwitchToChat: () => _tabController.animateTo(1),
+                ),
               ),
             )
           : Scaffold(
@@ -238,7 +180,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                 orderId: widget.orderId,
                 isChatTabActive: _isChatTabActive,
               ),
-              body: _tabBody(showSegmentedTabBar: true),
+              body: OrderDetailTabBody(
+                orderId: widget.orderId,
+                tabController: _tabController,
+                showSegmentedTabBar: true,
+                onSwitchToChat: () => _tabController.animateTo(1),
+              ),
             ),
     );
   }

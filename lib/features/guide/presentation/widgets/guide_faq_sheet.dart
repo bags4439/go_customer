@@ -45,7 +45,7 @@ const List<GuideFaqItem> kGuideFaqItems = [
   GuideFaqItem(
     question: 'Can I cancel my order?',
     answer:
-        'Yes — you can cancel for free before '
+        'Yes. You can cancel for free before '
         'making your first payment. After payment, '
         'contact your agent to discuss your options.',
   ),
@@ -157,7 +157,7 @@ class _GuideFaqSheetState extends State<GuideFaqSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Help & FAQ',
+                            'Common questions',
                             style: AppTextStyles.titleSmall
                                 .copyWith(
                               fontSize: 18,

@@ -5,9 +5,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../guide/core/constants/guide_keys.dart';
-import '../../../guide/presentation/widgets/coach_mark_overlay.dart';
-import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
-import '../../../guide/presentation/widgets/spotlight_painter.dart';
+import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../referral/presentation/widgets/referral_promo_card.dart';
 import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
 import '../../domain/entities/order_view.dart';
@@ -17,7 +15,7 @@ import 'home_order_card.dart';
 import 'home_staggered_item.dart';
 import 'home_theme.dart';
 
-class HomeMultiOrderBody extends ConsumerStatefulWidget {
+class HomeMultiOrderBody extends ConsumerWidget {
   final List<OrderView> orders;
   final int pendingPayments;
   final int pendingReviews;
@@ -33,17 +31,6 @@ class HomeMultiOrderBody extends ConsumerStatefulWidget {
     required this.currentUserName,
   });
 
-  @override
-  ConsumerState<HomeMultiOrderBody> createState() => _HomeMultiOrderBodyState();
-}
-
-class _HomeMultiOrderBodyState extends ConsumerState<HomeMultiOrderBody>
-    with CoachMarkMixin<HomeMultiOrderBody> {
-  final _firstOrderCardKey = GlobalKey();
-
-  @override
-  String get coachMarkKey => GuideKeys.homeOrders;
-
   String _subtitleText(int active, int needsAction) {
     if (needsAction > 0) {
       return '$active active ${active == 1 ? 'order' : 'orders'} · '
@@ -54,18 +41,18 @@ class _HomeMultiOrderBodyState extends ConsumerState<HomeMultiOrderBody>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isWeb = AppBreakpoints.isWeb(context);
 
-    final active = widget.orders.where((o) => !o.isCompleted).length;
-    final completed = widget.orders.where((o) => o.isCompleted).length;
+    final active = orders.where((o) => !o.isCompleted).length;
+    final completed = orders.where((o) => o.isCompleted).length;
     final needsAction =
-        widget.orders.where((o) => o.needsPayment).length +
-        widget.pendingPayments +
-        widget.pendingReviews +
-        widget.pendingVehicleListings;
+        orders.where((o) => o.needsPayment).length +
+        pendingPayments +
+        pendingReviews +
+        pendingVehicleListings;
 
-    final sorted = [...widget.orders]
+    final sorted = [...orders]
       ..sort((a, b) {
         final aListings = ref.watch(pendingVehicleFeedbackCountProvider(a.id));
         final bListings = ref.watch(pendingVehicleFeedbackCountProvider(b.id));
@@ -79,13 +66,14 @@ class _HomeMultiOrderBodyState extends ConsumerState<HomeMultiOrderBody>
       });
 
     final listChildren = <Widget>[
+      const GuideHint(guideKey: GuideKeys.homeOrders),
       Padding(
         padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hi ${widget.currentUserName?.split(' ').first ?? ''} 👋',
+              'Hi ${currentUserName?.split(' ').first ?? ''} 👋',
               style: AppTextStyles.displaySmall.copyWith(
                 fontSize: 26,
                 fontWeight: FontWeight.w600,
@@ -148,12 +136,7 @@ class _HomeMultiOrderBodyState extends ConsumerState<HomeMultiOrderBody>
       ...sorted.asMap().entries.map(
         (entry) => HomeStaggeredItem(
           index: entry.key,
-          child: entry.key == 0
-              ? KeyedSubtree(
-                  key: _firstOrderCardKey,
-                  child: HomeOrderCard(order: entry.value),
-                )
-              : HomeOrderCard(order: entry.value),
+          child: HomeOrderCard(order: entry.value),
         ),
       ),
       const SizedBox(height: 8),
@@ -225,39 +208,19 @@ class _HomeMultiOrderBodyState extends ConsumerState<HomeMultiOrderBody>
       isWeb ? SizedBox.shrink() : const ReferralPromoCard(),
     ];
 
-    return Stack(
-      children: [
-        Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: ListView(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                16,
-                16,
-                24 + homeShellFloatingNavScrollBottomExtra(context),
-              ),
-              children: listChildren,
-            ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            24 + homeShellFloatingNavScrollBottomExtra(context),
           ),
+          children: listChildren,
         ),
-        if (showCoachMark && sorted.isNotEmpty)
-          CoachMarkOverlay(
-            guideKey: GuideKeys.homeOrders,
-            targetKey: _firstOrderCardKey,
-            title: 'Your order at a glance',
-            body:
-                'This card shows your import progress. '
-                'Tap it to see every detail of your '
-                'journey from search to delivery.',
-            spotlightShape: SpotlightShape.roundedRect,
-            onDismiss: hideCoachMark,
-            onFaqTap: () {
-              hideCoachMark();
-              GuideFaqSheet.show(context);
-            },
-          ),
-      ],
+      ),
     );
   }
 }
