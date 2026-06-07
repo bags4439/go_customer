@@ -5,8 +5,8 @@ import 'package:go_customer/core/widgets/card_container.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import '../../../../core/constants/app_version.dart';
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../shared/providers/app_version_label_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -280,7 +280,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         const SizedBox(height: 24),
                         Center(
                           child: Text(
-                            appVersionLabel,
+                            ref.watch(appVersionLabelProvider),
                             style: AppTextStyles.caption.copyWith(
                               color: ProfileUi.textTertiary,
                             ),

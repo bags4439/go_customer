@@ -12,6 +12,7 @@ import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/crash_reporter.dart';
 import 'core/utils/onesignal_web_helper.dart';
+import 'features/force_update/presentation/widgets/force_update_gate.dart';
 import 'features/notifications/onesignal/notification_onesignal_handler.dart';
 import 'firebase_options.dart';
 import 'router.dart';
@@ -141,6 +142,11 @@ class _CustomerAppState extends State<CustomerApp> {
       title: AppConstants.appName,
       theme: AppTheme.light(),
       routerConfig: router,
+      builder: (context, child) {
+        return ForceUpdateGate(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }
