@@ -41,6 +41,9 @@ class _ClearanceAgentManagedStateState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncAgentNotificationIfNeeded();
+    });
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -52,6 +55,19 @@ class _ClearanceAgentManagedStateState
         }
       });
     }
+  }
+
+  Future<void> _syncAgentNotificationIfNeeded() async {
+    if (!widget.duty.isAgentHandled) return;
+    if (ref.read(clearanceAgentNotifySyncedProvider(widget.orderId))) {
+      return;
+    }
+    ref.read(clearanceAgentNotifySyncedProvider(widget.orderId).notifier).state =
+        true;
+    await ref.read(dutyClearanceRepositoryProvider).syncAgentClearanceNotification(
+      orderId: widget.orderId,
+      choice: 'agent',
+    );
   }
 
   @override

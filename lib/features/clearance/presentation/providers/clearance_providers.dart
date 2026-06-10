@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/providers/firebase_providers.dart';
@@ -25,12 +26,17 @@ final clearanceDataSourceProvider = Provider<ClearanceFirestoreDataSource>((
   return ClearanceFirestoreDataSource(ref.watch(firestoreProvider));
 });
 
+/// All clearance callables are deployed in europe-west1.
+final clearanceFunctionsProvider = Provider<FirebaseFunctions>((ref) {
+  return FirebaseFunctions.instanceFor(region: 'europe-west1');
+});
+
 final dutyClearanceRepositoryProvider = Provider<DutyClearanceRepository>((
   ref,
 ) {
   return DutyClearanceRepositoryImpl(
     ref.watch(clearanceDataSourceProvider),
-    ref.watch(functionsProvider),
+    ref.watch(clearanceFunctionsProvider),
   );
 });
 
@@ -71,6 +77,10 @@ final selectedClearanceOptionProvider =
 
 /// True while the buyer is confirming a clearance choice — keeps choice UI mounted.
 final clearanceChoiceSubmittingProvider =
+    StateProvider.family<bool, String>((ref, orderId) => false);
+
+/// One backfill attempt per screen session when agent-managed clearance loads.
+final clearanceAgentNotifySyncedProvider =
     StateProvider.family<bool, String>((ref, orderId) => false);
 
 /// First name of the agent assigned to this order (for copy like "Ask Kofi").

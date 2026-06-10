@@ -13,4 +13,12 @@ abstract class DutyClearanceRepository {
     required String orderId,
     required double clearanceFeeUsd,
   });
+
+  /// Best-effort backfill when duty_clearance exists but the agent
+  /// was never notified (e.g. callable failed on wrong region).
+  Future<Either<Failure, Unit>> syncAgentClearanceNotification({
+    required String orderId,
+    required String choice,
+    bool switched = false,
+  });
 }
