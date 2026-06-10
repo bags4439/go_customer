@@ -2,16 +2,11 @@ class RouteConstants {
   static const String splash = 'splash';
   static const String onboarding = 'onboarding';
   static const String login = 'login';
-  static const String register = 'register';
-  static const String otpVerification = 'otp-verification';
-  static const String idUpload = 'id-upload';
-  static const String accountCreated = 'account-created';
 
   static const String home = 'home';
   static const String orderDetail = 'order-detail';
   static const String agentConnection = 'agent-connection';
   static const String paymentRequest = 'payment-request';
-  static const String paymentCheckout = 'payment-checkout';
   static const String paymentProcessing = 'payment-processing';
   static const String paymentConfirmed = 'payment-confirmed';
   static const String shipping = 'shipping';

@@ -30,7 +30,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _next() {
     if (_index == kOnboardingSlides.length - 1) {
-      context.goNamed(RouteConstants.register);
+      context.goNamed(RouteConstants.login);
       return;
     }
     if (!mounted) return;

@@ -273,6 +273,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
     try {
       final firestore = _ref.read(firestoreProvider);
       final updates = <String, dynamic>{
+        'role': FirestoreEnumValues.roleBuyer,
         'smsPhone': smsResolved,
         if (whatsappE164Value != null) 'whatsappPhone': whatsappE164Value,
         if (email.isNotEmpty) 'email': email,

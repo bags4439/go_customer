@@ -75,27 +75,6 @@ class AppUser {
       isGhanaian ? 'ghana_card' : 'passport';
 }
 
-class RegisterUserParams {
-  final String userId;
-  final String fullName;
-  final String phone;
-  final String? email;
-  final String location;
-  /// ISO 3166-1 alpha-2; empty string when not collected yet.
-  final String country;
-  final bool isFirstTimeBuyer;
-
-  const RegisterUserParams({
-    required this.userId,
-    required this.fullName,
-    required this.phone,
-    required this.email,
-    required this.location,
-    this.country = '',
-    required this.isFirstTimeBuyer,
-  });
-}
-
 class PhoneVerificationSession {
   final String verificationId;
   final int? resendToken;

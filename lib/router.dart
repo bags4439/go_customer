@@ -7,8 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'core/constants/route_constants.dart';
 import 'core/layout/app_breakpoints.dart';
 import 'core/widgets/buyer_dashboard_shell.dart';
-import 'features/auth/presentation/screens/account_created_screen.dart';
-import 'features/auth/presentation/screens/id_upload_screen.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
@@ -49,13 +47,8 @@ final router = GoRouter(
     final guestOnlyPaths = <String>{
       '/splash',
       '/onboarding',
-      '/register',
-      '/otp',
     };
-    if (user == null &&
-        !guestOnlyPaths.contains(location) &&
-        location != '/id-upload' &&
-        location != '/account-created') {
+    if (user == null && !guestOnlyPaths.contains(location)) {
       return '/login';
     }
     if (user != null && guestOnlyPaths.contains(location)) {
@@ -78,26 +71,6 @@ final router = GoRouter(
       name: RouteConstants.login,
       path: '/login',
       builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      name: RouteConstants.register,
-      path: '/register',
-      redirect: (_, __) => '/login',
-    ),
-    GoRoute(
-      name: RouteConstants.otpVerification,
-      path: '/otp',
-      redirect: (_, __) => '/login',
-    ),
-    GoRoute(
-      name: RouteConstants.idUpload,
-      path: '/id-upload',
-      builder: (context, state) => const IdUploadScreen(),
-    ),
-    GoRoute(
-      name: RouteConstants.accountCreated,
-      path: '/account-created',
-      builder: (context, state) => const AccountCreatedScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

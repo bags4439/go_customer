@@ -17,15 +17,7 @@ abstract class AuthRepository {
     required String smsCode,
   });
 
-  Future<Either<Failure, Unit>> createUserProfile(RegisterUserParams params);
-
   Future<Either<Failure, AppUser?>> getCurrentUser();
-
-  Future<Either<Failure, Unit>> uploadIdDocument({
-    required String userId,
-    required String localFilePath,
-    required String extension,
-  });
 
   Future<Either<Failure, Unit>> syncOneSignalIdentity(String userId);
 

@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../../../core/constants/firestore_collections.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/referral_code_generator.dart';
 import '../../../notifications/onesignal/notification_onesignal_handler.dart';
@@ -25,20 +25,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Stream<String?> authStateChanges() => _dataSource.authStateChanges();
-
-  @override
-  Future<Either<Failure, Unit>> createUserProfile(
-    RegisterUserParams params,
-  ) async {
-    try {
-      await _dataSource.createUserProfile(params);
-      return right(unit);
-    } catch (e) {
-      return left(
-        const FirestoreFailure(message: 'Could not save your profile.'),
-      );
-    }
-  }
 
   @override
   Future<Either<Failure, AppUser?>> getCurrentUser() async {
@@ -101,26 +87,6 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return left(
         UnexpectedFailure(message: 'Could not link notifications.', cause: e),
-      );
-    }
-  }
-
-  @override
-  Future<Either<Failure, Unit>> uploadIdDocument({
-    required String userId,
-    required String localFilePath,
-    required String extension,
-  }) async {
-    try {
-      await _dataSource.uploadIdDocument(
-        userId: userId,
-        localFilePath: localFilePath,
-        extension: extension,
-      );
-      return right(unit);
-    } catch (e) {
-      return left(
-        StorageFailure(message: 'Could not upload your ID document.', cause: e),
       );
     }
   }
@@ -251,14 +217,28 @@ class AuthRepositoryImpl implements AuthRepository {
         }
       }
 
+      final location = await _resolveCountryName(country);
+
       final batch = _firestore.batch();
 
       batch.set(
         _firestore.collection(FirestoreCollections.users).doc(uid),
         {
+          'id': uid,
           'fullName': fullName.trim(),
           'country': country,
+          'location': location,
+          'role': FirestoreEnumValues.roleBuyer,
+          'isFirstTimeBuyer': true,
+          'isVerified': false,
           'preferredCurrency': preferredCurrency,
+          'preferredLanguage': 'en',
+          'notificationPreferences': {
+            'agentMessages': true,
+            'orderUpdates': true,
+            'paymentRequests': true,
+            'promotionsAndNews': false,
+          },
           'referralCode': code,
           if (firebasePhone.isNotEmpty) 'phone': firebasePhone,
           'referralDiscountGhs': 0.0,
@@ -340,6 +320,28 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return Left(UnexpectedFailure(message: e.toString(), cause: e));
     }
+  }
+
+  /// Resolves ISO country code to display name for agent notification copy.
+  Future<String> _resolveCountryName(String countryIso) async {
+    if (countryIso.isEmpty) return '';
+    try {
+      final snap = await _firestore
+          .collection(FirestoreCollections.countries)
+          .where('isoCode', isEqualTo: countryIso)
+          .where('isActive', isEqualTo: true)
+          .limit(1)
+          .get();
+      if (snap.docs.isNotEmpty) {
+        final name = snap.docs.first.data()['name'] as String?;
+        if (name != null && name.trim().isNotEmpty) {
+          return name.trim();
+        }
+      }
+    } catch (_) {
+      // Fall back to ISO code below.
+    }
+    return countryIso;
   }
 }
 

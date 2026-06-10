@@ -95,35 +95,6 @@ class AuthFirebaseDataSource {
     return uid;
   }
 
-  Future<void> createUserProfile(RegisterUserParams params) async {
-    await _firestore
-        .collection(FirestoreCollections.users)
-        .doc(params.userId)
-        .set({
-          'id': params.userId,
-          'fullName': params.fullName,
-          'phone': params.phone,
-          'email': params.email,
-          'role': FirestoreEnumValues.roleBuyer,
-          'location': params.location,
-          'country': params.country,
-          'isFirstTimeBuyer': params.isFirstTimeBuyer,
-          'isVerified': false,
-          'ghanaCardPhotoUrl': null,
-          'ghanaCardNumber': null,
-          'preferredCurrency': 'GHS',
-          'preferredLanguage': 'en',
-          'notificationPreferences': {
-            'agentMessages': true,
-            'orderUpdates': true,
-            'paymentRequests': true,
-            'promotionsAndNews': false,
-          },
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-  }
-
   Future<AppUser?> getCurrentUser() async {
     final firebaseUser = _auth.currentUser;
     if (firebaseUser == null) return null;
@@ -135,23 +106,6 @@ class AuthFirebaseDataSource {
     if (!snapshot.exists) return null;
 
     return UserModel.fromFirestore(snapshot).toAppUser();
-  }
-
-  Future<void> uploadIdDocument({
-    required String userId,
-    required String localFilePath,
-    required String extension,
-  }) async {
-    final url = await _idDocumentStorage.upload(
-      userId: userId,
-      localFilePath: localFilePath,
-      extension: extension,
-    );
-
-    await _firestore.collection(FirestoreCollections.users).doc(userId).update({
-      'ghanaCardPhotoUrl': url,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
   }
 
   /// Uploads an ID photo without updating Firestore (for combined saves).
