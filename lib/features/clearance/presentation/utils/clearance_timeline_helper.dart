@@ -2,19 +2,18 @@ import '../../data/models/duty_clearance_model.dart';
 import '../../../orders/core/constants/order_timeline_constants.dart';
 import '../../../orders/data/models/order_timeline_model.dart';
 import '../../../orders/domain/entities/order_view.dart';
+import '../../../orders/presentation/utils/active_order_stage.dart';
 
 /// True when the order's current stage is the timeline [clearance] step.
 bool isOrderOnClearanceStep({
   required OrderView? order,
   required List<OrderTimelineModel>? timeline,
 }) {
-  if (order == null || timeline == null || timeline.isEmpty) return false;
-
-  final clearanceStages =
-      timeline.where((stage) => stage.stageKey == 'clearance').toList();
-  if (clearanceStages.isEmpty) return false;
-
-  return order.stageNumber == clearanceStages.first.stageNumber;
+  return isOrderOnStage(
+    order: order,
+    timeline: timeline,
+    stageKey: 'clearance',
+  );
 }
 
 /// Agent has published clearance progress beyond the initial placeholder.

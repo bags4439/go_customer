@@ -7,6 +7,7 @@ import '../../data/datasources/vehicle_option_firestore_data_source.dart';
 import '../../data/repositories/vehicle_option_repository_impl.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/providers/order_timeline_providers.dart';
+import '../../../orders/presentation/utils/active_order_stage.dart';
 import '../../domain/entities/buyer_vehicle_response.dart';
 import '../../domain/entities/vehicle_option.dart';
 import '../../domain/repositories/vehicle_option_repository.dart';
@@ -83,7 +84,17 @@ final pendingVehicleFeedbackCountProvider = Provider.family<int, String>((
   ref,
   orderId,
 ) {
-  if (!ref.watch(isOrderOnSearchingStepProvider(orderId))) return 0;
+  final order = ref.watch(orderProvider(orderId)).valueOrNull;
+  final timeline = ref.watch(orderTimelineProvider(orderId)).valueOrNull;
+  final repairJob = ref.watch(orderRepairJobProvider(orderId)).valueOrNull;
+  if (!isOrderOnStage(
+    order: order,
+    timeline: timeline,
+    stageKey: 'searching',
+    repairJob: repairJob,
+  )) {
+    return 0;
+  }
   final options = ref.watch(orderVehicleOptionsProvider(orderId)).valueOrNull;
   if (options == null) return 0;
   return options

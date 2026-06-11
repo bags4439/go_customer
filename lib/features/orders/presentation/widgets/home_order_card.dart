@@ -5,14 +5,15 @@ import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/constants/app_constants.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import '../../../clearance/presentation/providers/clearance_timeline_providers.dart';
-import '../../../clearance/presentation/utils/clearance_timeline_helper.dart';
 import '../../../vehicle_options/core/constants/vehicle_option_constants.dart';
 import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
 import '../../core/constants/order_timeline_constants.dart';
+import '../../data/models/order_timeline_model.dart';
 import 'order_detail/order_detail_web_navigation.dart';
 import '../providers/order_providers.dart';
 import '../providers/order_timeline_providers.dart';
+import '../utils/active_order_stage.dart';
+import '../utils/home_order_status_resolver.dart';
 import 'home_order_status.dart';
 import 'home_theme.dart';
 
@@ -298,16 +299,31 @@ class HomeOrderCard extends ConsumerWidget {
     final pendingAsync = ref.watch(pendingPaymentRequestsProvider(order.id));
     final pendingListings =
         ref.watch(pendingVehicleFeedbackCountProvider(order.id));
+    final timelineAsync = ref.watch(orderTimelineProvider(order.id));
     final clearanceAsync = ref.watch(orderClearanceProvider(order.id));
-    final clearanceUpdate = ref.watch(clearanceHasAgentUpdateProvider(order.id));
+    final repairJob = repairAsync.valueOrNull;
     final clearance = clearanceAsync.valueOrNull;
+    final timeline = timelineAsync.valueOrNull;
 
-    final statusDescription = homeOrderStatusDescription(
-      order,
-      repairJob: repairAsync.valueOrNull,
+    final visibleStages = timeline == null
+        ? <OrderTimelineModel>[]
+        : visibleTimelineStages(timeline, order, repairJob);
+    final totalStages = visibleStages.isEmpty ? 9 : visibleStages.length;
+
+    final clearanceUpdate = shouldShowClearanceHomeCta(
+      order: order,
+      timeline: timeline,
+      clearance: clearance,
+      repairJob: repairJob,
+    );
+
+    final statusDescription = resolveHomeOrderSubtitle(
+      order: order,
+      timeline: timeline,
+      repairJob: repairJob,
       pendingPayments: pendingAsync.valueOrNull,
+      clearance: clearance,
       pendingVehicleListings: pendingListings,
-      clearanceStatusLine: clearanceHomeStatusLine(clearance),
     );
 
     final needsReview =
@@ -325,7 +341,8 @@ class HomeOrderCard extends ConsumerWidget {
         ? HomeColors.success
         : HomeColors.primary;
 
-    final progress = (order.stageNumber.clamp(1, 9)) / 9.0;
+    final progress =
+        (order.stageNumber.clamp(1, totalStages)) / totalStages;
     const radius = 14.0;
 
     return Padding(
@@ -477,7 +494,7 @@ class HomeOrderCard extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  'Step ${order.stageNumber} of 9',
+                                  'Step ${order.stageNumber} of $totalStages',
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: HomeColors.textTertiary,
                                   ),

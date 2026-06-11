@@ -13,6 +13,7 @@ import '../providers/order_providers.dart';
 import '../providers/order_timeline_providers.dart';
 import '../../../payments/data/models/payment_request_model.dart';
 import '../../../repairs/data/models/repair_job_model.dart';
+import '../utils/active_order_stage.dart';
 import '../utils/repair_timeline_resolver.dart';
 import 'order_timeline_step_row.dart';
 
@@ -82,8 +83,7 @@ class _OrderTimelineWidgetState extends ConsumerState<OrderTimelineWidget>
     OrderView order,
     RepairJobModel? repairJob,
   ) {
-    if (order.repairOptedIn) return raw;
-    return raw.where((s) => s.stageKey != 'repair').toList();
+    return visibleTimelineStages(raw, order, repairJob);
   }
 
   void _ensureEntranceStarted(int count) {
