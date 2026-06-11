@@ -18,12 +18,10 @@ class RouteConstants {
   static const String vehicleDetail = 'vehicle-detail';
   static const String vehicleOptionsList = 'vehicle-options';
   static const String documentDetail = 'document-detail';
-  static const String orderPreferencesEdit = 'order-preferences-edit';
   static const String orderCancel = 'order-cancel';
   static const String orderCancelled = 'order-cancelled';
 
   static const String preferencesNew = 'preferences-new';
-  static const String preferencesEdit = 'preferences-edit';
 
   static const String notifications = 'notifications';
 

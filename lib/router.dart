@@ -21,7 +21,6 @@ import 'features/orders/presentation/screens/order_cancel_screen.dart';
 import 'features/orders/presentation/screens/order_cancelled_screen.dart';
 import 'features/orders/presentation/screens/buyer_review_screen.dart';
 import 'features/orders/presentation/screens/order_detail_screen.dart';
-import 'features/preferences/presentation/screens/order_edit_preferences_screen.dart';
 import 'features/payments/presentation/screens/payment_request_view_screen.dart';
 import 'features/payments/presentation/screens/payment_processing_screen.dart';
 import 'features/payments/presentation/screens/payment_confirmed_screen.dart';
@@ -234,13 +233,6 @@ final router = GoRouter(
           ),
         ),
         GoRoute(
-          name: RouteConstants.orderPreferencesEdit,
-          path: 'preferences/edit',
-          builder: (context, state) => OrderEditPreferencesScreen(
-            orderId: state.pathParameters['orderId']!,
-          ),
-        ),
-        GoRoute(
           name: RouteConstants.orderCancel,
           path: 'cancel',
           builder: (context, state) =>
@@ -253,12 +245,6 @@ final router = GoRouter(
               OrderCancelledScreen(orderId: state.pathParameters['orderId']!),
         ),
       ],
-    ),
-    GoRoute(
-      name: RouteConstants.preferencesEdit,
-      path: '/preferences/edit/:orderId',
-      builder: (context, state) =>
-          OrderEditPreferencesScreen(orderId: state.pathParameters['orderId']!),
     ),
     GoRoute(
       name: RouteConstants.idVerification,

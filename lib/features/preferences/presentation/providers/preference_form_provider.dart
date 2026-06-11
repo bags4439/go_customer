@@ -477,10 +477,7 @@ final preferencesDataSourceProvider = Provider<PreferencesFirestoreDataSource>((
 });
 
 final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {
-  return PreferencesRepositoryImpl(
-    ref.watch(preferencesDataSourceProvider),
-    ref.watch(functionsProvider),
-  );
+  return PreferencesRepositoryImpl(ref.watch(preferencesDataSourceProvider));
 });
 
 final createOrderFromPreferencesUseCaseProvider =

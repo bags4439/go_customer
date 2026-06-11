@@ -57,8 +57,8 @@ class GuideContextRegistry {
             'bidding, shipping, duty, clearance and delivery.',
         'You only pay when your agent sends a payment request. '
             'You approve every charge before money leaves your account.',
-        'You can edit your preferences or cancel for free before '
-            'your first payment.',
+        'You can cancel for free before your first payment if you change '
+            'your mind.',
       ],
     ),
     GuideKeys.homeOrders: GuideContextEntry(

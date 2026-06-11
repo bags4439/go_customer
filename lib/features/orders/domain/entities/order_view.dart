@@ -11,6 +11,7 @@ class OrderView {
   final bool firstPaymentMade;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final DateTime? hiddenAt;
 
   // From car_preferences subcollection
   final String? make;
@@ -35,6 +36,7 @@ class OrderView {
     required this.firstPaymentMade,
     required this.createdAt,
     required this.updatedAt,
+    this.hiddenAt,
     required this.make,
     required this.model,
     this.trim,
@@ -53,6 +55,10 @@ class OrderView {
   bool get isCompleted => status == _delivered;
   bool get needsPayment => status == _paymentPending;
   bool get isCancelled => status == _cancelled;
+
+  bool get isHidden => hiddenAt != null;
+
+  bool get isVisible => !isHidden;
 
   /// Display label for purchase origin.
   String get purchaseOriginLabel => switch (purchaseOrigin) {

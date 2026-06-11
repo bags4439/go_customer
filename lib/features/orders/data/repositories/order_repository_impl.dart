@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/failures.dart';
+import '../../core/order_visibility.dart';
 import '../../domain/entities/agent_detail_view.dart';
 import '../../domain/entities/order_view.dart';
 import '../../domain/repositories/order_repository.dart';
@@ -21,6 +22,7 @@ class OrderRepositoryImpl implements OrderRepository {
     return _dataSource.watchOrder(orderId).map((raw) {
       try {
         if (raw.orderDoc == null) return const Right(null);
+        if (!isOrderVisibleFromMap(raw.orderDoc!)) return const Right(null);
         return Right(
           _mapToOrderView(
             raw.orderId ?? orderId,
@@ -41,7 +43,10 @@ class OrderRepositoryImpl implements OrderRepository {
         final futures = ids.map((id) => _dataSource.watchOrder(id).first);
         final raws = await Future.wait(futures);
         final views = raws
-            .where((r) => r.orderDoc != null)
+            .where(
+              (r) =>
+                  r.orderDoc != null && isOrderVisibleFromMap(r.orderDoc!),
+            )
             .map(
               (r) =>
                   _mapToOrderView(r.orderId ?? '', r.orderDoc!, r.preferences),
@@ -120,6 +125,20 @@ class OrderRepositoryImpl implements OrderRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, Unit>> hideCancelledOrder(String orderId) async {
+    try {
+      await _functions.httpsCallable('hideCancelledOrder').call({
+        'orderId': orderId,
+      });
+      return right(unit);
+    } catch (e) {
+      return left(
+        FirestoreFailure(message: 'Could not remove order.', cause: e),
+      );
+    }
+  }
+
   OrderView _mapToOrderView(
     String id,
     Map<String, dynamic> data,
@@ -140,6 +159,7 @@ class OrderRepositoryImpl implements OrderRepository {
       firstPaymentMade: data['firstPaymentMade'] as bool? ?? false,
       createdAt: createdRaw is Timestamp ? createdRaw.toDate() : null,
       updatedAt: updatedRaw is Timestamp ? updatedRaw.toDate() : null,
+      hiddenAt: hiddenAtFromMap(data),
       make: prefs?['make'] as String?,
       model: prefs?['model'] as String?,
       trim: prefs?['trim'] as String?,
@@ -164,6 +184,7 @@ class OrderRepositoryImpl implements OrderRepository {
       userId: raw.userId,
       fullName: fullName,
       phone: raw.userData['phone'] as String?,
+      whatsappPhone: raw.userData['whatsappPhone'] as String?,
       photoUrl: raw.agentData['photoUrl'] as String?,
       successRate: (raw.agentData['successRate'] as num? ?? 98).toDouble(),
       rating: (raw.agentData['rating'] as num? ?? 4.9).toDouble(),

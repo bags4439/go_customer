@@ -20,4 +20,7 @@ abstract class OrderRepository {
 
   /// Cancels the order and notifies the agent.
   Future<Either<Failure, Unit>> cancelOrder(String orderId);
+
+  /// Hides a cancelled order from buyer and agent lists (soft delete).
+  Future<Either<Failure, Unit>> hideCancelledOrder(String orderId);
 }

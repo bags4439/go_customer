@@ -127,7 +127,7 @@ class LoginScreen extends ConsumerWidget {
           eyebrow: 'TRUSTED BY BUYERS ACROSS GHANA',
           heading: 'Your car, sourced globally.\nDelivered to your door.',
           subheading:
-              'From US auctions to Dubai dealers — your dedicated agent '
+              'From US auctions to Dubai dealers, your dedicated agent '
               'manages everything so you don\'t have to.',
           stats: [
             DarkPanelStat(value: '48+', label: 'Vehicles imported'),
@@ -2614,7 +2614,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                             ? 'If a friend referred you, enter their code. '
                                   'They earn a reward when you complete your '
                                   'first order.'
-                            : 'Enter a friend\'s code — they\'ll get a reward when you join.',
+                            : 'Enter a friend\'s code. They\'ll get a reward when you join.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),
                           fontSize: ResponsiveLayout.isWeb(context) ? 12 : null,
@@ -2664,7 +2664,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '6 characters — letters and numbers only',
+                        '6 characters, letters and numbers only',
                         style: AppTextStyles.cardLabel.copyWith(
                           color: const Color(0xFFAAAAAA),
                         ),
@@ -2900,7 +2900,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                             ? 'We\'ll keep you updated on your order progress '
                                   'via the channels you choose.'
                             : 'We will keep you updated on your order progress. '
-                                  'Your phone number has been pre-filled — update it if '
+                                  'Your phone number has been pre-filled. Update it if '
                                   'you use a different number for these channels.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),

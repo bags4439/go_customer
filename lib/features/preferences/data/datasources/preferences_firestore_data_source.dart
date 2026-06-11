@@ -20,41 +20,6 @@ class PreferencesFirestoreDataSource {
     return {...data, 'id': id};
   }
 
-  Future<void> updateCarPreferences(
-      String preferenceId,
-      Map<String, dynamic> values,
-      ) async {
-    await _firestore
-        .collection(FirestoreCollections.carPreferences)
-        .doc(preferenceId)
-        .update({
-      ...values,
-      'editedBy': 'buyer',
-      'editedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
-  Future<void> createPreferenceEditHistory({
-    required String orderId,
-    required String editedByUserId,
-    required String editedByRole,
-    required Map<String, dynamic> previousValuesJson,
-    required Map<String, dynamic> newValuesJson,
-  }) async {
-    await _firestore
-        .collection(FirestoreCollections.preferenceEditHistory)
-        .add({
-      'orderId': orderId,
-      'editedByUserId': editedByUserId,
-      'editedByRole': editedByRole,
-      'previousValuesJson': previousValuesJson,
-      'newValuesJson': newValuesJson,
-      'reason': null,
-      'buyerNotified': false,
-      'editedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
   Future<String> createOrderFromPreferences({
     required String buyerId,
     required PreferenceSubmission submission,

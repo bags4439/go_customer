@@ -56,7 +56,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
     title: 'Tell us what\nyou want.',
     subtitle:
         'Point us to your dream car'
-        ' — make, model, budget.'
+        ' , make, model, budget.'
         ' We take it from there.',
     buttonLabel: 'Get started',
     accentColor: Color(0xFF234A83),
@@ -128,7 +128,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
     title: 'We handle\nthe journey.',
     subtitle:
         'Shipping, port clearance,'
-        ' duty, repairs — tracked'
+        ' duty, repairs tracked'
         ' end to end. You watch,'
         ' we handle it.',
     buttonLabel: 'Continue',
@@ -160,7 +160,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
     title: 'Road ready.\nDelivered.',
     subtitle:
         'Your car arrives road-ready'
-        ' — delivered to you or ready'
+        ' , delivered to you or ready'
         ' for collection. Keys in hand.',
     buttonLabel: 'Continue',
     accentColor: Color(0xFF378ADD),

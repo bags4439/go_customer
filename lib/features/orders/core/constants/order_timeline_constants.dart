@@ -16,7 +16,7 @@ class OrderTimelineConstants {
   static const String atRateNote = "At today's rate: 1 USD = GHS ";
   static const String payNowButton = 'Pay [amount] →';
   static const String paidCheck = 'Paid ✓';
-  static const String paidShippingArranged = 'Paid ✓ — shipping being arranged';
+  static const String paidShippingArranged = 'Paid ✓. shipping being arranged';
   static const String chatWithAgent = 'Chat with agent →';
   static const String chooseClearance = 'Choose clearance option →';
   static const String rateExperience = 'Rate your experience →';
@@ -102,15 +102,15 @@ class OrderTimelineConstants {
       'Your vehicle has been released. Delivery is next.';
   static const String clearanceViewDetails = 'View clearance details →';
   static const String clearanceUpdateSubmitted =
-      'Update from your agent — documents submitted to GRA/ICUMS';
+      'Update from your agent: documents submitted to GRA/ICUMS';
   static const String clearanceUpdateAssessed =
-      'Update from your agent — duty assessed';
+      'Update from your agent: duty assessed';
   static const String clearanceUpdatePaid =
-      'Update from your agent — duty paid';
+      'Update from your agent: duty paid';
   static const String clearanceUpdateCleared =
-      'Update from your agent — vehicle cleared from port';
+      'Update from your agent: vehicle cleared from port';
   static const String clearanceUpdateNote =
-      'Update from your agent — see note below';
+      'Update from your agent: see note below';
   static const String clearanceHomeUpdateLine =
       'Clearance update from your agent · tap to view';
   static const String clearanceHomeCtaTitle = 'Clearance update';
@@ -123,7 +123,7 @@ class OrderTimelineConstants {
   static const String repairQuoteSentSub =
       'Review the quote and approve before work starts.';
   static const String repairQuoteSentTimelineDetail =
-      'Repair quote ready — tap to review and approve';
+      'Repair quote ready, tap to review and approve';
   static const String repairQuoteApproved = 'Quote approved';
   static const String repairQuoteApprovedSub =
       'Your agent is preparing the deposit payment request.';
@@ -131,7 +131,7 @@ class OrderTimelineConstants {
   static const String repairDepositPaidSub =
       'Your agent will start repairs shortly.';
   static const String repairDepositConfirmingSub =
-      'Confirming your payment — repairs will start once cleared.';
+      'Confirming your payment, repairs will start once cleared.';
   static const String repairQuoteDeclined = 'Quote declined';
   static const String repairQuoteDeclinedSub =
       'Your agent will send an updated quote shortly.';
@@ -140,20 +140,20 @@ class OrderTimelineConstants {
   static const String repairEstCompletion = 'Est. completion: ';
   static const String repairCompleteTitle = '✅ Repairs complete';
   static const String repairCompleteTimelineDetail =
-      'Repairs complete — delivery is next';
+      'Repairs complete. Delivery is next';
   static const String repairInProgressTimelineDetail =
       'Your vehicle is being repaired at the garage';
   static const String repairDepositDueTimelineDetail =
-      'Repair deposit due — pay to proceed';
+      'Repair deposit due. Pay to proceed';
   static const String repairBalanceDueTimelineDetail =
-      'Repair balance due — pay when ready';
+      'Repair balance due. Pay when ready';
   static const String repairBalancePaidSub = 'Repair balance paid ✓';
   static const String repairTimelineNoJobDetail =
       'Confirm whether you want agent-managed repairs';
   static const String repairTimelineDetailQuoteApproved =
-      'Quote approved — deposit request coming next';
+      'Quote approved. Deposit request coming next';
   static const String repairTimelineDetailQuoteDeclined =
-      'Quote declined — awaiting updated quote';
+      'Quote declined, awaiting updated quote';
 
   static const String repairBadgeAction = 'Action needed';
   static const String repairBadgeNoRepairs = 'No repairs';
@@ -168,34 +168,34 @@ class OrderTimelineConstants {
   static const String repairBadgeComplete = 'Complete';
 
   static const String repairPaymentContextDeposit =
-      'Quote approved — repair deposit payment';
+      'Quote approved, repair deposit payment';
   static const String repairPaymentContextBalance =
-      'Repairs in progress — balance payment';
+      'Repairs in progress, balance payment';
   static const String repairCompletedRowSub =
       'Tap to view repair summary and photos';
   static const String repairViewSummary = 'View repair summary →';
 
   static const String homeRepairQuoteSent =
-      'Repair quote ready — review and approve';
+      'Repair quote ready. Review and approve';
   static const String homeRepairQuoteApproved =
-      'Quote approved — awaiting deposit request';
+      'Quote approved. Awaiting deposit request';
   static const String homeRepairDepositDue =
-      'Repair deposit due — tap to pay';
+      'Repair deposit due. Tap to pay';
   static const String homeRepairDepositPaid =
-      'Repair deposit paid — work starting soon';
+      'Repair deposit paid. Work starting soon';
   static const String homeRepairInProgress = 'Repairs in progress at garage';
   static const String homeRepairBalanceDue =
-      'Repair balance due — tap to pay';
+      'Repair balance due. Tap to pay';
   static const String homeRepairComplete =
       'Repairs complete · delivery next';
 
-  static const String repairNoRepairsTitle = 'No repairs — delivering as-is';
+  static const String repairNoRepairsTitle = 'No repairs, delivering as-is';
   static const String repairNoRepairsSub =
       'Tap to review or arrange agent-managed repairs';
   static const String partnerGarage = 'Partner garage';
 
   static const String deliveryCompletedRowSub =
-      'Vehicle received — share your feedback';
+      'Vehicle received. Share your feedback';
   static const String deliveryHomeCtaTitle = 'Rate your experience';
   static const String deliveryHomeCtaAction = 'Leave feedback →';
   static const String deliveryHomeCtaLine =

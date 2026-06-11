@@ -4,6 +4,7 @@ class AgentDetailView {
   final String userId;
   final String fullName;
   final String? phone;
+  final String? whatsappPhone;
   final String? photoUrl; // null → show initials
   final double successRate;
   final double rating;
@@ -15,12 +16,22 @@ class AgentDetailView {
     required this.userId,
     required this.fullName,
     this.phone,
+    this.whatsappPhone,
     this.photoUrl,
     required this.successRate,
     required this.rating,
     required this.totalOrdersCompleted,
     required this.introMessage,
   });
+
+  /// Best number for WhatsApp deep link (dedicated WA or phone fallback).
+  String? get whatsappNumberForContact {
+    final wa = whatsappPhone?.trim();
+    if (wa != null && wa.isNotEmpty) return wa;
+    final ph = phone?.trim();
+    if (ph != null && ph.isNotEmpty) return ph;
+    return null;
+  }
 
   String get initials {
     final parts = fullName.trim().split(' ');

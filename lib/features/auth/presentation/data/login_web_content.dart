@@ -58,7 +58,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
     heading: 'Your car,\nsourced globally.',
     subheading:
         'From US auctions to Dubai'
-        ' dealers — your dedicated'
+        ' dealers, your dedicated'
         ' agent manages everything'
         ' so you don\'t have to.',
     tiles: [

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -12,6 +13,7 @@ import '../../domain/entities/payment_request_view.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/usecases/cancel_order_use_case.dart';
 import '../../domain/usecases/get_agent_detail_use_case.dart';
+import '../../domain/usecases/hide_cancelled_order_use_case.dart';
 import '../../domain/usecases/watch_buyer_orders_use_case.dart';
 import '../../domain/usecases/watch_order_use_case.dart';
 
@@ -29,10 +31,15 @@ final orderFirestoreDataSourceProvider = Provider<OrderFirestoreDataSource>((
   return OrderFirestoreDataSource(ref.watch(firestoreProvider));
 });
 
+/// Order callables (`hideCancelledOrder`, etc.) are deployed in europe-west1.
+final orderFunctionsProvider = Provider<FirebaseFunctions>((ref) {
+  return FirebaseFunctions.instanceFor(region: 'europe-west1');
+});
+
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   return OrderRepositoryImpl(
     ref.watch(orderFirestoreDataSourceProvider),
-    ref.watch(functionsProvider),
+    ref.watch(orderFunctionsProvider),
   );
 });
 
@@ -54,6 +61,12 @@ final getAgentDetailUseCaseProvider = Provider<GetAgentDetailUseCase>((ref) {
 
 final cancelOrderUseCaseProvider = Provider<CancelOrderUseCase>((ref) {
   return CancelOrderUseCase(ref.watch(orderRepositoryProvider));
+});
+
+final hideCancelledOrderUseCaseProvider = Provider<HideCancelledOrderUseCase>((
+  ref,
+) {
+  return HideCancelledOrderUseCase(ref.watch(orderRepositoryProvider));
 });
 
 // ── Order stream ────────────────────────────────────────
@@ -157,7 +170,7 @@ final pendingReviewCountProvider = Provider<int>((ref) {
       .length;
 });
 
-final canEditOrderProvider = Provider.family<bool, String>((ref, orderId) {
+final canCancelOrderProvider = Provider.family<bool, String>((ref, orderId) {
   final orderAsync = ref.watch(orderProvider(orderId));
   return orderAsync.maybeWhen(
     data: (order) {
@@ -167,6 +180,17 @@ final canEditOrderProvider = Provider.family<bool, String>((ref, orderId) {
       if (order.isCompleted) return false;
       return true;
     },
+    orElse: () => false,
+  );
+});
+
+final canRemoveCancelledOrderProvider = Provider.family<bool, String>((
+  ref,
+  orderId,
+) {
+  final orderAsync = ref.watch(orderProvider(orderId));
+  return orderAsync.maybeWhen(
+    data: (order) => order != null && order.isCancelled && order.isVisible,
     orElse: () => false,
   );
 });
@@ -225,3 +249,38 @@ final cancelOrderNotifierProvider =
       CancelOrderStatus,
       String
     >((ref, orderId) => CancelOrderNotifier(orderId, ref));
+
+// ── Hide cancelled order ────────────────────────────────
+
+enum HideCancelledOrderStatus { idle, hiding, hidden, error }
+
+class HideCancelledOrderNotifier extends StateNotifier<HideCancelledOrderStatus> {
+  HideCancelledOrderNotifier(this._orderId, this._ref)
+      : super(HideCancelledOrderStatus.idle);
+
+  final String _orderId;
+  final Ref _ref;
+
+  Future<bool> hide() async {
+    state = HideCancelledOrderStatus.hiding;
+    final useCase = _ref.read(hideCancelledOrderUseCaseProvider);
+    final result = await useCase(_orderId);
+    return result.fold(
+      (_) {
+        state = HideCancelledOrderStatus.error;
+        return false;
+      },
+      (_) {
+        state = HideCancelledOrderStatus.hidden;
+        return true;
+      },
+    );
+  }
+}
+
+final hideCancelledOrderNotifierProvider =
+    StateNotifierProvider.family<
+      HideCancelledOrderNotifier,
+      HideCancelledOrderStatus,
+      String
+    >((ref, orderId) => HideCancelledOrderNotifier(orderId, ref));

@@ -12,7 +12,9 @@ import 'order_detail_web_navigation.dart';
 import 'package:go_customer/features/orders/presentation/widgets/order_timeline_widget.dart';
 import 'package:go_customer/features/payments/data/models/payment_request_model.dart';
 import 'order_detail_car_card.dart';
-import 'order_detail_edit_cancel.dart';
+import 'order_detail_cancel_section.dart';
+import 'order_detail_remove_cancelled_section.dart';
+import 'order_not_available_view.dart';
 import 'order_detail_payment_card.dart';
 
 /// Overview tab: payment CTA, vehicle card (mobile), timeline, edit/cancel.
@@ -33,14 +35,7 @@ class OrderDetailOverviewTab extends ConsumerWidget {
     return orderAsync.when(
       data: (order) {
         if (order == null) {
-          return Center(
-            child: Text(
-              'Order not found',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          );
+          return const OrderNotAvailableView();
         }
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
@@ -98,9 +93,13 @@ class OrderDetailOverviewTab extends ConsumerWidget {
                       OrderDetailWebNavigation.openTimelineStep(ref, stageKey)
                   : null,
             ),
-            if (ref.watch(canEditOrderProvider(order.id))) ...[
+            if (ref.watch(canCancelOrderProvider(order.id))) ...[
               const SizedBox(height: 20),
-              OrderDetailEditCancelSection(orderId: order.id),
+              OrderDetailCancelSection(orderId: order.id),
+            ],
+            if (ref.watch(canRemoveCancelledOrderProvider(order.id))) ...[
+              const SizedBox(height: 20),
+              OrderDetailRemoveCancelledSection(orderId: order.id),
             ],
             const SizedBox(height: 32),
           ],

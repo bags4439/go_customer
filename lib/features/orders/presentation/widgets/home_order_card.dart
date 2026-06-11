@@ -329,7 +329,9 @@ class HomeOrderCard extends ConsumerWidget {
     final needsReview =
         order.status == AppConstants.statusDeliveryConfirmed;
 
-    final accentColor = order.needsPayment
+    final accentColor = order.isCancelled
+        ? HomeColors.textTertiary
+        : order.needsPayment
         ? HomeColors.danger
         : pendingListings > 0
         ? HomeColors.warning

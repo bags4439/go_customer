@@ -44,7 +44,9 @@ class HomeMultiOrderBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isWeb = AppBreakpoints.isWeb(context);
 
-    final active = orders.where((o) => !o.isCompleted).length;
+    final active = orders
+        .where((o) => !o.isCompleted && !o.isCancelled)
+        .length;
     final completed = orders.where((o) => o.isCompleted).length;
     final needsAction =
         orders.where((o) => o.needsPayment).length +
@@ -62,6 +64,8 @@ class HomeMultiOrderBody extends ConsumerWidget {
         if (aListings == 0 && bListings > 0) return 1;
         if (!a.isCompleted && b.isCompleted) return -1;
         if (a.isCompleted && !b.isCompleted) return 1;
+        if (a.isCancelled && !b.isCancelled) return 1;
+        if (!a.isCancelled && b.isCancelled) return -1;
         return b.stageNumber.compareTo(a.stageNumber);
       });
 
