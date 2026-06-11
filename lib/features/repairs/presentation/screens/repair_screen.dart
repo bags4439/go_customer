@@ -45,13 +45,9 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
   Widget build(BuildContext context) {
     final currency = ref.watch(preferredCurrencyProvider);
     final screenState = ref.watch(repairScreenStateProvider(widget.orderId));
-    final forceChoiceScreen =
-        ref.watch(repairChoiceSubmittingProvider(widget.orderId));
     final forceQuoteSentScreen =
         ref.watch(repairQuoteAcceptSubmittingProvider(widget.orderId));
-    final effectiveState = forceChoiceScreen
-        ? RepairScreenState.choice
-        : forceQuoteSentScreen
+    final effectiveState = forceQuoteSentScreen
         ? RepairScreenState.quoteSent
         : screenState;
     final jobAsync = ref.watch(repairJobProvider(widget.orderId));

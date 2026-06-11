@@ -16,7 +16,7 @@ import '../../domain/repositories/repair_repository.dart';
 /// Screen state for repair route: which UI to show.
 enum RepairScreenState {
   notAvailable,
-  choice,
+  awaitingAgent,
   awaitingQuote,
   quoteSent,
   quoteDeclined,
@@ -54,7 +54,7 @@ final repairScreenStateProvider =
   // set by the agent — not by
   // duty_clearance.graStatus.
   if ((order?.stageNumber ?? 0) < 8) return RepairScreenState.notAvailable;
-  if (job == null) return RepairScreenState.choice;
+  if (job == null) return RepairScreenState.awaitingAgent;
 
   // Use optedIn stored on the job
   // document — no race condition
@@ -75,7 +75,7 @@ final repairScreenStateProvider =
   if (job.isQuoteApproved) return RepairScreenState.quoteApproved;
   if (job.isInProgress) return RepairScreenState.inProgress;
   if (job.isCompleted) return RepairScreenState.complete;
-  return RepairScreenState.choice;
+  return RepairScreenState.awaitingAgent;
 });
 
 final repairEstimateProvider =

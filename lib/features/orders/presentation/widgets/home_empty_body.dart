@@ -94,7 +94,7 @@ class HomeEmptyBody extends ConsumerWidget {
                                 const SizedBox(height: 16),
 
                                 Text(
-                                  'Buy your car from the US, Dubai or China',
+                                  'Tell us what car you want',
                                   style: AppTextStyles.titleMedium.copyWith(
                                     fontSize: 18,
                                     height: 1.25,
@@ -104,8 +104,8 @@ class HomeEmptyBody extends ConsumerWidget {
                                 const SizedBox(height: 8),
 
                                 Text(
-                                  'Tell us what you want, we handle everything '
-                                  'from auction to your driveway.',
+                                  'Your agent handles sourcing, shipping, duty, '
+                                  'and delivery — you just choose the car.',
                                   style: AppTextStyles.bodySmall.copyWith(
                                     color: HomeColors.textSecondary,
                                     height: 1.5,

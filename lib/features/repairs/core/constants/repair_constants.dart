@@ -16,13 +16,22 @@ class RepairConstants {
   static const String clearedBarTitle = 'Vehicle cleared from Tema port';
   static const String clearedBarSubtitle = 'Ready for next step';
 
-  // State 1 – preference reminder
-  static const String reminderOptedIn =
-      'You selected repairs during your preferences. Your previous choice is pre-selected below. You can still change your mind.';
-  static const String reminderOptedOut =
-      'You opted out of repairs during your preferences. You can still change your mind below.';
+  // Agent-routed — buyer waits for agent to open repair workflow
+  static const String awaitingAgentTitle = 'Repairs';
+  static String awaitingAgentBody(String agentFirstName) =>
+      'Your vehicle has been cleared. $agentFirstName will review its condition '
+      'and advise whether repairs are needed before delivery.';
+  static const String awaitingAgentHint =
+      'You will receive a notification when a repair quote is ready, or when '
+      'your car is cleared for delivery.';
 
-  // State 1 – choice
+  // Legacy buyer-choice screen (deprecated — agent routes repairs)
+  static const String reminderOptedIn =
+      'Your agent is arranging repairs for this vehicle.';
+  static const String reminderOptedOut =
+      'Your agent has confirmed delivery without repairs.';
+
+  // Legacy choice copy (agent-initiated repair jobs only)
   static const String state1Heading = 'Would you like us to arrange repairs?';
   static const String optionYesTitle = 'Yes, arrange repairs for me';
   static const String optionYesPriceLabel =

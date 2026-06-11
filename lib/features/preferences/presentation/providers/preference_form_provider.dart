@@ -3,8 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../../shared/providers/firebase_providers.dart';
+import '../../../../shared/providers/system_settings_provider.dart';
+import '../../../catalogue/domain/entities/car_make.dart';
 import '../../../catalogue/domain/entities/car_model.dart';
 import '../../../catalogue/presentation/providers/car_catalogue_providers.dart';
+import '../../core/preference_catalogue_utils.dart';
+import '../../domain/budget_fit.dart';
+import '../../domain/china_import_mode.dart';
 import '../../data/datasources/preferences_firestore_data_source.dart';
 import '../../data/repositories/preferences_repository_impl.dart';
 import '../../domain/entities/preference_submission.dart';
@@ -14,7 +19,6 @@ import '../../domain/usecases/create_order_from_preferences_use_case.dart';
 enum PreferenceCondition {
   readyToDrive,
   needsModerateRepair,
-  fullRebuildProject,
   newVehicle,
   goodCondition,
   fairCondition;
@@ -22,15 +26,12 @@ enum PreferenceCondition {
   static PreferenceCondition fromString(String s) => switch (s) {
         'run_and_drive' => PreferenceCondition.readyToDrive,
         'repairable' => PreferenceCondition.needsModerateRepair,
-        'full_rebuild' => PreferenceCondition.fullRebuildProject,
         'new_vehicle' => PreferenceCondition.newVehicle,
         'good_condition' => PreferenceCondition.goodCondition,
         'fair_condition' => PreferenceCondition.fairCondition,
         _ => PreferenceCondition.readyToDrive,
       };
 }
-
-enum MileageBand { m50k, m70k, m100k, any }
 
 class CostEstimate {
   final double ghs;
@@ -44,6 +45,22 @@ class CostEstimate {
   });
 }
 
+class DepositBreakdown {
+  final double estimatedLandedGhs;
+  final double depositGhs;
+  final double serviceFeeGhs;
+  final double depositPercent;
+
+  const DepositBreakdown({
+    required this.estimatedLandedGhs,
+    required this.depositGhs,
+    required this.serviceFeeGhs,
+    required this.depositPercent,
+  });
+
+  double get initialPaymentGhs => depositGhs + serviceFeeGhs;
+}
+
 const _undefined = Object();
 
 String preferenceConditionToFirestoreString(PreferenceCondition c) =>
@@ -52,8 +69,6 @@ String preferenceConditionToFirestoreString(PreferenceCondition c) =>
         FirestoreEnumValues.vehicleConditionRunAndDrive,
       PreferenceCondition.needsModerateRepair =>
         FirestoreEnumValues.vehicleConditionRepairable,
-      PreferenceCondition.fullRebuildProject =>
-        FirestoreEnumValues.vehicleConditionFullRebuild,
       PreferenceCondition.newVehicle =>
         FirestoreEnumValues.vehicleConditionNewVehicle,
       PreferenceCondition.goodCondition =>
@@ -63,286 +78,277 @@ String preferenceConditionToFirestoreString(PreferenceCondition c) =>
     };
 
 String preferenceConditionUiLabel(PreferenceCondition c) => switch (c) {
-      PreferenceCondition.readyToDrive => 'Ready to drive',
-      PreferenceCondition.needsModerateRepair => 'Needs moderate repair',
-      PreferenceCondition.fullRebuildProject => 'Full rebuild project',
+      PreferenceCondition.readyToDrive => 'Ready to use',
+      PreferenceCondition.needsModerateRepair => 'Needs some work',
       PreferenceCondition.newVehicle => 'Brand new',
       PreferenceCondition.goodCondition => 'Good condition',
       PreferenceCondition.fairCondition => 'Fair condition',
     };
 
+/// Rolling 4-year window ending at the most recent full model year.
+(int, int) preferenceDefaultYearRange() {
+  final yearTo = DateTime.now().year - 1;
+  return (yearTo - 3, yearTo);
+}
+
+/// Agent-side search default when the buyer does not specify mileage.
+const int preferenceDefaultMaxMileage = 100000;
+
 class PreferenceFormState {
+  /// 1 = your car, 2 = confirm
   final int currentStep;
-  final String purchaseOrigin;
+  final ChinaImportMode chinaImportMode;
+  final bool showAdvancedSourcing;
+  final String advancedPurchaseOrigin;
+  final bool yearRangeExpanded;
+  final int? maxBudgetUsd;
   final String? trim;
   final String? makeSlug;
   final String? modelSlug;
-  final bool isNewVehicle;
-  final bool skipConditionStep;
   final String make;
   final String model;
   final int yearFrom;
   final int yearTo;
   final PreferenceCondition condition;
-  final MileageBand mileageBand;
   final int maxMileage;
-  final bool repairOptedIn;
-  final bool expandedDeposit;
-  final bool expandedServiceFee;
-  final bool expandedBalanceShipping;
-  final bool expandedImportDuty;
-  final bool expandedPortClearance;
-  final bool expandedRepairs;
 
   const PreferenceFormState({
     this.currentStep = 1,
-    this.purchaseOrigin = AppConstants.purchaseOriginAny,
+    this.chinaImportMode = ChinaImportMode.none,
+    this.showAdvancedSourcing = false,
+    this.advancedPurchaseOrigin = AppConstants.purchaseOriginAny,
+    this.yearRangeExpanded = true,
+    this.maxBudgetUsd,
     this.trim,
     this.makeSlug,
     this.modelSlug,
-    this.isNewVehicle = false,
-    this.skipConditionStep = false,
     this.make = '',
     this.model = '',
-    this.yearFrom = 2019,
-    this.yearTo = 2019,
+    this.yearFrom = 2022,
+    this.yearTo = 2025,
     this.condition = PreferenceCondition.readyToDrive,
-    this.mileageBand = MileageBand.m70k,
-    this.maxMileage = 70000,
-    this.repairOptedIn = true,
-    this.expandedDeposit = true,
-    this.expandedServiceFee = false,
-    this.expandedBalanceShipping = false,
-    this.expandedImportDuty = false,
-    this.expandedPortClearance = false,
-    this.expandedRepairs = false,
+    this.maxMileage = preferenceDefaultMaxMileage,
   });
 
-  bool get isSingleYear => yearFrom == yearTo;
+  factory PreferenceFormState.initial() {
+    final (from, to) = preferenceDefaultYearRange();
+    return PreferenceFormState(
+      yearRangeExpanded: true,
+      yearFrom: from,
+      yearTo: to,
+      maxMileage: preferenceDefaultMaxMileage,
+    );
+  }
+
+  bool get isNewVehicle => chinaImportMode == ChinaImportMode.newFromChina;
+
+  bool get isChinaUsed => chinaImportMode == ChinaImportMode.usedFromChina;
+
+  bool get isUsedImport => chinaImportMode == ChinaImportMode.none;
+
+  int get totalSteps => 2;
+
+  int get displayStep => currentStep.clamp(1, 2);
+
+  bool get isSingleYear => !yearRangeExpanded || yearFrom == yearTo;
 
   int get yearMin => yearFrom;
 
-  int get yearMax => yearTo;
+  int get yearMax => yearRangeExpanded ? yearTo : yearFrom;
 
-  bool get isChina => purchaseOrigin == AppConstants.purchaseOriginChina;
+  String get purchaseOrigin => resolvePurchaseOrigin(
+        chinaImportMode: chinaImportMode,
+        advancedPurchaseOrigin: advancedPurchaseOrigin,
+      );
 
-  bool get isUsOrDubai =>
-      purchaseOrigin == AppConstants.purchaseOriginUsCanada ||
-      purchaseOrigin == AppConstants.purchaseOriginDubai ||
-      purchaseOrigin == AppConstants.purchaseOriginAny;
+  String get progressLabel => switch (currentStep) {
+        1 => 'Your car',
+        2 => 'Confirm',
+        _ => 'Your car',
+      };
 
-  bool get showConditionStep => !skipConditionStep;
-
-  bool get showMileageField => !isNewVehicle;
-
-  bool get showRepairField => !isNewVehicle;
+  bool get canProceedFromCar => make.isNotEmpty && model.isNotEmpty;
 
   PreferenceFormState copyWith({
     int? currentStep,
-    String? purchaseOrigin,
+    ChinaImportMode? chinaImportMode,
+    bool? showAdvancedSourcing,
+    String? advancedPurchaseOrigin,
+    bool? yearRangeExpanded,
+    Object? maxBudgetUsd = _undefined,
     Object? trim = _undefined,
     Object? makeSlug = _undefined,
     Object? modelSlug = _undefined,
-    bool? isNewVehicle,
-    bool? skipConditionStep,
     String? make,
     String? model,
     int? yearFrom,
     int? yearTo,
     PreferenceCondition? condition,
-    MileageBand? mileageBand,
     int? maxMileage,
-    bool? repairOptedIn,
-    bool? expandedDeposit,
-    bool? expandedServiceFee,
-    bool? expandedBalanceShipping,
-    bool? expandedImportDuty,
-    bool? expandedPortClearance,
-    bool? expandedRepairs,
   }) {
     return PreferenceFormState(
       currentStep: currentStep ?? this.currentStep,
-      purchaseOrigin: purchaseOrigin ?? this.purchaseOrigin,
+      chinaImportMode: chinaImportMode ?? this.chinaImportMode,
+      showAdvancedSourcing: showAdvancedSourcing ?? this.showAdvancedSourcing,
+      advancedPurchaseOrigin:
+          advancedPurchaseOrigin ?? this.advancedPurchaseOrigin,
+      yearRangeExpanded: yearRangeExpanded ?? this.yearRangeExpanded,
+      maxBudgetUsd: identical(maxBudgetUsd, _undefined)
+          ? this.maxBudgetUsd
+          : maxBudgetUsd as int?,
       trim: identical(trim, _undefined) ? this.trim : trim as String?,
-      makeSlug: identical(makeSlug, _undefined) ? this.makeSlug : makeSlug as String?,
-      modelSlug:
-          identical(modelSlug, _undefined) ? this.modelSlug : modelSlug as String?,
-      isNewVehicle: isNewVehicle ?? this.isNewVehicle,
-      skipConditionStep: skipConditionStep ?? this.skipConditionStep,
+      makeSlug:
+          identical(makeSlug, _undefined) ? this.makeSlug : makeSlug as String?,
+      modelSlug: identical(modelSlug, _undefined)
+          ? this.modelSlug
+          : modelSlug as String?,
       make: make ?? this.make,
       model: model ?? this.model,
       yearFrom: yearFrom ?? this.yearFrom,
       yearTo: yearTo ?? this.yearTo,
       condition: condition ?? this.condition,
-      mileageBand: mileageBand ?? this.mileageBand,
       maxMileage: maxMileage ?? this.maxMileage,
-      repairOptedIn: repairOptedIn ?? this.repairOptedIn,
-      expandedDeposit: expandedDeposit ?? this.expandedDeposit,
-      expandedServiceFee: expandedServiceFee ?? this.expandedServiceFee,
-      expandedBalanceShipping:
-          expandedBalanceShipping ?? this.expandedBalanceShipping,
-      expandedImportDuty: expandedImportDuty ?? this.expandedImportDuty,
-      expandedPortClearance: expandedPortClearance ?? this.expandedPortClearance,
-      expandedRepairs: expandedRepairs ?? this.expandedRepairs,
     );
   }
 }
 
 class PreferenceFormNotifier extends StateNotifier<PreferenceFormState> {
-  PreferenceFormNotifier() : super(const PreferenceFormState());
+  PreferenceFormNotifier() : super(PreferenceFormState.initial());
 
-  /// Clears draft state when opening a fresh "new preferences" flow
-  /// (e.g. import another car).
-  void reset() => state = const PreferenceFormState();
+  void reset() => state = PreferenceFormState.initial();
 
-  void updatePurchaseOrigin(String origin) {
-    final isChina = origin == AppConstants.purchaseOriginChina;
-    String? newCondition;
-    int? newMileage;
+  void toggleAdvancedSourcing() {
+    state = state.copyWith(showAdvancedSourcing: !state.showAdvancedSourcing);
+  }
 
-    if (origin == AppConstants.purchaseOriginUsCanada ||
-        origin == AppConstants.purchaseOriginAny) {
-      newCondition = FirestoreEnumValues.vehicleConditionRunAndDrive;
-      newMileage = 100000;
-    } else if (origin == AppConstants.purchaseOriginDubai) {
-      newCondition = FirestoreEnumValues.vehicleConditionRunAndDrive;
-      newMileage = 70000;
-    } else if (isChina) {
-      newCondition = FirestoreEnumValues.vehicleConditionNewVehicle;
-      newMileage = 0;
+  void updateAdvancedPurchaseOrigin(String origin) {
+    state = state.copyWith(advancedPurchaseOrigin: origin);
+  }
+
+  void updateChinaImportMode(ChinaImportMode mode) {
+    var next = state.copyWith(chinaImportMode: mode);
+    if (mode == ChinaImportMode.newFromChina) {
+      next = next.copyWith(
+        condition: PreferenceCondition.newVehicle,
+        maxMileage: 0,
+        yearRangeExpanded: false,
+      );
+    } else if (mode == ChinaImportMode.usedFromChina) {
+      next = next.copyWith(
+        condition: PreferenceCondition.goodCondition,
+        maxMileage: preferenceDefaultMaxMileage,
+      );
+    } else {
+      final (from, to) = preferenceDefaultYearRange();
+      next = next.copyWith(
+        condition: PreferenceCondition.readyToDrive,
+        maxMileage: preferenceDefaultMaxMileage,
+        yearRangeExpanded: true,
+        yearFrom: from,
+        yearTo: to,
+      );
     }
+    state = _clearVehicleIfIncompatible(next);
+  }
 
+  PreferenceFormState _clearVehicleIfIncompatible(PreferenceFormState s) {
+    // Caller may pass make slug without CarMake — clearing handled at pick time.
+    return s;
+  }
+
+  void clearVehicleSelection() {
     state = state.copyWith(
-      purchaseOrigin: origin,
-      isNewVehicle: isChina,
-      skipConditionStep: isChina,
-      condition: newCondition != null
-          ? PreferenceCondition.fromString(newCondition)
-          : state.condition,
-      maxMileage: newMileage ?? state.maxMileage,
+      make: '',
+      model: '',
+      trim: null,
+      makeSlug: null,
+      modelSlug: null,
     );
   }
 
-  void updateTrim(String? trim) {
-    state = state.copyWith(trim: trim);
+  void applyCatalogueMake(CarMake make, {required bool allowed}) {
+    if (!allowed) {
+      clearVehicleSelection();
+      return;
+    }
+    state = state.copyWith(
+      make: make.name,
+      makeSlug: make.slug,
+      model: '',
+      modelSlug: null,
+      trim: null,
+    );
   }
 
-  void clearTrim() {
-    state = state.copyWith(trim: null);
+  void applyCatalogueModel(CarModel model) {
+    state = state.copyWith(
+      model: model.name,
+      modelSlug: model.slug,
+      trim: null,
+    );
   }
 
-  void updateMakeSlug(String slug) {
-    state = state.copyWith(makeSlug: slug, modelSlug: null);
+  void applyQuickPick(CarMake make, CarModel model) {
+    state = state.copyWith(
+      make: make.name,
+      makeSlug: make.slug,
+      model: model.name,
+      modelSlug: model.slug,
+      trim: null,
+    );
   }
 
-  void updateModelSlug(String slug) {
-    state = state.copyWith(modelSlug: slug);
+  void updateTrim(String? trim) => state = state.copyWith(trim: trim);
+
+  void commitMaxBudgetUsd(int? usd) =>
+      state = state.copyWith(maxBudgetUsd: usd);
+
+  void setYearRangeExpanded(bool expanded) {
+    if (!expanded) {
+      state = state.copyWith(
+        yearRangeExpanded: false,
+        yearTo: state.yearFrom,
+      );
+    } else {
+      state = state.copyWith(yearRangeExpanded: true);
+    }
+  }
+
+  void updateYearFrom(int year) {
+    final to = state.yearRangeExpanded
+        ? (state.yearTo < year ? year : state.yearTo)
+        : year;
+    state = state.copyWith(yearFrom: year, yearTo: to);
+  }
+
+  void updateYearTo(int year) {
+    final to = year < state.yearFrom ? state.yearFrom : year;
+    state = state.copyWith(yearTo: to);
+  }
+
+  void updateCondition(PreferenceCondition value) {
+    state = state.copyWith(condition: value);
+  }
+
+  void updateMaxMileage(int miles) {
+    state = state.copyWith(maxMileage: miles);
   }
 
   void nextStep() {
-    final next = state.currentStep + 1;
-    if (next == 3 && state.skipConditionStep) {
-      state = state.copyWith(currentStep: 4);
-      return;
-    }
-    if (next <= 4) {
-      state = state.copyWith(currentStep: next);
+    if (state.currentStep == 1) {
+      state = state.copyWith(currentStep: 2);
     }
   }
 
   void previousStep() {
-    final prev = state.currentStep - 1;
-    if (prev == 3 && state.skipConditionStep) {
-      state = state.copyWith(currentStep: 2);
-      return;
-    }
-    if (prev >= 1) {
-      state = state.copyWith(currentStep: prev);
+    if (state.currentStep > 1) {
+      state = state.copyWith(currentStep: state.currentStep - 1);
     }
   }
 
   void goToStep(int step) {
-    if (step >= 1 && step <= 4) {
+    if (step >= 1 && step <= 2) {
       state = state.copyWith(currentStep: step);
-    }
-  }
-
-  void updateMake(String make, List<String> models) {
-    state = state.copyWith(
-      make: make,
-      model: models.isNotEmpty ? models.first : '',
-      trim: null,
-      modelSlug: null,
-    );
-  }
-
-  void updateModel(String model) {
-    state = state.copyWith(
-      model: model,
-      trim: null,
-      modelSlug: null,
-    );
-  }
-
-  void updateYearFrom(int yearFrom) {
-    final correctedTo = state.yearTo < yearFrom ? yearFrom : state.yearTo;
-    state = state.copyWith(yearFrom: yearFrom, yearTo: correctedTo);
-  }
-
-  void updateYearTo(int yearTo) {
-    final correctedTo = yearTo < state.yearFrom ? state.yearFrom : yearTo;
-    state = state.copyWith(yearTo: correctedTo);
-  }
-
-  void updateCondition(PreferenceCondition value) {
-    final china = state.purchaseOrigin == AppConstants.purchaseOriginChina;
-    final isNew = china && value == PreferenceCondition.newVehicle;
-    state = state.copyWith(
-      condition: value,
-      isNewVehicle: isNew,
-      skipConditionStep: isNew,
-    );
-  }
-
-  void updateMileage(MileageBand value) {
-    final miles = switch (value) {
-      MileageBand.m50k => 50000,
-      MileageBand.m70k => 70000,
-      MileageBand.m100k => 100000,
-      MileageBand.any => 200000,
-    };
-    state = state.copyWith(mileageBand: value, maxMileage: miles);
-  }
-
-  void updateMaxMileage(int miles) {
-    final band = miles <= 50000
-        ? MileageBand.m50k
-        : miles <= 70000
-            ? MileageBand.m70k
-            : miles <= 100000
-                ? MileageBand.m100k
-                : MileageBand.any;
-    state = state.copyWith(maxMileage: miles, mileageBand: band);
-  }
-
-  void updateRepairOptedIn(bool value) => state = state.copyWith(repairOptedIn: value);
-
-  void toggleExpanded(String key) {
-    switch (key) {
-      case 'deposit':
-        state = state.copyWith(expandedDeposit: !state.expandedDeposit);
-      case 'service':
-        state = state.copyWith(expandedServiceFee: !state.expandedServiceFee);
-      case 'balance':
-        state = state.copyWith(
-            expandedBalanceShipping: !state.expandedBalanceShipping);
-      case 'duty':
-        state = state.copyWith(expandedImportDuty: !state.expandedImportDuty);
-      case 'clearance':
-        state = state.copyWith(
-            expandedPortClearance: !state.expandedPortClearance);
-      case 'repairs':
-        state = state.copyWith(expandedRepairs: !state.expandedRepairs);
     }
   }
 }
@@ -351,28 +357,6 @@ final preferenceFormProvider =
     StateNotifierProvider<PreferenceFormNotifier, PreferenceFormState>(
   (ref) => PreferenceFormNotifier(),
 );
-
-final makeOptionsProvider = Provider<List<String>>((ref) => const [
-      'Toyota',
-      'Honda',
-      'Nissan',
-      'Hyundai',
-      'Kia',
-      'Ford',
-      'Chevrolet',
-      'Other',
-    ]);
-
-final modelOptionsProvider = Provider<Map<String, List<String>>>((ref) => const {
-      'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander'],
-      'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot'],
-      'Nissan': ['Altima', 'Sentra', 'Rogue', 'Pathfinder'],
-      'Hyundai': ['Elantra', 'Sonata', 'Tucson', 'Santa Fe'],
-      'Kia': ['K5', 'Rio', 'Sportage', 'Sorento'],
-      'Ford': ['Fusion', 'Escape', 'Edge', 'Explorer'],
-      'Chevrolet': ['Malibu', 'Cruze', 'Equinox', 'Traverse'],
-      'Other': ['Other'],
-    });
 
 final costDefaultsProvider = FutureProvider<Map<String, double>>((ref) async {
   final firestore = ref.watch(firestoreProvider);
@@ -391,10 +375,7 @@ final costDefaultsProvider = FutureProvider<Map<String, double>>((ref) async {
     if (map.isNotEmpty) return map;
   }
   return {
-    'baseEstimateReadyTodriveGhs': 117500,
     'serviceFeeGhs': 1500,
-    'clearanceServiceFeeGhs': 3200,
-    'repairPlatformFeeGhs': 2800,
     'averageAuctionPriceUsd': 8000,
     'averageShippingUsd': 1800,
     'importDutyRate': 0.35,
@@ -442,9 +423,8 @@ final _liveCostEstimateFutureProvider =
       state.yearMin,
       state.yearMax,
     );
-    baseAuctionUsd = modelPrice ??
-        defaults['averageAuctionPriceUsd'] ??
-        8000.0;
+    baseAuctionUsd =
+        modelPrice ?? defaults['averageAuctionPriceUsd'] ?? 8000.0;
   } else {
     baseAuctionUsd = defaults['averageAuctionPriceUsd'] ?? 8000.0;
   }
@@ -472,7 +452,76 @@ final liveCostEstimateProvider = Provider<AsyncValue<CostEstimate?>>((ref) {
   return ref.watch(_liveCostEstimateFutureProvider);
 });
 
-final preferencesDataSourceProvider = Provider<PreferencesFirestoreDataSource>((ref) {
+/// Qualitative budget fit for review — never exposes estimate figures to UI.
+final budgetFitAssessmentProvider =
+    Provider<AsyncValue<BudgetFitAssessment?>>((ref) {
+  final state = ref.watch(preferenceFormProvider);
+  final budget = state.maxBudgetUsd;
+  if (budget == null || state.isNewVehicle) {
+    return const AsyncValue.data(null);
+  }
+
+  return ref.watch(liveCostEstimateProvider).when(
+        data: (estimate) {
+          if (estimate == null) return const AsyncValue.data(null);
+          final assessment = resolveBudgetFit(
+            budgetUsd: budget,
+            estimateLandedUsd: estimate.usd,
+            isYearRange: !state.isSingleYear,
+          );
+          return AsyncValue.data(assessment);
+        },
+        loading: () => const AsyncValue.loading(),
+        error: (e, st) => AsyncValue.error(e, st),
+      );
+});
+
+final preferenceDepositBreakdownProvider =
+    FutureProvider.autoDispose<DepositBreakdown?>((ref) async {
+  final state = ref.watch(preferenceFormProvider);
+  if (state.isNewVehicle) return null;
+
+  final estimate = await ref.watch(_liveCostEstimateFutureProvider.future);
+  if (estimate == null) return null;
+
+  final defaults = await ref.watch(costDefaultsProvider.future);
+  final settings = await ref.watch(systemSettingsProvider.future);
+
+  final depositPct = settings.numValue('depositPercentage', fallback: 0.10);
+  final serviceFee = defaults['serviceFeeGhs'] ??
+      settings.numValue('serviceFeeGhs', fallback: 1500);
+
+  return DepositBreakdown(
+    estimatedLandedGhs: estimate.ghs,
+    depositGhs: estimate.ghs * depositPct,
+    serviceFeeGhs: serviceFee,
+    depositPercent: depositPct,
+  );
+});
+
+/// Popular make + first model pairs for one-tap quick picks.
+final popularQuickPicksProvider =
+    FutureProvider.autoDispose<List<({CarMake make, CarModel model})>>(
+        (ref) async {
+  final state = ref.watch(preferenceFormProvider);
+  final popular = ref.watch(popularMakesProvider);
+  final picks = <({CarMake make, CarModel model})>[];
+
+  for (final make in popular.take(6)) {
+    if (!isMakeAllowedForImportMode(make, state.chinaImportMode)) continue;
+    try {
+      final models = await ref.read(carModelsProvider(make.slug).future);
+      if (models.isEmpty) continue;
+      picks.add((make: make, model: models.first));
+    } catch (_) {
+      continue;
+    }
+  }
+  return picks;
+});
+
+final preferencesDataSourceProvider =
+    Provider<PreferencesFirestoreDataSource>((ref) {
   return PreferencesFirestoreDataSource(ref.watch(firestoreProvider));
 });
 
@@ -482,12 +531,22 @@ final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {
 
 final createOrderFromPreferencesUseCaseProvider =
     Provider<CreateOrderFromPreferencesUseCase>((ref) {
-  return CreateOrderFromPreferencesUseCase(ref.watch(preferencesRepositoryProvider));
+  return CreateOrderFromPreferencesUseCase(
+    ref.watch(preferencesRepositoryProvider),
+  );
 });
 
-PreferenceSubmission toSubmission(PreferenceFormState state) {
+PreferenceSubmission toSubmission(
+  PreferenceFormState state, {
+  required double exchangeRateUsdToGhs,
+}) {
   final condition = preferenceConditionToFirestoreString(state.condition);
   final label = preferenceConditionUiLabel(state.condition);
+  final budgetUsd = state.maxBudgetUsd;
+  int? budgetGhs;
+  if (budgetUsd != null && exchangeRateUsdToGhs > 0) {
+    budgetGhs = (budgetUsd * exchangeRateUsdToGhs).round();
+  }
   return PreferenceSubmission(
     make: state.make,
     model: state.model,
@@ -496,9 +555,10 @@ PreferenceSubmission toSubmission(PreferenceFormState state) {
     condition: condition,
     conditionLabel: label,
     maxMileage: state.isNewVehicle ? 0 : state.maxMileage,
-    repairOptedIn: state.isNewVehicle ? false : state.repairOptedIn,
     trim: state.trim,
     purchaseOrigin: state.purchaseOrigin,
     isNewVehicle: state.isNewVehicle,
+    maxBudgetUsd: budgetUsd,
+    maxBudgetGhs: budgetGhs,
   );
 }

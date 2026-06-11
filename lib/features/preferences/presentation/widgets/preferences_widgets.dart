@@ -12,7 +12,509 @@ import '../../../../core/utils/responsive_layout.dart';
 import '../../../catalogue/domain/entities/car_make.dart';
 import '../../../catalogue/domain/entities/car_model.dart';
 import '../../../catalogue/presentation/providers/car_catalogue_providers.dart';
+import '../../core/preference_catalogue_utils.dart';
+import '../../domain/budget_fit.dart';
+import '../../domain/china_import_mode.dart';
 import '../providers/preference_form_provider.dart';
+
+/// Scroll wrapper that preserves offset across child rebuilds.
+class PreferenceStepScrollView extends StatefulWidget {
+  final Widget child;
+
+  const PreferenceStepScrollView({super.key, required this.child});
+
+  @override
+  State<PreferenceStepScrollView> createState() =>
+      _PreferenceStepScrollViewState();
+}
+
+class _PreferenceStepScrollViewState extends State<PreferenceStepScrollView> {
+  final _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      controller: _controller,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      physics: const ClampingScrollPhysics(),
+      child: widget.child,
+    );
+  }
+}
+
+/// Contextual budget field copy per import path.
+class PreferenceBudgetCopy {
+  final String hint;
+  final String helper;
+
+  const PreferenceBudgetCopy({
+    required this.hint,
+    required this.helper,
+  });
+
+  static PreferenceBudgetCopy forImportMode(ChinaImportMode mode) =>
+      switch (mode) {
+        ChinaImportMode.newFromChina => const PreferenceBudgetCopy(
+            hint: 'e.g. 25000',
+            helper:
+                'Total budget in USD. Helps your agent find options in your range.',
+          ),
+        ChinaImportMode.usedFromChina => const PreferenceBudgetCopy(
+            hint: 'e.g. 15000',
+            helper:
+                'Target purchase budget in USD. Helps your agent shortlist options.',
+          ),
+        ChinaImportMode.none => const PreferenceBudgetCopy(
+            hint: 'e.g. 8000',
+            helper:
+                'Auction budget in USD. Helps your agent shortlist options.',
+          ),
+      };
+}
+
+/// Shimmer placeholder for preferences form rows.
+class PreferencesShimmerBox extends StatelessWidget {
+  final double? width;
+  final double height;
+  final double radius;
+
+  const PreferencesShimmerBox({
+    super.key,
+    this.width,
+    required this.height,
+    this.radius = 12,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+}
+
+class PreferencesChipRowShimmer extends StatelessWidget {
+  const PreferencesChipRowShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.surface,
+      highlightColor: AppColors.background,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Row(
+          children: const [
+            PreferencesShimmerBox(width: 108, height: 36, radius: 20),
+            SizedBox(width: 8),
+            PreferencesShimmerBox(width: 124, height: 36, radius: 20),
+            SizedBox(width: 8),
+            PreferencesShimmerBox(width: 96, height: 36, radius: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Qualitative budget-fit spectrum for the review step (no estimate figures).
+class BudgetFitSpectrumCard extends StatelessWidget {
+  final BudgetFitAssessment assessment;
+
+  const BudgetFitSpectrumCard({
+    super.key,
+    required this.assessment,
+  });
+
+  ({Color accent, Color background, IconData icon}) _style(BudgetFitTier tier) =>
+      switch (tier) {
+        BudgetFitTier.comfortableRoom => (
+            accent: AppColors.success,
+            background: AppColors.successMutedBackground,
+            icon: Icons.verified_outlined,
+          ),
+        BudgetFitTier.goodFit => (
+            accent: AppColors.infoText,
+            background: AppColors.infoBackground,
+            icon: Icons.thumb_up_alt_outlined,
+          ),
+        BudgetFitTier.tightFit => (
+            accent: AppColors.warning,
+            background: AppColors.amberBackground,
+            icon: Icons.travel_explore_outlined,
+          ),
+        BudgetFitTier.stretch => (
+            accent: AppColors.warning,
+            background: AppColors.amberBackground,
+            icon: Icons.forum_outlined,
+          ),
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final style = _style(assessment.tier);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.05),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: style.background,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Icon(style.icon, size: 18, color: style.accent),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'Budget check',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              assessment.title,
+              style: GoogleFonts.dmSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: style.accent,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              assessment.subtitle,
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Stretch',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                Text(
+                  'Comfortable',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final barWidth = constraints.maxWidth;
+                const pinSize = 14.0;
+                final pinLeft = (barWidth * assessment.pinPosition - pinSize / 2)
+                    .clamp(0.0, barWidth - pinSize);
+
+                return Column(
+                  children: [
+                    SizedBox(
+                      height: pinSize + 4,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned(
+                            left: pinLeft,
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: pinSize,
+                                  height: pinSize,
+                                  decoration: BoxDecoration(
+                                    color: style.accent,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.background,
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 6,
+                                        color: style.accent
+                                            .withValues(alpha: 0.35),
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        gradient: const LinearGradient(
+                          colors: [
+                            AppColors.amberBackground,
+                            AppColors.infoBackground,
+                            AppColors.successMutedBackground,
+                          ],
+                        ),
+                        border: Border.all(
+                          color: AppColors.borderSolid,
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            Text(
+              assessment.footer,
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                color: AppColors.textTertiary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BudgetFitSpectrumCardShimmer extends StatelessWidget {
+  const BudgetFitSpectrumCardShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.surface,
+      highlightColor: AppColors.background,
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.borderSolid, width: 0.5),
+        ),
+      ),
+    );
+  }
+}
+
+/// Premium compact condition card for side-by-side step 1 layout.
+class PreferenceCompactConditionCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final String? badge;
+  final Color? badgeBackground;
+  final Color? badgeTextColor;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const PreferenceCompactConditionCard({
+    super.key,
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    this.badge,
+    this.badgeBackground,
+    this.badgeTextColor,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          constraints: const BoxConstraints(minHeight: 104),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.selectionTint : AppColors.background,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? AppColors.secondary : AppColors.borderSolid,
+              width: selected ? 1.5 : 1,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      blurRadius: 12,
+                      color: AppColors.secondary.withValues(alpha: 0.08),
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      blurRadius: 8,
+                      color: Colors.black.withValues(alpha: 0.03),
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(icon, color: iconColor, size: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                            height: 1.2,
+                          ),
+                        ),
+                        if (badge != null &&
+                            badgeBackground != null &&
+                            badgeTextColor != null) ...[
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeBackground,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              badge!,
+                              style: GoogleFonts.dmSans(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w500,
+                                color: badgeTextColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (selected)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: Icon(
+                        Icons.check_circle,
+                        size: 18,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.dmSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Uppercase section label used across preference steps.
+class PreferenceSectionLabel extends StatelessWidget {
+  final String text;
+
+  const PreferenceSectionLabel(this.text, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: GoogleFonts.dmSans(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.6,
+        color: AppColors.textTertiary,
+      ),
+    );
+  }
+}
 
 /// Centred column with max width for preferences flows.
 class PreferencesResponsiveColumn extends StatelessWidget {
@@ -43,11 +545,13 @@ class PreferencesResponsiveColumn extends StatelessWidget {
 class PreferencesStepProgressBar extends StatelessWidget {
   final int displayStep;
   final int totalSteps;
+  final String? stepLabel;
 
   const PreferencesStepProgressBar({
     super.key,
     required this.displayStep,
     required this.totalSteps,
+    this.stepLabel,
   });
 
   @override
@@ -55,30 +559,71 @@ class PreferencesStepProgressBar extends StatelessWidget {
     final t = totalSteps.clamp(1, 99);
     final c = displayStep.clamp(1, t);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Step $c of $t',
-            style: GoogleFonts.dmSans(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.secondary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: c / t,
-                backgroundColor: AppColors.borderSolid,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppColors.secondary,
+          Row(
+            children: [
+              Text(
+                'Step $c of $t',
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.secondary,
                 ),
-                minHeight: 4,
               ),
-            ),
+              if (stepLabel != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '·',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  stepLabel!,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: List.generate(t, (i) {
+              final stepNum = i + 1;
+              final completed = stepNum < c;
+              final active = stepNum == c;
+              return Expanded(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeOutCubic,
+                  height: 3,
+                  margin: EdgeInsets.only(right: i < t - 1 ? 5 : 0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: completed || active
+                        ? AppColors.secondary
+                        : AppColors.borderSolid,
+                    boxShadow: active
+                        ? [
+                            BoxShadow(
+                              color: AppColors.secondary.withValues(alpha: 0.35),
+                              blurRadius: 6,
+                              offset: const Offset(0, 1),
+                            ),
+                          ]
+                        : null,
+                  ),
+                ),
+              );
+            }),
           ),
         ],
       ),
@@ -164,6 +709,7 @@ class PreferencesBottomNavBar extends StatelessWidget {
   final PreferenceFormState state;
   final PreferenceFormNotifier notifier;
   final VoidCallback onConfirm;
+  final VoidCallback? onBeforeAction;
   final bool isLoading;
 
   const PreferencesBottomNavBar({
@@ -171,30 +717,44 @@ class PreferencesBottomNavBar extends StatelessWidget {
     required this.state,
     required this.notifier,
     required this.onConfirm,
+    this.onBeforeAction,
     this.isLoading = false,
   });
 
   bool _canProceed(PreferenceFormState s) {
     return switch (s.currentStep) {
-      1 => true,
-      2 => s.make.isNotEmpty && s.model.isNotEmpty,
-      3 => true,
-      4 => true,
-      _ => true,
+      1 => s.canProceedFromCar,
+      2 => true,
+      _ => false,
     };
   }
 
-  bool get _isLastStep => state.currentStep == 4;
+  String? _disabledHint(PreferenceFormState s) {
+    if (s.currentStep == 1 && !s.canProceedFromCar) {
+      return 'Select a make and model to continue';
+    }
+    return null;
+  }
+
+  bool get _isLastStep => state.currentStep == 2;
 
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.paddingOf(context).bottom;
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + bottom),
-      decoration: const BoxDecoration(
-        border: Border(
+      padding: EdgeInsets.fromLTRB(20, 14, 20, 14 + bottom),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        border: const Border(
           top: BorderSide(color: AppColors.borderSolid, width: 0.5),
         ),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.04),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -227,11 +787,37 @@ class PreferencesBottomNavBar extends StatelessWidget {
             const SizedBox(width: 12),
           ],
           Expanded(
-            child: PreferencesPrimaryButton(
-              label: _isLastStep ? 'Confirm & find my agent →' : 'Continue →',
-              isLoading: isLoading,
-              isEnabled: _canProceed(state),
-              onTap: _isLastStep ? onConfirm : notifier.nextStep,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_disabledHint(state) != null) ...[
+                  Text(
+                    _disabledHint(state)!,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                ],
+                PreferencesPrimaryButton(
+                  label:
+                      _isLastStep ? 'Confirm & find my agent →' : 'Continue →',
+                  isLoading: isLoading,
+                  isEnabled: _canProceed(state),
+                  onTap: () {
+                    onBeforeAction?.call();
+                    if (_isLastStep) {
+                      onConfirm();
+                    } else {
+                      notifier.nextStep();
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -243,50 +829,67 @@ class PreferencesBottomNavBar extends StatelessWidget {
 class CatalogueSelectorField extends StatelessWidget {
   final String label;
   final bool isPlaceholder;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool isEnabled;
 
   const CatalogueSelectorField({
     super.key,
     required this.label,
     required this.isPlaceholder,
     required this.onTap,
+    this.isEnabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            border: Border.all(color: AppColors.borderSolid),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: isPlaceholder
-                        ? AppColors.textTertiary
-                        : AppColors.textPrimary,
+    final canTap = isEnabled && onTap != null;
+    return Opacity(
+      opacity: canTap ? 1 : 0.45,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: canTap ? onTap : null,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              border: Border.all(
+                color: canTap ? AppColors.borderSolid : AppColors.borderSolid,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                  color: Colors.black.withValues(alpha: 0.03),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isPlaceholder
+                          ? AppColors.textTertiary
+                          : AppColors.textPrimary,
+                    ),
                   ),
                 ),
-              ),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 20,
-                color: AppColors.textTertiary,
-              ),
-            ],
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: AppColors.textTertiary,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -347,6 +950,7 @@ class YearSelectorField extends StatelessWidget {
   final int value;
   final List<int> years;
   final ValueChanged<int> onChanged;
+  final bool showHeading;
 
   const YearSelectorField({
     super.key,
@@ -354,6 +958,7 @@ class YearSelectorField extends StatelessWidget {
     required this.value,
     required this.years,
     required this.onChanged,
+    this.showHeading = true,
   });
 
   Future<void> _openSheet(BuildContext context) async {
@@ -435,33 +1040,43 @@ class YearSelectorField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          heading.toUpperCase(),
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.5,
-            color: AppColors.textTertiary,
+        if (showHeading) ...[
+          Text(
+            heading.toUpperCase(),
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+              color: AppColors.textTertiary,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
+          const SizedBox(height: 4),
+        ],
         Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _openSheet(context),
             borderRadius: BorderRadius.circular(12),
             child: Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 52,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
+                color: AppColors.background,
                 border: Border.all(color: AppColors.borderSolid),
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                    color: Colors.black.withValues(alpha: 0.03),
+                  ),
+                ],
               ),
               child: Text(
                 '$value',
                 style: GoogleFonts.dmSans(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textPrimary,
                 ),
@@ -672,15 +1287,31 @@ class ConditionOptionCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: selected ? AppColors.selectionTint : AppColors.background,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: selected ? AppColors.secondary : AppColors.borderSolid,
-              width: selected ? 2 : 1,
+              width: selected ? 1.5 : 1,
             ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      blurRadius: 12,
+                      color: AppColors.secondary.withValues(alpha: 0.08),
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      blurRadius: 8,
+                      color: Colors.black.withValues(alpha: 0.03),
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -763,12 +1394,14 @@ class ConditionOptionCard extends StatelessWidget {
 
 class SelectablePreferenceTile extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final bool selected;
   final VoidCallback onTap;
 
   const SelectablePreferenceTile({
     super.key,
     required this.title,
+    this.subtitle,
     required this.selected,
     required this.onTap,
   });
@@ -793,15 +1426,32 @@ class SelectablePreferenceTile extends StatelessWidget {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               if (selected)
@@ -1104,8 +1754,13 @@ class ModelListTile extends StatelessWidget {
 
 class MakeSelectionSheet extends ConsumerStatefulWidget {
   final ValueChanged<CarMake> onSelected;
+  final ChinaImportMode importMode;
 
-  const MakeSelectionSheet({super.key, required this.onSelected});
+  const MakeSelectionSheet({
+    super.key,
+    required this.onSelected,
+    this.importMode = ChinaImportMode.none,
+  });
 
   @override
   ConsumerState<MakeSelectionSheet> createState() => _MakeSelectionSheetState();
@@ -1136,18 +1791,22 @@ class _MakeSelectionSheetState extends ConsumerState<MakeSelectionSheet> {
       ),
       data: (allMakes) {
         final q = _query.trim().toLowerCase();
-        List<CarMake> filtered = allMakes;
+        final allowed = allMakes
+            .where((m) => isMakeAllowedForImportMode(m, widget.importMode))
+            .toList();
+        List<CarMake> filtered = allowed;
         if (q.isNotEmpty) {
-          filtered = allMakes
+          filtered = allowed
               .where((m) => m.name.toLowerCase().startsWith(q))
               .toList();
         }
-        final popularFiltered = q.isEmpty
-            ? popular
-            : popular.where((m) => m.name.toLowerCase().startsWith(q)).toList();
+        final popularFiltered = (q.isEmpty ? popular : popular)
+            .where((m) => isMakeAllowedForImportMode(m, widget.importMode))
+            .where((m) => q.isEmpty || m.name.toLowerCase().startsWith(q))
+            .toList();
         final popularSlugs = popularFiltered.map((e) => e.slug).toSet();
         final restMakes = q.isEmpty
-            ? allMakes.where((m) => !popularSlugs.contains(m.slug)).toList()
+            ? allowed.where((m) => !popularSlugs.contains(m.slug)).toList()
             : filtered;
 
         return Column(
@@ -1291,6 +1950,7 @@ class _ModelSelectionSheetState extends ConsumerState<ModelSelectionSheet> {
 Future<void> showCarMakePickerSheet({
   required BuildContext context,
   required ValueChanged<CarMake> onSelected,
+  ChinaImportMode importMode = ChinaImportMode.none,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -1305,6 +1965,7 @@ Future<void> showCarMakePickerSheet({
       return SizedBox(
         height: h,
         child: MakeSelectionSheet(
+          importMode: importMode,
           onSelected: (make) {
             Navigator.of(ctx).pop();
             onSelected(make);

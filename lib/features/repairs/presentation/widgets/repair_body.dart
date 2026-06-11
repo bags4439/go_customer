@@ -4,7 +4,7 @@ import '../../../../core/models/currency_model.dart';
 import '../../domain/entities/repair_job.dart';
 import '../providers/repair_providers.dart';
 import 'repair_awaiting_quote_state.dart';
-import 'repair_choice_state.dart';
+import 'repair_awaiting_agent_state.dart';
 import 'repair_complete_state.dart';
 import 'repair_in_progress_state.dart';
 import 'repair_no_repair_state.dart';
@@ -38,11 +38,10 @@ class RepairBody extends StatelessWidget {
     switch (screenState) {
       case RepairScreenState.notAvailable:
         return RepairNotAvailableState(orderId: orderId);
-      case RepairScreenState.choice:
-        return RepairChoiceState(
+      case RepairScreenState.awaitingAgent:
+        return RepairAwaitingAgentState(
           orderId: orderId,
-          dutyClearedAt: dutyClearedAt,
-          currency: currency,
+          onOpenChat: onOpenChat,
         );
       case RepairScreenState.awaitingQuote:
         return RepairAwaitingQuoteState(

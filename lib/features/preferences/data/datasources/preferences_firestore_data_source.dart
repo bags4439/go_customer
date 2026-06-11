@@ -64,11 +64,15 @@ class PreferencesFirestoreDataSource {
       'condition': submission.condition,
       'conditionLabel': submission.conditionLabel,
       'maxMileage': submission.maxMileage,
-      'repairOptedIn': submission.repairOptedIn,
+      'repairOptedIn': false,
       'clearanceOptedIn': null,
       'trim': submission.trim,
       'purchaseOrigin': submission.purchaseOrigin,
       'isNewVehicle': submission.isNewVehicle,
+      if (submission.maxBudgetUsd != null)
+        'maxBudgetUsd': submission.maxBudgetUsd,
+      if (submission.maxBudgetGhs != null)
+        'maxBudgetGhs': submission.maxBudgetGhs,
       'createdAt': now,
     });
 
