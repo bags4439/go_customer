@@ -57,10 +57,10 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
     eyebrow: 'TRUSTED BY BUYERS ACROSS GHANA',
     heading: 'Your car,\nsourced globally.',
     subheading:
-        'From US auctions to Dubai'
-        ' dealers, your dedicated'
-        ' agent manages everything'
-        ' so you don\'t have to.',
+        'From US to Dubai to China,'
+        ' your dedicated agent sources,'
+        ' manages shipping and clearance,'
+        ' and keeps you updated every step.',
     tiles: [
       LoginWebTile(
         icon: Icons.map_outlined,

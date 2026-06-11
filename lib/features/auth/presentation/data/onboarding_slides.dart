@@ -55,9 +55,9 @@ const List<OnboardingSlide> kOnboardingSlides = [
     eyebrow: 'STEP 1 · YOUR PREFERENCES',
     title: 'Tell us what\nyou want.',
     subtitle:
-        'Point us to your dream car'
-        ' , make, model, budget.'
-        ' We take it from there.',
+        'Share the car you have in mind:'
+        ' make, model, and what matters'
+        ' to you. Your agent handles the rest.',
     buttonLabel: 'Get started',
     accentColor: Color(0xFF234A83),
     tiles: [
@@ -65,19 +65,19 @@ const List<OnboardingSlide> kOnboardingSlides = [
         icon: Icons.directions_car_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
-        label: 'Choose make, model and condition',
+        label: 'Describe the car you want',
       ),
       OnboardingTile(
         icon: Icons.attach_money_rounded,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
-        label: 'Set your budget range',
+        label: 'Share a budget guide (optional)',
       ),
       OnboardingTile(
         icon: Icons.public_rounded,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
-        label: 'Pick your preferred import source',
+        label: 'US, Dubai, China, or let your agent decide',
       ),
     ],
   ),
@@ -86,10 +86,10 @@ const List<OnboardingSlide> kOnboardingSlides = [
     eyebrow: 'STEP 2 · YOUR AGENT',
     title: 'Your personal\nagent.',
     subtitle:
-        'A dedicated human agent'
-        ' searches, negotiates, and'
-        ' keeps you updated every'
-        ' step of the way.',
+        'A dedicated agent sources,'
+        ' negotiates, and guides you'
+        ' with updates at every step,'
+        ' in chat.',
     buttonLabel: 'Continue',
     accentColor: Color(0xFF0F6A25),
     tiles: [
@@ -97,7 +97,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
         icon: Icons.search_rounded,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
-        label: 'Searches auctions across US, Dubai and China',
+        label: 'Sources vehicles globally across US, Dubai, China and more',
       ),
       OnboardingTile(
         icon: Icons.chat_bubble_outline_rounded,
@@ -109,17 +109,17 @@ const List<OnboardingSlide> kOnboardingSlides = [
         icon: Icons.description_outlined,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
-        label: 'Sends real options with condition reports',
+        label: 'Sends real options with photos, specs and cost breakdowns',
       ),
     ],
     quote: OnboardingQuote(
       initials: 'EB',
       name: 'Ernest · Senior Agent',
       text:
-          '"I found 3 matching vehicles'
-          ' at Copart. Here are the'
-          ' estimates and condition'
-          ' reports."',
+          '"I found 3 strong options that'
+          ' fit what you described, from'
+          ' different sources. Here are the'
+          ' details and my recommendations."',
     ),
   ),
   OnboardingSlide(
@@ -150,7 +150,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
         icon: Icons.build_outlined,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
-        label: 'Repairs arranged if needed',
+        label: 'Repairs discussed and arranged after clearance, if needed',
       ),
     ],
   ),
@@ -159,9 +159,10 @@ const List<OnboardingSlide> kOnboardingSlides = [
     eyebrow: 'STEP 4 · ROAD READY',
     title: 'Road ready.\nDelivered.',
     subtitle:
-        'Your car arrives road-ready'
-        ' , delivered to you or ready'
-        ' for collection. Keys in hand.',
+        'Your car arrives cleared and'
+        ' road-ready, delivered to you'
+        ' or ready for collection.'
+        ' Keys in hand.',
     buttonLabel: 'Continue',
     accentColor: Color(0xFF378ADD),
     tiles: [
