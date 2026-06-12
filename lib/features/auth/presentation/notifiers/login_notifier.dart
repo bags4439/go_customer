@@ -93,7 +93,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
     );
   }
 
-  /// Resumes name/country setup when Auth exists but Firestore profile is incomplete.
+  /// Resumes the registration wizard when Auth exists but setup is incomplete.
   Future<void> hydrateRegistrationFromSession() async {
     if (_sessionHydrated || state.step != LoginStep.phone) return;
     _sessionHydrated = true;
@@ -107,10 +107,31 @@ class LoginNotifier extends StateNotifier<LoginState> {
     if (!_alive) return;
 
     profileResult.fold((_) {}, (user) {
-      if (!isProfileMinimumCompleteUser(user)) {
-        state = state.copyWith(step: LoginStep.name, error: null);
-      }
+      if (user == null || isRegistrationCompleteUser(user)) return;
+
+      final resumeKey = registrationResumeStepKeyFromUser(user);
+      final step = _loginStepFromResumeKey(resumeKey);
+      if (step == null) return;
+
+      state = state.copyWith(
+        step: step,
+        fullName: user.fullName,
+        country: user.country,
+        generatedReferralCode:
+            user.referralCode.isNotEmpty ? user.referralCode : null,
+        idDocumentType: user.country == 'GH' ? 'ghana_card' : 'passport',
+        error: null,
+      );
     });
+  }
+
+  LoginStep? _loginStepFromResumeKey(String? key) {
+    return switch (key) {
+      'name' => LoginStep.name,
+      RegistrationWizardStepKeys.referral => LoginStep.referral,
+      RegistrationWizardStepKeys.contactChannels => LoginStep.contactChannels,
+      _ => null,
+    };
   }
 
   // ─────────────────────────────────────────────────
@@ -231,15 +252,18 @@ class LoginNotifier extends StateNotifier<LoginState> {
   // Step 4 — Referral Code
   // ─────────────────────────────────────────────────
 
-  void proceedToContactChannels() {
+  Future<void> proceedToContactChannels() async {
     state = state.copyWith(
       step: LoginStep.contactChannels,
       error: null,
       idDocumentType: state.country == 'GH' ? 'ghana_card' : 'passport',
     );
+    await _persistRegistrationWizardStep(
+      RegistrationWizardStepKeys.contactChannels,
+    );
   }
 
-  void skipReferral() => proceedToContactChannels();
+  Future<void> skipReferral() => proceedToContactChannels();
 
   // ─────────────────────────────────────────────────
   // Step 5 — Contact channels
@@ -302,6 +326,8 @@ class LoginNotifier extends StateNotifier<LoginState> {
         'smsPhone': smsResolved,
         if (whatsappE164Value != null) 'whatsappPhone': whatsappE164Value,
         if (email.isNotEmpty) 'email': email,
+        'registrationComplete': true,
+        'registrationWizardStep': FieldValue.delete(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
       await firestore
@@ -316,8 +342,50 @@ class LoginNotifier extends StateNotifier<LoginState> {
     state = state.copyWith(isLoading: false, nav: LoginNav.goHome);
   }
 
-  void skipContactChannelsAndFinish() {
-    state = state.copyWith(nav: LoginNav.goHome);
+  Future<void> skipContactChannelsAndFinish() async {
+    state = state.copyWith(isLoading: true, error: null);
+    await _markRegistrationComplete();
+    if (!_alive) return;
+    state = state.copyWith(isLoading: false, nav: LoginNav.goHome);
+  }
+
+  Future<void> _persistRegistrationWizardStep(String stepKey) async {
+    final uidResult = await _getAuthenticatedUserId();
+    if (!_alive) return;
+    final uid = uidResult.fold((_) => null, (id) => id);
+    if (uid == null) return;
+
+    try {
+      await _ref.read(firestoreProvider)
+          .collection(FirestoreCollections.users)
+          .doc(uid)
+          .update({
+            'registrationWizardStep': stepKey,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+    } catch (_) {
+      // Non-fatal — in-memory step still advances.
+    }
+  }
+
+  Future<void> _markRegistrationComplete() async {
+    final uidResult = await _getAuthenticatedUserId();
+    if (!_alive) return;
+    final uid = uidResult.fold((_) => null, (id) => id);
+    if (uid == null) return;
+
+    try {
+      await _ref.read(firestoreProvider)
+          .collection(FirestoreCollections.users)
+          .doc(uid)
+          .update({
+            'registrationComplete': true,
+            'registrationWizardStep': FieldValue.delete(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+    } catch (_) {
+      // Router may still block until a later sync; nav is best-effort.
+    }
   }
 
   // ─────────────────────────────────────────────────

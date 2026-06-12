@@ -9,6 +9,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/utils/referral_code_generator.dart';
 import '../../../notifications/onesignal/notification_onesignal_handler.dart';
 import '../../domain/entities/app_user.dart';
+import '../../domain/profile_setup_gate.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_firebase_data_source.dart';
 
@@ -243,6 +244,8 @@ class AuthRepositoryImpl implements AuthRepository {
           if (firebasePhone.isNotEmpty) 'phone': firebasePhone,
           'referralDiscountGhs': 0.0,
           'referredBy': null,
+          'registrationComplete': false,
+          'registrationWizardStep': RegistrationWizardStepKeys.referral,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         },

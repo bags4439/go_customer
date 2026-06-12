@@ -25,12 +25,13 @@ class AppRouterRefresh extends ChangeNotifier {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSub;
 
   bool _profileKnown = false;
-  bool _profileMinimumComplete = false;
+  bool _registrationComplete = false;
 
   /// False while the first [users] snapshot for the signed-in uid is pending.
   bool get profileKnown => _profileKnown;
 
-  bool get profileMinimumComplete => _profileMinimumComplete;
+  /// True when the buyer may leave the registration wizard and use the app.
+  bool get registrationComplete => _registrationComplete;
 
   void _onAuthChanged(User? user) {
     _profileSub?.cancel();
@@ -38,7 +39,7 @@ class AppRouterRefresh extends ChangeNotifier {
 
     if (user == null) {
       _profileKnown = true;
-      _profileMinimumComplete = false;
+      _registrationComplete = false;
       notifyListeners();
       return;
     }
@@ -53,7 +54,7 @@ class AppRouterRefresh extends ChangeNotifier {
         .listen(
       (snap) {
         _profileKnown = true;
-        _profileMinimumComplete = isProfileMinimumCompleteMap(
+        _registrationComplete = isRegistrationCompleteMap(
           snap.data(),
           exists: snap.exists,
         );
@@ -61,7 +62,7 @@ class AppRouterRefresh extends ChangeNotifier {
       },
       onError: (_) {
         _profileKnown = true;
-        _profileMinimumComplete = false;
+        _registrationComplete = false;
         notifyListeners();
       },
     );

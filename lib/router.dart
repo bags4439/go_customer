@@ -50,7 +50,7 @@ final router = GoRouter(
 
     if (!appRouterRefresh.profileKnown) return null;
 
-    if (!appRouterRefresh.profileMinimumComplete) {
+    if (!appRouterRefresh.registrationComplete) {
       if (location == '/login') return null;
       return '/login';
     }

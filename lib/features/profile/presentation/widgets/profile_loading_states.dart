@@ -82,7 +82,7 @@ class ProfileIncompleteSetupBody extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Add your name and country to start using AutoImport GH.',
+                'Finish account setup to start using AutoImport GH.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,

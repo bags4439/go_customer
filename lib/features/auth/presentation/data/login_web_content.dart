@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 ///
 /// To change any panel text or
 /// tiles edit only this file.
-/// Mobile layout is unchanged.
+/// Mobile and portrait-tablet layouts
+/// reuse panels via [MobileAuthShell].
 
 class LoginWebPanel {
   const LoginWebPanel({
@@ -171,37 +172,6 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         'We\'ll keep you updated on'
         ' your order progress via'
         ' the channels you choose.',
-    tiles: [
-      LoginWebTile(
-        icon: Icons.sms_outlined,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
-        accentColor: Color(0xFF378ADD),
-        label: 'SMS',
-        sublabel:
-            'Payment requests and'
-            ' key milestones',
-      ),
-      LoginWebTile(
-        icon: Icons.chat_outlined,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
-        accentColor: Color(0xFF1D9E75),
-        label: 'WhatsApp',
-        sublabel:
-            'Rich updates with order'
-            ' details',
-      ),
-      LoginWebTile(
-        icon: Icons.mail_outline_rounded,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
-        accentColor: Color(0xFFBA7517),
-        label: 'Email',
-        sublabel:
-            'Payment receipts and'
-            ' order summaries',
-      ),
-    ],
+    tiles: [],
   ),
 };

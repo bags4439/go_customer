@@ -21,6 +21,12 @@ class AppUser {
   final Map<String, bool> notificationPreferences;
   final String referralCode;
 
+  /// Explicit wizard completion flag. `null` = legacy account (grandfathered).
+  final bool? registrationComplete;
+
+  /// Resume point when [registrationComplete] is false.
+  final String? registrationWizardStep;
+
   const AppUser({
     required this.id,
     required this.fullName,
@@ -39,6 +45,8 @@ class AppUser {
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
     this.referralCode = '',
+    this.registrationComplete,
+    this.registrationWizardStep,
     Map<String, bool>? notificationPreferences,
   }) : notificationPreferences =
            notificationPreferences ??

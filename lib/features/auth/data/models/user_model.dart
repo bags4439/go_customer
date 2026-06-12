@@ -26,6 +26,8 @@ class UserModel with _$UserModel {
     @Default('GHS') String preferredCurrency,
     @Default('en') String preferredLanguage,
     @Default('') String referralCode,
+    bool? registrationComplete,
+    String? registrationWizardStep,
     String? pushToken,
     Map<String, dynamic>? notificationPreferences,
     DateTime? lastActiveAt,
@@ -66,6 +68,8 @@ class UserModel with _$UserModel {
       preferredCurrency: data['preferredCurrency'] as String? ?? 'GHS',
       preferredLanguage: data['preferredLanguage'] as String? ?? 'en',
       referralCode: data['referralCode'] as String? ?? '',
+      registrationComplete: data['registrationComplete'] as bool?,
+      registrationWizardStep: data['registrationWizardStep'] as String?,
       pushToken: data['pushToken'] as String?,
       notificationPreferences:
           data['notificationPreferences'] as Map<String, dynamic>?,
@@ -128,6 +132,8 @@ extension UserModelX on UserModel {
       preferredCurrency: preferredCurrency,
       preferredLanguage: preferredLanguage,
       referralCode: referralCode,
+      registrationComplete: registrationComplete,
+      registrationWizardStep: registrationWizardStep,
       notificationPreferences: {
         'agentMessages': agentMessages,
         'orderUpdates': orderUpdates,

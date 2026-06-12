@@ -39,6 +39,8 @@ mixin _$UserModel {
   String get preferredCurrency => throw _privateConstructorUsedError;
   String get preferredLanguage => throw _privateConstructorUsedError;
   String get referralCode => throw _privateConstructorUsedError;
+  bool? get registrationComplete => throw _privateConstructorUsedError;
+  String? get registrationWizardStep => throw _privateConstructorUsedError;
   String? get pushToken => throw _privateConstructorUsedError;
   Map<String, dynamic>? get notificationPreferences =>
       throw _privateConstructorUsedError;
@@ -79,6 +81,8 @@ abstract class $UserModelCopyWith<$Res> {
     String preferredCurrency,
     String preferredLanguage,
     String referralCode,
+    bool? registrationComplete,
+    String? registrationWizardStep,
     String? pushToken,
     Map<String, dynamic>? notificationPreferences,
     DateTime? lastActiveAt,
@@ -119,6 +123,8 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
     Object? referralCode = null,
+    Object? registrationComplete = freezed,
+    Object? registrationWizardStep = freezed,
     Object? pushToken = freezed,
     Object? notificationPreferences = freezed,
     Object? lastActiveAt = freezed,
@@ -195,6 +201,14 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.referralCode
                 : referralCode // ignore: cast_nullable_to_non_nullable
                       as String,
+            registrationComplete: freezed == registrationComplete
+                ? _value.registrationComplete
+                : registrationComplete // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            registrationWizardStep: freezed == registrationWizardStep
+                ? _value.registrationWizardStep
+                : registrationWizardStep // ignore: cast_nullable_to_non_nullable
+                      as String?,
             pushToken: freezed == pushToken
                 ? _value.pushToken
                 : pushToken // ignore: cast_nullable_to_non_nullable
@@ -248,6 +262,8 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String preferredCurrency,
     String preferredLanguage,
     String referralCode,
+    bool? registrationComplete,
+    String? registrationWizardStep,
     String? pushToken,
     Map<String, dynamic>? notificationPreferences,
     DateTime? lastActiveAt,
@@ -287,6 +303,8 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? preferredCurrency = null,
     Object? preferredLanguage = null,
     Object? referralCode = null,
+    Object? registrationComplete = freezed,
+    Object? registrationWizardStep = freezed,
     Object? pushToken = freezed,
     Object? notificationPreferences = freezed,
     Object? lastActiveAt = freezed,
@@ -363,6 +381,14 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.referralCode
             : referralCode // ignore: cast_nullable_to_non_nullable
                   as String,
+        registrationComplete: freezed == registrationComplete
+            ? _value.registrationComplete
+            : registrationComplete // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        registrationWizardStep: freezed == registrationWizardStep
+            ? _value.registrationWizardStep
+            : registrationWizardStep // ignore: cast_nullable_to_non_nullable
+                  as String?,
         pushToken: freezed == pushToken
             ? _value.pushToken
             : pushToken // ignore: cast_nullable_to_non_nullable
@@ -409,6 +435,8 @@ class _$UserModelImpl implements _UserModel {
     this.preferredCurrency = 'GHS',
     this.preferredLanguage = 'en',
     this.referralCode = '',
+    this.registrationComplete,
+    this.registrationWizardStep,
     this.pushToken,
     final Map<String, dynamic>? notificationPreferences,
     this.lastActiveAt,
@@ -462,6 +490,10 @@ class _$UserModelImpl implements _UserModel {
   @JsonKey()
   final String referralCode;
   @override
+  final bool? registrationComplete;
+  @override
+  final String? registrationWizardStep;
+  @override
   final String? pushToken;
   final Map<String, dynamic>? _notificationPreferences;
   @override
@@ -483,7 +515,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, smsPhone: $smsPhone, whatsappPhone: $whatsappPhone, role: $role, location: $location, country: $country, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, idDocumentType: $idDocumentType, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, fullName: $fullName, phone: $phone, email: $email, smsPhone: $smsPhone, whatsappPhone: $whatsappPhone, role: $role, location: $location, country: $country, isFirstTimeBuyer: $isFirstTimeBuyer, isVerified: $isVerified, ghanaCardPhotoUrl: $ghanaCardPhotoUrl, ghanaCardNumber: $ghanaCardNumber, idDocumentType: $idDocumentType, preferredCurrency: $preferredCurrency, preferredLanguage: $preferredLanguage, referralCode: $referralCode, registrationComplete: $registrationComplete, registrationWizardStep: $registrationWizardStep, pushToken: $pushToken, notificationPreferences: $notificationPreferences, lastActiveAt: $lastActiveAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -520,6 +552,10 @@ class _$UserModelImpl implements _UserModel {
                 other.preferredLanguage == preferredLanguage) &&
             (identical(other.referralCode, referralCode) ||
                 other.referralCode == referralCode) &&
+            (identical(other.registrationComplete, registrationComplete) ||
+                other.registrationComplete == registrationComplete) &&
+            (identical(other.registrationWizardStep, registrationWizardStep) ||
+                other.registrationWizardStep == registrationWizardStep) &&
             (identical(other.pushToken, pushToken) ||
                 other.pushToken == pushToken) &&
             const DeepCollectionEquality().equals(
@@ -555,6 +591,8 @@ class _$UserModelImpl implements _UserModel {
     preferredCurrency,
     preferredLanguage,
     referralCode,
+    registrationComplete,
+    registrationWizardStep,
     pushToken,
     const DeepCollectionEquality().hash(_notificationPreferences),
     lastActiveAt,
@@ -595,6 +633,8 @@ abstract class _UserModel implements UserModel {
     final String preferredCurrency,
     final String preferredLanguage,
     final String referralCode,
+    final bool? registrationComplete,
+    final String? registrationWizardStep,
     final String? pushToken,
     final Map<String, dynamic>? notificationPreferences,
     final DateTime? lastActiveAt,
@@ -639,6 +679,10 @@ abstract class _UserModel implements UserModel {
   String get preferredLanguage;
   @override
   String get referralCode;
+  @override
+  bool? get registrationComplete;
+  @override
+  String? get registrationWizardStep;
   @override
   String? get pushToken;
   @override

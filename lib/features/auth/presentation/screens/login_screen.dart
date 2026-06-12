@@ -21,6 +21,7 @@ import '../notifiers/login_state.dart';
 import '../providers/countries_providers.dart';
 import '../providers/login_providers.dart';
 import '../widgets/country_picker_sheet.dart';
+import '../widgets/mobile_auth_shell.dart';
 import '../widgets/phone_dial_input_field.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -77,8 +78,10 @@ class LoginScreen extends ConsumerWidget {
         ),
       )
           : Scaffold(
-              backgroundColor: AcquisitionLayout.isPortraitTablet(context)
-                  ? AppColors.surface
+              backgroundColor: AcquisitionLayout.usePhoneLayout(context)
+                  ? (AcquisitionLayout.isPortraitTablet(context)
+                      ? AppColors.surface
+                      : AppColors.background)
                   : Colors.white,
               resizeToAvoidBottomInset: true,
               body: SafeArea(
@@ -420,80 +423,12 @@ class _AuthResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final useWeb = AcquisitionLayout.useWebLayout(context);
-    final portraitTablet = AcquisitionLayout.isPortraitTablet(context);
-
-    // Web steps live in a fixed 400px panel — no max-width constraint.
-    final maxWidth = useWeb
-        ? double.infinity
-        : AcquisitionLayout.phoneContentMaxWidth(context);
-
-    final horizontalPadding = useWeb
-        ? 24.0
-        : AcquisitionLayout.phoneContentPadding(context).horizontal / 2;
-
-    final padding = EdgeInsets.fromLTRB(
-      horizontalPadding,
-      0,
-      horizontalPadding,
-      40,
-    );
-
-    Widget scrollBody = SingleChildScrollView(
-      padding: padding,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
       child: ColoredBox(
-        color: useWeb ? AppColors.surface : Colors.white,
+        color: AppColors.surface,
         child: child,
       ),
-    );
-
-    if (portraitTablet) {
-      scrollBody = LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: padding,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Center(
-                child: ColoredBox(
-                  color: Colors.white,
-                  child: child,
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    return Stack(
-      children: [
-        if (!useWeb)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 260,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppColors.secondary.withValues(alpha: 0.07),
-                    AppColors.secondary.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: scrollBody,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -735,432 +670,6 @@ class _CountryPickerField extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Premium linear progress bar
-/// shown on onboarding steps 3-5.
-/// Animates smoothly between steps.
-class _OnboardingProgressBar extends StatelessWidget {
-  final int current;
-  final int total;
-
-  const _OnboardingProgressBar({required this.current, required this.total});
-
-  @override
-  Widget build(BuildContext context) {
-    final fraction = (current + 1) / total;
-    return SizedBox(
-      height: 3,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Stack(
-            children: [
-              Container(
-                width: constraints.maxWidth,
-                height: 3,
-                color: AppColors.borderSolid,
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCubic,
-                width: constraints.maxWidth * fraction,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  borderRadius: BorderRadius.circular(1.5),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ─── Illustration painters ───────────────────────────────────
-
-/// Phone step: circle + signal waves
-class _PhoneIllustrationPainter extends CustomPainter {
-  final Color color;
-  const _PhoneIllustrationPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawCircle(Offset(cx, cy), 44, paint);
-
-    final phonePaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final phoneRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(cx, cy), width: 22, height: 34),
-      const Radius.circular(5),
-    );
-    canvas.drawRRect(phoneRect, phonePaint);
-
-    final screenPaint = Paint()
-      ..color = color.withValues(alpha: 0.07)
-      ..style = PaintingStyle.fill;
-    final screenRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(cx, cy - 2), width: 16, height: 22),
-      const Radius.circular(2),
-    );
-    canvas.drawRRect(screenRect, screenPaint);
-
-    final arcPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..strokeCap = StrokeCap.round;
-
-    for (int i = 0; i < 3; i++) {
-      arcPaint.color = color.withValues(alpha: 1.0 - (i * 0.28));
-      final radius = 54.0 + (i * 12.0);
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(cx - 2, cy), radius: radius),
-        -0.6,
-        1.2,
-        false,
-        arcPaint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_PhoneIllustrationPainter old) => old.color != color;
-}
-
-/// OTP step: shield with checkmark
-class _ShieldIllustrationPainter extends CustomPainter {
-  final Color color;
-  const _ShieldIllustrationPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
-    final shield = Path();
-    shield.moveTo(cx, cy - 40);
-    shield.cubicTo(cx + 30, cy - 40, cx + 38, cy - 20, cx + 38, cy);
-    shield.cubicTo(cx + 38, cy + 22, cx + 20, cy + 36, cx, cy + 44);
-    shield.cubicTo(cx - 20, cy + 36, cx - 38, cy + 22, cx - 38, cy);
-    shield.cubicTo(cx - 38, cy - 20, cx - 30, cy - 40, cx, cy - 40);
-    shield.close();
-
-    canvas.drawPath(
-      shield,
-      Paint()
-        ..color = color.withValues(alpha: 0.10)
-        ..style = PaintingStyle.fill,
-    );
-
-    canvas.drawPath(
-      shield,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5
-        ..strokeJoin = StrokeJoin.round,
-    );
-
-    final check = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final checkPath = Path();
-    checkPath.moveTo(cx - 14, cy + 2);
-    checkPath.lineTo(cx - 4, cy + 12);
-    checkPath.lineTo(cx + 14, cy - 10);
-    canvas.drawPath(checkPath, check);
-  }
-
-  @override
-  bool shouldRepaint(_ShieldIllustrationPainter old) => old.color != color;
-}
-
-/// Name step: person + location pin
-class _PersonIllustrationPainter extends CustomPainter {
-  final Color color;
-  const _PersonIllustrationPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final fill = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final stroke = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-
-    canvas.drawCircle(
-      Offset(cx, cy),
-      46,
-      Paint()
-        ..color = color.withValues(alpha: 0.07)
-        ..style = PaintingStyle.fill,
-    );
-    canvas.drawCircle(Offset(cx, cy), 46, stroke);
-
-    canvas.drawCircle(Offset(cx, cy - 14), 13, fill);
-
-    final body = Path();
-    body.moveTo(cx - 18, cy + 36);
-    body.quadraticBezierTo(cx - 20, cy + 10, cx, cy + 4);
-    body.quadraticBezierTo(cx + 20, cy + 10, cx + 18, cy + 36);
-    body.close();
-    canvas.drawPath(body, fill);
-
-    final pinCx = cx + 28.0;
-    final pinCy = cy + 10.0;
-    final pinFill = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final pinPath = Path();
-    pinPath.addOval(
-      Rect.fromCircle(center: Offset(pinCx, pinCy - 10), radius: 10),
-    );
-    pinPath.moveTo(pinCx - 4, pinCy - 2);
-    pinPath.quadraticBezierTo(pinCx, pinCy + 12, pinCx + 4, pinCy - 2);
-    canvas.drawPath(pinPath, pinFill);
-
-    canvas.drawCircle(
-      Offset(pinCx, pinCy - 10),
-      4,
-      Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_PersonIllustrationPainter old) => old.color != color;
-}
-
-/// Referral step: two nodes connected
-class _ReferralIllustrationPainter extends CustomPainter {
-  final Color color;
-  const _ReferralIllustrationPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final fill = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final stroke = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-    final fadeFill = Paint()
-      ..color = color.withValues(alpha: 0.12)
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(Offset(cx - 32, cy), 18, fadeFill);
-    canvas.drawCircle(Offset(cx - 32, cy), 18, stroke);
-    canvas.drawCircle(Offset(cx - 32, cy - 5), 6, fill);
-    final leftBody = Path();
-    leftBody.moveTo(cx - 42, cy + 14);
-    leftBody.quadraticBezierTo(cx - 32, cy + 6, cx - 22, cy + 14);
-    canvas.drawPath(leftBody, stroke);
-
-    canvas.drawCircle(Offset(cx + 32, cy), 18, fadeFill);
-    canvas.drawCircle(Offset(cx + 32, cy), 18, stroke);
-    canvas.drawCircle(Offset(cx + 32, cy - 5), 6, fill);
-    final rightBody = Path();
-    rightBody.moveTo(cx + 22, cy + 14);
-    rightBody.quadraticBezierTo(cx + 32, cy + 6, cx + 42, cy + 14);
-    canvas.drawPath(rightBody, stroke);
-
-    canvas.drawLine(Offset(cx - 14, cy), Offset(cx + 14, cy), stroke);
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset(cx, cy), width: 20, height: 18),
-        const Radius.circular(4),
-      ),
-      fill,
-    );
-    canvas.drawLine(
-      Offset(cx, cy - 9),
-      Offset(cx, cy + 9),
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke,
-    );
-    canvas.drawLine(
-      Offset(cx - 10, cy),
-      Offset(cx + 10, cy),
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke,
-    );
-    canvas.drawArc(
-      Rect.fromCenter(center: Offset(cx - 4, cy - 9), width: 12, height: 10),
-      pi,
-      pi,
-      false,
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke,
-    );
-    canvas.drawArc(
-      Rect.fromCenter(center: Offset(cx + 4, cy - 9), width: 12, height: 10),
-      0,
-      pi,
-      false,
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_ReferralIllustrationPainter old) => old.color != color;
-}
-
-/// Stay in the loop step:
-/// bell with notification ripples
-class _BellIllustrationPainter extends CustomPainter {
-  final Color color;
-  const _BellIllustrationPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final fill = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final stroke = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-
-    final bell = Path();
-    bell.moveTo(cx, cy - 36);
-    bell.cubicTo(cx + 26, cy - 36, cx + 32, cy - 16, cx + 32, cy + 4);
-    bell.lineTo(cx + 38, cy + 14);
-    bell.lineTo(cx - 38, cy + 14);
-    bell.lineTo(cx - 32, cy + 4);
-    bell.cubicTo(cx - 32, cy - 16, cx - 26, cy - 36, cx, cy - 36);
-    bell.close();
-    canvas.drawPath(bell, fill);
-
-    canvas.drawLine(Offset(cx - 38, cy + 14), Offset(cx + 38, cy + 14), fill);
-
-    canvas.drawCircle(Offset(cx, cy + 22), 8, fill);
-
-    canvas.drawLine(Offset(cx, cy - 36), Offset(cx, cy - 44), stroke);
-
-    final arcStroke = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..strokeCap = StrokeCap.round;
-
-    for (int i = 0; i < 3; i++) {
-      arcStroke.color = color.withValues(alpha: 0.7 - (i * 0.22));
-      final r = 52.0 + (i * 14.0);
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(cx, cy + 4), radius: r),
-        -pi * 0.85,
-        -pi * 0.3,
-        false,
-        arcStroke,
-      );
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(cx, cy + 4), radius: r),
-        -pi * 0.15,
-        -pi * 0.3,
-        false,
-        arcStroke,
-      );
-    }
-
-    canvas.drawCircle(
-      Offset(cx + 28, cy - 34),
-      8,
-      Paint()
-        ..color = AppColors.danger
-        ..style = PaintingStyle.fill,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_BellIllustrationPainter old) => old.color != color;
-}
-
-/// Wrapper that animates an
-/// illustration in with scale +
-/// fade on step entry.
-class _IllustrationWidget extends StatefulWidget {
-  final CustomPainter painter;
-  const _IllustrationWidget({required this.painter});
-
-  @override
-  State<_IllustrationWidget> createState() => _IllustrationWidgetState();
-}
-
-class _IllustrationWidgetState extends State<_IllustrationWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ac;
-  late final Animation<double> _scale;
-  late final Animation<double> _fade;
-
-  @override
-  void initState() {
-    super.initState();
-    _ac = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _scale = Tween<double>(
-      begin: 0.72,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _ac, curve: Curves.easeOutBack));
-    _fade = CurvedAnimation(
-      parent: _ac,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    );
-    _ac.forward();
-  }
-
-  @override
-  void dispose() {
-    _ac.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fade,
-      child: ScaleTransition(
-        scale: _scale,
-        child: CustomPaint(painter: widget.painter, size: const Size(120, 120)),
       ),
     );
   }
@@ -1515,11 +1024,9 @@ class _PhoneStep extends ConsumerStatefulWidget {
 class _PhoneStepState extends ConsumerState<_PhoneStep>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ac;
-  late final Animation<double> _logoFade;
   late final Animation<double> _headingFade;
   late final Animation<double> _fieldFade;
   late final Animation<double> _buttonFade;
-  late final Animation<double> _logoSlide;
   late final Animation<double> _headingSlide;
   late final Animation<double> _fieldSlide;
   late final Animation<double> _buttonSlide;
@@ -1530,10 +1037,6 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
     _ac = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
-    );
-    _logoFade = CurvedAnimation(
-      parent: _ac,
-      curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
     );
     _headingFade = CurvedAnimation(
       parent: _ac,
@@ -1546,12 +1049,6 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
     _buttonFade = CurvedAnimation(
       parent: _ac,
       curve: const Interval(0.45, 1.00, curve: Curves.easeOutCubic),
-    );
-    _logoSlide = Tween<double>(begin: 0.06, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _ac,
-        curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
-      ),
     );
     _headingSlide = Tween<double>(begin: 0.06, end: 0.0).animate(
       CurvedAnimation(
@@ -1609,53 +1106,110 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
         phoneDigits.length >= 7 && phoneDigits.length <= 15;
 
     final isWeb = AcquisitionLayout.useWebLayout(context);
+    final loginPanel = kLoginWebPanels['login']!;
+
+    if (!isWeb) {
+      return MobileAuthShell(
+        panel: loginPanel,
+        title: 'Welcome back.',
+        subtitle:
+            'Enter your phone number to receive a verification code.',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _animated(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'PHONE NUMBER',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  PhoneDialInputField(
+                    dialCode: state.dialCode,
+                    countryFlag: state.countryFlag,
+                    initialDigits: state.phone,
+                    onDigitsChanged: notifier.updatePhone,
+                    onSubmit: notifier.requestOtp,
+                    onDialCodeChanged: notifier.updateDialCode,
+                    autofocus: true,
+                    pickerSubtitle:
+                        'Choose your country to set the dial code.',
+                  ),
+                  _InlineError(error: showError ? state.error : null),
+                  if (!showError) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      state.phone.isNotEmpty
+                          ? 'Sending to ${state.dialCode} ${state.phone}'
+                          : 'We\'ll send a code to this number',
+                      style: AppTextStyles.cardLabel.copyWith(
+                        color: const Color(0xFFAAAAAA),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              _fieldFade,
+              _fieldSlide,
+            ),
+            const SizedBox(height: 24),
+            _animated(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _AuthPrimaryButton(
+                    label: 'Send verification code →',
+                    isLoading: state.isLoading,
+                    isEnabled: phoneLooksComplete,
+                    onTap: notifier.requestOtp,
+                  ),
+                  const SizedBox(height: 16),
+                  const Center(child: _PhoneTermsRichText()),
+                ],
+              ),
+              _buttonFade,
+              _buttonSlide,
+            ),
+          ],
+        ),
+      );
+    }
 
     return _AuthResponsiveWrapper(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!isWeb) ...[
-            const SizedBox(height: 60),
-            _animated(
-              Center(
-                child: _IllustrationWidget(
-                  painter: _PhoneIllustrationPainter(AppColors.secondary),
-                ),
-              ),
-              _logoFade,
-              _logoSlide,
-            ),
-            const SizedBox(height: 44),
-          ] else
-            const SizedBox(height: 24),
+          const SizedBox(height: 24),
           _animated(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (isWeb)
-                  Text(
-                    'SIGN IN',
-                    style: AppTextStyles.sectionLabel.copyWith(
-                      fontSize: 9,
-                      letterSpacing: .8,
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                if (isWeb) const SizedBox(height: 3),
                 Text(
-                  isWeb ? 'Welcome back.' : 'Enter your phone number',
+                  'SIGN IN',
+                  style: AppTextStyles.sectionLabel.copyWith(
+                    fontSize: 9,
+                    letterSpacing: .8,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Welcome back.',
                   style: AppTextStyles.titleLarge.copyWith(
-                    fontSize: isWeb ? 22 : 24,
-                    fontWeight: isWeb ? FontWeight.w500 : FontWeight.w600,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  isWeb
-                      ? 'Enter your phone number to receive a verification code.'
-                      : 'We\'ll send a 6-digit verification code',
+                  'Enter your phone number to receive a verification code.',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: isWeb ? 12 : null,
+                    fontSize: 12,
                     color: const Color(0xFF666666),
                   ),
                 ),
@@ -1665,16 +1219,14 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
             _headingSlide,
           ),
           const SizedBox(height: 16),
-          if (isWeb)
-            _animated(
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _WebContextTiles(tiles: kLoginWebPanels['login']!.tiles),
-              ),
-              _fieldFade,
-              _fieldSlide,
+          _animated(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _WebContextTiles(tiles: loginPanel.tiles),
             ),
-          if (!isWeb) const SizedBox(height: 16),
+            _fieldFade,
+            _fieldSlide,
+          ),
           _animated(
             _loginWebFieldCard(
               context,
@@ -1848,6 +1400,141 @@ class _OtpStepState extends ConsumerState<_OtpStep>
     final notifier = widget.notifier;
     final isWeb = AcquisitionLayout.useWebLayout(context);
     final otpError = state.error != null && state.step == LoginStep.otp;
+    final loginPanel = kLoginWebPanels['login']!;
+
+    if (!isWeb) {
+      return MobileAuthShell(
+        panel: loginPanel,
+        title: 'Enter your code.',
+        subtitle: 'Check your SMS for the 6-digit verification code.',
+        showTrustTiles: false,
+        showEyebrow: false,
+        onBack: notifier.goBackToPhone,
+        headerExtra: Text.rich(
+          TextSpan(
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            children: [
+              const TextSpan(text: 'Sent to '),
+              TextSpan(
+                text: '${state.dialCode} ${state.phone}',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const TextSpan(text: '  ·  '),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.baseline,
+                baseline: TextBaseline.alphabetic,
+                child: GestureDetector(
+                  onTap: notifier.goBackToPhone,
+                  child: Text(
+                    'Change',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '6-DIGIT CODE',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _OtpInputRow(
+                    onChanged: notifier.updateOtp,
+                    onCompleted: notifier.verifyOtp,
+                    hasError: otpError,
+                  ),
+                ],
+              ),
+              _otpFade,
+              _otpSlide,
+            ),
+            _InlineError(error: otpError ? state.error : null),
+            const SizedBox(height: 24),
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _AuthPrimaryButton(
+                    label: 'Verify →',
+                    isLoading: state.isLoading,
+                    isEnabled: state.otp.length == 6 && !state.isLoading,
+                    onTap: notifier.verifyOtp,
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: state.resendEnabled
+                          ? GestureDetector(
+                              key: const ValueKey<String>('resend_active'),
+                              onTap: notifier.resendOtp,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 8,
+                                ),
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'Didn\'t receive a code? ',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: const Color(0xFF666666),
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: 'Resend',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.secondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Padding(
+                              key: const ValueKey<String>('resend_count'),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                _resendLabel(state),
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: const Color(0xFFAAAAAA),
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+              _buttonFade,
+              _buttonSlide,
+            ),
+          ],
+        ),
+      );
+    }
 
     return _AuthResponsiveWrapper(
       child: Column(
@@ -1866,111 +1553,65 @@ class _OtpStepState extends ConsumerState<_OtpStep>
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!isWeb) ...[
-                  Center(
-                    child: _IllustrationWidget(
-                      painter: _ShieldIllustrationPainter(AppColors.secondary),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                ],
-                if (isWeb)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Row(
-                      children: [
-                        Text(
-                          '${state.dialCode} ${state.phone}',
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${state.dialCode} ${state.phone}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '·',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: notifier.goBackToPhone,
+                        child: Text(
+                          'Change',
                           style: AppTextStyles.bodySmall.copyWith(
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
+                            color: AppColors.secondary,
                             fontSize: 12,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '·',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: const Color(0xFFAAAAAA),
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: notifier.goBackToPhone,
-                          child: Text(
-                            'Change',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.secondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (isWeb)
-                  Text(
-                    'VERIFICATION',
-                    style: AppTextStyles.sectionLabel.copyWith(
-                      fontSize: 9,
-                      letterSpacing: .8,
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                if (isWeb) const SizedBox(height: 3),
-                Text(
-                  isWeb ? 'Enter your code.' : 'Enter verification code',
-                  style: AppTextStyles.titleLarge.copyWith(
-                    fontSize: isWeb ? 22 : 24,
-                    fontWeight: isWeb ? FontWeight.w500 : FontWeight.w600,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                if (!isWeb)
-                  Text.rich(
-                    TextSpan(
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: const Color(0xFF666666),
-                      ),
-                      children: [
-                        const TextSpan(text: 'Sent to '),
-                        TextSpan(
-                          text: '${state.dialCode} ${state.phone}',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF1A1A18),
-                          ),
-                        ),
-                        const TextSpan(text: '  ·  '),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: GestureDetector(
-                            onTap: notifier.goBackToPhone,
-                            child: Text(
-                              'Change',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.secondary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                Text(
+                  'VERIFICATION',
+                  style: AppTextStyles.sectionLabel.copyWith(
+                    fontSize: 9,
+                    letterSpacing: .8,
+                    color: AppColors.textTertiary,
                   ),
-                if (isWeb) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    'Check your SMS for the 6-digit verification code.',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: 12,
-                      color: const Color(0xFF666666),
-                    ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Enter your code.',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Check your SMS for the 6-digit verification code.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: 12,
+                    color: const Color(0xFF666666),
+                  ),
+                ),
               ],
             ),
             _headingFade,
@@ -1983,16 +1624,14 @@ class _OtpStepState extends ConsumerState<_OtpStep>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (isWeb) ...[
-                    Text(
-                      '6-DIGIT CODE',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: const Color(0xFFAAAAAA),
-                        letterSpacing: 0.5,
-                      ),
+                  Text(
+                    '6-DIGIT CODE',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
                     ),
-                    const SizedBox(height: 10),
-                  ],
+                  ),
+                  const SizedBox(height: 10),
                   _OtpInputRow(
                     onChanged: notifier.updateOtp,
                     onCompleted: notifier.verifyOtp,
@@ -2087,8 +1726,6 @@ class _NameStep extends ConsumerStatefulWidget {
 class _NameStepState extends ConsumerState<_NameStep>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ac;
-  late final Animation<double> _emojiScale;
-  late final Animation<double> _emojiFade;
   late final Animation<double> _headingFade;
   late final Animation<double> _headingSlide;
   late final Animation<double> _fieldFade;
@@ -2109,16 +1746,6 @@ class _NameStepState extends ConsumerState<_NameStep>
     _ac = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
-    );
-    _emojiScale = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _ac,
-        curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
-      ),
-    );
-    _emojiFade = CurvedAnimation(
-      parent: _ac,
-      curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
     );
     _headingFade = CurvedAnimation(
       parent: _ac,
@@ -2251,151 +1878,196 @@ class _NameStepState extends ConsumerState<_NameStep>
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (!AcquisitionLayout.useWebLayout(context))
-          const _OnboardingProgressBar(current: 0, total: 3),
-        Expanded(
-          child: _AuthResponsiveWrapper(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (!AcquisitionLayout.useWebLayout(context)) ...[
-                  const SizedBox(height: 48),
-                  FadeTransition(
-                    opacity: _emojiFade,
-                    child: ScaleTransition(
-                      scale: _emojiScale,
-                      child: Center(
-                        child: _IllustrationWidget(
-                          painter: _PersonIllustrationPainter(
-                            AppColors.secondary,
-                          ),
-                        ),
-                      ),
+    final isWeb = AcquisitionLayout.useWebLayout(context);
+    final namePanel = kLoginWebPanels['name']!;
+
+    if (!isWeb) {
+      return MobileAuthShell(
+        panel: namePanel,
+        setupStepCurrent: 0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FULL NAME',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
+                  _StyledTextField(
+                    hintText: 'e.g. Kwame Mensah',
+                    controller: _nameCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.done,
+                    onSubmit: notifier.completeProfile,
+                    hasError: nameFieldHasError,
+                    autofocus: true,
+                  ),
+                  _InlineError(error: nameInlineError),
                 ],
-                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 24),
-                _fadeSlide(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AcquisitionLayout.useWebLayout(context)
-                            ? 'It all starts\nwith a name.'
-                            : 'What should we call you?',
-                        style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: AcquisitionLayout.useWebLayout(context) ? 22 : 24,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        AcquisitionLayout.useWebLayout(context)
-                            ? 'Your agent is a real person who will address '
-                                  'you by name throughout your entire import '
-                                  'journey.'
-                            : 'Your agent will use your name to address you.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFF666666),
-                          fontSize: AcquisitionLayout.useWebLayout(context) ? 12 : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                  _headingFade,
-                  _headingSlide,
-                ),
-                if (AcquisitionLayout.useWebLayout(context))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _WebContextTiles(
-                      tiles: kLoginWebPanels['name']!.tiles,
+              ),
+              _fieldFade,
+              _fieldSlide,
+            ),
+            const SizedBox(height: 16),
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'COUNTRY',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
                     ),
                   ),
-                if (!AcquisitionLayout.useWebLayout(context))
-                  const SizedBox(height: 32),
-                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 12),
-                _fadeSlide(
-                  _loginWebFieldCard(
-                    context,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'FULL NAME',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: const Color(0xFFAAAAAA),
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _StyledTextField(
-                          hintText: 'e.g. Kwame Mensah',
-                          controller: _nameCtrl,
-                          textCapitalization: TextCapitalization.words,
-                          textInputAction: TextInputAction.done,
-                          onSubmit: notifier.completeProfile,
-                          hasError: nameFieldHasError,
-                          autofocus: true,
-                        ),
-                        _InlineError(error: nameInlineError),
-                      ],
-                    ),
+                  const SizedBox(height: 8),
+                  _CountryPickerField(
+                    selectedCountry: displayCountry,
+                    onTap: _openCountryPicker,
+                    hasError: countryFieldHasError,
+                    isActive: _countrySheetOpen,
                   ),
-                  _fieldFade,
-                  _fieldSlide,
-                ),
-                const SizedBox(height: 16),
-                _fadeSlide(
-                  _loginWebFieldCard(
-                    context,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'COUNTRY',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: const Color(0xFFAAAAAA),
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _CountryPickerField(
-                          selectedCountry: displayCountry,
-                          onTap: _openCountryPicker,
-                          hasError: countryFieldHasError,
-                          isActive: _countrySheetOpen,
-                        ),
-                        _InlineError(error: countryInlineError),
-                      ],
-                    ),
+                  _InlineError(error: countryInlineError),
+                ],
+              ),
+              _countryFade,
+              _countrySlide,
+            ),
+            const SizedBox(height: 24),
+            _fadeSlide(
+              _AuthPrimaryButton(
+                label: 'Continue →',
+                isLoading: state.isLoading,
+                isEnabled:
+                    state.fullName.trim().length >= 2 &&
+                    state.country.isNotEmpty,
+                onTap: notifier.completeProfile,
+              ),
+              _buttonFade,
+              _buttonSlide,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _AuthResponsiveWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 24),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'It all starts\nwith a name.',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
                   ),
-                  _countryFade,
-                  _countrySlide,
                 ),
-                const SizedBox(height: 32),
-                _fadeSlide(
-                  _AuthPrimaryButton(
-                    label: 'Continue →',
-                    isLoading: state.isLoading,
-                    isEnabled:
-                        state.fullName.trim().length >= 2 &&
-                        state.country.isNotEmpty,
-                    onTap: notifier.completeProfile,
+                const SizedBox(height: 6),
+                Text(
+                  'Your agent is a real person who will address '
+                  'you by name throughout your entire import '
+                  'journey.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: const Color(0xFF666666),
+                    fontSize: 12,
                   ),
-                  _buttonFade,
-                  _buttonSlide,
                 ),
-                const SizedBox(height: 32),
               ],
             ),
+            _headingFade,
+            _headingSlide,
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _WebContextTiles(tiles: namePanel.tiles),
+          ),
+          const SizedBox(height: 12),
+          _fadeSlide(
+            _loginWebFieldCard(
+              context,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FULL NAME',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _StyledTextField(
+                    hintText: 'e.g. Kwame Mensah',
+                    controller: _nameCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.done,
+                    onSubmit: notifier.completeProfile,
+                    hasError: nameFieldHasError,
+                    autofocus: true,
+                  ),
+                  _InlineError(error: nameInlineError),
+                ],
+              ),
+            ),
+            _fieldFade,
+            _fieldSlide,
+          ),
+          const SizedBox(height: 16),
+          _fadeSlide(
+            _loginWebFieldCard(
+              context,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'COUNTRY',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _CountryPickerField(
+                    selectedCountry: displayCountry,
+                    onTap: _openCountryPicker,
+                    hasError: countryFieldHasError,
+                    isActive: _countrySheetOpen,
+                  ),
+                  _InlineError(error: countryInlineError),
+                ],
+              ),
+            ),
+            _countryFade,
+            _countrySlide,
+          ),
+          const SizedBox(height: 32),
+          _fadeSlide(
+            _AuthPrimaryButton(
+              label: 'Continue →',
+              isLoading: state.isLoading,
+              isEnabled:
+                  state.fullName.trim().length >= 2 &&
+                  state.country.isNotEmpty,
+              onTap: notifier.completeProfile,
+            ),
+            _buttonFade,
+            _buttonSlide,
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 }
@@ -2412,8 +2084,6 @@ class _ReferralStep extends ConsumerStatefulWidget {
 class _ReferralStepState extends ConsumerState<_ReferralStep>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ac;
-  late final Animation<double> _emojiScale;
-  late final Animation<double> _emojiFade;
   late final Animation<double> _headingFade;
   late final Animation<double> _headingSlide;
   late final Animation<double> _fieldFade;
@@ -2432,16 +2102,6 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
     _ac = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
-    );
-    _emojiScale = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _ac,
-        curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
-      ),
-    );
-    _emojiFade = CurvedAnimation(
-      parent: _ac,
-      curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
     );
     _headingFade = CurvedAnimation(
       parent: _ac,
@@ -2507,161 +2167,203 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
     final notifier = widget.notifier;
     final empty = state.referralCode.trim().isEmpty;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: AcquisitionLayout.phoneContentPadding(
-            context,
-          ).copyWith(top: 16, bottom: 0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: _BackButton(onTap: notifier.goBack),
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (!AcquisitionLayout.useWebLayout(context))
-          const _OnboardingProgressBar(current: 1, total: 3),
-        Expanded(
-          child: _AuthResponsiveWrapper(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (!AcquisitionLayout.useWebLayout(context)) ...[
-                  const SizedBox(height: 40),
-                  FadeTransition(
-                    opacity: _emojiFade,
-                    child: ScaleTransition(
-                      scale: _emojiScale,
-                      child: Center(
-                        child: _IllustrationWidget(
-                          painter: _ReferralIllustrationPainter(
-                            AppColors.secondary,
-                          ),
-                        ),
-                      ),
+    final isWeb = AcquisitionLayout.useWebLayout(context);
+    final referralPanel = kLoginWebPanels['referral']!;
+
+    if (!isWeb) {
+      return MobileAuthShell(
+        panel: referralPanel,
+        setupStepCurrent: 1,
+        onBack: notifier.goBack,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'REFERRAL CODE (OPTIONAL)',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
+                  _StyledTextField(
+                    hintText: 'e.g. A3K9PX',
+                    controller: _codeCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    textInputAction: TextInputAction.done,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(
+                          r'[23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz]',
+                        ),
+                      ),
+                      LengthLimitingTextInputFormatter(6),
+                      _UpperCaseFormatter(),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '6 characters, letters and numbers only',
+                    style: AppTextStyles.cardLabel.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                    ),
+                  ),
                 ],
-                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 24),
-                _fadeSlide(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AcquisitionLayout.useWebLayout(context)
-                            ? 'Share the journey.\nEarn rewards.'
-                            : 'Do you have a referral code?',
-                        style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: AcquisitionLayout.useWebLayout(context) ? 22 : 24,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        AcquisitionLayout.useWebLayout(context)
-                            ? 'If a friend referred you, enter their code. '
-                                  'They earn a reward when you complete your '
-                                  'first order.'
-                            : 'Enter a friend\'s code. They\'ll get a reward when you join.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFF666666),
-                          fontSize: AcquisitionLayout.useWebLayout(context) ? 12 : null,
-                        ),
-                      ),
-                    ],
+              ),
+              _fieldFade,
+              _fieldSlide,
+            ),
+            const SizedBox(height: 24),
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _AuthPrimaryButton(
+                    label: empty ? 'Skip →' : 'Apply & continue →',
+                    isLoading: false,
+                    isEnabled: true,
+                    onTap: notifier.proceedToContactChannels,
                   ),
-                  _headingFade,
-                  _headingSlide,
-                ),
-                if (AcquisitionLayout.useWebLayout(context))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _WebContextTiles(
-                      tiles: kLoginWebPanels['referral']!.tiles,
+                  const SizedBox(height: 8),
+                  Center(
+                    child: TextButton(
+                      onPressed: notifier.skipReferral,
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Skip',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                        ),
+                      ),
                     ),
                   ),
-                if (!AcquisitionLayout.useWebLayout(context))
-                  const SizedBox(height: 32),
-                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 12),
-                _fadeSlide(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'REFERRAL CODE (OPTIONAL)',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: const Color(0xFFAAAAAA),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _StyledTextField(
-                        hintText: 'e.g. A3K9PX',
-                        controller: _codeCtrl,
-                        textCapitalization: TextCapitalization.characters,
-                        textInputAction: TextInputAction.done,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(
-                              r'[23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz]',
-                            ),
-                          ),
-                          LengthLimitingTextInputFormatter(6),
-                          _UpperCaseFormatter(),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '6 characters, letters and numbers only',
-                        style: AppTextStyles.cardLabel.copyWith(
-                          color: const Color(0xFFAAAAAA),
-                        ),
-                      ),
-                    ],
+                ],
+              ),
+              _buttonFade,
+              _buttonSlide,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _AuthResponsiveWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 24),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Share the journey.\nEarn rewards.',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
                   ),
-                  _fieldFade,
-                  _fieldSlide,
                 ),
-                const SizedBox(height: 32),
-                _fadeSlide(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _AuthPrimaryButton(
-                        label: empty ? 'Skip →' : 'Apply & continue →',
-                        isLoading: false,
-                        isEnabled: true,
-                        onTap: notifier.proceedToContactChannels,
-                      ),
-                      const SizedBox(height: 16),
-                      Center(
-                        child: TextButton(
-                          onPressed: notifier.skipReferral,
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size(48, 48),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            'Skip',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: const Color(0xFFAAAAAA),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 6),
+                Text(
+                  'If a friend referred you, enter their code. '
+                  'They earn a reward when you complete your '
+                  'first order.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: const Color(0xFF666666),
+                    fontSize: 12,
                   ),
-                  _buttonFade,
-                  _buttonSlide,
                 ),
-                const SizedBox(height: 32),
               ],
             ),
+            _headingFade,
+            _headingSlide,
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _WebContextTiles(tiles: referralPanel.tiles),
+          ),
+          const SizedBox(height: 12),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'REFERRAL CODE (OPTIONAL)',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: const Color(0xFFAAAAAA),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _StyledTextField(
+                  hintText: 'e.g. A3K9PX',
+                  controller: _codeCtrl,
+                  textCapitalization: TextCapitalization.characters,
+                  textInputAction: TextInputAction.done,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(
+                        r'[23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz]',
+                      ),
+                    ),
+                    LengthLimitingTextInputFormatter(6),
+                    _UpperCaseFormatter(),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '6 characters, letters and numbers only',
+                  style: AppTextStyles.cardLabel.copyWith(
+                    color: const Color(0xFFAAAAAA),
+                  ),
+                ),
+              ],
+            ),
+            _fieldFade,
+            _fieldSlide,
+          ),
+          const SizedBox(height: 32),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _AuthPrimaryButton(
+                  label: empty ? 'Skip →' : 'Apply & continue →',
+                  isLoading: false,
+                  isEnabled: true,
+                  onTap: notifier.proceedToContactChannels,
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: notifier.skipReferral,
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Skip',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: const Color(0xFFAAAAAA),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            _buttonFade,
+            _buttonSlide,
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 }
@@ -2679,8 +2381,6 @@ class _ContactChannelsStep extends ConsumerStatefulWidget {
 class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ac;
-  late final Animation<double> _emojiScale;
-  late final Animation<double> _emojiFade;
   late final Animation<double> _headingFade;
   late final Animation<double> _headingSlide;
   late final Animation<double> _fieldFade;
@@ -2717,16 +2417,6 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
     _ac = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
-    );
-    _emojiScale = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _ac,
-        curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
-      ),
-    );
-    _emojiFade = CurvedAnimation(
-      parent: _ac,
-      curve: const Interval(0.00, 0.45, curve: Curves.easeOutCubic),
     );
     _headingFade = CurvedAnimation(
       parent: _ac,
@@ -2793,233 +2483,316 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
     final hasError =
         state.error != null && state.step == LoginStep.contactChannels;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: AcquisitionLayout.phoneContentPadding(
-            context,
-          ).copyWith(top: 16, bottom: 0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: _BackButton(onTap: notifier.goBack),
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (!AcquisitionLayout.useWebLayout(context))
-          const _OnboardingProgressBar(current: 2, total: 3),
-        Expanded(
-          child: _AuthResponsiveWrapper(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (!AcquisitionLayout.useWebLayout(context)) ...[
-                  const SizedBox(height: 40),
-                  FadeTransition(
-                    opacity: _emojiFade,
-                    child: ScaleTransition(
-                      scale: _emojiScale,
-                      child: Center(
-                        child: _IllustrationWidget(
-                          painter: _BellIllustrationPainter(
-                            AppColors.secondary,
-                          ),
+    final isWeb = AcquisitionLayout.useWebLayout(context);
+    final contactPanel = kLoginWebPanels['contactChannels']!;
+
+    if (!isWeb) {
+      return MobileAuthShell(
+        panel: contactPanel,
+        setupStepCurrent: 2,
+        onBack: notifier.goBack,
+        showTrustTiles: false,
+        subtitle:
+            'We\'ll keep you updated on your order progress via the '
+            'channels you choose. Your phone number has been pre-filled.',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _ContactFieldLabel(
+                    label: 'SMS NUMBER',
+                    isRequired: true,
+                  ),
+                  const SizedBox(height: 8),
+                  PhoneDialInputField(
+                    dialCode: state.smsDialCode,
+                    countryFlag: state.smsCountryFlag,
+                    initialDigits: state.smsPhone,
+                    onDialCodeChanged: notifier.updateSmsDialCode,
+                    onDigitsChanged: notifier.updateSmsPhone,
+                    hasError:
+                        hasError &&
+                        state.smsPhone.replaceAll(RegExp(r'\D'), '').isEmpty,
+                    pickerSubtitle:
+                        'Choose the country for this phone number.',
+                  ),
+                  _InlineError(
+                    error:
+                        hasError &&
+                            state.smsPhone.replaceAll(RegExp(r'\D'), '')
+                                .isEmpty
+                        ? state.error
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  const _ContactFieldLabel(
+                    label: 'WHATSAPP NUMBER',
+                    isRequired: false,
+                  ),
+                  const SizedBox(height: 8),
+                  PhoneDialInputField(
+                    dialCode: state.whatsappDialCode,
+                    countryFlag: state.whatsappCountryFlag,
+                    initialDigits: state.whatsappPhone,
+                    onDialCodeChanged: notifier.updateWhatsappDialCode,
+                    onDigitsChanged: notifier.updateWhatsappPhone,
+                    hintText: 'XX XXX XXXX',
+                    pickerSubtitle:
+                        'Choose the country for this phone number.',
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Make sure this number has WhatsApp installed.',
+                    style: AppTextStyles.caption.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const _ContactFieldLabel(
+                    label: 'EMAIL ADDRESS',
+                    isRequired: false,
+                  ),
+                  const SizedBox(height: 8),
+                  _StyledTextField(
+                    hintText: 'your@email.com',
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    onSubmit: notifier.saveContactChannelsAndFinish,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Required for payment receipts. You will be '
+                    'asked to add it before your first payment if '
+                    'left empty.',
+                    style: AppTextStyles.caption.copyWith(
+                      color: const Color(0xFFAAAAAA),
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+              _fieldFade,
+              _fieldSlide,
+            ),
+            const SizedBox(height: 24),
+            _fadeSlide(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _AuthPrimaryButton(
+                    label: 'Finish →',
+                    isLoading: state.isLoading,
+                    isEnabled: !state.isLoading,
+                    onTap: notifier.saveContactChannelsAndFinish,
+                  ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: TextButton(
+                      onPressed: state.isLoading
+                          ? null
+                          : notifier.skipContactChannelsAndFinish,
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Skip for now',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: const Color(0xFFAAAAAA),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
                 ],
-                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 24),
-                _fadeSlide(
-                  Column(
+              ),
+              _buttonFade,
+              _buttonSlide,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _AuthResponsiveWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 24),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Never miss\na moment.',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'We\'ll keep you updated on your order progress '
+                  'via the channels you choose.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: const Color(0xFF666666),
+                    height: 1.5,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            _headingFade,
+            _headingSlide,
+          ),
+          const SizedBox(height: 16),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _loginWebFieldCard(
+                  context,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        AcquisitionLayout.useWebLayout(context)
-                            ? 'Never miss\na moment.'
-                            : 'Stay in the loop',
-                        style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: AcquisitionLayout.useWebLayout(context) ? 22 : 24,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      const _ContactFieldLabel(
+                        label: 'SMS NUMBER',
+                        isRequired: true,
+                      ),
+                      const SizedBox(height: 8),
+                      PhoneDialInputField(
+                        dialCode: state.smsDialCode,
+                        countryFlag: state.smsCountryFlag,
+                        initialDigits: state.smsPhone,
+                        onDialCodeChanged: notifier.updateSmsDialCode,
+                        onDigitsChanged: notifier.updateSmsPhone,
+                        hasError:
+                            hasError &&
+                            state.smsPhone
+                                .replaceAll(RegExp(r'\D'), '')
+                                .isEmpty,
+                        pickerSubtitle:
+                            'Choose the country for this phone number.',
+                      ),
+                      _InlineError(
+                        error:
+                            hasError &&
+                                state.smsPhone
+                                    .replaceAll(RegExp(r'\D'), '')
+                                    .isEmpty
+                            ? state.error
+                            : null,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _loginWebFieldCard(
+                  context,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ContactFieldLabel(
+                        label: 'WHATSAPP NUMBER',
+                        isRequired: false,
+                      ),
+                      const SizedBox(height: 8),
+                      PhoneDialInputField(
+                        dialCode: state.whatsappDialCode,
+                        countryFlag: state.whatsappCountryFlag,
+                        initialDigits: state.whatsappPhone,
+                        onDialCodeChanged: notifier.updateWhatsappDialCode,
+                        onDigitsChanged: notifier.updateWhatsappPhone,
+                        hintText: 'XX XXX XXXX',
+                        pickerSubtitle:
+                            'Choose the country for this phone number.',
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        AcquisitionLayout.useWebLayout(context)
-                            ? 'We\'ll keep you updated on your order progress '
-                                  'via the channels you choose.'
-                            : 'We will keep you updated on your order progress. '
-                                  'Your phone number has been pre-filled. Update it if '
-                                  'you use a different number for these channels.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFF666666),
-                          height: 1.5,
-                          fontSize: AcquisitionLayout.useWebLayout(context) ? 12 : null,
+                        'Make sure this number has WhatsApp installed.',
+                        style: AppTextStyles.caption.copyWith(
+                          color: const Color(0xFFAAAAAA),
                         ),
                       ),
                     ],
                   ),
-                  _headingFade,
-                  _headingSlide,
                 ),
-                if (AcquisitionLayout.useWebLayout(context))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _WebContextTiles(
-                      tiles: kLoginWebPanels['contactChannels']!.tiles,
-                    ),
-                  ),
-                if (!AcquisitionLayout.useWebLayout(context))
-                  const SizedBox(height: 32),
-                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 12),
-                _fadeSlide(
-                  Column(
+                const SizedBox(height: 20),
+                _loginWebFieldCard(
+                  context,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _loginWebFieldCard(
-                        context,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _ContactFieldLabel(
-                              label: 'SMS NUMBER',
-                              isRequired: true,
-                            ),
-                            const SizedBox(height: 8),
-                            PhoneDialInputField(
-                              dialCode: state.smsDialCode,
-                              countryFlag: state.smsCountryFlag,
-                              initialDigits: state.smsPhone,
-                              onDialCodeChanged: notifier.updateSmsDialCode,
-                              onDigitsChanged: notifier.updateSmsPhone,
-                              hasError:
-                                  hasError &&
-                                  state.smsPhone
-                                      .replaceAll(RegExp(r'\D'), '')
-                                      .isEmpty,
-                              pickerSubtitle:
-                                  'Choose the country for this phone number.',
-                            ),
-                            _InlineError(
-                              error:
-                                  hasError &&
-                                      state.smsPhone
-                                          .replaceAll(RegExp(r'\D'), '')
-                                          .isEmpty
-                                  ? state.error
-                                  : null,
-                            ),
-                          ],
-                        ),
+                      const _ContactFieldLabel(
+                        label: 'EMAIL ADDRESS',
+                        isRequired: false,
                       ),
-                      const SizedBox(height: 20),
-                      _loginWebFieldCard(
-                        context,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _ContactFieldLabel(
-                              label: 'WHATSAPP NUMBER',
-                              isRequired: false,
-                            ),
-                            const SizedBox(height: 8),
-                            PhoneDialInputField(
-                              dialCode: state.whatsappDialCode,
-                              countryFlag: state.whatsappCountryFlag,
-                              initialDigits: state.whatsappPhone,
-                              onDialCodeChanged: notifier.updateWhatsappDialCode,
-                              onDigitsChanged: notifier.updateWhatsappPhone,
-                              hintText: 'XX XXX XXXX',
-                              pickerSubtitle:
-                                  'Choose the country for this phone number.',
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Make sure this number has WhatsApp installed.',
-                              style: AppTextStyles.caption.copyWith(
-                                color: const Color(0xFFAAAAAA),
-                              ),
-                            ),
-                          ],
-                        ),
+                      const SizedBox(height: 8),
+                      _StyledTextField(
+                        hintText: 'your@email.com',
+                        controller: _emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.done,
+                        onSubmit: notifier.saveContactChannelsAndFinish,
                       ),
-                      const SizedBox(height: 20),
-                      _loginWebFieldCard(
-                        context,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _ContactFieldLabel(
-                              label: 'EMAIL ADDRESS',
-                              isRequired: false,
-                            ),
-                            const SizedBox(height: 8),
-                            _StyledTextField(
-                              hintText: 'your@email.com',
-                              controller: _emailCtrl,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: TextInputAction.done,
-                              onSubmit: notifier.saveContactChannelsAndFinish,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Required for payment receipts. You will be '
-                              'asked to add it before your first payment if '
-                              'left empty.',
-                              style: AppTextStyles.caption.copyWith(
-                                color: const Color(0xFFAAAAAA),
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
+                      const SizedBox(height: 6),
+                      Text(
+                        'Required for payment receipts. You will be '
+                        'asked to add it before your first payment if '
+                        'left empty.',
+                        style: AppTextStyles.caption.copyWith(
+                          color: const Color(0xFFAAAAAA),
+                          height: 1.4,
                         ),
                       ),
                     ],
                   ),
-                  _fieldFade,
-                  _fieldSlide,
                 ),
-                const SizedBox(height: 32),
-                _fadeSlide(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _AuthPrimaryButton(
-                        label: 'Finish →',
-                        isLoading: state.isLoading,
-                        isEnabled: !state.isLoading,
-                        onTap: notifier.saveContactChannelsAndFinish,
-                      ),
-                      const SizedBox(height: 16),
-                      Center(
-                        child: TextButton(
-                          onPressed: state.isLoading
-                              ? null
-                              : notifier.skipContactChannelsAndFinish,
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size(48, 48),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            'Skip for now',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: const Color(0xFFAAAAAA),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  _buttonFade,
-                  _buttonSlide,
-                ),
-                const SizedBox(height: 32),
               ],
             ),
+            _fieldFade,
+            _fieldSlide,
           ),
-        ),
-      ],
+          const SizedBox(height: 32),
+          _fadeSlide(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _AuthPrimaryButton(
+                  label: 'Finish →',
+                  isLoading: state.isLoading,
+                  isEnabled: !state.isLoading,
+                  onTap: notifier.saveContactChannelsAndFinish,
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: state.isLoading
+                        ? null
+                        : notifier.skipContactChannelsAndFinish,
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Skip for now',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: const Color(0xFFAAAAAA),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            _buttonFade,
+            _buttonSlide,
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 }

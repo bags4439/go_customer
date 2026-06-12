@@ -25,6 +25,8 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       preferredCurrency: json['preferredCurrency'] as String? ?? 'GHS',
       preferredLanguage: json['preferredLanguage'] as String? ?? 'en',
       referralCode: json['referralCode'] as String? ?? '',
+      registrationComplete: json['registrationComplete'] as bool?,
+      registrationWizardStep: json['registrationWizardStep'] as String?,
       pushToken: json['pushToken'] as String?,
       notificationPreferences:
           json['notificationPreferences'] as Map<String, dynamic>?,
@@ -58,6 +60,8 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'preferredCurrency': instance.preferredCurrency,
       'preferredLanguage': instance.preferredLanguage,
       'referralCode': instance.referralCode,
+      'registrationComplete': instance.registrationComplete,
+      'registrationWizardStep': instance.registrationWizardStep,
       'pushToken': instance.pushToken,
       'notificationPreferences': instance.notificationPreferences,
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
