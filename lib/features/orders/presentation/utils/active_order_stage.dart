@@ -2,7 +2,11 @@ import '../../data/models/order_timeline_model.dart';
 import '../../domain/entities/order_view.dart';
 import '../../../repairs/data/models/repair_job_model.dart';
 
-/// Timeline stages shown to the buyer (repair hidden when not opted in).
+/// Timeline stages shown to the buyer.
+///
+/// Repair is hidden when [OrderView.repairOptedIn] is false and no repair job
+/// has `optedIn: true`. When opted in, repair shows on the journey (including
+/// as a future step before the buyer reaches it).
 List<OrderTimelineModel> visibleTimelineStages(
   List<OrderTimelineModel> timeline,
   OrderView order,

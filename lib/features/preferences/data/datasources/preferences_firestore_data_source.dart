@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../domain/repair_preference_defaults.dart';
 import '../../domain/entities/preference_submission.dart';
 
 class PreferencesFirestoreDataSource {
@@ -64,7 +65,9 @@ class PreferencesFirestoreDataSource {
       'condition': submission.condition,
       'conditionLabel': submission.conditionLabel,
       'maxMileage': submission.maxMileage,
-      'repairOptedIn': false,
+      'repairOptedIn': defaultRepairOptedIn(
+        isNewVehicle: submission.isNewVehicle,
+      ),
       'clearanceOptedIn': null,
       'trim': submission.trim,
       'purchaseOrigin': submission.purchaseOrigin,

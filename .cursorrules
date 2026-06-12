@@ -721,7 +721,14 @@ isComplete, isActive, isBlocked, completedAt, activatedAt
 8 stages (stageKey values):
   preferences_submitted, agent_assigned, deposit_paid,
   searching, vehicle_balance, shipping, clearance,
-  repair (hidden if car_preferences.repairOptedIn == false), delivery
+  repair, delivery
+
+Repair step visibility: shown when `car_preferences.repairOptedIn == true`
+(or a `repair_jobs` document exists with `optedIn: true`); hidden when false
+(brand-new vehicle orders default to false). When shown, repair appears as an
+unvisited/future step until the buyer reaches it; when active, the buyer opts in
+or declines agent-managed repairs from that step (same pattern as clearance).
+Agents may update `repairOptedIn` via the agent app preferences edit screen.
 
 Timeline is fully dynamic — rendered from Firestore stream.
 Never hardcode step structure in Flutter widgets.
