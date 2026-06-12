@@ -12,8 +12,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../orders/presentation/providers/order_detail_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
@@ -54,8 +56,9 @@ class DocumentDetailScreen extends ConsumerWidget {
               child: const Center(child: Text('Document not found')),
             );
           }
-          return Scaffold(
-            appBar: AppBar(title: const Text('Document')),
+          return StandaloneMobileScreenScaffold(
+            title: 'Document',
+            onBack: () => context.pop(),
             body: const Center(child: Text('Document not found')),
           );
         }
@@ -100,8 +103,9 @@ class DocumentDetailScreen extends ConsumerWidget {
             ),
           );
         }
-        return Scaffold(
-          appBar: AppBar(title: const Text('Document')),
+        return StandaloneMobileScreenScaffold(
+          title: 'Document',
+          onBack: () => context.pop(),
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -251,52 +255,32 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          doc.label,
-          style: AppTextStyles.appBarTitle.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(
-            height: 0.5,
-            color: AppColors.borderSolid,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: statusBg,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  statusLabel,
-                  style: AppTextStyles.badgeText.copyWith(
-                    color: statusFg,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.2,
-                    fontSize: 10,
-                  ),
+    return StandaloneMobileScreenScaffold(
+      title: doc.label,
+      onBack: () => context.pop(),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: statusBg,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                statusLabel,
+                style: AppTextStyles.badgeText.copyWith(
+                  color: statusFg,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.2,
+                  fontSize: 10,
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
       body: body,
     );
   }
@@ -930,21 +914,11 @@ class _ActionButton extends StatelessWidget {
 class _DocumentDetailLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: const Color(0xFFE0DFD8)),
-        ),
-      ),
+    return StandaloneMobileScreenScaffold(
+      title: 'Document',
+      onBack: () => context.pop(),
       body: ListView(
-        padding: const EdgeInsets.all(14),
+        padding: DashboardLayout.flowOuterPaddingAll(context, inset: 14),
         children: [
           Shimmer.fromColors(
             baseColor: const Color(0xFFE0E0E0),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/shipping.dart';
 import 'shipping_agent_notes_section.dart';
@@ -24,7 +25,7 @@ class ShippingReleasedState extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
       key: ValueKey('released_$orderId'),
-      padding: const EdgeInsets.all(20),
+      padding: DashboardLayout.flowOuterPaddingAll(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

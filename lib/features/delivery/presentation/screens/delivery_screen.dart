@@ -8,13 +8,14 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/responsive_layout.dart';
-import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../../core/widgets/submitting_primary_button.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
@@ -171,26 +172,9 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 18,
-          ),
-          color: AppColors.textPrimary,
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Delivery', style: AppTextStyles.appBarTitle),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
-      ),
+    return StandaloneMobileScreenScaffold(
+      title: 'Delivery',
+      onBack: () => context.pop(),
       body: body,
     );
   }
@@ -826,7 +810,7 @@ class _State1ChoiceState extends ConsumerState<_State1Choice> {
         : null;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+      padding: DashboardLayout.flowScrollPadding(context, top: 24, bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1118,7 +1102,7 @@ class _State2AwaitingPayment extends ConsumerWidget {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            padding: DashboardLayout.flowScrollPadding(context, top: 24, bottom: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -1453,7 +1437,7 @@ class _State5SelfPickupState extends ConsumerState<_State5SelfPickup> {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            padding: DashboardLayout.flowScrollPadding(context, top: 24, bottom: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

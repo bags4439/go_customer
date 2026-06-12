@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -10,7 +11,7 @@ class RepairLoadingBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: DashboardLayout.flowOuterPaddingAll(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

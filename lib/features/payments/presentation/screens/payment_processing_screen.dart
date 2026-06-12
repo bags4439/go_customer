@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../providers/payment_providers.dart';
@@ -79,18 +81,9 @@ class PaymentProcessingScreen extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: const SizedBox.shrink(),
-          title: const Text(
-            'Processing',
-            style: TextStyle(color: Colors.black87, fontSize: 18),
-          ),
-          centerTitle: true,
-        ),
+      child: StandaloneMobileScreenScaffold(
+        title: 'Processing',
+        resizeToAvoidBottomInset: false,
         body: content,
       ),
     );
@@ -103,7 +96,11 @@ class _ProcessingBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+      padding: DashboardLayout.bodyScrollPadding(
+        context,
+        top: 48,
+        bottom: 24,
+      ),
       child: Column(
         children: [
           const SizedBox(

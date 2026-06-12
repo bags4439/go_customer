@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../orders/presentation/providers/order_detail_providers.dart';
@@ -61,23 +64,31 @@ class _PaymentConfirmedScreenState
     return paymentAsync.when(
       data: (payment) {
         if (payment == null) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('Payment')),
+          if (widget.embedInWebPanel) {
+            return const Scaffold(
+              body: Center(child: Text('Payment not found')),
+            );
+          }
+          return StandaloneMobileScreenScaffold(
+            title: 'Payment confirmed',
+            onBack: () => context.pop(),
             body: const Center(child: Text('Payment not found')),
           );
         }
         final typeLabel = paymentRequestTypeLabel(payment.type);
         final agentName = agentAsync.valueOrNull?.fullName ?? 'Agent';
         final currency = ref.watch(preferredCurrencyProvider);
-        final lightPanel = widget.embedInWebPanel;
+        final useLightLayout =
+            widget.embedInWebPanel || AppBreakpoints.useMobileShell(context);
 
         final scroll = SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            lightPanel ? 16 : 24,
-            20,
-            32,
-          ),
+          padding: useLightLayout
+              ? DashboardLayout.bodyScrollPadding(
+                  context,
+                  top: widget.embedInWebPanel ? 16 : 24,
+                  bottom: 32,
+                )
+              : const EdgeInsets.fromLTRB(20, 24, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -85,7 +96,7 @@ class _PaymentConfirmedScreenState
                 payment: payment,
                 agentName: agentName,
                 currency: currency,
-                lightTheme: lightPanel,
+                lightTheme: useLightLayout,
               ),
               const SizedBox(height: 16),
               _ReceiptCard(
@@ -93,7 +104,7 @@ class _PaymentConfirmedScreenState
                 orderRef: orderRef,
                 typeLabel: typeLabel,
                 currency: currency,
-                lightTheme: lightPanel,
+                lightTheme: useLightLayout,
               ),
               if (payment.type ==
                       AppConstants
@@ -105,19 +116,19 @@ class _PaymentConfirmedScreenState
                       requestAsync.valueOrNull!.depositDeductedUsd!,
                   totalVehicleCost: payment.amountUsd +
                       requestAsync.valueOrNull!.depositDeductedUsd!,
-                  lightTheme: lightPanel,
+                  lightTheme: useLightLayout,
                 ),
               ],
               if (payment.type == AppConstants.paymentRequestTypeRepairFee) ...[
                 const SizedBox(height: 12),
-                _RepairNote(lightTheme: lightPanel),
+                _RepairNote(lightTheme: useLightLayout),
               ],
               const SizedBox(height: 16),
-              _WhatHappensNext(lightTheme: lightPanel),
+              _WhatHappensNext(lightTheme: useLightLayout),
               const SizedBox(height: 24),
-              _ReceiptSavedNote(lightTheme: lightPanel),
+              _ReceiptSavedNote(lightTheme: useLightLayout),
               const SizedBox(height: 12),
-              if (lightPanel)
+              if (widget.embedInWebPanel)
                 SizedBox(
                   height: 52,
                   child: ElevatedButton(
@@ -158,7 +169,9 @@ class _PaymentConfirmedScreenState
                     child: Text(
                       'Back to home',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: useLightLayout
+                            ? AppColors.textSecondary
+                            : Colors.white.withValues(alpha: 0.4),
                       ),
                     ),
                   ),
@@ -180,17 +193,36 @@ class _PaymentConfirmedScreenState
           );
         }
 
-        return Scaffold(
-          backgroundColor: const Color(0xFF0A1628),
-          body: SafeArea(child: scroll),
+        return StandaloneMobileScreenScaffold(
+          title: 'Payment confirmed',
+          onBack: () => context.go('/order/${widget.orderId}'),
+          body: scroll,
         );
       },
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(
-        appBar: AppBar(title: const Text('Payment')),
-        body: Center(child: Text('Error: $e')),
-      ),
+      loading: () {
+        if (widget.embedInWebPanel) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return const StandaloneMobileScreenScaffold(
+          title: 'Payment confirmed',
+          body: Center(child: CircularProgressIndicator()),
+        );
+      },
+      error: (e, _) {
+        if (widget.embedInWebPanel) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Payment')),
+            body: Center(child: Text('Error: $e')),
+          );
+        }
+        return StandaloneMobileScreenScaffold(
+          title: 'Payment confirmed',
+          onBack: () => context.pop(),
+          body: Center(child: Text('Error: $e')),
+        );
+      },
     );
   }
 }

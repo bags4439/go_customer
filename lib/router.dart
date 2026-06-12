@@ -109,16 +109,12 @@ final router = GoRouter(
             ),
           ],
         ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              name: RouteConstants.preferencesNew,
-              path: '/preferences/new',
-              builder: (context, state) => const PreferencesNewScreen(),
-            ),
-          ],
-        ),
       ],
+    ),
+    GoRoute(
+      name: RouteConstants.preferencesNew,
+      path: '/preferences/new',
+      builder: (context, state) => const PreferencesNewScreen(),
     ),
     GoRoute(
       name: RouteConstants.orderDetail,

@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../../domain/entities/vehicle_option.dart';
@@ -72,23 +74,9 @@ class VehicleOptionDetailScreen extends ConsumerWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Option details',
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-      ),
+    return StandaloneMobileScreenScaffold(
+      title: 'Option details',
+      onBack: () => context.pop(),
       body: scaffold,
     );
   }
@@ -120,7 +108,7 @@ class _DetailBody extends StatelessWidget {
                 maxWidth: ResponsiveLayout.contentMaxWidth(context),
               ),
               child: SingleChildScrollView(
-                padding: ResponsiveLayout.contentPadding(context).copyWith(
+                padding: DashboardLayout.flowContentPadding(context).copyWith(
                   top: embedInWebPanel ? 0 : 16,
                   bottom: 24,
                 ),
@@ -351,7 +339,7 @@ class _DetailShimmer extends StatelessWidget {
         );
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: DashboardLayout.flowScrollPadding(context, top: 16, bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

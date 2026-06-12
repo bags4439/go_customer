@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
 import '../../../shipping/presentation/providers/shipping_providers.dart';
 import '../providers/clearance_providers.dart';
@@ -62,23 +61,9 @@ class ClearanceScreen extends ConsumerWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          color: AppColors.textPrimary,
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Clearance', style: AppTextStyles.appBarTitle),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
-      ),
+    return StandaloneMobileScreenScaffold(
+      title: 'Clearance',
+      onBack: () => context.pop(),
       body: body,
     );
   }

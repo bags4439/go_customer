@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:go_customer/core/layout/dashboard_layout.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/utils/responsive_layout.dart';
 import 'package:go_customer/features/orders/core/constants/order_edit_constants.dart';
@@ -18,7 +19,7 @@ class OrderNotAvailableView extends StatelessWidget {
           maxWidth: ResponsiveLayout.contentMaxWidth(context),
         ),
         child: Padding(
-          padding: ResponsiveLayout.contentPadding(context),
+          padding: DashboardLayout.flowContentPadding(context),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

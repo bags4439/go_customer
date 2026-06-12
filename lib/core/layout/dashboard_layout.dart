@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../utils/responsive_layout.dart';
 import 'acquisition_layout.dart';
 import 'app_breakpoints.dart';
 
@@ -62,6 +63,47 @@ class DashboardLayout {
   }) {
     final horizontal = bodyContentHorizontalPadding(context);
     return EdgeInsets.fromLTRB(horizontal, top, horizontal, bottom);
+  }
+
+  /// Outer scroll padding for standalone deep flows inside
+  /// [DashboardPortraitFrame] / [StandaloneMobileScreenScaffold].
+  ///
+  /// Phone: 0 horizontal — frame owns [mobileHorizontalInset].
+  /// Portrait tablet: [mobileHorizontalInset] inside the 520dp column.
+  /// Web shell: [webHorizontal] (default 20).
+  static EdgeInsets flowScrollPadding(
+    BuildContext context, {
+    double top = 0,
+    double bottom = 0,
+    double webHorizontal = 20,
+  }) {
+    if (AppBreakpoints.useWebShell(context)) {
+      return EdgeInsets.fromLTRB(webHorizontal, top, webHorizontal, bottom);
+    }
+    return bodyScrollPadding(context, top: top, bottom: bottom);
+  }
+
+  /// Like [flowScrollPadding] with equal vertical insets (replaces `all(20)`).
+  static EdgeInsets flowOuterPaddingAll(
+    BuildContext context, {
+    double inset = 20,
+    double webInset = 20,
+  }) {
+    if (AppBreakpoints.useWebShell(context)) {
+      return EdgeInsets.all(webInset);
+    }
+    final horizontal = bodyContentHorizontalPadding(context);
+    return EdgeInsets.fromLTRB(horizontal, inset, horizontal, inset);
+  }
+
+  /// Horizontal padding matching [ResponsiveLayout.contentPadding] on web shell;
+  /// defers to [bodyContentHorizontalPadding] on mobile shell.
+  static EdgeInsets flowContentPadding(BuildContext context) {
+    if (AppBreakpoints.useWebShell(context)) {
+      return ResponsiveLayout.contentPadding(context);
+    }
+    final horizontal = bodyContentHorizontalPadding(context);
+    return EdgeInsets.symmetric(horizontal: horizontal);
   }
 }
 

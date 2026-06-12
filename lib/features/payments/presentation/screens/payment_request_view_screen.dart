@@ -17,6 +17,8 @@ import '../../domain/entities/payment_request.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_panel_chrome.dart';
@@ -116,7 +118,11 @@ class _PaymentRequestViewScreenState
                 );
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: DashboardLayout.flowScrollPadding(
+              context,
+              top: 16,
+              bottom: 16,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -257,25 +263,10 @@ class _PaymentRequestViewScreenState
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Payment request', style: AppTextStyles.appBarTitle),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(child: Text(orderRef, style: AppTextStyles.caption)),
-          ),
-        ],
-      ),
+    return StandaloneMobileScreenScaffold(
+      title: 'Payment request',
+      onBack: () => context.pop(),
+      actions: [standaloneOrderRefTrailing(orderRef)],
       body: body,
     );
   }

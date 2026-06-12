@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../clearance/presentation/providers/clearance_providers.dart';
@@ -110,36 +111,13 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
-          style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
-        ),
-        title: Text(
-          'Repairs',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontSize: 18,
-            color: AppColors.primary,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                orderRef,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.primary.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-          ),
-        ],
+    return StandaloneMobileScreenScaffold(
+      title: 'Repairs',
+      onBack: () => context.pop(),
+      actions: [standaloneOrderRefTrailing(orderRef)],
+      titleStyle: AppTextStyles.titleMedium.copyWith(
+        fontSize: 18,
+        color: AppColors.primary,
       ),
       body: body,
     );

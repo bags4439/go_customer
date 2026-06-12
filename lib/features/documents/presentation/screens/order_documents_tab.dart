@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../auth/domain/entities/app_user.dart';
@@ -79,7 +80,7 @@ class _DocumentsBody extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+          padding: DashboardLayout.bodyScrollPadding(context, top: 20),
           sliver: SliverToBoxAdapter(
             child: _SectionHeader(
               title: DocumentConstants.sectionYourDocuments,
@@ -87,13 +88,13 @@ class _DocumentsBody extends StatelessWidget {
           ),
         ),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: DashboardLayout.bodyScrollPadding(context, top: 8),
           sliver: SliverToBoxAdapter(
             child: _IdDocumentRow(orderId: orderId, user: user),
           ),
         ),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+          padding: DashboardLayout.bodyScrollPadding(context, top: 24),
           sliver: SliverToBoxAdapter(
             child: _SectionHeader(
               title: DocumentConstants.sectionFromAgent,
@@ -102,14 +103,14 @@ class _DocumentsBody extends StatelessWidget {
         ),
         if (agentDocs.isEmpty)
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: DashboardLayout.bodyScrollPadding(context, top: 8),
             sliver: const SliverToBoxAdapter(
               child: _NoAgentDocuments(),
             ),
           )
         else
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: DashboardLayout.bodyScrollPadding(context, top: 8),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, i) => Padding(
@@ -568,7 +569,7 @@ class _DocumentsShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: DashboardLayout.bodyScrollPadding(context, top: 16, bottom: 16),
       children: [
         Shimmer.fromColors(
           baseColor: _base,

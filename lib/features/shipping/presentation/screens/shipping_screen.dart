@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/standalone_mobile_screen_scaffold.dart';
 import '../../data/models/shipping_model.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/providers/order_timeline_providers.dart';
@@ -68,36 +67,10 @@ class ShippingScreen extends ConsumerWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          color: AppColors.textPrimary,
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Shipping tracker', style: AppTextStyles.appBarTitle),
-        centerTitle: false,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                orderRef,
-                style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.textTertiary),
-              ),
-            ),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
-      ),
+    return StandaloneMobileScreenScaffold(
+      title: 'Shipping tracker',
+      onBack: () => context.pop(),
+      actions: [standaloneOrderRefTrailing(orderRef)],
       body: body,
     );
   }

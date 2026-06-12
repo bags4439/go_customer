@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../core/constants/repair_constants.dart';
@@ -22,7 +23,7 @@ class RepairAwaitingQuoteState extends ConsumerWidget {
     final agentName =
         ref.watch(agentFirstNameProvider(orderId)).valueOrNull ?? 'Your agent';
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: DashboardLayout.flowOuterPaddingAll(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
