@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/core/layout/app_breakpoints.dart';
+import 'package:go_customer/core/layout/dashboard_layout.dart';
 import 'package:go_customer/core/layout/web_app_shell.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/features/chat/presentation/providers/chat_providers.dart';
@@ -70,7 +71,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
   void _applyPaymentDeepLinkIfNeeded() {
     final requestId = widget.initialPaymentRequestId;
     if (requestId == null || requestId.isEmpty) return;
-    if (!AppBreakpoints.isWeb(context)) return;
+    if (!AppBreakpoints.useWebShell(context)) return;
 
     ref.read(webOrderPanelTaskProvider.notifier).state =
         WebOrderPanelPaymentRequest(
@@ -89,7 +90,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
   /// Web deep link from home: open review panel, strip query.
   void _applyReviewDeepLinkIfNeeded() {
     if (widget.initialReviewPanel != '1') return;
-    if (!AppBreakpoints.isWeb(context)) return;
+    if (!AppBreakpoints.useWebShell(context)) return;
 
     ref.read(webOrderPanelTaskProvider.notifier).state =
         WebOrderPanelReview(orderId: widget.orderId);
@@ -151,7 +152,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
 
     return PopScope(
       canPop: false,
@@ -180,11 +181,13 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                 orderId: widget.orderId,
                 isChatTabActive: _isChatTabActive,
               ),
-              body: OrderDetailTabBody(
-                orderId: widget.orderId,
-                tabController: _tabController,
-                showSegmentedTabBar: true,
-                onSwitchToChat: () => _tabController.animateTo(1),
+              body: DashboardPortraitFrame(
+                child: OrderDetailTabBody(
+                  orderId: widget.orderId,
+                  tabController: _tabController,
+                  showSegmentedTabBar: true,
+                  onSwitchToChat: () => _tabController.animateTo(1),
+                ),
               ),
             ),
     );

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../shared/providers/app_version_label_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
@@ -144,8 +145,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         if (_headerAnimated && user != null && !_sectionsAnimated) {
           _startSectionAnimations();
         }
-        final isWeb = AppBreakpoints.isWeb(context);
-        final backgroundColor = isWeb ? AppColors.surface : Colors.white;
+        final isWeb = AppBreakpoints.useWebShell(context);
         final authUid = ref.watch(authStateProvider).value;
         final Widget body = user == null
             ? (authUid != null
@@ -279,17 +279,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ProfileDeleteAccountLink(
                         onPressed: () => _showDeleteAccountSheet(context),
                       ),
-                      ...[
-                        const SizedBox(height: 24),
-                        Center(
-                          child: Text(
-                            ref.watch(appVersionLabelProvider),
-                            style: AppTextStyles.caption.copyWith(
-                              color: ProfileUi.textTertiary,
-                            ),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Text(
+                          ref.watch(appVersionLabelProvider),
+                          style: AppTextStyles.caption.copyWith(
+                            color: ProfileUi.textTertiary,
                           ),
                         ),
-                      ],
+                      ),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -305,9 +303,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         }
 
         return Scaffold(
-          backgroundColor: backgroundColor,
+          backgroundColor: Colors.white,
           appBar: _buildProfileAppBar(context),
-          body: body,
+          body: DashboardPortraitFrame(child: body),
         );
       },
       loading: () => Scaffold(

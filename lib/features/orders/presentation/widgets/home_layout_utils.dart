@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/utils/responsive_layout.dart';
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../auth/domain/entities/app_user.dart';
 
 /// Extra bottom padding when home scroll content sits above the mobile floating nav.
 double homeShellFloatingNavScrollBottomExtra(BuildContext context) {
-  if (!ResponsiveLayout.isMobile(context)) return 0;
+  if (!AppBreakpoints.useMobileShell(context)) return 0;
   final bottomInset = MediaQuery.paddingOf(context).bottom;
   return bottomInset + 64 + 24;
 }

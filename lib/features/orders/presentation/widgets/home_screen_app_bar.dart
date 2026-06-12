@@ -7,7 +7,7 @@ import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import 'home_app_logo.dart';
 import 'home_theme.dart';
 
-/// App bar for [HomeScreen] on mobile (logo + support) and web/tablet (title).
+/// App bar for [HomeScreen] on mobile shell (logo + support) and web shell (title).
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeScreenAppBar({super.key});
 
@@ -16,7 +16,7 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (AppBreakpoints.isMobile(context)) {
+    if (AppBreakpoints.useMobileShell(context)) {
       return AppBar(
         backgroundColor: HomeColors.bgPrimary,
         elevation: 0,

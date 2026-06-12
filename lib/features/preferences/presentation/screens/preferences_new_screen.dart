@@ -78,7 +78,7 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(preferenceFormProvider);
     final notifier = ref.read(preferenceFormProvider.notifier);
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
 
     final body = SafeArea(
       child: Column(

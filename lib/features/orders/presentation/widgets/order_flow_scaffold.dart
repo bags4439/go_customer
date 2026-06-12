@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/layout/web_app_body.dart';
 import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -24,7 +25,7 @@ class OrderFlowScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
     final body = ColoredBox(
       color: isWeb ? AppColors.surface : AppColors.background,
       child: SingleChildScrollView(
@@ -79,7 +80,7 @@ class OrderFlowScaffold extends ConsumerWidget {
           child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       ),
-      body: body,
+      body: DashboardPortraitFrame(child: body),
     );
   }
 }

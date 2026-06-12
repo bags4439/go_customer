@@ -25,7 +25,7 @@ class WebAppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!AppBreakpoints.isWeb(context)) {
+    if (!AppBreakpoints.useWebShell(context)) {
       return child;
     }
 

@@ -136,7 +136,7 @@ class _Thumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
 
     return MouseRegion(
       onEnter: isWeb ? (_) => onHover(true) : null,

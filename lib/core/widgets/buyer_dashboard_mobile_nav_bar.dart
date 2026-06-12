@@ -4,9 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../layout/app_nav_destinations.dart';
 import '../theme/app_colors.dart';
 
-/// Floating pill bottom navigation for the buyer dashboard on **mobile** only.
+/// Floating pill bottom navigation for the buyer dashboard mobile shell
+/// (phone and portrait tablet — identical layout).
 ///
-/// Branch order and icons follow [AppNavDestinations.items] (same as tablet/web).
+/// Branch order and icons follow [AppNavDestinations.items] (same as web).
 class BuyerDashboardMobileNavBar extends StatelessWidget {
   const BuyerDashboardMobileNavBar({
     super.key,

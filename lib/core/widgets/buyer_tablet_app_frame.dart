@@ -8,7 +8,8 @@ import '../theme/app_colors.dart';
 /// Tablet layout for the buyer dashboard: icon rail + divider + main content.
 ///
 /// Used when the shell shows a rail but not the full web sidebar (see
-/// [AppBreakpoints.isWeb] vs tablet width in [BuyerDashboardShell]).
+/// Deprecated for main tabs — [BuyerDashboardShell] now uses web shell for
+/// landscape tablet and mobile shell (bottom nav) for portrait tablet.
 class BuyerTabletAppFrame extends StatelessWidget {
   const BuyerTabletAppFrame({
     super.key,

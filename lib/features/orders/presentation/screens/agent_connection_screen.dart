@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/layout/web_app_body.dart';
 import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -95,7 +96,7 @@ class _AgentConnectionScreenState extends ConsumerState<AgentConnectionScreen>
   @override
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderProvider(widget.orderId));
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
     final pageTitle = _pageTitle(orderAsync.valueOrNull);
     final body = _buildBody(orderAsync);
 
@@ -134,7 +135,7 @@ class _AgentConnectionScreenState extends ConsumerState<AgentConnectionScreen>
                   child: Container(height: 0.5, color: AppColors.borderSolid),
                 ),
               ),
-              body: body,
+              body: DashboardPortraitFrame(child: body),
             ),
     );
   }

@@ -76,7 +76,7 @@ class OrderDetailOverviewTab extends ConsumerWidget {
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),
             ),
-            if (!AppBreakpoints.isWeb(context))
+            if (!AppBreakpoints.useWebShell(context))
               OrderDetailCarCard(order: order),
             const SizedBox(height: 14),
             Text(
@@ -88,7 +88,7 @@ class OrderDetailOverviewTab extends ConsumerWidget {
               orderId: orderId,
               order: order,
               onChatTap: onChatTap,
-              onStepTapped: AppBreakpoints.isWeb(context)
+              onStepTapped: AppBreakpoints.useWebShell(context)
                   ? (stageKey) =>
                       OrderDetailWebNavigation.openTimelineStep(ref, stageKey)
                   : null,

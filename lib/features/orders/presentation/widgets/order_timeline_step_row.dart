@@ -528,7 +528,7 @@ class _ActiveStageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final card = _buildActiveCard(context);
-    if (AppBreakpoints.isWeb(context) && onStepTapped != null) {
+    if (AppBreakpoints.useWebShell(context) && onStepTapped != null) {
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => onStepTapped!(stage.stageKey),
@@ -604,7 +604,7 @@ class _ActiveStageContent extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (AppBreakpoints.isWeb(context) && onStepTapped != null) ...[
+                if (AppBreakpoints.useWebShell(context) && onStepTapped != null) ...[
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => onStepTapped!(stage.stageKey),

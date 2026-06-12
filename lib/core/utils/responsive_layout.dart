@@ -6,7 +6,7 @@ class ResponsiveLayout {
   static double contentMaxWidth(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     if (w >= 960) return 480;
-    if (w >= 600) return 520;
+    // Portrait tablet: max width via [DashboardPortraitFrame] on the screen body.
     return double.infinity;
   }
 

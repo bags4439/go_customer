@@ -342,7 +342,7 @@ class _PaymentRequestViewScreenState
         return;
       }
 
-      if (AppBreakpoints.isWeb(context)) {
+      if (AppBreakpoints.useWebShell(context)) {
         OrderDetailWebNavigation.openPaymentProcessing(
           ref,
           orderId: widget.orderId,

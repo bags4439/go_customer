@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_customer/core/utils/responsive_layout.dart';
+import 'package:go_customer/core/layout/app_breakpoints.dart';
 
-/// Bottom padding for profile scroll content above the floating bottom nav (mobile).
+/// Bottom padding for profile scroll content above the floating bottom nav.
 double profileShellFloatingNavExtra(BuildContext context) {
-  if (!ResponsiveLayout.isMobile(context)) return 0;
+  if (!AppBreakpoints.useMobileShell(context)) return 0;
   final bottomInset = MediaQuery.paddingOf(context).bottom;
   return bottomInset + 64 + 24;
 }

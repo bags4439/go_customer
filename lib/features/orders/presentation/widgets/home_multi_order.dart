@@ -28,7 +28,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
     required this.pendingPayments,
     required this.pendingReviews,
     required this.pendingVehicleListings,
-    required this.currentUserName,
+    this.currentUserName,
   });
 
   String _subtitleText(int active, int needsAction) {
@@ -42,7 +42,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
 
     final active = orders
         .where((o) => !o.isCompleted && !o.isCancelled)
@@ -209,7 +209,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
         ),
       ),
       const SizedBox(height: 20),
-      isWeb ? SizedBox.shrink() : const ReferralPromoCard(),
+      if (!isWeb) const ReferralPromoCard(),
     ];
 
     return Center(

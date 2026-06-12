@@ -11,8 +11,8 @@ import '../../providers/order_detail_providers.dart';
 abstract final class OrderDetailWebNavigation {
   OrderDetailWebNavigation._();
 
-  static bool _isWeb(BuildContext context) =>
-      AppBreakpoints.isWeb(context);
+  static bool _useWebShell(BuildContext context) =>
+      AppBreakpoints.useWebShell(context);
 
   static void openTimelineStep(WidgetRef ref, String stageKey) {
     ref.read(webOrderPanelTaskProvider.notifier).state =
@@ -20,7 +20,7 @@ abstract final class OrderDetailWebNavigation {
   }
 
   static void openShipping(BuildContext context, WidgetRef ref, String orderId) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelShipping(orderId: orderId);
       return;
@@ -29,7 +29,7 @@ abstract final class OrderDetailWebNavigation {
   }
 
   static void openClearance(BuildContext context, WidgetRef ref, String orderId) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelClearance(orderId: orderId);
       return;
@@ -38,7 +38,7 @@ abstract final class OrderDetailWebNavigation {
   }
 
   static void openRepair(BuildContext context, WidgetRef ref, String orderId) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelRepair(orderId: orderId);
       return;
@@ -47,7 +47,7 @@ abstract final class OrderDetailWebNavigation {
   }
 
   static void openDelivery(BuildContext context, WidgetRef ref, String orderId) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelDelivery(orderId: orderId);
       return;
@@ -56,7 +56,7 @@ abstract final class OrderDetailWebNavigation {
   }
 
   static void openReview(BuildContext context, WidgetRef ref, String orderId) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       final onOrderDetail = GoRouterState.of(
         context,
       ).matchedLocation.startsWith('/order/$orderId');
@@ -76,7 +76,7 @@ abstract final class OrderDetailWebNavigation {
     BuildContext context, {
     required String orderId,
   }) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       context.go(
         '/order/$orderId'
         '?${RouteConstants.reviewPanelQuery}=1',
@@ -93,7 +93,7 @@ abstract final class OrderDetailWebNavigation {
     required String orderId,
     required String requestId,
   }) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelPaymentRequest(
         orderId: orderId,
@@ -110,7 +110,7 @@ abstract final class OrderDetailWebNavigation {
     required String orderId,
     required String requestId,
   }) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       context.go(
         '/order/$orderId'
         '?${RouteConstants.paymentRequestQuery}=$requestId',
@@ -150,7 +150,7 @@ abstract final class OrderDetailWebNavigation {
 
   /// Switches to chat tab; on web clears panel task first.
   static void openChat(BuildContext context, WidgetRef ref, String orderId) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       resetWebOrderPanelTask(ref);
     }
     context.go('/order/$orderId?tab=chat');
@@ -161,7 +161,7 @@ abstract final class OrderDetailWebNavigation {
     WidgetRef ref, {
     required String orderId,
   }) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelIdDocument(orderId: orderId);
       return;
@@ -175,7 +175,7 @@ abstract final class OrderDetailWebNavigation {
     required String orderId,
     required String documentId,
   }) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelDocument(
         orderId: orderId,
@@ -191,7 +191,7 @@ abstract final class OrderDetailWebNavigation {
     WidgetRef ref, {
     required String orderId,
   }) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       final onOrderDetail = GoRouterState.of(
         context,
       ).matchedLocation.startsWith('/order/$orderId');
@@ -211,7 +211,7 @@ abstract final class OrderDetailWebNavigation {
     required String orderId,
     required String vehicleOptionId,
   }) {
-    if (_isWeb(context)) {
+    if (_useWebShell(context)) {
       ref.read(webOrderPanelTaskProvider.notifier).state =
           WebOrderPanelVehicleOptionDetail(
         orderId: orderId,

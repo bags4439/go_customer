@@ -33,6 +33,20 @@ class AppBreakpoints {
   static bool isWeb(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= web;
 
+  /// Web-style dashboard shell: sidebar + web screen layouts.
+  ///
+  /// True for desktop width or tablet held in landscape (600–959dp wide).
+  /// Portrait tablet uses [useMobileShell] (bottom nav + mobile app bars).
+  static bool useWebShell(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    if (size.width >= web) return true;
+    if (size.width >= tablet && size.width > size.height) return true;
+    return false;
+  }
+
+  /// Mobile-style dashboard shell: bottom nav + mobile app bars.
+  static bool useMobileShell(BuildContext context) => !useWebShell(context);
+
   // ── Fluid sidebar ─────────────
 
   /// Fraction of screen width the

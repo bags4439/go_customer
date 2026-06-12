@@ -15,24 +15,17 @@ class AcquisitionLayout {
   static const double phoneColumnMaxWidth = 520;
 
   /// Web split layout: wide desktop or tablet held in landscape.
-  static bool useWebLayout(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    if (size.width >= AppBreakpoints.web) return true;
-    if (size.width >= AppBreakpoints.tablet && size.width > size.height) {
-      return true;
-    }
-    return false;
-  }
+  static bool useWebLayout(BuildContext context) =>
+      AppBreakpoints.useWebShell(context);
 
   /// Single-column phone layout: handset or tablet portrait.
-  static bool usePhoneLayout(BuildContext context) => !useWebLayout(context);
+  static bool usePhoneLayout(BuildContext context) =>
+      AppBreakpoints.useMobileShell(context);
 
   /// Tablet in portrait (600–959dp wide) — needs centred column framing.
   static bool isPortraitTablet(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    return size.width >= AppBreakpoints.tablet &&
-        size.width < AppBreakpoints.web &&
-        size.height >= size.width;
+    return AppBreakpoints.useMobileShell(context) &&
+        !AppBreakpoints.isMobile(context);
   }
 
   static double phoneContentMaxWidth(BuildContext context) {

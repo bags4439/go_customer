@@ -27,7 +27,7 @@ class WebDashboardRightPanel extends ConsumerWidget {
     final contactAsync = ref.watch(supportContactProvider);
 
     return Container(
-      padding: EdgeInsets.only(top: 4, left: 32, right: 16),
+      padding: const EdgeInsets.only(top: 4, left: 32, right: 16),
       child: CardContainer(
         child: SingleChildScrollView(
           child: Column(

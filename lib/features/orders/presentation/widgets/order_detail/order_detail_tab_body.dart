@@ -34,7 +34,7 @@ class OrderDetailTabBody extends ConsumerWidget {
           ),
         Expanded(
           child: TabBarView(
-            physics: AppBreakpoints.isWeb(context)
+            physics: AppBreakpoints.useWebShell(context)
                 ? const NeverScrollableScrollPhysics()
                 : null,
             controller: tabController,
@@ -51,7 +51,7 @@ class OrderDetailTabBody extends ConsumerWidget {
       ],
     );
 
-    if (AppBreakpoints.isWeb(context)) {
+    if (AppBreakpoints.useWebShell(context)) {
       return LayoutBuilder(
         builder: (context, constraints) {
           final maxW = AppBreakpoints.contentMaxWidth(constraints.maxWidth);

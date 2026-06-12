@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
 import '../../../../core/widgets/web_dashboard_right_panel.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../guide/core/constants/guide_keys.dart';
-import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
-import '../../../profile/presentation/navigation/profile_id_verification_navigation.dart';
 import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../../guide/presentation/widgets/guide_help_button.dart';
 import '../../core/constants/notification_constants.dart';
+import '../../core/utils/notification_action_label.dart';
 import '../../core/utils/notification_timestamp.dart';
+import '../navigation/notification_navigation.dart';
+import '../widgets/notification_type_icon.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../models/notification_list_item.dart';
 import '../providers/notifications_providers.dart';
 
 double _notificationsShellFloatingNavExtra(BuildContext context) {
-  if (!ResponsiveLayout.isMobile(context)) return 0;
+  if (!AppBreakpoints.useMobileShell(context)) return 0;
   final bottomInset = MediaQuery.paddingOf(context).bottom;
   return bottomInset + 64 + 24;
 }
@@ -67,9 +67,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, int unreadCount) {
-    final isMobile = AppBreakpoints.isMobile(context);
+    final useMobileShell = AppBreakpoints.useMobileShell(context);
 
-    if (isMobile) {
+    if (useMobileShell) {
       return AppBar(
         backgroundColor: const Color(0xFFFFFFFF),
         elevation: 0,
@@ -140,7 +140,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
     const body = _NotificationsBody();
 
     if (isWeb) {
@@ -152,7 +152,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           children: [
             Expanded(flex: 5, child: body),
             Container(width: 0.5, color: AppColors.borderSolid),
-            Expanded(flex: 4,child: WebDashboardRightPanel(),)
+            const Expanded(flex: 4, child: WebDashboardRightPanel()),
           ],
         ),
       );
@@ -161,7 +161,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: _buildAppBar(context, unreadCount),
-      body: body,
+      body: const DashboardPortraitFrame(child: body),
     );
   }
 }
@@ -684,78 +684,12 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
     NotificationEntity n,
   ) {
     ref.read(notificationsNotifierProvider.notifier).markRead(n.id);
-    _navigateForNotification(context, ref, n);
+    NotificationNavigation.open(context, ref, n);
   }
 
   void _onActionTap(BuildContext context, WidgetRef ref, NotificationEntity n) {
     ref.read(notificationsNotifierProvider.notifier).markRead(n.id);
-    _navigateForNotification(context, ref, n);
-  }
-
-  void _navigateForNotification(
-    BuildContext context,
-    WidgetRef ref,
-    NotificationEntity n,
-  ) {
-    final orderId = n.orderId;
-    switch (n.type) {
-      case 'payment_request':
-        final requestId = _extractRequestId(n.actionUrl);
-        if (orderId != null && requestId != null) {
-          OrderDetailWebNavigation.navigateToPaymentRequest(
-            context,
-            orderId: orderId,
-            requestId: requestId,
-          );
-        }
-        break;
-      case 'payment_confirmed':
-        if (orderId != null) context.push('/order/$orderId');
-        break;
-      case 'bid_won':
-      case 'bid_lost':
-        if (orderId != null) context.push('/order/$orderId/bid-status');
-        break;
-      case 'stage_update':
-      case 'agent_assigned':
-      case 'order_edited':
-      case 'order_cancelled':
-        if (orderId != null) context.push('/order/$orderId');
-        break;
-      case 'message':
-        if (orderId != null) context.push('/order/$orderId?tab=chat');
-        break;
-      case 'shipping_update':
-        if (orderId != null) context.push('/order/$orderId/shipping');
-        break;
-      case 'arrival':
-        if (orderId != null) context.push('/order/$orderId/clearance');
-        break;
-      case 'vehicle_listing':
-        if (orderId != null) {
-          OrderDetailWebNavigation.openVehicleOptions(
-            context,
-            ref,
-            orderId: orderId,
-          );
-        }
-        break;
-      case 'id_reminder':
-        ProfileIdVerificationNavigation.open(context);
-        break;
-      case 'system':
-        if (orderId != null) context.push('/order/$orderId');
-        break;
-      default:
-        if (orderId != null) context.push('/order/$orderId');
-    }
-  }
-
-  String? _extractRequestId(String? actionUrl) {
-    if (actionUrl == null) return null;
-    final parts = actionUrl.split('/payment-request/');
-    if (parts.length < 2) return null;
-    return parts.last.split('/').first.split('?').first;
+    NotificationNavigation.open(context, ref, n);
   }
 }
 
@@ -805,7 +739,7 @@ class _NotificationItemCard extends StatelessWidget {
     final isUnread = markAllReadProgress != null
         ? markAllReadProgress < 1 && !notification.isRead
         : !notification.isRead;
-    final actionLabel = _actionLabelForType(notification.type);
+    final actionLabel = actionLabelForNotificationType(notification.type);
     final backgroundColor = markAllReadProgress != null
         ? Color.lerp(
             const Color(0xFFF5F4F0),
@@ -843,7 +777,7 @@ class _NotificationItemCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _NotificationIcon(type: notification.type),
+              NotificationTypeIcon(type: notification.type),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -969,136 +903,6 @@ class _NotificationItemCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  String? _actionLabelForType(String type) {
-    switch (type) {
-      case 'payment_request':
-        return NotificationConstants.actionPayNow;
-      case 'shipping_update':
-        return NotificationConstants.actionTrack;
-      case 'arrival':
-        return NotificationConstants.actionClearance;
-      case 'bid_won':
-        return NotificationConstants.actionViewDetails;
-      case 'id_reminder':
-        return NotificationConstants.actionVerifyNow;
-      case 'message':
-        return NotificationConstants.actionViewMessage;
-      case 'agent_assigned':
-        return NotificationConstants.actionMeetAgent;
-      case 'vehicle_listing':
-        return NotificationConstants.actionReviewOptions;
-      default:
-        return null;
-    }
-  }
-}
-
-class _NotificationIcon extends StatelessWidget {
-  final String type;
-
-  const _NotificationIcon({required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    Color bgColor;
-    Widget content;
-    switch (type) {
-      case 'payment_request':
-      case 'payment_confirmed':
-        bgColor = const Color(0xFFE6F1FB);
-        content = Text(
-          'GHS',
-          style: AppTextStyles.caption.copyWith(
-            color: const Color(0xFF185FA5),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.0,
-            height: 1.0,
-          ),
-        );
-        break;
-      case 'bid_won':
-        bgColor = const Color(0xFFEAF3DE);
-        content = const Text('🎉', style: TextStyle(fontSize: 15));
-        break;
-      case 'bid_lost':
-        bgColor = AppColors.surface;
-        content = const Text('😔', style: TextStyle(fontSize: 15));
-        break;
-      case 'shipping_update':
-      case 'arrival':
-        bgColor = const Color(0xFFE1F5EE);
-        content = const Text('🚢', style: TextStyle(fontSize: 15));
-        break;
-      case 'message':
-        bgColor = AppColors.surface;
-        content = Icon(
-          Icons.chat_bubble_outline,
-          size: 16,
-          color: Theme.of(
-            context,
-          ).colorScheme.onSurface.withValues(alpha: 0.75),
-        );
-        break;
-      case 'agent_assigned':
-        bgColor = const Color(0xFFE6F1FB);
-        content = const Icon(
-          Icons.person_outline,
-          size: 16,
-          color: Color(0xFF185FA5),
-        );
-        break;
-      case 'vehicle_listing':
-        bgColor = const Color(0xFFFAEEDA);
-        content = const Icon(
-          Icons.directions_car_outlined,
-          size: 16,
-          color: Color(0xFF633806),
-        );
-        break;
-      case 'order_edited':
-      case 'order_cancelled':
-        bgColor = const Color(0xFFFAEEDA);
-        content = const Icon(
-          Icons.edit_outlined,
-          size: 16,
-          color: Color(0xFF633806),
-        );
-        break;
-      case 'inactivity_reminder':
-      case 'auction_deadline':
-        bgColor = const Color(0xFFFAEEDA);
-        content = Text(
-          '!',
-          style: AppTextStyles.labelLarge.copyWith(
-            fontSize: 13,
-            color: AppColors.warning,
-            fontWeight: FontWeight.w700,
-            height: 1.0,
-          ),
-        );
-        break;
-      case 'id_reminder':
-      case 'system':
-      default:
-        bgColor = AppColors.surface;
-        content = Icon(
-          Icons.info_outline,
-          size: 16,
-          color: Theme.of(
-            context,
-          ).colorScheme.onSurface.withValues(alpha: 0.75),
-        );
-    }
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-      alignment: Alignment.center,
-      child: content,
     );
   }
 }

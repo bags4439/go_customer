@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -317,7 +318,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
             child: Container(height: 0.5, color: AppColors.borderSolid),
           ),
         ),
-        body: form,
+        body: DashboardPortraitFrame(child: form),
       ),
     );
   }
@@ -530,7 +531,7 @@ class _GateScreen extends StatelessWidget {
           style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
         ),
       ),
-      body: body,
+      body: DashboardPortraitFrame(child: body),
     );
   }
 }
@@ -726,7 +727,7 @@ class _SubmittedScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: body,
+      body: DashboardPortraitFrame(child: body),
     );
   }
 }

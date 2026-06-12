@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
 import '../layout/app_breakpoints.dart';
 import 'buyer_dashboard_mobile_nav_bar.dart';
-import 'buyer_tablet_app_frame.dart';
 import 'buyer_web_app_frame.dart';
 import 'buyer_web_sidebar.dart';
 
@@ -19,8 +18,7 @@ class BuyerDashboardShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(unreadNotificationCountProvider);
-    final useRail = !AppBreakpoints.isMobile(context);
-    final isWeb = AppBreakpoints.isWeb(context);
+    final useWebShell = AppBreakpoints.useWebShell(context);
     final index = navigationShell.currentIndex;
 
     return PopScope(
@@ -33,25 +31,17 @@ class BuyerDashboardShell extends ConsumerWidget {
           SystemNavigator.pop();
         }
       },
-      child: useRail
-          ? (isWeb
-                ? BuyerWebAppFrame(
-                    sidebarBuilder: (frameWidth) => BuyerWebSidebar(
-                      frameWidth: frameWidth,
-                      selectedIndex: index,
-                      unreadCount: unread,
-                      onDestinationSelected: (i) =>
-                          _onBranchSelected(navigationShell, i),
-                    ),
-                    content: navigationShell,
-                  )
-                : BuyerTabletAppFrame(
-                    selectedIndex: index,
-                    unreadCount: unread,
-                    onDestinationSelected: (i) =>
-                        _onBranchSelected(navigationShell, i),
-                    child: navigationShell,
-                  ))
+      child: useWebShell
+          ? BuyerWebAppFrame(
+              sidebarBuilder: (frameWidth) => BuyerWebSidebar(
+                frameWidth: frameWidth,
+                selectedIndex: index,
+                unreadCount: unread,
+                onDestinationSelected: (i) =>
+                    _onBranchSelected(navigationShell, i),
+              ),
+              content: navigationShell,
+            )
           : Scaffold(
               backgroundColor: Colors.white,
               extendBody: true,

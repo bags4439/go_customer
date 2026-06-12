@@ -98,7 +98,7 @@ class _RepairPhotoViewerState extends State<RepairPhotoViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
     final topPad = MediaQuery.paddingOf(context).top;
     final bottomPad = MediaQuery.paddingOf(context).bottom;
     final maxImageWidth = isWeb ? 720.0 : MediaQuery.sizeOf(context).width;

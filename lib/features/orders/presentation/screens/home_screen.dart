@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
 import '../providers/order_providers.dart';
@@ -41,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
       },
     );
 
-    final isWeb = AppBreakpoints.isWeb(context);
+    final isWeb = AppBreakpoints.useWebShell(context);
     const appBar = HomeScreenAppBar();
 
     final bodyContent = ordersAsync.when(
@@ -68,7 +69,7 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: HomeColors.bgPrimary,
       appBar: appBar,
-      body: bodyContent,
+      body: DashboardPortraitFrame(child: bodyContent),
     );
   }
 }

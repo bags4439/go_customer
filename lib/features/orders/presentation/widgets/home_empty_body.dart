@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
-import '../../../referral/presentation/widgets/referral_promo_card.dart';
 import 'home_empty_how_it_works.dart';
 import 'home_empty_illustrations.dart';
 import 'home_layout_utils.dart';

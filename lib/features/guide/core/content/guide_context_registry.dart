@@ -29,7 +29,7 @@ class GuideContextEntry {
 
   String briefFor(BuildContext context) {
     if (briefMessage != null) return briefMessage!;
-    if (AppBreakpoints.isWeb(context)) {
+    if (AppBreakpoints.useWebShell(context)) {
       return briefMessageWeb!;
     }
     return briefMessageMobile!;

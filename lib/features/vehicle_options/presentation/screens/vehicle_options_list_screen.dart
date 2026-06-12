@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
@@ -101,18 +102,13 @@ class VehicleOptionsListScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: ResponsiveLayout.contentMaxWidth(context),
+      body: DashboardPortraitFrame(
+        child: Padding(
+          padding: ResponsiveLayout.contentPadding(context).copyWith(
+            top: 16,
+            bottom: 16,
           ),
-          child: Padding(
-            padding: ResponsiveLayout.contentPadding(context).copyWith(
-              top: 16,
-              bottom: 16,
-            ),
-            child: content,
-          ),
+          child: content,
         ),
       ),
     );

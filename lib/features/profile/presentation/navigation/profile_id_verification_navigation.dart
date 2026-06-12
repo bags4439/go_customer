@@ -10,7 +10,7 @@ abstract final class ProfileIdVerificationNavigation {
   ProfileIdVerificationNavigation._();
 
   static void open(BuildContext context) {
-    if (AppBreakpoints.isWeb(context)) {
+    if (AppBreakpoints.useWebShell(context)) {
       showProfileIdVerificationDialog(context);
       return;
     }

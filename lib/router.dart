@@ -142,7 +142,7 @@ final router = GoRouter(
           name: RouteConstants.paymentRequest,
           path: 'payment-request/:requestId',
           redirect: (context, state) {
-            if (!AppBreakpoints.isWeb(context)) return null;
+            if (!AppBreakpoints.useWebShell(context)) return null;
             final orderId = state.pathParameters['orderId']!;
             final requestId = state.pathParameters['requestId']!;
             return '/order/$orderId'

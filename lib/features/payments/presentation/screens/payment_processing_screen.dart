@@ -42,7 +42,7 @@ class PaymentProcessingScreen extends ConsumerWidget {
                   ref.read(paymentTimeoutProvider.notifier).reset();
                   ref.read(activePaymentProvider(orderId).notifier).state =
                       null;
-                  if (AppBreakpoints.isWeb(context)) {
+                  if (AppBreakpoints.useWebShell(context)) {
                     OrderDetailWebNavigation.openPaymentConfirmed(
                       ref,
                       orderId: orderId,
