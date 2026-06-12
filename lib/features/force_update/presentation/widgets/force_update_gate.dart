@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/force_update_providers.dart';
-import 'force_update_loading_screen.dart';
 import 'force_update_screen.dart';
 
 /// Blocks outdated iOS/Android builds before routed content is shown.
@@ -22,7 +21,7 @@ class ForceUpdateGate extends ConsumerWidget {
     final requirementAsync = ref.watch(forceUpdateRequirementProvider);
 
     return requirementAsync.when(
-      loading: () => const ForceUpdateLoadingScreen(),
+      loading: () => child,
       error: (_, __) => child,
       data: (requirement) {
         if (!requirement.isRequired) {

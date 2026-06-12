@@ -8,7 +8,7 @@ import 'core/layout/app_breakpoints.dart';
 import 'core/widgets/buyer_dashboard_shell.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/onboarding_screen.dart';
-import 'features/auth/presentation/screens/splash_screen.dart';
+import 'features/auth/presentation/screens/launch_screen.dart';
 import 'features/bids/presentation/screens/bid_status_screen.dart';
 import 'features/clearance/presentation/screens/clearance_screen.dart';
 import 'features/delivery/presentation/screens/delivery_screen.dart';
@@ -32,8 +32,6 @@ import 'features/vehicle_options/presentation/screens/vehicle_option_detail_scre
 import 'features/vehicle_options/presentation/screens/vehicle_options_list_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
-
-final appRouterRefresh = AppRouterRefresh();
 
 final router = GoRouter(
   navigatorKey: rootNavigatorKey,
@@ -65,7 +63,7 @@ final router = GoRouter(
     GoRoute(
       name: RouteConstants.splash,
       path: '/splash',
-      builder: (context, state) => const SplashScreen(),
+      builder: (context, state) => const LaunchScreen(),
     ),
     GoRoute(
       name: RouteConstants.onboarding,

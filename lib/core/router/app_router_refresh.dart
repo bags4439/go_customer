@@ -7,6 +7,9 @@ import 'package:flutter/foundation.dart';
 import '../constants/firestore_collections.dart';
 import '../../features/auth/domain/profile_setup_gate.dart';
 
+/// Shared instance wired into [GoRouter.refreshListenable].
+final appRouterRefresh = AppRouterRefresh();
+
 /// Drives [GoRouter] refresh when auth or buyer profile readiness changes.
 class AppRouterRefresh extends ChangeNotifier {
   AppRouterRefresh({

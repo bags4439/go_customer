@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
@@ -7,17 +8,18 @@ import '../../../../core/layout/acquisition_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../data/onboarding_slides.dart';
+import '../providers/onboarding_seen_provider.dart';
 import '../widgets/auth_visual_widgets.dart';
 import '../widgets/onboarding_widgets.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _controller = PageController();
   int _index = 0;
 
@@ -29,9 +31,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  Future<void> _markOnboardingSeen() async {
+    final storage = await ref.read(onboardingSeenStorageProvider.future);
+    await storage.markOnboardingSeen();
+    ref.invalidate(onboardingSeenStorageProvider);
+  }
+
+  Future<void> _goLogin() async {
+    await _markOnboardingSeen();
+    if (!mounted) return;
+    context.goNamed(RouteConstants.login);
+  }
+
   void _next() {
     if (_index == kOnboardingSlides.length - 1) {
-      context.goNamed(RouteConstants.login);
+      _goLogin();
       return;
     }
     if (!mounted) return;
@@ -58,8 +72,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  void _goLogin() => context.goNamed(RouteConstants.login);
-
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
@@ -69,7 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         slide: _currentSlide,
         onNext: _next,
         onPrevious: _previous,
-        onSkip: _goLogin,
+        onSkip: () => _goLogin(),
       );
     }
     return _MobileOnboardingLayout(
@@ -79,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       onIndexChanged: (v) => setState(() => _index = v),
       onNext: _next,
       onPrevious: _previous,
-      onSkip: _goLogin,
+      onSkip: () => _goLogin(),
     );
   }
 }
