@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/router/app_router_refresh.dart';
 import 'core/constants/route_constants.dart';
 import 'core/layout/app_breakpoints.dart';
 import 'core/widgets/buyer_dashboard_shell.dart';
@@ -34,25 +33,32 @@ import 'features/vehicle_options/presentation/screens/vehicle_options_list_scree
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
+final appRouterRefresh = AppRouterRefresh();
+
 final router = GoRouter(
   navigatorKey: rootNavigatorKey,
   initialLocation: '/splash',
-  refreshListenable: GoRouterRefreshStream(
-    FirebaseAuth.instance.authStateChanges(),
-  ),
+  refreshListenable: appRouterRefresh,
   redirect: (context, state) {
     final user = FirebaseAuth.instance.currentUser;
     final location = state.matchedLocation;
-    final guestOnlyPaths = <String>{
-      '/splash',
-      '/onboarding',
-    };
-    if (user == null && !guestOnlyPaths.contains(location)) {
+
+    if (user == null) {
+      if (kUnauthenticatedAllowedPaths.contains(location)) return null;
       return '/login';
     }
-    if (user != null && guestOnlyPaths.contains(location)) {
+
+    if (!appRouterRefresh.profileKnown) return null;
+
+    if (!appRouterRefresh.profileMinimumComplete) {
+      if (location == '/login') return null;
+      return '/login';
+    }
+
+    if (kPreAppPaths.contains(location) || location == '/login') {
       return '/home';
     }
+
     return null;
   },
   routes: [
@@ -258,18 +264,3 @@ final router = GoRouter(
     body: Center(child: Text(state.error?.toString() ?? 'Route not found')),
   ),
 );
-
-class GoRouterRefreshStream extends ChangeNotifier {
-  GoRouterRefreshStream(Stream<dynamic> stream) {
-    notifyListeners();
-    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
-  }
-
-  late final StreamSubscription<dynamic> _subscription;
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
-}

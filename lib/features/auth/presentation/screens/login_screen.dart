@@ -12,9 +12,7 @@ import 'package:go_customer/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/route_constants.dart';
-import '../../../../core/layout/auth_split_layout.dart';
-import '../../../../core/layout/dark_split_panel.dart';
-import '../../../../core/utils/responsive_layout.dart';
+import '../../../../core/layout/acquisition_layout.dart';
 import '../data/login_web_content.dart';
 import '../widgets/auth_visual_widgets.dart';
 import '../../domain/entities/country.dart';
@@ -42,10 +40,11 @@ class LoginScreen extends ConsumerWidget {
 
     final state = ref.watch(loginNotifierProvider);
     final notifier = ref.read(loginNotifierProvider.notifier);
-    final isWeb = ResponsiveLayout.isWeb(context);
+    final useWeb = AcquisitionLayout.useWebLayout(context);
 
-    if (isWeb) {
-      return Scaffold(
+    return _LoginSessionHydrator(
+      child: useWeb
+          ? Scaffold(
         backgroundColor: AppColors.surface,
         resizeToAvoidBottomInset: false,
         body: Center(
@@ -76,114 +75,39 @@ class LoginScreen extends ConsumerWidget {
             ),
           ),
         ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: AuthSplitLayout(
-        form: Scaffold(
-          backgroundColor: Colors.white,
-          resizeToAvoidBottomInset: true,
-          body: SafeArea(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 320),
-              transitionBuilder: (child, animation) {
-                final slide =
-                    Tween<Offset>(
-                      begin: const Offset(1.0, 0.0),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      ),
+      )
+          : Scaffold(
+              backgroundColor: AcquisitionLayout.isPortraitTablet(context)
+                  ? AppColors.surface
+                  : Colors.white,
+              resizeToAvoidBottomInset: true,
+              body: SafeArea(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 320),
+                  transitionBuilder: (child, animation) {
+                    final slide =
+                        Tween<Offset>(
+                          begin: const Offset(1.0, 0.0),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        );
+                    return SlideTransition(
+                      position: slide,
+                      child: FadeTransition(opacity: animation, child: child),
                     );
-                return SlideTransition(
-                  position: slide,
-                  child: FadeTransition(opacity: animation, child: child),
-                );
-              },
-              child: KeyedSubtree(
-                key: ValueKey(state.step),
-                child: _stepWidget(state, notifier),
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey(state.step),
+                    child: _stepWidget(state, notifier),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        panel: _panelForStep(state.step),
-      ),
     );
-  }
-
-  /// Right-hand dark panel copy for tablet / web; mobile omits via
-  /// [AuthSplitLayout].
-  DarkSplitPanel _panelForStep(LoginStep step) {
-    switch (step) {
-      case LoginStep.phone:
-      case LoginStep.otp:
-        return const DarkSplitPanel(
-          eyebrow: 'TRUSTED BY BUYERS ACROSS GHANA',
-          heading: 'Your car, sourced globally.\nDelivered to your door.',
-          subheading:
-              'From US auctions to Dubai dealers, your dedicated agent '
-              'manages everything so you don\'t have to.',
-          stats: [
-            DarkPanelStat(value: '48+', label: 'Vehicles imported'),
-            DarkPanelStat(value: '100%', label: 'Transparent pricing'),
-            DarkPanelStat(value: '4.9★', label: 'Customer rating'),
-          ],
-        );
-      case LoginStep.name:
-        return const DarkSplitPanel(
-          heading: 'It all starts\nwith a name.',
-          subheading:
-              'Your agent is a real person who will be in touch personally '
-              'throughout the import journey.',
-          quote: DarkPanelQuote(
-            initials: 'E',
-            name: 'Ernest, your agent',
-            text: '"I\'ll be handling your import personally."',
-          ),
-        );
-      case LoginStep.referral:
-        return const DarkSplitPanel(
-          heading: 'Share the journey.',
-          subheading:
-              'Have a friend\'s referral code? Enter it to reward them for '
-              'introducing you to AutoImport GH.',
-          stats: [
-            DarkPanelStat(value: 'GHS 500', label: 'Reward per referral'),
-            DarkPanelStat(value: 'Instant', label: 'Credit on completion'),
-          ],
-        );
-      case LoginStep.contactChannels:
-        return const DarkSplitPanel(
-          heading: 'Never miss\na moment.',
-          subheading:
-              'We\'ll notify you when things happen with your order via the '
-              'channels you choose.',
-          accentItems: [
-            DarkPanelAccentItem(
-              color: Color(0xFF378ADD),
-              title: 'SMS',
-              subtitle:
-                  'Instant alerts for payment requests and key milestones.',
-            ),
-            DarkPanelAccentItem(
-              color: Color(0xFF1D9E75),
-              title: 'WhatsApp',
-              subtitle: 'Rich updates with order details and agent messages.',
-            ),
-            DarkPanelAccentItem(
-              color: Color(0xFFBA7517),
-              title: 'Email',
-              subtitle: 'Payment receipts and full order summaries.',
-            ),
-          ],
-        );
-    }
   }
 
   Widget _stepWidget(LoginState state, LoginNotifier notifier) {
@@ -472,7 +396,7 @@ class _LoginWebActionPanel extends StatelessWidget {
 
 /// White elevated card for setup-step fields on web only.
 Widget _loginWebFieldCard(BuildContext context, {required Widget child}) {
-  if (!ResponsiveLayout.isWeb(context)) return child;
+  if (!AcquisitionLayout.useWebLayout(context)) return child;
   return Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
@@ -496,23 +420,55 @@ class _AuthResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = ResponsiveLayout.isWeb(context);
+    final useWeb = AcquisitionLayout.useWebLayout(context);
+    final portraitTablet = AcquisitionLayout.isPortraitTablet(context);
 
-    // On web the step widgets live inside a fixed 400px right panel — do not
-    // apply any max-width constraint or large horizontal padding. Use the full
-    // panel width with only 24px padding matching the onboarding _WebActionPanel.
-    // On mobile and tablet keep the existing behaviour.
-    final maxWidth =
-        isWeb ? double.infinity : ResponsiveLayout.contentMaxWidth(context);
+    // Web steps live in a fixed 400px panel — no max-width constraint.
+    final maxWidth = useWeb
+        ? double.infinity
+        : AcquisitionLayout.phoneContentMaxWidth(context);
 
-    final padding = isWeb
-        ? const EdgeInsets.fromLTRB(24, 0, 24, 40)
-        : ResponsiveLayout.contentPadding(context)
-            .copyWith(top: 0, bottom: 40);
+    final horizontalPadding = useWeb
+        ? 24.0
+        : AcquisitionLayout.phoneContentPadding(context).horizontal / 2;
+
+    final padding = EdgeInsets.fromLTRB(
+      horizontalPadding,
+      0,
+      horizontalPadding,
+      40,
+    );
+
+    Widget scrollBody = SingleChildScrollView(
+      padding: padding,
+      child: ColoredBox(
+        color: useWeb ? AppColors.surface : Colors.white,
+        child: child,
+      ),
+    );
+
+    if (portraitTablet) {
+      scrollBody = LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: padding,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: ColoredBox(
+                  color: Colors.white,
+                  child: child,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
 
     return Stack(
       children: [
-        if (!isWeb)
+        if (!useWeb)
           Positioned(
             top: 0,
             left: 0,
@@ -534,13 +490,7 @@ class _AuthResponsiveWrapper extends StatelessWidget {
         Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth),
-            child: SingleChildScrollView(
-              padding: padding,
-              child: ColoredBox(
-                color: isWeb ? AppColors.surface : Colors.white,
-                child: child,
-              ),
-            ),
+            child: scrollBody,
           ),
         ),
       ],
@@ -1658,7 +1608,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
     final phoneLooksComplete =
         phoneDigits.length >= 7 && phoneDigits.length <= 15;
 
-    final isWeb = ResponsiveLayout.isWeb(context);
+    final isWeb = AcquisitionLayout.useWebLayout(context);
 
     return _AuthResponsiveWrapper(
       child: Column(
@@ -1896,7 +1846,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
   Widget build(BuildContext context) {
     final state = widget.state;
     final notifier = widget.notifier;
-    final isWeb = ResponsiveLayout.isWeb(context);
+    final isWeb = AcquisitionLayout.useWebLayout(context);
     final otpError = state.error != null && state.step == LoginStep.otp;
 
     return _AuthResponsiveWrapper(
@@ -2304,14 +2254,14 @@ class _NameStepState extends ConsumerState<_NameStep>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (!ResponsiveLayout.isWeb(context))
+        if (!AcquisitionLayout.useWebLayout(context))
           const _OnboardingProgressBar(current: 0, total: 3),
         Expanded(
           child: _AuthResponsiveWrapper(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!ResponsiveLayout.isWeb(context)) ...[
+                if (!AcquisitionLayout.useWebLayout(context)) ...[
                   const SizedBox(height: 48),
                   FadeTransition(
                     opacity: _emojiFade,
@@ -2328,30 +2278,30 @@ class _NameStepState extends ConsumerState<_NameStep>
                   ),
                   const SizedBox(height: 20),
                 ],
-                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 24),
+                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 24),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        ResponsiveLayout.isWeb(context)
+                        AcquisitionLayout.useWebLayout(context)
                             ? 'It all starts\nwith a name.'
                             : 'What should we call you?',
                         style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: ResponsiveLayout.isWeb(context) ? 22 : 24,
+                          fontSize: AcquisitionLayout.useWebLayout(context) ? 22 : 24,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        ResponsiveLayout.isWeb(context)
+                        AcquisitionLayout.useWebLayout(context)
                             ? 'Your agent is a real person who will address '
                                   'you by name throughout your entire import '
                                   'journey.'
                             : 'Your agent will use your name to address you.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),
-                          fontSize: ResponsiveLayout.isWeb(context) ? 12 : null,
+                          fontSize: AcquisitionLayout.useWebLayout(context) ? 12 : null,
                         ),
                       ),
                     ],
@@ -2359,16 +2309,16 @@ class _NameStepState extends ConsumerState<_NameStep>
                   _headingFade,
                   _headingSlide,
                 ),
-                if (ResponsiveLayout.isWeb(context))
+                if (AcquisitionLayout.useWebLayout(context))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: _WebContextTiles(
                       tiles: kLoginWebPanels['name']!.tiles,
                     ),
                   ),
-                if (!ResponsiveLayout.isWeb(context))
+                if (!AcquisitionLayout.useWebLayout(context))
                   const SizedBox(height: 32),
-                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 12),
+                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 12),
                 _fadeSlide(
                   _loginWebFieldCard(
                     context,
@@ -2561,7 +2511,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: ResponsiveLayout.contentPadding(
+          padding: AcquisitionLayout.phoneContentPadding(
             context,
           ).copyWith(top: 16, bottom: 0),
           child: Align(
@@ -2570,14 +2520,14 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
           ),
         ),
         const SizedBox(height: 8),
-        if (!ResponsiveLayout.isWeb(context))
+        if (!AcquisitionLayout.useWebLayout(context))
           const _OnboardingProgressBar(current: 1, total: 3),
         Expanded(
           child: _AuthResponsiveWrapper(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!ResponsiveLayout.isWeb(context)) ...[
+                if (!AcquisitionLayout.useWebLayout(context)) ...[
                   const SizedBox(height: 40),
                   FadeTransition(
                     opacity: _emojiFade,
@@ -2594,30 +2544,30 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                   ),
                   const SizedBox(height: 20),
                 ],
-                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 24),
+                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 24),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        ResponsiveLayout.isWeb(context)
+                        AcquisitionLayout.useWebLayout(context)
                             ? 'Share the journey.\nEarn rewards.'
                             : 'Do you have a referral code?',
                         style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: ResponsiveLayout.isWeb(context) ? 22 : 24,
+                          fontSize: AcquisitionLayout.useWebLayout(context) ? 22 : 24,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        ResponsiveLayout.isWeb(context)
+                        AcquisitionLayout.useWebLayout(context)
                             ? 'If a friend referred you, enter their code. '
                                   'They earn a reward when you complete your '
                                   'first order.'
                             : 'Enter a friend\'s code. They\'ll get a reward when you join.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),
-                          fontSize: ResponsiveLayout.isWeb(context) ? 12 : null,
+                          fontSize: AcquisitionLayout.useWebLayout(context) ? 12 : null,
                         ),
                       ),
                     ],
@@ -2625,16 +2575,16 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                   _headingFade,
                   _headingSlide,
                 ),
-                if (ResponsiveLayout.isWeb(context))
+                if (AcquisitionLayout.useWebLayout(context))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: _WebContextTiles(
                       tiles: kLoginWebPanels['referral']!.tiles,
                     ),
                   ),
-                if (!ResponsiveLayout.isWeb(context))
+                if (!AcquisitionLayout.useWebLayout(context))
                   const SizedBox(height: 32),
-                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 12),
+                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 12),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2847,7 +2797,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: ResponsiveLayout.contentPadding(
+          padding: AcquisitionLayout.phoneContentPadding(
             context,
           ).copyWith(top: 16, bottom: 0),
           child: Align(
@@ -2856,14 +2806,14 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
           ),
         ),
         const SizedBox(height: 8),
-        if (!ResponsiveLayout.isWeb(context))
+        if (!AcquisitionLayout.useWebLayout(context))
           const _OnboardingProgressBar(current: 2, total: 3),
         Expanded(
           child: _AuthResponsiveWrapper(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!ResponsiveLayout.isWeb(context)) ...[
+                if (!AcquisitionLayout.useWebLayout(context)) ...[
                   const SizedBox(height: 40),
                   FadeTransition(
                     opacity: _emojiFade,
@@ -2880,23 +2830,23 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                   ),
                   const SizedBox(height: 20),
                 ],
-                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 24),
+                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 24),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        ResponsiveLayout.isWeb(context)
+                        AcquisitionLayout.useWebLayout(context)
                             ? 'Never miss\na moment.'
                             : 'Stay in the loop',
                         style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: ResponsiveLayout.isWeb(context) ? 22 : 24,
+                          fontSize: AcquisitionLayout.useWebLayout(context) ? 22 : 24,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        ResponsiveLayout.isWeb(context)
+                        AcquisitionLayout.useWebLayout(context)
                             ? 'We\'ll keep you updated on your order progress '
                                   'via the channels you choose.'
                             : 'We will keep you updated on your order progress. '
@@ -2905,7 +2855,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: const Color(0xFF666666),
                           height: 1.5,
-                          fontSize: ResponsiveLayout.isWeb(context) ? 12 : null,
+                          fontSize: AcquisitionLayout.useWebLayout(context) ? 12 : null,
                         ),
                       ),
                     ],
@@ -2913,16 +2863,16 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                   _headingFade,
                   _headingSlide,
                 ),
-                if (ResponsiveLayout.isWeb(context))
+                if (AcquisitionLayout.useWebLayout(context))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: _WebContextTiles(
                       tiles: kLoginWebPanels['contactChannels']!.tiles,
                     ),
                   ),
-                if (!ResponsiveLayout.isWeb(context))
+                if (!AcquisitionLayout.useWebLayout(context))
                   const SizedBox(height: 32),
-                if (ResponsiveLayout.isWeb(context)) const SizedBox(height: 12),
+                if (AcquisitionLayout.useWebLayout(context)) const SizedBox(height: 12),
                 _fadeSlide(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3210,4 +3160,27 @@ class _WebContextTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LoginSessionHydrator extends ConsumerStatefulWidget {
+  const _LoginSessionHydrator({required this.child});
+
+  final Widget child;
+
+  @override
+  ConsumerState<_LoginSessionHydrator> createState() =>
+      _LoginSessionHydratorState();
+}
+
+class _LoginSessionHydratorState extends ConsumerState<_LoginSessionHydrator> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(loginNotifierProvider.notifier).hydrateRegistrationFromSession();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

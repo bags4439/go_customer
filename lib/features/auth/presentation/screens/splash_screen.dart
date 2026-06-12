@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -56,16 +57,18 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1200),
     )..repeat();
 
+    void navigateToOnboardingIfGuest() {
+      if (FirebaseAuth.instance.currentUser != null) return;
+      if (!mounted) return;
+      context.goNamed(RouteConstants.onboarding);
+    }
+
     if (kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        context.goNamed(RouteConstants.onboarding);
+        navigateToOnboardingIfGuest();
       });
     } else {
-      Future<void>.delayed(const Duration(seconds: 2), () {
-        if (!mounted) return;
-        context.goNamed(RouteConstants.onboarding);
-      });
+      Future<void>.delayed(const Duration(seconds: 2), navigateToOnboardingIfGuest);
     }
   }
 

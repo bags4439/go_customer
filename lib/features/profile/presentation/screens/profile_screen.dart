@@ -146,8 +146,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         }
         final isWeb = AppBreakpoints.isWeb(context);
         final backgroundColor = isWeb ? AppColors.surface : Colors.white;
+        final authUid = ref.watch(authStateProvider).value;
         final Widget body = user == null
-            ? const ProfileBodyShimmer()
+            ? (authUid != null
+                ? const ProfileIncompleteSetupBody()
+                : const ProfileBodyShimmer())
             : RefreshIndicator(
                 onRefresh: () async {
                   ref.invalidate(currentUserProfileProvider);

@@ -5,10 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/features/auth/domain/usecases/sync_onesignal_use_case.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/firestore_collections.dart';
 import '../../../../shared/providers/firebase_providers.dart';
+import '../../domain/profile_setup_gate.dart';
 import '../../domain/usecases/complete_profile_use_case.dart';
 import '../../domain/usecases/get_authenticated_user_id_use_case.dart';
+import '../../domain/usecases/get_current_user_use_case.dart';
 import '../../domain/usecases/request_otp_use_case.dart';
 import '../../domain/usecases/verify_otp_use_case.dart';
 import '../../domain/value_objects/phone_number.dart';
@@ -21,12 +22,14 @@ class LoginNotifier extends StateNotifier<LoginState> {
     required VerifyOtpUseCase verifyOtp,
     required CompleteProfileUseCase completeProfile,
     required GetAuthenticatedUserIdUseCase getAuthenticatedUserId,
+    required GetCurrentUserUseCase getCurrentUser,
     required SyncOneSignalUseCase syncOneSignalUseCase,
   }) : _ref = ref,
        _requestOtp = requestOtp,
        _verifyOtp = verifyOtp,
        _completeProfile = completeProfile,
        _getAuthenticatedUserId = getAuthenticatedUserId,
+       _getCurrentUser = getCurrentUser,
        _syncOneSignalUseCase = syncOneSignalUseCase,
        super(const LoginState());
 
@@ -35,9 +38,11 @@ class LoginNotifier extends StateNotifier<LoginState> {
   final VerifyOtpUseCase _verifyOtp;
   final CompleteProfileUseCase _completeProfile;
   final GetAuthenticatedUserIdUseCase _getAuthenticatedUserId;
+  final GetCurrentUserUseCase _getCurrentUser;
   final SyncOneSignalUseCase _syncOneSignalUseCase;
   Timer? _resendTimer;
   bool _alive = true;
+  bool _sessionHydrated = false;
 
   // ─────────────────────────────────────────────────
   // Input Updates — called on every keystroke
@@ -86,6 +91,26 @@ class LoginNotifier extends StateNotifier<LoginState> {
       whatsappDialCode: dialCode,
       whatsappCountryFlag: flag,
     );
+  }
+
+  /// Resumes name/country setup when Auth exists but Firestore profile is incomplete.
+  Future<void> hydrateRegistrationFromSession() async {
+    if (_sessionHydrated || state.step != LoginStep.phone) return;
+    _sessionHydrated = true;
+
+    final uidResult = await _getAuthenticatedUserId();
+    if (!_alive) return;
+    final uid = uidResult.fold((_) => null, (id) => id);
+    if (uid == null) return;
+
+    final profileResult = await _getCurrentUser();
+    if (!_alive) return;
+
+    profileResult.fold((_) {}, (user) {
+      if (!isProfileMinimumCompleteUser(user)) {
+        state = state.copyWith(step: LoginStep.name, error: null);
+      }
+    });
   }
 
   // ─────────────────────────────────────────────────
