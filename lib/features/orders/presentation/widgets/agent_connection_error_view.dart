@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/utils/responsive_layout.dart';
 
 class AgentConnectionErrorView extends StatelessWidget {
@@ -15,14 +16,17 @@ class AgentConnectionErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pad = ResponsiveLayout.contentPadding(context);
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: ResponsiveLayout.contentMaxWidth(context),
         ),
         child: Padding(
-          padding: pad,
+          padding: DashboardLayout.bodyScrollPadding(
+            context,
+            top: 24,
+            bottom: 24,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

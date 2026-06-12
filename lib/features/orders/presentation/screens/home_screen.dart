@@ -5,6 +5,7 @@ import '../../../../core/error/error_handler.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../vehicle_options/presentation/providers/vehicle_option_providers.dart';
 import '../providers/order_providers.dart';
@@ -15,7 +16,6 @@ import '../widgets/home_layout_utils.dart';
 import '../widgets/home_multi_order.dart';
 import '../widgets/home_screen_app_bar.dart';
 import '../widgets/home_shimmer.dart';
-import '../widgets/home_theme.dart';
 import '../widgets/home_web_scaffold.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -67,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: HomeColors.bgPrimary,
+      backgroundColor: AppColors.surface,
       appBar: appBar,
       body: DashboardPortraitFrame(child: bodyContent),
     );

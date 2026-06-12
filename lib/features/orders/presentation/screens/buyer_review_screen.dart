@@ -6,6 +6,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../delivery/presentation/providers/delivery_providers.dart';
@@ -295,27 +296,13 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
     return PopScope(
       canPop: !_isSubmitting,
       child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-            color: AppColors.textPrimary,
-            onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-            style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
-          ),
-          title: Text(
-            'Rate your experience',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontSize: 18,
-              color: AppColors.primary,
-            ),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(0.5),
-            child: Container(height: 0.5, color: AppColors.borderSolid),
+        backgroundColor: AppColors.surface,
+        appBar: DashboardMobileTitleAppBar(
+          title: 'Rate your experience',
+          onBack: _isSubmitting ? null : () => Navigator.of(context).pop(),
+          titleStyle: AppTextStyles.titleMedium.copyWith(
+            fontSize: 18,
+            color: AppColors.primary,
           ),
         ),
         body: DashboardPortraitFrame(child: form),
@@ -518,18 +505,11 @@ class _GateScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'Rate your experience',
-          style: AppTextStyles.titleMedium.copyWith(fontSize: 18),
-        ),
+      backgroundColor: AppColors.surface,
+      appBar: DashboardMobileTitleAppBar(
+        title: 'Rate your experience',
+        onBack: () => Navigator.of(context).pop(),
+        titleStyle: AppTextStyles.titleMedium.copyWith(fontSize: 18),
       ),
       body: DashboardPortraitFrame(child: body),
     );
@@ -710,21 +690,13 @@ class _SubmittedScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          color: AppColors.textPrimary,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'Your review',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontSize: 18,
-            color: AppColors.primary,
-          ),
+      backgroundColor: AppColors.surface,
+      appBar: DashboardMobileTitleAppBar(
+        title: 'Your review',
+        onBack: () => Navigator.of(context).pop(),
+        titleStyle: AppTextStyles.titleMedium.copyWith(
+          fontSize: 18,
+          color: AppColors.primary,
         ),
       ),
       body: DashboardPortraitFrame(child: body),

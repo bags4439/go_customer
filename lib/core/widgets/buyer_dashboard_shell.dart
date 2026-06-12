@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
 import '../layout/app_breakpoints.dart';
+import '../theme/app_colors.dart';
 import 'buyer_dashboard_mobile_nav_bar.dart';
 import 'buyer_web_app_frame.dart';
 import 'buyer_web_sidebar.dart';
@@ -43,7 +44,7 @@ class BuyerDashboardShell extends ConsumerWidget {
               content: navigationShell,
             )
           : Scaffold(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.surface,
               extendBody: true,
               body: navigationShell,
               bottomNavigationBar: BuyerDashboardMobileNavBar(

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/layout/web_app_body.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/preference_form_provider.dart';
@@ -74,13 +75,8 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
     };
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(preferenceFormProvider);
-    final notifier = ref.read(preferenceFormProvider.notifier);
-    final isWeb = AppBreakpoints.useWebShell(context);
-
-    final body = SafeArea(
+  Widget _buildBody(PreferenceFormState state, PreferenceFormNotifier notifier) {
+    return SafeArea(
       child: Column(
         children: [
           PreferencesStepProgressBar(
@@ -122,62 +118,47 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
         ],
       ),
     );
+  }
 
-    final scaffold = Scaffold(
-      backgroundColor: isWeb ? AppColors.surface : AppColors.background,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () {
-            if (state.currentStep == 1) {
-              context.pop();
-            } else {
-              notifier.previousStep();
-            }
-          },
-        ),
-        backgroundColor: isWeb ? AppColors.surface : AppColors.background,
-        foregroundColor: AppColors.textPrimary,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 52,
-        title: Text(
-          'Find your car',
-          style: GoogleFonts.dmSans(
-            fontSize: AppBreakpoints.scaledFontSize(
-              isWeb ? 15 : 17,
-              MediaQuery.sizeOf(context).width,
-            ),
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
-      ),
-      body: body,
-    );
+  void _onBack(PreferenceFormState state, PreferenceFormNotifier notifier) {
+    if (state.currentStep == 1) {
+      context.pop();
+    } else {
+      notifier.previousStep();
+    }
+  }
 
-    if (!isWeb) {
-      return PopScope(
-        canPop: state.currentStep == 1,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) notifier.previousStep();
-        },
-        child: scaffold,
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(preferenceFormProvider);
+    final notifier = ref.read(preferenceFormProvider.notifier);
+    final isWeb = AppBreakpoints.useWebShell(context);
+    final body = _buildBody(state, notifier);
+
+    if (isWeb) {
+      return WebAppBody(
+        pageTitle: 'Find your car',
+        rightPanel: const PreferencesSelectionsPanel(),
+        onBack: () => _onBack(state, notifier),
+        body: body,
       );
     }
 
-    return WebAppBody(
-      pageTitle: 'Find your car',
-      rightPanel: const PreferencesSelectionsPanel(),
-      onBack: state.currentStep == 1
-          ? () => context.pop()
-          : notifier.previousStep,
-      body: body,
+    return PopScope(
+      canPop: state.currentStep == 1,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) notifier.previousStep();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
+        resizeToAvoidBottomInset: false,
+        appBar: DashboardMobileTitleAppBar(
+          title: 'Find your car',
+          onBack: () => _onBack(state, notifier),
+          titleStyle: dashboardMobileFlowTitleStyle(),
+        ),
+        body: DashboardPortraitFrame(child: body),
+      ),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../shared/providers/app_version_label_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
@@ -115,19 +116,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   PreferredSizeWidget _buildProfileAppBar(BuildContext context) {
+    final title = Text(
+      ProfileConstants.appBarTitle,
+      style: AppTextStyles.appBarTitle.copyWith(color: Colors.black),
+    );
+
     return AppBar(
-      title: Text(
-        ProfileConstants.appBarTitle,
-        style: AppTextStyles.appBarTitle.copyWith(color: Colors.black),
-      ),
-      backgroundColor: Colors.white,
+      backgroundColor: dashboardMobileAppBarBackground(context),
       elevation: 0,
       scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      titleSpacing: 0,
+      title: DashboardAppBarToolbar(
+        leading: title,
+        actions: const [GuideHelpButton()],
+      ),
+      actions: const <Widget>[],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
         child: Container(color: ProfileUi.border),
       ),
-      actions: const [GuideHelpButton()],
     );
   }
 
@@ -159,11 +167,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    16,
-                    16,
-                    24 + profileShellFloatingNavExtra(context),
+                  padding: DashboardLayout.bodyScrollPadding(
+                    context,
+                    top: 16,
+                    bottom: 24 + profileShellFloatingNavExtra(context),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -303,22 +310,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         }
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
           appBar: _buildProfileAppBar(context),
           body: DashboardPortraitFrame(child: body),
         );
       },
       loading: () => Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         appBar: _buildProfileAppBar(context),
-        body: const ProfileBodyShimmer(),
+        body: const DashboardPortraitFrame(child: ProfileBodyShimmer()),
       ),
       error: (e, _) => Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         appBar: _buildProfileAppBar(context),
-        body: ProfileBodyError(
-          message: ProfileConstants.errorLoadProfile,
-          onRetry: () => ref.invalidate(currentUserProfileProvider),
+        body: DashboardPortraitFrame(
+          child: ProfileBodyError(
+            message: ProfileConstants.errorLoadProfile,
+            onRetry: () => ref.invalidate(currentUserProfileProvider),
+          ),
         ),
       ),
     );

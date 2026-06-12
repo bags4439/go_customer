@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/widgets/dashboard_mobile_app_bar.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
@@ -24,45 +25,52 @@ class OrderDetailMobileAppBar extends ConsumerWidget
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final title = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, anim) => FadeTransition(
+        opacity: anim,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.08),
+            end: Offset.zero,
+          ).animate(anim),
+          child: child,
+        ),
+      ),
+      child: isChatTabActive
+          ? OrderDetailAgentAppBarTitle(
+              key: const ValueKey('agent'),
+              orderId: orderId,
+            )
+          : Text(
+              key: const ValueKey('order'),
+              ref.watch(orderProvider(orderId)).valueOrNull?.orderRef ?? '--',
+              style: AppTextStyles.titleMedium.copyWith(
+                color: OrderDetailUi.textPrimary,
+              ),
+            ),
+    );
+
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: dashboardMobileAppBarBackground(context),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-        onPressed: () => context.go('/home'),
-      ),
+      automaticallyImplyLeading: false,
       titleSpacing: 0,
-      title: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 220),
-        switchInCurve: Curves.easeOut,
-        switchOutCurve: Curves.easeIn,
-        transitionBuilder: (child, anim) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.08),
-              end: Offset.zero,
-            ).animate(anim),
-            child: child,
-          ),
+      title: DashboardAppBarToolbar(
+        leading: Row(
+          children: [
+            DashboardAppBarIconButton(
+              icon: Icons.arrow_back_ios_new_rounded,
+              iconColor: OrderDetailUi.textPrimary,
+              onPressed: () => context.go('/home'),
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: title),
+          ],
         ),
-        child: isChatTabActive
-            ? OrderDetailAgentAppBarTitle(
-                key: const ValueKey('agent'),
-                orderId: orderId,
-              )
-            : Padding(
-                key: const ValueKey('order'),
-                padding: const EdgeInsets.only(left: 4),
-                child: Text(
-                  ref.watch(orderProvider(orderId)).valueOrNull?.orderRef ??
-                      '--',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: OrderDetailUi.textPrimary,
-                  ),
-                ),
-              ),
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),

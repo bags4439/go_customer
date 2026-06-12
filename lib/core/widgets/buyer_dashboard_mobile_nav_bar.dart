@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../layout/app_nav_destinations.dart';
+import '../layout/dashboard_layout.dart';
 import '../theme/app_colors.dart';
 
 /// Floating pill bottom navigation for the buyer dashboard mobile shell
@@ -27,9 +28,9 @@ class BuyerDashboardMobileNavBar extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        24,
+        DashboardLayout.mobileHorizontalInset,
         0,
-        24,
+        DashboardLayout.mobileHorizontalInset,
         bottomInset > 0 ? bottomInset + 8 : 16,
       ),
       child: Container(

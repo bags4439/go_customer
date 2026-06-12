@@ -6,10 +6,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../core/layout/web_app_body.dart';
 import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../providers/order_providers.dart';
 import '../widgets/agent_connection_assigned_view.dart';
 import '../widgets/agent_connection_error_view.dart';
@@ -113,29 +113,10 @@ class _AgentConnectionScreenState extends ConsumerState<AgentConnectionScreen>
                 body: body,
               ),
             )
-          : Scaffold(
-              backgroundColor: AppColors.background,
-              appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                  onPressed: () => _goHome(context),
-                ),
-                title: Text(
-                  pageTitle,
-                  style: AppTextStyles.appBarTitle.copyWith(
-                    color: AppColors.textPrimary,
-                    height: 1.0,
-                  ),
-                ),
-                backgroundColor: AppColors.background,
-                foregroundColor: AppColors.textPrimary,
-                elevation: 0,
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(0.5),
-                  child: Container(height: 0.5, color: AppColors.borderSolid),
-                ),
-              ),
-              body: DashboardPortraitFrame(child: body),
+          : _AgentConnectionMobileScaffold(
+              pageTitle: pageTitle,
+              onBack: () => _goHome(context),
+              body: body,
             ),
     );
   }
@@ -175,6 +156,30 @@ class _AssignedBody extends ConsumerWidget {
       error: (_, __) => AgentConnectionErrorView(
         onRetry: () => ref.invalidate(agentDetailProvider(agentId)),
       ),
+    );
+  }
+}
+
+class _AgentConnectionMobileScaffold extends StatelessWidget {
+  const _AgentConnectionMobileScaffold({
+    required this.pageTitle,
+    required this.onBack,
+    required this.body,
+  });
+
+  final String pageTitle;
+  final VoidCallback onBack;
+  final Widget body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      appBar: DashboardMobileTitleAppBar(
+        title: pageTitle,
+        onBack: onBack,
+      ),
+      body: DashboardPortraitFrame(child: body),
     );
   }
 }

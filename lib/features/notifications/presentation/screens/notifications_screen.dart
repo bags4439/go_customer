@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
@@ -70,41 +71,46 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final useMobileShell = AppBreakpoints.useMobileShell(context);
 
     if (useMobileShell) {
-      return AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              NotificationConstants.appBarTitle,
-              style: AppTextStyles.appBarTitle.copyWith(
-                color: AppColors.primary,
-              ),
+      final title = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            NotificationConstants.appBarTitle,
+            style: AppTextStyles.appBarTitle.copyWith(
+              color: AppColors.primary,
             ),
-            const SizedBox(height: 2),
-            Text(
-              unreadCount > 0
-                  ? '$unreadCount ${NotificationConstants.unreadSuffix}'
-                  : NotificationConstants.allCaughtUp,
-              style: AppTextStyles.cardLabel.copyWith(
-                color: unreadCount > 0
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.75)
-                    : AppColors.success,
-              ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            unreadCount > 0
+                ? '$unreadCount ${NotificationConstants.unreadSuffix}'
+                : NotificationConstants.allCaughtUp,
+            style: AppTextStyles.cardLabel.copyWith(
+              color: unreadCount > 0
+                  ? Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.75)
+                  : AppColors.success,
             ),
-          ],
-        ),
-        actions: [
-          const GuideHelpButton(),
-          if (unreadCount > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _MarkAllReadButton(onMarkAllRead: _onMarkAllRead),
-            ),
+          ),
         ],
+      );
+      final actions = <Widget>[
+        const GuideHelpButton(),
+        if (unreadCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: _MarkAllReadButton(onMarkAllRead: _onMarkAllRead),
+          ),
+      ];
+
+      return AppBar(
+        backgroundColor: dashboardMobileAppBarBackground(context),
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: DashboardAppBarToolbar(leading: title, actions: actions),
+        actions: const <Widget>[],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.border, height: 0.5),
@@ -159,7 +165,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.surface,
       appBar: _buildAppBar(context, unreadCount),
       body: const DashboardPortraitFrame(child: body),
     );
@@ -224,9 +230,9 @@ class _NotificationsBody extends ConsumerWidget {
         }
         return Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: GuideHint(guideKey: GuideKeys.notifications),
+            Padding(
+              padding: DashboardLayout.bodyScrollPadding(context, top: 12),
+              child: const GuideHint(guideKey: GuideKeys.notifications),
             ),
             const _FilterTabs(),
             Expanded(
@@ -269,7 +275,7 @@ class _FilterTabs extends ConsumerWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: DashboardLayout.bodyScrollPadding(context, top: 12, bottom: 12),
       child: Row(
         children: [
           _FilterPill(
@@ -590,11 +596,10 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
 
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.fromLTRB(
-        14,
-        8,
-        14,
-        8 + _notificationsShellFloatingNavExtra(context),
+      padding: DashboardLayout.bodyScrollPadding(
+        context,
+        top: 8,
+        bottom: 8 + _notificationsShellFloatingNavExtra(context),
       ),
       itemCount: items.length + 1,
       itemBuilder: (context, index) {
@@ -992,11 +997,10 @@ class _NotificationsError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          24,
-          24,
-          24,
-          24 + _notificationsShellFloatingNavExtra(context),
+        padding: DashboardLayout.bodyScrollPadding(
+          context,
+          top: 24,
+          bottom: 24 + _notificationsShellFloatingNavExtra(context),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1051,11 +1055,10 @@ class _ShimmerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        14,
-        8,
-        14,
-        8 + _notificationsShellFloatingNavExtra(context),
+      padding: DashboardLayout.bodyScrollPadding(
+        context,
+        top: 8,
+        bottom: 8 + _notificationsShellFloatingNavExtra(context),
       ),
       itemCount: 6,
       itemBuilder: (context, index) {

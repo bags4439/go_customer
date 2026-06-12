@@ -3,6 +3,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/layout/acquisition_layout.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../core/constants/profile_constants.dart';
@@ -14,11 +15,10 @@ class ProfileBodyShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        16 + profileShellFloatingNavExtra(context),
+      padding: DashboardLayout.bodyScrollPadding(
+        context,
+        top: 16,
+        bottom: 16 + profileShellFloatingNavExtra(context),
       ),
       children: [
         Container(

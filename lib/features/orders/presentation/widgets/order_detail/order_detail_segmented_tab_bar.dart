@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/layout/dashboard_layout.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import 'package:go_customer/core/theme/app_colors.dart';
@@ -69,13 +70,18 @@ class _OrderDetailSegmentedTabBarState
       _TabItem(label: 'Documents', index: 2),
     ];
 
-    return Container(
-      color: AppColors.background,
+    return ColoredBox(
+      color: AppColors.surface,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: EdgeInsets.fromLTRB(
+              DashboardLayout.bodyContentHorizontalPadding(context),
+              12,
+              DashboardLayout.bodyContentHorizontalPadding(context),
+              8,
+            ),
             child: Container(
               height: 44,
               decoration: BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/layout/app_breakpoints.dart';
+import 'package:go_customer/core/layout/dashboard_layout.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_customer/core/constants/app_constants.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
@@ -38,7 +39,11 @@ class OrderDetailOverviewTab extends ConsumerWidget {
           return const OrderNotAvailableView();
         }
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+          padding: DashboardLayout.bodyScrollPadding(
+            context,
+            top: 20,
+            bottom: 32,
+          ),
           children: [
             const GuideHint(guideKey: GuideKeys.orderTimeline),
             paymentAsync.when(

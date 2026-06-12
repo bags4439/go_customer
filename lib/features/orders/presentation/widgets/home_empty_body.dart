@@ -7,6 +7,7 @@ import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import 'home_empty_how_it_works.dart';
 import 'home_empty_illustrations.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import 'home_layout_utils.dart';
 import 'home_theme.dart';
 
@@ -22,11 +23,10 @@ class HomeEmptyBody extends ConsumerWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                  24,
-                  20,
-                  24,
-                  20 + homeShellFloatingNavScrollBottomExtra(context),
+                padding: DashboardLayout.bodyScrollPadding(
+                  context,
+                  top: 20,
+                  bottom: 20 + homeShellFloatingNavScrollBottomExtra(context),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

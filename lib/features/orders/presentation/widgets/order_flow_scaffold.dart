@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../core/layout/web_app_body.dart';
 import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -27,7 +26,7 @@ class OrderFlowScaffold extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isWeb = AppBreakpoints.useWebShell(context);
     final body = ColoredBox(
-      color: isWeb ? AppColors.surface : AppColors.background,
+      color: AppColors.surface,
       child: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
@@ -35,9 +34,15 @@ class OrderFlowScaffold extends ConsumerWidget {
               maxWidth: ResponsiveLayout.contentMaxWidth(context),
             ),
             child: Padding(
-              padding: ResponsiveLayout.contentPadding(context).copyWith(
-                top: isWeb ? 32 : 16,
-                bottom: 32,
+              padding: EdgeInsets.fromLTRB(
+                isWeb
+                    ? ResponsiveLayout.contentPadding(context).left
+                    : DashboardLayout.bodyContentHorizontalPadding(context),
+                isWeb ? 32 : 16,
+                isWeb
+                    ? ResponsiveLayout.contentPadding(context).right
+                    : DashboardLayout.bodyContentHorizontalPadding(context),
+                32,
               ),
               child: child,
             ),
@@ -57,28 +62,11 @@ class OrderFlowScaffold extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: onBack,
-        ),
-        title: Text(
-          title,
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: AppColors.borderSolid),
-        ),
+      backgroundColor: AppColors.surface,
+      appBar: DashboardMobileTitleAppBar(
+        title: title,
+        onBack: onBack,
+        titleStyle: dashboardMobileFlowTitleStyle(),
       ),
       body: DashboardPortraitFrame(child: body),
     );

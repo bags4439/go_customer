@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_customer/core/layout/app_breakpoints.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/widgets/dashboard_mobile_app_bar.dart';
 
 import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import 'home_app_logo.dart';
@@ -18,24 +19,21 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     if (AppBreakpoints.useMobileShell(context)) {
       return AppBar(
-        backgroundColor: HomeColors.bgPrimary,
+        backgroundColor: dashboardMobileAppBarBackground(context),
         elevation: 0,
         scrolledUnderElevation: 0,
         automaticallyImplyLeading: false,
-        titleSpacing: 20,
-        title: const HomeAppLogo(),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.headset_mic_rounded, size: 22),
-            color: AppColors.textSecondary,
-            tooltip: 'Support',
-            style: IconButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              padding: const EdgeInsets.only(right: 16),
+        titleSpacing: 0,
+        title: DashboardAppBarToolbar(
+          leading: const HomeAppLogo(),
+          actions: [
+            DashboardAppBarIconButton(
+              icon: Icons.headset_mic_rounded,
+              tooltip: 'Support',
+              onPressed: () => SupportBottomSheet.show(context),
             ),
-            onPressed: () => SupportBottomSheet.show(context),
-          ),
-        ],
+          ],
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(height: 0.5, color: HomeColors.border),

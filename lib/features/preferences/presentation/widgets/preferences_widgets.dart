@@ -6,9 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/layout/app_breakpoints.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive_layout.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../catalogue/domain/entities/car_make.dart';
 import '../../../catalogue/domain/entities/car_model.dart';
 import '../../../catalogue/presentation/providers/car_catalogue_providers.dart';
@@ -516,6 +519,20 @@ class PreferenceSectionLabel extends StatelessWidget {
   }
 }
 
+double _preferencesHorizontalPadding(BuildContext context) {
+  if (AppBreakpoints.useMobileShell(context)) {
+    return DashboardLayout.bodyContentHorizontalPadding(context);
+  }
+  return ResponsiveLayout.contentPadding(context).horizontal;
+}
+
+double _preferencesFormMaxWidth(BuildContext context) {
+  if (AppBreakpoints.useMobileShell(context)) {
+    return DashboardLayout.contentColumnMaxWidth(context);
+  }
+  return ResponsiveLayout.preferencesFormMaxWidth(context);
+}
+
 /// Centred column with max width for preferences flows.
 class PreferencesResponsiveColumn extends StatelessWidget {
   final List<Widget> children;
@@ -527,10 +544,12 @@ class PreferencesResponsiveColumn extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: ResponsiveLayout.preferencesFormMaxWidth(context),
+          maxWidth: _preferencesFormMaxWidth(context),
         ),
         child: Padding(
-          padding: ResponsiveLayout.contentPadding(context),
+          padding: EdgeInsets.symmetric(
+            horizontal: _preferencesHorizontalPadding(context),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -558,8 +577,9 @@ class PreferencesStepProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = totalSteps.clamp(1, 99);
     final c = displayStep.clamp(1, t);
+    final horizontal = _preferencesHorizontalPadding(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+      padding: EdgeInsets.fromLTRB(horizontal, 14, horizontal, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -741,49 +761,60 @@ class PreferencesBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.paddingOf(context).bottom;
+    final useMobileShell = AppBreakpoints.useMobileShell(context);
+    final horizontal = _preferencesHorizontalPadding(context);
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 14, 20, 14 + bottom),
+      padding: EdgeInsets.fromLTRB(horizontal, 14, horizontal, 14 + bottom),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: useMobileShell ? AppColors.surface : AppColors.background,
         border: const Border(
           top: BorderSide(color: AppColors.borderSolid, width: 0.5),
         ),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-            color: Colors.black.withValues(alpha: 0.04),
-          ),
-        ],
+        boxShadow: useMobileShell
+            ? null
+            : [
+                BoxShadow(
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
+                  color: Colors.black.withValues(alpha: 0.04),
+                ),
+              ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (state.currentStep > 1) ...[
-            Material(
-              color: Colors.transparent,
-              child: CardContainer(
-                paddingType: CardContainerPaddingType.none,
-                child: InkWell(
-                  onTap: notifier.previousStep,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    height: 52,
-                    width: 52,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.borderSolid),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.arrow_back_ios_new,
-                      size: 18,
-                      color: AppColors.textSecondary,
+            if (useMobileShell)
+              DashboardAppBarIconButton(
+                icon: Icons.arrow_back_ios_new,
+                size: 52,
+                onPressed: notifier.previousStep,
+              )
+            else
+              Material(
+                color: Colors.transparent,
+                child: CardContainer(
+                  paddingType: CardContainerPaddingType.none,
+                  child: InkWell(
+                    onTap: notifier.previousStep,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      height: 52,
+                      width: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.borderSolid),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_ios_new,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
             const SizedBox(width: 12),
           ],
           Expanded(

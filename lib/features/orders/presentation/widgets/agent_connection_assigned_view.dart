@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/utils/responsive_layout.dart';
+import '../../../../core/layout/dashboard_layout.dart';
 import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import '../../domain/entities/agent_detail_view.dart';
@@ -75,7 +75,8 @@ class _AgentConnectionAssignedViewState
 
   @override
   Widget build(BuildContext context) {
-    final edge = ResponsiveLayout.contentPadding(context);
+    final horizontal = DashboardLayout.bodyContentHorizontalPadding(context);
+    final edge = EdgeInsets.fromLTRB(horizontal, 0, horizontal, 0);
     final agent = widget.agent;
     final order = widget.order;
 

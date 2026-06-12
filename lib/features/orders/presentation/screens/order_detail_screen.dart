@@ -176,7 +176,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
               ),
             )
           : Scaffold(
-              backgroundColor: AppColors.background,
+              backgroundColor: AppColors.surface,
               appBar: OrderDetailMobileAppBar(
                 orderId: widget.orderId,
                 isChatTabActive: _isChatTabActive,

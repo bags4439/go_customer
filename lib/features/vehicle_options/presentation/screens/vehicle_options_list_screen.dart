@@ -5,6 +5,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/layout/dashboard_layout.dart';
+import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
@@ -90,21 +91,15 @@ class VehicleOptionsListScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Vehicle options',
-          style: GoogleFonts.dmSans(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
+      backgroundColor: AppColors.surface,
+      appBar: DashboardMobileTitleAppBar(
+        title: 'Vehicle options',
+        titleStyle: dashboardMobileFlowTitleStyle(),
       ),
       body: DashboardPortraitFrame(
         child: Padding(
-          padding: ResponsiveLayout.contentPadding(context).copyWith(
+          padding: DashboardLayout.bodyScrollPadding(
+            context,
             top: 16,
             bottom: 16,
           ),

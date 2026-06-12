@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/layout/dashboard_layout.dart';
 import 'home_layout_utils.dart';
 import 'home_theme.dart';
 
@@ -13,11 +14,10 @@ class HomeShimmer extends StatelessWidget {
       baseColor: HomeColors.bgSecondary,
       highlightColor: Colors.white,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          16,
-          16,
-          homeShellFloatingNavScrollBottomExtra(context),
+        padding: DashboardLayout.bodyScrollPadding(
+          context,
+          top: 16,
+          bottom: homeShellFloatingNavScrollBottomExtra(context),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

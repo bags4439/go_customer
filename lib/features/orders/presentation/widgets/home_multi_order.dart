@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/layout/app_breakpoints.dart';
+import 'package:go_customer/core/layout/dashboard_layout.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 
@@ -216,11 +217,10 @@ class HomeMultiOrderBody extends ConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 800),
         child: ListView(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            24 + homeShellFloatingNavScrollBottomExtra(context),
+          padding: DashboardLayout.bodyScrollPadding(
+            context,
+            top: 16,
+            bottom: 24 + homeShellFloatingNavScrollBottomExtra(context),
           ),
           children: listChildren,
         ),
