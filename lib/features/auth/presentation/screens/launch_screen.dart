@@ -10,6 +10,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../force_update/presentation/providers/force_update_providers.dart';
 import '../../domain/launch_destination.dart';
+import '../../domain/launch_timing.dart';
 import '../providers/onboarding_seen_provider.dart';
 import '../widgets/auth_visual_widgets.dart';
 import '../widgets/launch_brand_logo.dart';
@@ -27,12 +28,18 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _entranceController;
   late final AnimationController _shimmerController;
+  late final AnimationController _exitController;
   late final Animation<double> _logoScale;
   late final Animation<double> _logoOpacity;
   late final Animation<double> _taglineOpacity;
+  late final Animation<double> _exitOpacity;
 
   bool _navigated = false;
+  bool _isDeparting = false;
   bool? _hasSeenOnboarding;
+  DateTime? _firstPaintAt;
+  String? _departureRoute;
+  bool _departureDelayScheduled = false;
 
   @override
   void initState() {
@@ -42,7 +49,7 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
 
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: LaunchTiming.entrance,
     );
     _logoScale = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
@@ -63,14 +70,30 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
       ),
     );
     _entranceController.forward();
+    _entranceController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _scheduleNavigation();
+      }
+    });
 
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat();
 
+    _exitController = AnimationController(
+      vsync: this,
+      duration: LaunchTiming.exitFade,
+    );
+    _exitOpacity = Tween<double>(begin: 1, end: 0).animate(
+      CurvedAnimation(parent: _exitController, curve: Curves.easeIn),
+    );
+
     _loadOnboardingSeen();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _tryNavigate());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _firstPaintAt ??= DateTime.now();
+      _scheduleNavigation();
+    });
   }
 
   Future<void> _loadOnboardingSeen() async {
@@ -81,13 +104,20 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
   }
 
   void _scheduleNavigation() {
+    if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _tryNavigate();
     });
   }
 
+  Duration get _elapsedSinceFirstPaint {
+    final started = _firstPaintAt;
+    if (started == null) return Duration.zero;
+    return DateTime.now().difference(started);
+  }
+
   Future<void> _tryNavigate() async {
-    if (_navigated || !mounted) return;
+    if (_navigated || _isDeparting || !mounted) return;
 
     final user = FirebaseAuth.instance.currentUser;
     final refresh = appRouterRefresh;
@@ -117,6 +147,61 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
     final route = launchRouteForDestination(destination);
     if (route == null) return;
 
+    _departureRoute = route;
+
+    final entranceComplete =
+        _entranceController.status == AnimationStatus.completed;
+    final delay = LaunchTiming.departureDelay(
+      elapsedSinceFirstPaint: _elapsedSinceFirstPaint,
+      entranceComplete: entranceComplete,
+      entranceProgress: _entranceController.value,
+    );
+
+    if (delay > Duration.zero) {
+      if (!_departureDelayScheduled) {
+        _departureDelayScheduled = true;
+        Future<void>.delayed(delay, () {
+          _departureDelayScheduled = false;
+          if (mounted) _depart();
+        });
+      }
+      return;
+    }
+
+    await _depart();
+  }
+
+  Future<void> _depart() async {
+    if (_navigated || _isDeparting || !mounted) return;
+
+    final route = _departureRoute;
+    if (route == null) return;
+
+    final entranceComplete =
+        _entranceController.status == AnimationStatus.completed;
+    final delay = LaunchTiming.departureDelay(
+      elapsedSinceFirstPaint: _elapsedSinceFirstPaint,
+      entranceComplete: entranceComplete,
+      entranceProgress: _entranceController.value,
+    );
+
+    if (delay > Duration.zero) {
+      if (!_departureDelayScheduled) {
+        _departureDelayScheduled = true;
+        Future<void>.delayed(delay, () {
+          _departureDelayScheduled = false;
+          if (mounted) _depart();
+        });
+      }
+      return;
+    }
+
+    _isDeparting = true;
+    _shimmerController.stop();
+
+    await _exitController.forward();
+    if (!mounted) return;
+
     _navigated = true;
     context.go(route);
   }
@@ -127,6 +212,7 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
     appRouterRefresh.removeListener(_scheduleNavigation);
     _entranceController.dispose();
     _shimmerController.dispose();
+    _exitController.dispose();
     super.dispose();
   }
 
@@ -155,9 +241,10 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(forceUpdateRequirementProvider, (_, __) {
+      _scheduleNavigation();
+    });
     ref.watch(forceUpdateRequirementProvider);
-    ref.watch(onboardingSeenStorageProvider);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _tryNavigate());
 
     final statusLine = _statusLine();
     final mobileLaunch = _MobileLaunchContent(
@@ -170,26 +257,32 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
     );
 
     if (AppBreakpoints.isWeb(context)) {
-      return _WebLaunchScaffold(
-        logoOpacity: _logoOpacity,
-        logoScale: _logoScale,
-        taglineOpacity: _taglineOpacity,
-        shimmerController: _shimmerController,
-        statusLine: statusLine,
+      return FadeTransition(
+        opacity: _exitOpacity,
+        child: _WebLaunchScaffold(
+          logoOpacity: _logoOpacity,
+          logoScale: _logoScale,
+          taglineOpacity: _taglineOpacity,
+          shimmerController: _shimmerController,
+          statusLine: statusLine,
+        ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.secondary,
-      body: AppBreakpoints.isMobile(context)
-          ? mobileLaunch
-          : _TabletLaunchContent(
-              logoOpacity: _logoOpacity,
-              logoScale: _logoScale,
-              taglineOpacity: _taglineOpacity,
-              shimmerController: _shimmerController,
-              statusLine: statusLine,
-            ),
+    return FadeTransition(
+      opacity: _exitOpacity,
+      child: Scaffold(
+        backgroundColor: AppColors.secondary,
+        body: AppBreakpoints.isMobile(context)
+            ? mobileLaunch
+            : _TabletLaunchContent(
+                logoOpacity: _logoOpacity,
+                logoScale: _logoScale,
+                taglineOpacity: _taglineOpacity,
+                shimmerController: _shimmerController,
+                statusLine: statusLine,
+              ),
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/router/app_router_refresh.dart';
+import 'core/router/app_page_transitions.dart';
 import 'core/constants/route_constants.dart';
 import 'core/layout/app_breakpoints.dart';
 import 'core/widgets/buyer_dashboard_shell.dart';
@@ -68,12 +69,18 @@ final router = GoRouter(
     GoRoute(
       name: RouteConstants.onboarding,
       path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
+      pageBuilder: (context, state) => launchDestinationPage(
+        state: state,
+        child: const OnboardingScreen(),
+      ),
     ),
     GoRoute(
       name: RouteConstants.login,
       path: '/login',
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) => launchDestinationPage(
+        state: state,
+        child: const LoginScreen(),
+      ),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -85,7 +92,10 @@ final router = GoRouter(
             GoRoute(
               name: RouteConstants.home,
               path: '/home',
-              builder: (context, state) => const HomeScreen(),
+              pageBuilder: (context, state) => launchDestinationPage(
+                state: state,
+                child: const HomeScreen(),
+              ),
             ),
           ],
         ),
