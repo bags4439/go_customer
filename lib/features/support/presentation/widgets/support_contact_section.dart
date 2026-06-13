@@ -213,22 +213,34 @@ class SupportHoursRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          day,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-            height: 1.0,
+        Expanded(
+          child: Text(
+            day,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.0,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        Text(
-          hours,
-          style: AppTextStyles.labelLarge.copyWith(
-            fontSize: 13,
-            color: isClosed ? AppColors.textTertiary : AppColors.textPrimary,
-            fontWeight: isClosed ? FontWeight.w400 : FontWeight.w500,
-            height: 1.0,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            hours,
+            textAlign: TextAlign.end,
+            style: AppTextStyles.labelLarge.copyWith(
+              fontSize: 13,
+              color: isClosed ? AppColors.textTertiary : AppColors.textPrimary,
+              fontWeight: isClosed ? FontWeight.w400 : FontWeight.w500,
+              letterSpacing: 0.0,
+              height: 1.0,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

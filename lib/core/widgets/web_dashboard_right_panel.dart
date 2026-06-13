@@ -5,13 +5,13 @@ import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_customer/core/widgets/card_container.dart';
 import 'package:go_customer/core/widgets/web_support_contact_tile.dart';
-import 'package:go_customer/core/widgets/web_support_hours_card.dart';
+import 'package:go_customer/features/support/presentation/widgets/support_contact_section.dart';
 import 'package:go_customer/features/referral/presentation/widgets/referral_promo_card.dart';
 import 'package:go_customer/features/support/presentation/providers/support_providers.dart';
 
 /// Persistent right panel shown on web for home, notifications and profile.
 ///
-/// Width is set by the parent (320px fixed).
+/// Width is set by the parent [Expanded] flex ratio (typically 4 of 9).
 ///
 /// Contains: (1) Customer support — header, hours card, call + WhatsApp tiles.
 /// (2) [ReferralPromoCard].
@@ -77,7 +77,7 @@ class WebDashboardRightPanel extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    const WebSupportHoursCard(),
+                    const SupportHoursCard(),
                     const SizedBox(height: 12),
                     contactAsync.when(
                       loading: () => const SizedBox.shrink(),
