@@ -118,7 +118,7 @@ class HomeEmptyBody extends ConsumerWidget {
                                   child: ElevatedButton(
                                     onPressed: () => GoRouter.of(
                                       context,
-                                    ).go('/preferences/new'),
+                                    ).push('/preferences/new'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: HomeColors.primary,
                                       foregroundColor: Colors.white,

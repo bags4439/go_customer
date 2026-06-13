@@ -6,12 +6,12 @@ import '../../../../core/error/error_handler.dart';
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/layout/web_app_body.dart';
+import '../../../../core/layout/web_app_shell.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../shared/providers/exchange_rate_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/preference_form_provider.dart';
-import '../widgets/preferences_selections_panel.dart';
 import '../widgets/preferences_steps.dart';
 import '../widgets/preferences_widgets.dart';
 
@@ -136,11 +136,14 @@ class _PreferencesNewScreenState extends ConsumerState<PreferencesNewScreen> {
     final body = _buildBody(state, notifier);
 
     if (isWeb) {
-      return WebAppBody(
-        pageTitle: 'Find your car',
-        rightPanel: const PreferencesSelectionsPanel(),
-        onBack: () => _onBack(state, notifier),
-        body: body,
+      return WebAppShell(
+        activeRoute: '/home',
+        child: WebAppBody(
+          pageTitle: 'Find your car',
+          showRightPanel: true,
+          onBack: () => _onBack(state, notifier),
+          body: body,
+        ),
       );
     }
 

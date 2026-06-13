@@ -10,7 +10,6 @@ import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/responsive_layout.dart';
 import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../catalogue/domain/entities/car_make.dart';
 import '../../../catalogue/domain/entities/car_model.dart';
@@ -523,17 +522,10 @@ double _preferencesHorizontalPadding(BuildContext context) {
   if (AppBreakpoints.useMobileShell(context)) {
     return DashboardLayout.bodyContentHorizontalPadding(context);
   }
-  return ResponsiveLayout.contentPadding(context).horizontal;
+  return DashboardLayout.flowScrollPadding(context).horizontal;
 }
 
-double _preferencesFormMaxWidth(BuildContext context) {
-  if (AppBreakpoints.useMobileShell(context)) {
-    return DashboardLayout.contentColumnMaxWidth(context);
-  }
-  return ResponsiveLayout.preferencesFormMaxWidth(context);
-}
-
-/// Centred column with max width for preferences flows.
+/// Mobile shell: centred column with max width. Web shell: full panel width.
 class PreferencesResponsiveColumn extends StatelessWidget {
   final List<Widget> children;
 
@@ -541,21 +533,26 @@ class PreferencesResponsiveColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final horizontal = _preferencesHorizontalPadding(context);
+    final column = Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontal),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    );
+
+    if (AppBreakpoints.useWebShell(context)) {
+      return column;
+    }
+
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: _preferencesFormMaxWidth(context),
+          maxWidth: DashboardLayout.contentColumnMaxWidth(context),
         ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: _preferencesHorizontalPadding(context),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          ),
-        ),
+        child: column,
       ),
     );
   }

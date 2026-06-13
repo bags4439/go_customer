@@ -10,7 +10,8 @@ class ResponsiveLayout {
     return double.infinity;
   }
 
-  /// Preferences wizard / edit form: tablet 560dp, web 520dp centred.
+  /// Preferences on mobile shell (portrait tablet): centred column cap.
+  /// Web [WebAppBody] panels use full column width — not this helper.
   static double preferencesFormMaxWidth(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     if (w >= 960) return 520;

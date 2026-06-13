@@ -11,6 +11,9 @@ class WebAppBody extends StatelessWidget {
   final VoidCallback? onBack;
   final List<Widget> appBarActions;
 
+  /// When false, [body] fills the content area with no right column.
+  final bool showRightPanel;
+
   const WebAppBody({
     super.key,
     required this.body,
@@ -18,6 +21,7 @@ class WebAppBody extends StatelessWidget {
     required this.pageTitle,
     this.onBack,
     this.appBarActions = const [],
+    this.showRightPanel = true,
   });
 
   @override
@@ -44,14 +48,19 @@ class WebAppBody extends StatelessWidget {
         ),
         actions: appBarActions,
       ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(flex: 5, child: body),
-          Container(width: 0.5, color: AppColors.borderSolid),
-          Expanded(flex: 4, child: rightPanel ?? WebDashboardRightPanel()),
-        ],
-      ),
+      body: showRightPanel
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(flex: 5, child: body),
+                Container(width: 0.5, color: AppColors.borderSolid),
+                Expanded(
+                  flex: 4,
+                  child: rightPanel ?? const WebDashboardRightPanel(),
+                ),
+              ],
+            )
+          : body,
     );
   }
 }
