@@ -167,7 +167,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: DashboardLayout.bodyScrollPadding(
+                  padding: DashboardLayout.flowScrollPadding(
                     context,
                     top: 16,
                     bottom: 24 + profileShellFloatingNavExtra(context),

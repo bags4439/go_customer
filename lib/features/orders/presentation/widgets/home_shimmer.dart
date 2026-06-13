@@ -14,7 +14,7 @@ class HomeShimmer extends StatelessWidget {
       baseColor: HomeColors.bgSecondary,
       highlightColor: Colors.white,
       child: Padding(
-        padding: DashboardLayout.bodyScrollPadding(
+        padding: DashboardLayout.flowScrollPadding(
           context,
           top: 16,
           bottom: homeShellFloatingNavScrollBottomExtra(context),

@@ -231,7 +231,7 @@ class _NotificationsBody extends ConsumerWidget {
         return Column(
           children: [
             Padding(
-              padding: DashboardLayout.bodyScrollPadding(context, top: 12),
+              padding: DashboardLayout.flowScrollPadding(context, top: 12),
               child: const GuideHint(guideKey: GuideKeys.notifications),
             ),
             const _FilterTabs(),
@@ -275,7 +275,7 @@ class _FilterTabs extends ConsumerWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: DashboardLayout.bodyScrollPadding(context, top: 12, bottom: 12),
+      padding: DashboardLayout.flowScrollPadding(context, top: 12, bottom: 12),
       child: Row(
         children: [
           _FilterPill(
@@ -596,7 +596,7 @@ class _NotificationsListState extends ConsumerState<_NotificationsList>
 
     return ListView.builder(
       controller: _scrollController,
-      padding: DashboardLayout.bodyScrollPadding(
+      padding: DashboardLayout.flowScrollPadding(
         context,
         top: 8,
         bottom: 8 + _notificationsShellFloatingNavExtra(context),
@@ -997,7 +997,7 @@ class _NotificationsError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: DashboardLayout.bodyScrollPadding(
+        padding: DashboardLayout.flowScrollPadding(
           context,
           top: 24,
           bottom: 24 + _notificationsShellFloatingNavExtra(context),
@@ -1055,7 +1055,7 @@ class _ShimmerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: DashboardLayout.bodyScrollPadding(
+      padding: DashboardLayout.flowScrollPadding(
         context,
         top: 8,
         bottom: 8 + _notificationsShellFloatingNavExtra(context),

@@ -7,6 +7,7 @@ import '../../../guide/core/constants/guide_keys.dart';
 import '../../../guide/presentation/widgets/guide_contextual_hint_banner.dart';
 import 'home_empty_how_it_works.dart';
 import 'home_empty_illustrations.dart';
+import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import 'home_layout_utils.dart';
 import 'home_theme.dart';
@@ -18,19 +19,16 @@ class HomeEmptyBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 800),
-              child: SingleChildScrollView(
-                padding: DashboardLayout.bodyScrollPadding(
-                  context,
-                  top: 20,
-                  bottom: 20 + homeShellFloatingNavScrollBottomExtra(context),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+    final isWeb = AppBreakpoints.useWebShell(context);
+    final scrollView = SingleChildScrollView(
+      padding: DashboardLayout.flowScrollPadding(
+        context,
+        top: 20,
+        bottom: 20 + homeShellFloatingNavScrollBottomExtra(context),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                     const GuideHint(guideKey: GuideKeys.homeEmpty),
                     Text(
                       homeTimeGreeting(),
@@ -213,9 +211,19 @@ class HomeEmptyBody extends ConsumerWidget {
                     const SizedBox(height: 32),
                   ],
                 ),
-              ),
-            ),
-          ),
-        );
+      );
+
+    if (isWeb) {
+      return SafeArea(child: scrollView);
+    }
+
+    return SafeArea(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: scrollView,
+        ),
+      ),
+    );
   }
 }

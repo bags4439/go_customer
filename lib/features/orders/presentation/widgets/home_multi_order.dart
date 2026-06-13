@@ -213,17 +213,21 @@ class HomeMultiOrderBody extends ConsumerWidget {
       if (!isWeb) const ReferralPromoCard(),
     ];
 
+    final listView = ListView(
+      padding: DashboardLayout.flowScrollPadding(
+        context,
+        top: 16,
+        bottom: 24 + homeShellFloatingNavScrollBottomExtra(context),
+      ),
+      children: listChildren,
+    );
+
+    if (isWeb) return listView;
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 800),
-        child: ListView(
-          padding: DashboardLayout.bodyScrollPadding(
-            context,
-            top: 16,
-            bottom: 24 + homeShellFloatingNavScrollBottomExtra(context),
-          ),
-          children: listChildren,
-        ),
+        child: listView,
       ),
     );
   }

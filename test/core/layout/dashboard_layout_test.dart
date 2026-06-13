@@ -111,5 +111,36 @@ void main() {
         DashboardLayout.contentMaxWidth,
       );
     });
+
+    testWidgets('flowScrollPadding uses 20dp horizontal inset on web shell', (
+      tester,
+    ) async {
+      _setViewport(tester, const Size(1200, 800));
+
+      await tester.pumpWidget(
+        _probe((context) {
+          final padding = DashboardLayout.flowScrollPadding(context, top: 8);
+          expect(padding.left, 20);
+          expect(padding.right, 20);
+          expect(padding.top, 8);
+          return const SizedBox();
+        }),
+      );
+    });
+
+    testWidgets('bodyScrollPadding has no horizontal inset on web shell', (
+      tester,
+    ) async {
+      _setViewport(tester, const Size(1200, 800));
+
+      await tester.pumpWidget(
+        _probe((context) {
+          final padding = DashboardLayout.bodyScrollPadding(context, top: 8);
+          expect(padding.left, 0);
+          expect(padding.right, 0);
+          return const SizedBox();
+        }),
+      );
+    });
   });
 }

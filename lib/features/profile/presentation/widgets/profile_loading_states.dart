@@ -15,7 +15,7 @@ class ProfileBodyShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: DashboardLayout.bodyScrollPadding(
+      padding: DashboardLayout.flowScrollPadding(
         context,
         top: 16,
         bottom: 16 + profileShellFloatingNavExtra(context),
