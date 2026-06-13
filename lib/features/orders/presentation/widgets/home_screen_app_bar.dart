@@ -6,7 +6,6 @@ import 'package:go_customer/core/widgets/dashboard_mobile_app_bar.dart';
 
 import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import 'home_app_logo.dart';
-import 'home_theme.dart';
 
 /// App bar for [HomeScreen] on mobile shell (logo + support) and web shell (title).
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -36,7 +35,7 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(height: 0.5, color: HomeColors.border),
+          child: Container(height: 0.5, color: AppColors.borderSolid),
         ),
       );
     }

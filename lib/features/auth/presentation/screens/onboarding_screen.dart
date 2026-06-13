@@ -6,6 +6,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../../core/layout/acquisition_layout.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../data/onboarding_slides.dart';
 import '../providers/onboarding_seen_provider.dart';
@@ -300,13 +301,11 @@ class _MobileBottomPanel extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 52,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: onNext,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: slide.accentColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: AppTheme.buttonPillShape,
+                style: AppButtonStyles.accentFill(
+                  slide.accentColor,
+                  minimumHeight: 52,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -635,14 +634,9 @@ class _WebActionPanel extends StatelessWidget {
                           SizedBox(
                             width: double.infinity,
                             height: 48,
-                            child: ElevatedButton(
+                            child: FilledButton(
                               onPressed: onNext,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: slide.accentColor,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: AppTheme.buttonPillShape,
-                              ),
+                              style: AppButtonStyles.accentFill(slide.accentColor),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [

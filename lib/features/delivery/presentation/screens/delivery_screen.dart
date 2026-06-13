@@ -12,6 +12,7 @@ import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/responsive_layout.dart';
@@ -1278,7 +1279,7 @@ class _PaymentRequestMiniCard extends StatelessWidget {
               ],
             ),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               if (onOpenPaymentRequest != null) {
                 onOpenPaymentRequest!(payment.id);
@@ -1288,12 +1289,7 @@ class _PaymentRequestMiniCard extends StatelessWidget {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              foregroundColor: AppColors.background,
-              elevation: 0,
-              minimumSize: const Size(72, 40),
-            ),
+            style: AppButtonStyles.compactBrand(),
             child: Text(
               'Pay',
               style: AppTextStyles.buttonMedium.copyWith(
@@ -1594,7 +1590,7 @@ class _State5SelfPickupState extends ConsumerState<_State5SelfPickup> {
                                 SizedBox(
                                   width: double.infinity,
                                   height: 48,
-                                  child: ElevatedButton.icon(
+                                  child: FilledButton.icon(
                                     onPressed: _openDirections,
                                     icon: const Icon(
                                       Icons.directions_rounded,
@@ -1606,11 +1602,7 @@ class _State5SelfPickupState extends ConsumerState<_State5SelfPickup> {
                                         color: AppColors.background,
                                       ),
                                     ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.secondary,
-                                      foregroundColor: AppColors.background,
-                                      elevation: 0,
-                                    ),
+                                    style: AppButtonStyles.primary(),
                                   ),
                                 ),
                             ],
@@ -1664,14 +1656,9 @@ class _State5SelfPickupState extends ConsumerState<_State5SelfPickup> {
               20,
               14 + MediaQuery.paddingOf(context).bottom,
             ),
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: _isConfirming ? null : _confirm,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-                foregroundColor: AppColors.background,
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 52),
-              ),
+              style: AppButtonStyles.success(minimumHeight: 52),
               child: _isConfirming
                   ? const SizedBox(
                       width: 20,
@@ -1741,7 +1728,7 @@ class _LocationInputState extends StatelessWidget {
             'Where should we deliver your vehicle?',
             style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppColors.primary,
+              color: AppColors.foreground,
             ),
           ),
           const SizedBox(height: 8),
@@ -1957,7 +1944,7 @@ class _LocationSetState extends StatelessWidget {
                       'Delivery address',
                       style: AppTextStyles.labelLarge.copyWith(
                         fontSize: 13,
-                        color: AppColors.primary,
+                        color: AppColors.foreground,
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -2058,14 +2045,9 @@ class _LocationSetState extends StatelessWidget {
             const SizedBox(height: 24),
           SizedBox(
             height: 52,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: isConfirming ? null : onConfirm,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.borderSolid,
-                minimumSize: const Size(double.infinity, 52),
-              ),
+              style: AppButtonStyles.success(minimumHeight: 52),
               child: isConfirming
                   ? const SizedBox(
                       width: 20,
@@ -2419,7 +2401,7 @@ class _ConfirmedState extends ConsumerWidget {
             'Vehicle received!',
             textAlign: TextAlign.center,
             style: AppTextStyles.titleLarge
-                .copyWith(fontWeight: FontWeight.w600, color: AppColors.primary),
+                .copyWith(fontWeight: FontWeight.w600, color: AppColors.foreground),
           ),
           const SizedBox(height: 12),
           Text(
@@ -2435,14 +2417,9 @@ class _ConfirmedState extends ConsumerWidget {
           SizedBox(
             height: 52,
             width: double.infinity,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: () =>
                   OrderDetailWebNavigation.openReview(context, ref, orderId),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 52),
-              ),
               child: Text(
                 'Leave feedback →',
                 style: AppTextStyles.buttonLarge,

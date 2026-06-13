@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../repairs/presentation/widgets/repair_complete_photos_row.dart';
 import '../../../repairs/presentation/widgets/repair_photo_thumbnail_strip.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -192,16 +193,13 @@ class _RepairStatusCardState extends ConsumerState<RepairStatusCard>
         const SizedBox(height: 10),
         SizedBox(
           height: 44,
-          child: ElevatedButton(
+          child: FilledButton(
             onPressed: () => OrderDetailWebNavigation.openRepair(
               context,
               ref,
               widget.orderId,
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              foregroundColor: Colors.white,
-              elevation: 0,
+            style: AppButtonStyles.primary(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               ),

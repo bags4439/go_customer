@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../../delivery/presentation/providers/delivery_providers.dart';
@@ -31,11 +32,6 @@ import 'clearance_status_card.dart';
 import 'repair_status_card.dart';
 import 'shipping_status_card.dart';
 
-const _kPrimary = 0xFF378ADD;
-const _kSuccess = 0xFF1D9E75;
-const _kTextSecondary = 0xFF666666;
-const _kDeliveredGreen = 0xFF1A4731;
-const _kDeliveredSub = 0xFF27500A;
 
 bool _isPostVehicleBalancePaid(String status) {
   const s = {
@@ -340,10 +336,10 @@ class _CompletedRow extends ConsumerWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEAF3DE),
+                    color: AppColors.successMutedBackground,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: const Color(_kSuccess).withValues(alpha: 0.25),
+                      color: AppColors.success.withValues(alpha: 0.25),
                       width: 0.5,
                     ),
                   ),
@@ -352,7 +348,7 @@ class _CompletedRow extends ConsumerWidget {
                       const Icon(
                         Icons.star_outline_rounded,
                         size: 16,
-                        color: Color(_kSuccess),
+                        color: AppColors.success,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -806,18 +802,18 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
         icon: const Icon(
           Icons.account_balance_outlined,
           size: 15,
-          color: Color(_kPrimary),
+          color: AppColors.brand,
         ),
         label: Text(
           OrderTimelineConstants.chooseClearance,
           style: AppTextStyles.bodySmall.copyWith(
             fontWeight: FontWeight.w500,
-            color: const Color(_kPrimary),
+            color: AppColors.brand,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(_kPrimary),
-          side: const BorderSide(color: Color(_kPrimary), width: 1),
+          foregroundColor: AppColors.brand,
+          side: const BorderSide(color: AppColors.brand, width: 1),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           minimumSize: const Size(0, 44),
         ),
@@ -842,7 +838,7 @@ class OrderTimelineSubActionArea extends ConsumerWidget {
           Text(
             sub,
             style: AppTextStyles.caption.copyWith(
-              color: const Color(_kTextSecondary),
+              color: AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -882,7 +878,7 @@ class _ViewVehicleOptionsButton extends ConsumerWidget {
           style: AppTextStyles.caption.copyWith(
             color: pendingCount > 0
                 ? AppColors.amberText
-                : const Color(_kTextSecondary),
+                : AppColors.textSecondary,
             height: 1.4,
             fontWeight:
                 pendingCount > 0 ? FontWeight.w500 : FontWeight.w400,
@@ -913,15 +909,7 @@ class _ViewVehicleOptionsButton extends ConsumerWidget {
                 color: Colors.white,
               ),
             ),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(_kPrimary),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              minimumSize: const Size(0, 48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
+            style: AppButtonStyles.timelinePill(),
           ),
         ),
       ],
@@ -1067,17 +1055,11 @@ class _DeliveryActionCard extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () => OrderDetailWebNavigation.openDelivery(
                       context,
                       ref,
                       orderId,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 48),
                     ),
                     child: Text(
                       'Track delivery →',
@@ -1173,14 +1155,9 @@ class _DeliveryActionCard extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           height: 48,
-          child: ElevatedButton(
+          child: FilledButton(
             onPressed: onTap,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: buttonColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              minimumSize: const Size(double.infinity, 48),
-            ),
+            style: AppButtonStyles.filledColor(buttonColor),
             child: Text(buttonLabel, style: AppTextStyles.buttonMedium),
           ),
         ),
@@ -1201,18 +1178,18 @@ Widget _buildChatButton(
       icon: const Icon(
         Icons.chat_bubble_outline_rounded,
         size: 15,
-        color: Color(_kPrimary),
+        color: AppColors.brand,
       ),
       label: Text(
         OrderTimelineConstants.chatWithAgent,
         style: AppTextStyles.bodySmall.copyWith(
           fontWeight: FontWeight.w500,
-          color: const Color(_kPrimary),
+          color: AppColors.brand,
         ),
       ),
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(_kPrimary),
-        side: const BorderSide(color: Color(_kPrimary), width: 1),
+        foregroundColor: AppColors.brand,
+        side: const BorderSide(color: AppColors.brand, width: 1),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         minimumSize: const Size(0, 44),
       ),
@@ -1231,10 +1208,10 @@ class _DeliveredCard extends ConsumerWidget {
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF3DE),
+        color: AppColors.successMutedBackground,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: const Color(_kSuccess).withValues(alpha: 0.25),
+          color: AppColors.success.withValues(alpha: 0.25),
           width: 1,
         ),
       ),
@@ -1247,7 +1224,7 @@ class _DeliveredCard extends ConsumerWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(_kSuccess),
+                  color: AppColors.success,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -1264,14 +1241,14 @@ class _DeliveredCard extends ConsumerWidget {
                     Text(
                       OrderTimelineConstants.deliveredTitle,
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: const Color(_kDeliveredGreen),
+                        color: AppColors.successHeroDark,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       OrderTimelineConstants.deliveredThanks,
                       style: AppTextStyles.cardLabel.copyWith(
-                        color: const Color(_kDeliveredSub),
+                        color: AppColors.successMutedForeground,
                       ),
                     ),
                   ],
@@ -1311,12 +1288,7 @@ class _DeliveredCard extends ConsumerWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(_kSuccess),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
+                  style: AppButtonStyles.success(minimumHeight: 48),
                 ),
               );
             },
@@ -1373,7 +1345,7 @@ class _SubmittedReviewCard extends ConsumerWidget {
                   i < stars ? Icons.star_rounded : Icons.star_outline_rounded,
                   size: 14,
                   color: i < stars
-                      ? const Color(0xFFFFB800)
+                      ? AppColors.ratingStar
                       : AppColors.borderSolid,
                 ),
               ),
@@ -1593,7 +1565,7 @@ class _AgentDetailCard extends StatelessWidget {
                         const Icon(
                           Icons.star_rounded,
                           size: 13,
-                          color: Color(0xFFFFB800),
+                          color: AppColors.ratingStar,
                         ),
                         const SizedBox(width: 3),
                         Text(
@@ -1651,7 +1623,7 @@ class _AgentDetailCard extends StatelessWidget {
               Expanded(
                 child: SizedBox(
                   height: 48,
-                  child: ElevatedButton.icon(
+                  child: FilledButton.icon(
                     onPressed: onChatTap,
                     icon: const Icon(
                       Icons.chat_bubble_outline_rounded,
@@ -1661,11 +1633,6 @@ class _AgentDetailCard extends StatelessWidget {
                     label: Text(
                       'Chat',
                       style: AppTextStyles.buttonLarge.copyWith(fontSize: 13.5),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
                     ),
                   ),
                 ),
@@ -1776,10 +1743,10 @@ class _PaidPill extends ConsumerWidget {
       margin: const EdgeInsets.only(top: 6),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF3DE),
+        color: AppColors.successMutedBackground,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(_kSuccess).withValues(alpha: 0.3),
+          color: AppColors.success.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -1789,14 +1756,14 @@ class _PaidPill extends ConsumerWidget {
           const Icon(
             Icons.check_circle_rounded,
             size: 13,
-            color: Color(_kSuccess),
+            color: AppColors.success,
           ),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
               displayText,
               style: AppTextStyles.cardValue.copyWith(
-                color: const Color(_kSuccess),
+                color: AppColors.success,
               ),
             ),
           ),

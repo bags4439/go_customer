@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeMetricCard extends StatelessWidget {
   final String label;
@@ -24,12 +24,12 @@ class HomeMetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: HomeColors.bgPrimary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: pulse
-              ? HomeColors.danger.withValues(alpha: 0.3)
-              : HomeColors.border,
+              ? AppColors.danger.withValues(alpha: 0.3)
+              : AppColors.borderSolid,
           width: pulse ? 1.5 : 0.5,
         ),
         boxShadow: [
@@ -67,7 +67,7 @@ class HomeMetricCard extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
-              color: HomeColors.textSecondary,
+              color: AppColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w400,
               height: 1.0,

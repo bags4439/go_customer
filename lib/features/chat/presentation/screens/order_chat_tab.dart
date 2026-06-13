@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_customer/core/theme/app_button_styles.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,7 +18,6 @@ import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
 import '../widgets/chat_message_widgets.dart';
 
-const _kReceivedBg = Color(0xFFFFFFFF);
 
 /// Date divider label for a given date (Today, Yesterday, or formatted date).
 String _dateDividerLabel(DateTime date) {
@@ -228,31 +229,31 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
               }
               return Container(
                 padding: const EdgeInsets.fromLTRB(18, 6, 18, 4),
-                color: const Color(0xFFF2F1ED),
+                color: AppColors.chatSurface,
                 child: Row(
                   children: [
                     Container(
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: _kReceivedBg,
+                        color: AppColors.background,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFFE8E7E2),
+                          color: AppColors.chatSurfaceBorder,
                           width: 0.5,
                         ),
                       ),
                       child: const Icon(
                         Icons.more_horiz_rounded,
                         size: 16,
-                        color: Color(0xFFAAAAAA),
+                        color: AppColors.textTertiary,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Agent is typing…',
                       style: AppTextStyles.cardLabel.copyWith(
-                        color: const Color(0xFF999999),
+                        color: AppColors.textMuted,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -275,7 +276,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                 return false;
               },
               child: ColoredBox(
-                color: const Color(0xFFF2F1ED),
+                color: AppColors.chatSurface,
                 child: displayMessages.isEmpty
                     ? Center(
                         child: Padding(
@@ -290,14 +291,14 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                   color: Colors.white,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFFE0DFD8),
+                                    color: AppColors.borderSolid,
                                     width: 0.5,
                                   ),
                                 ),
                                 child: const Icon(
                                   Icons.chat_bubble_outline,
                                   size: 26,
-                                  color: Color(0xFFBBBBBB),
+                                  color: AppColors.textDisabled,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -305,7 +306,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                 'Your conversation\nis private',
                                 textAlign: TextAlign.center,
                                 style: AppTextStyles.titleSmall.copyWith(
-                                  color: const Color(0xFF1A1A18),
+                                  color: AppColors.textPrimary,
                                   height: 1.35,
                                 ),
                               ),
@@ -316,7 +317,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                 textAlign: TextAlign.center,
                                 style: AppTextStyles.bodySmall.copyWith(
                                   fontSize: 12.5,
-                                  color: const Color(0xFF999999),
+                                  color: AppColors.textMuted,
                                   height: 1.6,
                                 ),
                               ),
@@ -405,7 +406,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                           999,
                                         ),
                                         border: Border.all(
-                                          color: const Color(0xFFE0DFD8),
+                                          color: AppColors.borderSolid,
                                           width: 0.5,
                                         ),
                                         boxShadow: [
@@ -423,7 +424,7 @@ class _OrderChatTabState extends ConsumerState<OrderChatTab> {
                                         style: AppTextStyles.caption.copyWith(
                                           fontSize: 11.5,
                                           fontWeight: FontWeight.w500,
-                                          color: const Color(0xFF888888),
+                                          color: AppColors.textPlaceholder,
                                           letterSpacing: 0.1,
                                         ),
                                       ),
@@ -607,7 +608,7 @@ class _ImagePreviewStrip extends ConsumerWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFEEEDE8), width: 0.5)),
+        border: Border(top: BorderSide(color: AppColors.dividerSubtle, width: 0.5)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -621,7 +622,7 @@ class _ImagePreviewStrip extends ConsumerWidget {
                   '${images.length == 1 ? 'photo' : 'photos'} selected',
                   style: AppTextStyles.labelLarge.copyWith(
                     fontSize: 13,
-                    color: const Color(0xFF1A1A18),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const Spacer(),
@@ -639,13 +640,13 @@ class _ImagePreviewStrip extends ConsumerWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0EFE9),
+                      color: AppColors.hoverSurface,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       'Clear all',
                       style: AppTextStyles.cardLabel.copyWith(
-                        color: const Color(0xFF888888),
+                        color: AppColors.textPlaceholder,
                       ),
                     ),
                   ),
@@ -677,13 +678,8 @@ class _ImagePreviewStrip extends ConsumerWidget {
             child: SizedBox(
               width: double.infinity,
               height: 48,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: () => sendSelectedImagesForOrder(ref, orderId),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF378ADD),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -754,7 +750,7 @@ class _ImageThumb extends StatelessWidget {
                   width: 20,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A18),
+                    color: AppColors.textPrimary,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 1.5),
                   ),
@@ -987,7 +983,7 @@ class _VideoPreviewBar extends ConsumerWidget {
     if (videoPath == null) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      color: const Color(0xFFF5F4F0),
+      color: AppColors.surface,
       child: Row(
         children: [
           ClipRRect(
@@ -1197,7 +1193,7 @@ class _InputBarState extends ConsumerState<_InputBar> {
                 width: 36,
                 height: 3.5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDDDDD8),
+                  color: AppColors.dividerMuted,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1210,7 +1206,7 @@ class _InputBarState extends ConsumerState<_InputBar> {
                     _AttachTile(
                       icon: Icons.photo_library_outlined,
                       label: 'Photos',
-                      color: const Color(0xFF5C85DE),
+                      color: AppColors.brandLight,
                       onTap: () {
                         Navigator.pop(ctx);
                         _pickImages();
@@ -1219,7 +1215,7 @@ class _InputBarState extends ConsumerState<_InputBar> {
                     _AttachTile(
                       icon: Icons.camera_alt_outlined,
                       label: 'Camera',
-                      color: const Color(0xFF1D9E75),
+                      color: AppColors.success,
                       onTap: () {
                         Navigator.pop(ctx);
                         _pickImageFromCamera();
@@ -1228,7 +1224,7 @@ class _InputBarState extends ConsumerState<_InputBar> {
                     _AttachTile(
                       icon: Icons.videocam_outlined,
                       label: 'Video',
-                      color: const Color(0xFFE24B4A),
+                      color: AppColors.danger,
                       onTap: () {
                         Navigator.pop(ctx);
                         _pickVideo();
@@ -1237,7 +1233,7 @@ class _InputBarState extends ConsumerState<_InputBar> {
                     _AttachTileDisabled(
                       icon: Icons.insert_drive_file_outlined,
                       label: 'File',
-                      color: const Color(0xFFBA7517),
+                      color: AppColors.warning,
                     ),
                   ],
                 ),
@@ -1259,7 +1255,7 @@ class _InputBarState extends ConsumerState<_InputBar> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFEEEDE8), width: 0.5)),
+        border: Border(top: BorderSide(color: AppColors.dividerSubtle, width: 0.5)),
       ),
       child: SafeArea(
         top: false,
@@ -1276,15 +1272,15 @@ class _InputBarState extends ConsumerState<_InputBar> {
                     width: 34,
                     height: 34,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF0EFE9),
+                      color: AppColors.hoverSurface,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.add,
                       size: 18,
                       color: isRecording
-                          ? const Color(0xFFCCCCCC)
-                          : const Color(0xFF378ADD),
+                          ? AppColors.textCaption
+                          : AppColors.brand,
                     ),
                   ),
                 ),
@@ -1299,13 +1295,13 @@ class _InputBarState extends ConsumerState<_InputBar> {
                   ),
                   decoration: BoxDecoration(
                     color: isRecording
-                        ? const Color(0xFFFFF0EF)
-                        : const Color(0xFFF5F4F0),
+                        ? AppColors.recordingDangerBackground
+                        : AppColors.surface,
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
                       color: isRecording
-                          ? const Color(0xFFF5C5C2)
-                          : const Color(0xFFE8E7E2),
+                          ? AppColors.recordingDangerBorder
+                          : AppColors.chatSurfaceBorder,
                       width: 0.5,
                     ),
                   ),
@@ -1316,13 +1312,13 @@ class _InputBarState extends ConsumerState<_InputBar> {
                           minLines: 1,
                           maxLines: 5,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: const Color(0xFF1A1A18),
+                            color: AppColors.textPrimary,
                             height: 1.4,
                           ),
                           decoration: InputDecoration(
                             hintText: 'Message…',
                             hintStyle: AppTextStyles.bodyMedium.copyWith(
-                              color: const Color(0xFFBBBBBB),
+                              color: AppColors.textDisabled,
                             ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
@@ -1348,8 +1344,8 @@ class _InputBarState extends ConsumerState<_InputBar> {
                     height: 36,
                     decoration: BoxDecoration(
                       color: hasText || isRecording
-                          ? const Color(0xFF378ADD)
-                          : const Color(0xFFF0EFE9),
+                          ? AppColors.brand
+                          : AppColors.hoverSurface,
                       shape: BoxShape.circle,
                     ),
                     child: AnimatedSwitcher(
@@ -1370,7 +1366,7 @@ class _InputBarState extends ConsumerState<_InputBar> {
                         size: 17,
                         color: hasText || isRecording
                             ? Colors.white
-                            : const Color(0xFF378ADD),
+                            : AppColors.brand,
                       ),
                     ),
                   ),
@@ -1414,7 +1410,7 @@ class _MessageActionSheet extends StatelessWidget {
                 height: 3.5,
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDDDDD8),
+                  color: AppColors.dividerMuted,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1422,7 +1418,7 @@ class _MessageActionSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F8F6),
+                color: AppColors.composerBackground,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -1447,12 +1443,12 @@ class _MessageActionSheet extends StatelessWidget {
               Container(
                 height: 0.5,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: const Color(0xFFEEEDE8),
+                color: AppColors.dividerSubtle,
               ),
               _ActionTile(
                 icon: Icons.delete_outline_rounded,
                 label: 'Delete for everyone',
-                color: const Color(0xFFE24B4A),
+                color: AppColors.danger,
                 onTap: () => Navigator.of(context).pop('delete'),
               ),
             ],
@@ -1493,8 +1489,8 @@ class _FullScreenVideoPageState extends State<_FullScreenVideoPage> {
           allowMuting: true,
           showControls: true,
           materialProgressColors: ChewieProgressColors(
-            playedColor: const Color(0xFF378ADD),
-            handleColor: const Color(0xFF378ADD),
+            playedColor: AppColors.brand,
+            handleColor: AppColors.brand,
           ),
         );
       });
@@ -1570,7 +1566,7 @@ class _RecordingIndicatorState extends State<_RecordingIndicator>
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Color(0xFFE24B4A),
+                color: AppColors.danger,
                 shape: BoxShape.circle,
               ),
             ),
@@ -1579,7 +1575,7 @@ class _RecordingIndicatorState extends State<_RecordingIndicator>
           Text(
             'Recording…',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: const Color(0xFFE24B4A),
+              color: AppColors.danger,
             ),
           ),
         ],
@@ -1627,7 +1623,7 @@ class _AttachTile extends StatelessWidget {
             label,
             style: AppTextStyles.caption.copyWith(
               fontSize: 11.5,
-              color: const Color(0xFF888888),
+              color: AppColors.textPlaceholder,
             ),
           ),
         ],
@@ -1704,7 +1700,7 @@ class _AttachTileDisabled extends StatelessWidget {
                     ),
                   ],
                 ),
-                backgroundColor: const Color(0xFF1A1A18),
+                backgroundColor: AppColors.textPrimary,
                 behavior: SnackBarBehavior.floating,
                 duration: const Duration(seconds: 4),
                 shape: RoundedRectangleBorder(
@@ -1747,7 +1743,7 @@ class _AttachTileDisabled extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A18),
+                      color: AppColors.textPrimary,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -1768,7 +1764,7 @@ class _AttachTileDisabled extends StatelessWidget {
               label,
               style: AppTextStyles.caption.copyWith(
                 fontSize: 11.5,
-                color: const Color(0xFF888888),
+                color: AppColors.textPlaceholder,
               ),
             ),
           ],
@@ -1789,7 +1785,7 @@ class _ReplyPreviewBar extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFEEEDE8), width: 0.5)),
+        border: Border(top: BorderSide(color: AppColors.dividerSubtle, width: 0.5)),
       ),
       padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
       child: Row(
@@ -1799,7 +1795,7 @@ class _ReplyPreviewBar extends StatelessWidget {
             width: 3,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFF378ADD),
+              color: AppColors.brand,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1814,7 +1810,7 @@ class _ReplyPreviewBar extends StatelessWidget {
                   style: AppTextStyles.caption.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF378ADD),
+                    color: AppColors.brand,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1824,7 +1820,7 @@ class _ReplyPreviewBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodySmall.copyWith(
                     fontSize: 12.5,
-                    color: const Color(0xFF888888),
+                    color: AppColors.textPlaceholder,
                     height: 1.3,
                   ),
                 ),
@@ -1837,13 +1833,13 @@ class _ReplyPreviewBar extends StatelessWidget {
               width: 28,
               height: 28,
               decoration: const BoxDecoration(
-                color: Color(0xFFF0EFE9),
+                color: AppColors.hoverSurface,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.close_rounded,
                 size: 16,
-                color: Color(0xFF888888),
+                color: AppColors.textPlaceholder,
               ),
             ),
           ),
@@ -1868,7 +1864,7 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = color ?? const Color(0xFF1A1A18);
+    final fg = color ?? AppColors.textPrimary;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -1912,7 +1908,7 @@ class _DeleteConfirmSheet extends StatelessWidget {
                 height: 3.5,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDDDDD8),
+                  color: AppColors.dividerMuted,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1921,12 +1917,12 @@ class _DeleteConfirmSheet extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: const BoxDecoration(
-                color: Color(0xFFFCEBEB),
+                color: AppColors.dangerMutedBackground,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.delete_outline_rounded,
-                color: Color(0xFFE24B4A),
+                color: AppColors.danger,
                 size: 26,
               ),
             ),
@@ -1942,7 +1938,7 @@ class _DeleteConfirmSheet extends StatelessWidget {
               ' conversation.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall.copyWith(
-                color: const Color(0xFF888888),
+                color: AppColors.textPlaceholder,
                 height: 1.5,
               ),
             ),
@@ -1950,13 +1946,9 @@ class _DeleteConfirmSheet extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: onConfirm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE24B4A),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                ),
+                style: AppButtonStyles.destructive(minimumHeight: 50),
                 child: Text(
                   'Delete for everyone',
                   style: AppTextStyles.buttonLarge
@@ -1971,7 +1963,7 @@ class _DeleteConfirmSheet extends StatelessWidget {
               child: TextButton(
                 onPressed: onCancel,
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF888888),
+                  foregroundColor: AppColors.textSecondary,
                 ),
                 child: Text(
                   'Cancel',

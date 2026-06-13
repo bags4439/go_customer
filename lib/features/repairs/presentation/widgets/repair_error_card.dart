@@ -22,19 +22,15 @@ class RepairErrorCard extends StatelessWidget {
             Text(
               RepairConstants.errorMessage,
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primary),
+              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.foreground),
             ),
             const SizedBox(height: 24),
             SizedBox(
               height: 48,
-              child: ElevatedButton.icon(
+              child: FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 20),
                 label: const Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                ),
               ),
             ),
           ],

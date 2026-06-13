@@ -77,7 +77,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           Text(
             NotificationConstants.appBarTitle,
             style: AppTextStyles.appBarTitle.copyWith(
-              color: AppColors.primary,
+              color: AppColors.foreground,
             ),
           ),
           const SizedBox(height: 2),
@@ -126,7 +126,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       titleSpacing: 20,
       title: Text(
         NotificationConstants.appBarTitle,
-        style: AppTextStyles.appBarTitle.copyWith(color: AppColors.primary),
+        style: AppTextStyles.appBarTitle.copyWith(color: AppColors.foreground),
       ),
       actions: [
         const GuideHelpButton(),
@@ -461,15 +461,15 @@ class _FilterPill extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
-        splashColor: const Color(0xFFE6F1FB),
+        splashColor: AppColors.infoBackground,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? const Color(0xFFE6F1FB) : Colors.transparent,
+            color: isActive ? AppColors.infoBackground : Colors.transparent,
             border: Border.all(
-              color: isActive ? const Color(0xFFB5D4F4) : AppColors.border,
+              color: isActive ? AppColors.filterActiveBorder : AppColors.border,
             ),
             borderRadius: BorderRadius.circular(20),
           ),
@@ -481,7 +481,7 @@ class _FilterPill extends StatelessWidget {
                 style: AppTextStyles.bodySmall.copyWith(
                   fontSize: 13,
                   color: isActive
-                      ? const Color(0xFF185FA5)
+                      ? AppColors.accent
                       : Theme.of(
                           context,
                         ).colorScheme.onSurface.withValues(alpha: 0.75),
@@ -747,18 +747,18 @@ class _NotificationItemCard extends StatelessWidget {
     final actionLabel = actionLabelForNotificationType(notification.type);
     final backgroundColor = markAllReadProgress != null
         ? Color.lerp(
-            const Color(0xFFF5F4F0),
+            AppColors.surface,
             Colors.white,
             markAllReadProgress,
           )!
-        : (isUnread ? const Color(0xFFF5F4F0) : Colors.white);
+        : (isUnread ? AppColors.surface : Colors.white);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        splashColor: const Color(0xFFE6F1FB),
+        splashColor: AppColors.infoBackground,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
@@ -796,7 +796,7 @@ class _NotificationItemCard extends StatelessWidget {
                             ? FontWeight.w600
                             : FontWeight.w500,
                         color: isUnread
-                            ? AppColors.primary
+                            ? AppColors.brand
                             : Theme.of(
                                 context,
                               ).colorScheme.onSurface.withValues(alpha: 0.85),
@@ -824,13 +824,13 @@ class _NotificationItemCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE6F1FB),
+                          color: AppColors.infoBackground,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           notification.orderId!,
                           style: AppTextStyles.badgeText.copyWith(
-                            color: const Color(0xFF185FA5),
+                            color: AppColors.accent,
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.2,
@@ -1033,12 +1033,8 @@ class _NotificationsError extends StatelessWidget {
             const SizedBox(height: 24),
             SizedBox(
               height: 48,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: onRetry,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                ),
                 child: const Text(NotificationConstants.retry),
               ),
             ),

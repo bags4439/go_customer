@@ -79,7 +79,7 @@ class _ClearanceSelfClearedStateState
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         final repo = ref.read(dutyClearanceRepositoryProvider);
@@ -212,14 +212,9 @@ class _ClearanceSelfClearedStateState
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 44,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () =>
                         context.go('/order/${widget.orderId}?tab=chat'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                    ),
                     child: Text(
                       ClearanceConstants.state3AskAgentButton(agentName),
                       style: AppTextStyles.buttonLarge.copyWith(fontSize: 14),

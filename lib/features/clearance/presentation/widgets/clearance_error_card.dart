@@ -27,14 +27,10 @@ class ClearanceErrorCard extends StatelessWidget {
             const SizedBox(height: 24),
             SizedBox(
               height: 48,
-              child: ElevatedButton.icon(
+              child: FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 20),
                 label: const Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                ),
               ),
             ),
           ],

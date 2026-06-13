@@ -67,7 +67,7 @@ class ClearanceOptionCard extends ConsumerWidget {
                       color: iconBgColor,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(iconData, size: 22, color: AppColors.primary),
+                    child: Icon(iconData, size: 22, color: AppColors.foreground),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

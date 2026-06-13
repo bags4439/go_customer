@@ -163,13 +163,6 @@ class _OrderCancelledContent extends ConsumerWidget {
           height: 52,
           child: FilledButton(
             onPressed: () => context.go('/preferences/new'),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
             child: Text(
               OrderEditConstants.startNewOrder,
               style: GoogleFonts.dmSans(

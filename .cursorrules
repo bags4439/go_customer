@@ -128,20 +128,118 @@ Dark mode is NOT supported. Do not implement dark mode. Do not use
 
 ---
 
+## COLOR & BUTTON SYSTEM — SINGLE SOURCE OF TRUTH
+
+All colour literals live in `lib/core/theme/app_colors.dart`. All shared button
+styles live in `lib/core/theme/app_button_styles.dart`. Widgets reference tokens —
+never `Color(0xFF…)` inline, never per-feature `HomeColors` / `_kPrimary` palettes.
+
+### Semantic roles (use these names in new code)
+
+| Token | Role | Hex |
+|---|---|---|
+| `AppColors.brand` | Primary actions, key links, active nav, progress | `#378ADD` |
+| `AppColors.onBrand` | Text/icons on brand-filled surfaces | `#FFFFFF` |
+| `AppColors.accent` | Info chips, filter pills, secondary blue emphasis | `#185FA5` |
+| `AppColors.foreground` | Primary reading text (alias of `textPrimary`) | `#1A1A18` |
+| `AppColors.background` | Main screen / card surface (white) | `#FFFFFF` |
+| `AppColors.surface` | Secondary off-white sections | `#F5F4F0` |
+| `AppColors.success` / `warning` / `danger` | Status semantics | see `app_colors.dart` |
+
+Legacy aliases `AppColors.primary` and `AppColors.secondary` both equal `brand`.
+Prefer `brand` / `onBrand` in new code.
+
+Domain-specific tokens (chat bubbles, shimmer, rating stars, onboarding accents,
+etc.) are also defined in `AppColors` — search that file before adding a new hex.
+
+### Colour rules
+
+```dart
+// Correct — token from AppColors
+Container(color: AppColors.surface)
+Text('Pay now', style: TextStyle(color: AppColors.brand))
+
+// Correct — shimmer uses shimmer tokens
+Shimmer.fromColors(
+  baseColor: AppColors.shimmerBase,
+  highlightColor: AppColors.shimmerHighlight,
+  child: placeholder,
+)
+
+// WRONG — inline hex in a widget
+Container(color: const Color(0xFFF5F4F0))
+
+// WRONG — per-feature duplicate palette
+const _kPrimary = 0xFF378ADD;
+class HomeColors { static const primary = Color(0xFF378ADD); }
+```
+
+`AppTheme.light()` wires `ColorScheme.primary` → `AppColors.brand`. Use theme
+colours via `Theme.of(context).colorScheme` only when inheriting Material defaults;
+for explicit UI, prefer `AppColors` directly.
+
+### Button rules
+
+Default `FilledButton` / `OutlinedButton` / `TextButton` inherit styles from
+`AppTheme.light()`. Override only when needed:
+
+| Need | Use |
+|---|---|
+| Standard full-width CTA | `AppPrimaryButton` or plain `FilledButton` (no `styleFrom`) |
+| Loading CTA | `AppPrimaryButton(isLoading: true)` or `SubmittingPrimaryButton` |
+| Prominent shadow CTA (preferences) | `AppPrimaryButton(prominent: true, height: 52)` |
+| Disabled / custom height | `AppButtonStyles.primary(enabled:, minimumHeight:)` |
+| White button on brand hero | `AppButtonStyles.inversePrimary()` |
+| Destructive | `AppButtonStyles.destructive()` |
+| Success confirm (delivery) | `AppButtonStyles.success()` |
+| Onboarding per-slide accent | `AppButtonStyles.accentFill(slide.accentColor)` |
+| Compact inline pay | `AppButtonStyles.compactBrand()` |
+
+```dart
+// Correct — no inline styleFrom for brand fill
+FilledButton(onPressed: onTap, child: Text('Continue'))
+
+// Correct — explicit variant
+FilledButton(
+  onPressed: onTap,
+  style: AppButtonStyles.destructive(),
+  child: Text('Delete account'),
+)
+
+// WRONG — inline brand override
+FilledButton.styleFrom(backgroundColor: AppColors.brand, ...)
+```
+
+### Enforcement tests (run with `fvm flutter test test/core/theme/`)
+
+| Test | Guards |
+|---|---|
+| `no_hardcoded_colors_test.dart` | No `Color(0x` anywhere in `lib/` except `app_colors.dart` |
+| `duplicate_palettes_test.dart` | No `HomeColors` / `ProfileUi` / per-feature `_k` hex palettes |
+| `app_colors_test.dart` | Token sanity (brand, chat, shimmer) |
+| `app_button_styles_test.dart` | Button style factories map to brand/danger/success |
+
+---
+
 ## TYPOGRAPHY — DM SANS (GOOGLE FONTS)
 
 This app uses **DM Sans** as the sole typeface via the `google_fonts` package.
 Never use system fonts (SF Pro, Roboto) directly.
 
-Setup in `core/theme/app_theme.dart`:
+Setup in `core/theme/app_theme.dart` (use `AppTheme.light()` — colours from `AppColors`):
 ```dart
 import 'package:google_fonts/google_fonts.dart';
+import 'app_colors.dart';
 
 ThemeData buildAppTheme() {
   final base = ThemeData(
-    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF378ADD)),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.brand,
+      primary: AppColors.brand,
+      onPrimary: AppColors.onBrand,
+    ),
     useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+    scaffoldBackgroundColor: AppColors.background,
   );
   return base.copyWith(
     textTheme: GoogleFonts.dmSansTextTheme(base.textTheme),
@@ -785,18 +883,18 @@ id, key, value, label, updatedBy, updatedAt
 ## UI/UX RULES
 
 ### Colours
-- Primary: `#378ADD`
-- Success: `#1D9E75`
-- Warning text: `#BA7517` / Warning background: `#FAEEDA`
-- Danger: `#E24B4A`
-- Info text: `#185FA5` / Info background: `#E6F1FB`
-- Primary background: `#FFFFFF` (white)
-- Secondary background: `#F5F4F0` (off-white)
-- Tertiary background: `#F0EFE8` (subtle off-white)
-- Border: `rgba(0,0,0,0.12)`
-- Text primary: `#1A1A18`
-- Text secondary: `#666666`
-- Text tertiary: `#AAAAAA`
+
+Use `AppColors` tokens — see **COLOR & BUTTON SYSTEM** above. Quick reference:
+
+- Action / links: `AppColors.brand` · Text on brand: `AppColors.onBrand`
+- Info: `AppColors.accent` / `AppColors.infoBackground`
+- Success: `AppColors.success` · Warning: `AppColors.warning` / `AppColors.amberBackground`
+- Danger: `AppColors.danger` · Muted danger: `AppColors.dangerMutedBackground`
+- Backgrounds: `AppColors.background` · `AppColors.surface` · `AppColors.hoverSurface`
+- Text: `AppColors.foreground` · `textSecondary` · `textTertiary` · `textMuted`
+- Borders: `AppColors.border` · `AppColors.borderSolid`
+- Chat: `AppColors.chatSentBubble` · `AppColors.chatSurface` · `AppColors.composerBackground`
+- Shimmer: `AppColors.shimmerBase` · `AppColors.shimmerHighlight`
 
 ### Spacing & Layout
 - Base unit: 4dp
@@ -978,6 +1076,8 @@ width-constrained container.
 - Integration tests for auth flow
 - Use `mocktail` for mocking
 - Test files in `test/` mirroring `lib/` structure
+- Theme enforcement: run `fvm flutter test test/core/theme/` after any colour or
+  button style change — must pass before merge
 
 ---
 
@@ -1001,3 +1101,8 @@ width-constrained container.
 - Do NOT use `print()` or debug prints in production code — use proper logging
 - Do NOT leave TODO comments in UI code — implement it or raise it explicitly
 - Do NOT use system fonts — always use DM Sans via `google_fonts`
+- Do NOT use inline `Color(0xFF…)` in widgets — add or reuse `AppColors` tokens
+- Do NOT create per-feature colour classes (`HomeColors`, `ProfileUi`, `const _kPrimary`)
+- Do NOT use inline `FilledButton.styleFrom` / `ElevatedButton.styleFrom` for brand,
+  destructive, or success fills — use `AppButtonStyles` or `AppPrimaryButton`
+- Do NOT use `AppColors.secondary` for body text — it is a legacy alias for `brand`

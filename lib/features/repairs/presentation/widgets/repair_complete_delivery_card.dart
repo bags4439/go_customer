@@ -20,12 +20,12 @@ class RepairCompleteDeliveryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const activeColor = Color(0xFF185FA5);
+    const activeColor = AppColors.accent;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFE6F1FB),
-        border: Border.all(color: const Color(0xFFB5D4F4)),
+        color: AppColors.infoBackground,
+        border: Border.all(color: AppColors.filterActiveBorder),
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
       ),
       child: Column(
@@ -46,14 +46,10 @@ class RepairCompleteDeliveryCard extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             height: 44,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed:
                   onOpenDelivery ??
                   () => context.push('/order/$orderId/delivery'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-              ),
               child: Text(
                 RepairConstants.confirmDeliveryButton,
                 style: AppTextStyles.buttonMedium.copyWith(

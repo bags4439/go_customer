@@ -13,18 +13,12 @@ import '../../../../core/utils/cross_platform_image.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
 import 'vehicle_option_chat_card.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 // ─────────────────────────────────────
 // Design constants — WhatsApp adapted
 // to AutoImport GH brand palette
 // ─────────────────────────────────────
-const _kSentBg = Color(0xFFE8F4FD);
-const _kSentFg = Color(0xFF1A1A18);
-const _kSentTimestamp = Color(0xFF7B9AB5);
-const _kReceivedBg = Color(0xFFFFFFFF);
-const _kReceivedFg = Color(0xFF1A1A18);
-const _kReceivedTimestamp = Color(0xFF999999);
-const _kAccent = Color(0xFF378ADD);
 const _kBubbleRadius = 7.5;
 const _kMaxBubbleWidth = 280.0;
 
@@ -38,13 +32,13 @@ String _messageStatusKey(ChatMessage msg) {
 /// Tick icon for sent message status.
 Widget _tickIcon(String statusKey) {
   if (statusKey == 'pending') {
-    return Icon(Icons.access_time_rounded, size: 11, color: _kSentTimestamp);
+    return Icon(Icons.access_time_rounded, size: 11, color: AppColors.chatSentTimestamp);
   }
   if (statusKey == 'sent') {
-    return Icon(Icons.done_rounded, size: 13, color: _kSentTimestamp);
+    return Icon(Icons.done_rounded, size: 13, color: AppColors.chatSentTimestamp);
   }
   // read
-  return Icon(Icons.done_all_rounded, size: 13, color: _kAccent);
+  return Icon(Icons.done_all_rounded, size: 13, color: AppColors.brand);
 }
 
 /// Timestamp + tick for sent messages.
@@ -56,7 +50,7 @@ Widget _sentMeta(DateTime sentAt, String statusKey) {
       Text(
         DateFormat.Hm().format(sentAt),
         style: AppTextStyles.caption.copyWith(
-          color: _kSentTimestamp,
+          color: AppColors.chatSentTimestamp,
           height: 1,
         ),
       ),
@@ -71,7 +65,7 @@ Widget _receivedMeta(DateTime sentAt) {
   return Text(
     DateFormat.Hm().format(sentAt),
     style: AppTextStyles.caption.copyWith(
-      color: _kReceivedTimestamp,
+      color: AppColors.textMuted,
       height: 1,
     ),
   );
@@ -254,17 +248,17 @@ class _ReplyBlock extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(10, 7, 10, 7),
       decoration: BoxDecoration(
         color: isMe
-            ? _kAccent.withValues(alpha: 0.12)
-            : const Color(0xFFF0EFE9),
+            ? AppColors.brand.withValues(alpha: 0.12)
+            : AppColors.hoverSurface,
         borderRadius: BorderRadius.circular(6),
-        border: Border(left: BorderSide(color: _kAccent, width: 3)),
+        border: Border(left: BorderSide(color: AppColors.brand, width: 3)),
       ),
       child: Text(
         body,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: AppTextStyles.cardLabel.copyWith(
-          color: isMe ? const Color(0xFF185FA5) : const Color(0xFF555555),
+          color: isMe ? AppColors.accent : AppColors.textSecondary,
           height: 1.4,
         ),
       ),
@@ -298,7 +292,7 @@ class _ReactionsRow extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: const Color(0xFFE0DFD8),
+                    color: AppColors.borderSolid,
                     width: 0.5,
                   ),
                   boxShadow: [
@@ -536,7 +530,7 @@ class _PendingBubble extends StatelessWidget {
           child: Icon(
             Icons.access_time_rounded,
             size: 11,
-            color: _kSentTimestamp,
+            color: AppColors.chatSentTimestamp,
           ),
         ),
       ],
@@ -579,7 +573,7 @@ class _MessageWithInlineMeta extends StatelessWidget {
               body,
               style: AppTextStyles.bodyMedium.copyWith(
                 fontSize: 14.5,
-                color: isMe ? _kSentFg : _kReceivedFg,
+                color: isMe ? AppColors.textPrimary : AppColors.textPrimary,
                 height: 1.45,
               ),
             ),
@@ -630,8 +624,8 @@ class _TextBubble extends StatelessWidget {
         painter: _BubblePainter(
           isMe: isMe,
           hasTail: hasTail,
-          color: isMe ? _kSentBg : _kReceivedBg,
-          borderColor: isMe ? null : const Color(0xFFE8E7E2),
+          color: isMe ? AppColors.chatSentBubble : AppColors.background,
+          borderColor: isMe ? null : AppColors.chatSurfaceBorder,
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -820,8 +814,8 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble>
         painter: _BubblePainter(
           isMe: isMe,
           hasTail: hasTail,
-          color: isMe ? _kSentBg : _kReceivedBg,
-          borderColor: isMe ? null : const Color(0xFFE8E7E2),
+          color: isMe ? AppColors.chatSentBubble : AppColors.background,
+          borderColor: isMe ? null : AppColors.chatSurfaceBorder,
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -846,11 +840,11 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: _kAccent,
+                          color: AppColors.brand,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: _kAccent.withValues(alpha: 0.3),
+                              color: AppColors.brand.withValues(alpha: 0.3),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -890,8 +884,8 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble>
                                   height: h,
                                   decoration: BoxDecoration(
                                     color: isFilled
-                                        ? _kAccent
-                                        : _kAccent.withValues(alpha: 0.25),
+                                        ? AppColors.brand
+                                        : AppColors.brand.withValues(alpha: 0.25),
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 );
@@ -904,8 +898,8 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble>
                           durationLabel,
                           style: AppTextStyles.caption.copyWith(
                             color: isMe
-                                ? _kSentTimestamp
-                                : _kReceivedTimestamp,
+                                ? AppColors.chatSentTimestamp
+                                : AppColors.textMuted,
                           ),
                         ),
                       ],
@@ -1156,7 +1150,7 @@ class _VideoBubble extends StatelessWidget {
         localPath!,
         fit: BoxFit.cover,
         errorWidget: const ColoredBox(
-          color: Color(0xFF222222),
+          color: AppColors.textPrimary,
           child: Center(
             child: Icon(
               Icons.videocam,
@@ -1176,7 +1170,7 @@ class _VideoBubble extends StatelessWidget {
           child: Container(color: Colors.white),
         ),
         errorWidget: (context, url, error) => const ColoredBox(
-          color: Color(0xFF222222),
+          color: AppColors.textPrimary,
           child: Center(
             child: Icon(Icons.videocam, color: Colors.white54, size: 32),
           ),
@@ -1184,7 +1178,7 @@ class _VideoBubble extends StatelessWidget {
       );
     } else {
       thumbnail = const ColoredBox(
-        color: Color(0xFF222222),
+        color: AppColors.textPrimary,
         child: Center(
           child: Icon(Icons.videocam, color: Colors.white54, size: 32),
         ),
@@ -1211,7 +1205,7 @@ class _VideoBubble extends StatelessWidget {
           bottomLeft: Radius.circular(isMe ? r : (isLastInGroup ? r : 2.0)),
           bottomRight: Radius.circular(isMe ? (isLastInGroup ? r : 2.0) : r),
         ),
-        color: const Color(0xFF222222),
+        color: AppColors.textPrimary,
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -1327,8 +1321,8 @@ class _FileBubble extends StatelessWidget {
         painter: _BubblePainter(
           isMe: isMe,
           hasTail: hasTail,
-          color: isMe ? _kSentBg : _kReceivedBg,
-          borderColor: isMe ? null : const Color(0xFFE8E7E2),
+          color: isMe ? AppColors.chatSentBubble : AppColors.background,
+          borderColor: isMe ? null : AppColors.chatSurfaceBorder,
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -1352,12 +1346,12 @@ class _FileBubble extends StatelessWidget {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: _kAccent.withValues(alpha: 0.12),
+                        color: AppColors.brand.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
                         Icons.insert_drive_file_rounded,
-                        color: _kAccent,
+                        color: AppColors.brand,
                         size: 20,
                       ),
                     ),
@@ -1368,7 +1362,7 @@ class _FileBubble extends StatelessWidget {
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w500,
-                          color: isMe ? _kSentFg : _kReceivedFg,
+                          color: isMe ? AppColors.textPrimary : AppColors.textPrimary,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
@@ -1421,7 +1415,7 @@ class _PaymentRequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      color: const Color(0xFFE6F1FF),
+      color: AppColors.infoBackground,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -1461,7 +1455,7 @@ class _PaymentConfirmedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      color: const Color(0xFFE5F5E8),
+      color: AppColors.successMutedBackgroundAlt,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -1536,8 +1530,8 @@ class _DeletedBubble extends StatelessWidget {
         painter: _BubblePainter(
           isMe: isMe,
           hasTail: hasTail,
-          color: isMe ? const Color(0xFFF0EFE9) : const Color(0xFFF8F8F8),
-          borderColor: const Color(0xFFE0DFD8),
+          color: isMe ? AppColors.hoverSurface : AppColors.composerBackground,
+          borderColor: AppColors.borderSolid,
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -1552,14 +1546,14 @@ class _DeletedBubble extends StatelessWidget {
               const Icon(
                 Icons.block_rounded,
                 size: 13,
-                color: Color(0xFFAAAAAA),
+                color: AppColors.textTertiary,
               ),
               const SizedBox(width: 6),
               Text(
                 'This message was deleted',
                 style: AppTextStyles.bodySmall.copyWith(
                   fontSize: 13.5,
-                  color: const Color(0xFFAAAAAA),
+                  color: AppColors.textTertiary,
                   fontStyle: FontStyle.italic,
                   height: 1.3,
                 ),
@@ -1588,7 +1582,7 @@ class _SystemPill extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: const Color(0xFFE0DFD8), width: 0.5),
+            border: Border.all(color: AppColors.borderSolid, width: 0.5),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -1603,7 +1597,7 @@ class _SystemPill extends StatelessWidget {
             style: AppTextStyles.caption.copyWith(
               fontSize: 11.5,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF888888),
+              color: AppColors.textPlaceholder,
               letterSpacing: 0.1,
               height: 1.4,
             ),

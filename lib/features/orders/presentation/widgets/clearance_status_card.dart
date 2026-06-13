@@ -11,11 +11,6 @@ import '../../../clearance/presentation/utils/clearance_timeline_helper.dart';
 import '../../core/constants/order_timeline_constants.dart';
 import 'order_detail/order_detail_web_navigation.dart';
 
-const _kPrimaryText = 0xFF185FA5;
-const _kInfoBg = 0xFFE6F1FB;
-const _kTextSecondary = 0xFF666666;
-const _kWarn = 0xFFBA7517;
-const _kSuccess = 0xFF1D9E75;
 
 /// Clearance step when duty_clearance exists (no pending clearance payment).
 class ClearanceStatusCard extends ConsumerWidget {
@@ -78,14 +73,14 @@ class ClearanceStatusCard extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(_kInfoBg),
+                        color: AppColors.infoBackground,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         OrderTimelineConstants.managedByAgent,
                         style: AppTextStyles.labelSmall.copyWith(
                           fontSize: 9,
-                          color: const Color(_kPrimaryText),
+                          color: AppColors.accent,
                         ),
                       ),
                     ),
@@ -130,7 +125,7 @@ class ClearanceStatusCard extends ConsumerWidget {
       case GraStatus.notStarted:
         return _row(
           Icons.pending_outlined,
-          const Color(_kWarn),
+          AppColors.warning,
           OrderTimelineConstants.clearanceInProgressTitle,
           OrderTimelineConstants.clearanceInProgressSub,
         );
@@ -147,7 +142,7 @@ class ClearanceStatusCard extends ConsumerWidget {
           children: [
             _row(
               Icons.calculate_outlined,
-              const Color(_kWarn),
+              AppColors.warning,
               OrderTimelineConstants.clearanceAssessedTitle,
               OrderTimelineConstants.clearanceAssessedSub,
             ),
@@ -170,7 +165,7 @@ class ClearanceStatusCard extends ConsumerWidget {
       case GraStatus.cleared:
         return _row(
           Icons.check_circle_outline,
-          const Color(_kSuccess),
+          AppColors.success,
           OrderTimelineConstants.clearanceClearedTitle,
           OrderTimelineConstants.clearanceClearedSub,
         );
@@ -195,7 +190,7 @@ class ClearanceStatusCard extends ConsumerWidget {
               Text(
                 sub,
                 style: AppTextStyles.caption.copyWith(
-                  color: const Color(_kTextSecondary),
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],

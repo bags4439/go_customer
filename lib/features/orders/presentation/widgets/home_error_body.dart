@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'home_layout_utils.dart';
 import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeErrorBody extends StatelessWidget {
   const HomeErrorBody({super.key, required this.onRetry});
@@ -25,13 +26,13 @@ class HomeErrorBody extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: HomeColors.bgSecondary,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
                 Icons.wifi_off_outlined,
                 size: 32,
-                color: HomeColors.textTertiary,
+                color: AppColors.textTertiary,
               ),
             ),
             const SizedBox(height: 16),
@@ -43,7 +44,7 @@ class HomeErrorBody extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Check your connection and try again.',
-              style: homeTextStyle(size: 13, color: HomeColors.textSecondary),
+              style: homeTextStyle(size: 13, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -53,14 +54,14 @@ class HomeErrorBody extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: onRetry,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: HomeColors.border),
+                  side: const BorderSide(color: AppColors.borderSolid),
                 ),
                 child: Text(
                   'Retry',
                   style: homeTextStyle(
                     size: 13,
                     weight: FontWeight.w500,
-                    color: HomeColors.textSecondary,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ),

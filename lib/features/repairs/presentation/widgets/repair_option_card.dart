@@ -53,7 +53,7 @@ class RepairOptionCard extends ConsumerWidget {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFEBF4FD) : Colors.white,
+            color: isSelected ? AppColors.brandMuted : Colors.white,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: Border.all(
               color: isSelected ? AppColors.secondary : AppColors.border,
@@ -84,7 +84,7 @@ class RepairOptionCard extends ConsumerWidget {
                     child: Icon(
                       isYes ? Icons.build : Icons.directions_car,
                       size: 22,
-                      color: isYes ? AppColors.secondary : AppColors.primary,
+                      color: isYes ? AppColors.brand : AppColors.foreground,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -99,8 +99,8 @@ class RepairOptionCard extends ConsumerWidget {
                           style: AppTextStyles.bodySmall.copyWith(
                             fontWeight: FontWeight.w500,
                             color: isSelected
-                                ? AppColors.secondary
-                                : AppColors.primary,
+                                ? AppColors.brand
+                                : AppColors.foreground,
                           ),
                         ),
                         const SizedBox(height: 2),

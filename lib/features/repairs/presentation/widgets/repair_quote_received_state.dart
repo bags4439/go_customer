@@ -95,7 +95,7 @@ class _RepairQuoteReceivedStateState
             RepairConstants.state2Heading(agentName),
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w500,
-              color: AppColors.primary,
+              color: AppColors.foreground,
             ),
           ),
           const SizedBox(height: 4),
@@ -157,7 +157,7 @@ class _RepairQuoteReceivedStateState
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFAEEDA),
+                        color: AppColors.amberBackground,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -165,7 +165,7 @@ class _RepairQuoteReceivedStateState
                         style: AppTextStyles.badgeText.copyWith(
                           fontSize: 10,
                           letterSpacing: 0,
-                          color: const Color(0xFF633806),
+                          color: AppColors.amberText,
                         ),
                       ),
                     ),

@@ -17,11 +17,11 @@ class NotificationTypeIcon extends StatelessWidget {
     switch (type) {
       case 'payment_request':
       case 'payment_confirmed':
-        bgColor = const Color(0xFFE6F1FB);
+        bgColor = AppColors.infoBackground;
         content = Text(
           'GHS',
           style: AppTextStyles.caption.copyWith(
-            color: const Color(0xFF185FA5),
+            color: AppColors.accent,
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.0,
@@ -29,14 +29,14 @@ class NotificationTypeIcon extends StatelessWidget {
           ),
         );
       case 'bid_won':
-        bgColor = const Color(0xFFEAF3DE);
+        bgColor = AppColors.successMutedBackground;
         content = const Text('🎉', style: TextStyle(fontSize: 15));
       case 'bid_lost':
         bgColor = AppColors.surface;
         content = const Text('😔', style: TextStyle(fontSize: 15));
       case 'shipping_update':
       case 'arrival':
-        bgColor = const Color(0xFFE1F5EE);
+        bgColor = AppColors.successMutedBackgroundAlt;
         content = const Text('🚢', style: TextStyle(fontSize: 15));
       case 'message':
         bgColor = AppColors.surface;
@@ -46,30 +46,30 @@ class NotificationTypeIcon extends StatelessWidget {
           color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
         );
       case 'agent_assigned':
-        bgColor = const Color(0xFFE6F1FB);
+        bgColor = AppColors.infoBackground;
         content = const Icon(
           Icons.person_outline,
           size: 16,
-          color: Color(0xFF185FA5),
+          color: AppColors.accent,
         );
       case 'vehicle_listing':
-        bgColor = const Color(0xFFFAEEDA);
+        bgColor = AppColors.amberBackground;
         content = const Icon(
           Icons.directions_car_outlined,
           size: 16,
-          color: Color(0xFF633806),
+          color: AppColors.amberText,
         );
       case 'order_edited':
       case 'order_cancelled':
-        bgColor = const Color(0xFFFAEEDA);
+        bgColor = AppColors.amberBackground;
         content = const Icon(
           Icons.edit_outlined,
           size: 16,
-          color: Color(0xFF633806),
+          color: AppColors.amberText,
         );
       case 'inactivity_reminder':
       case 'auction_deadline':
-        bgColor = const Color(0xFFFAEEDA);
+        bgColor = AppColors.amberBackground;
         content = Text(
           '!',
           style: AppTextStyles.labelLarge.copyWith(

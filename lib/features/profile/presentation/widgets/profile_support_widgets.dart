@@ -8,7 +8,7 @@ import '../../../guide/presentation/widgets/guide_faq_sheet.dart';
 import '../../../support/presentation/widgets/support_bottom_sheet.dart';
 import '../../core/constants/profile_constants.dart';
 import 'profile_section_shell.dart';
-import 'profile_ui_tokens.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class ProfileSupportSection extends StatelessWidget {
   const ProfileSupportSection({super.key, required this.onResetGuide});
@@ -40,7 +40,7 @@ class ProfileSupportSection extends StatelessWidget {
         ProfileSupportRow(
           label: ProfileConstants.rateTheApp,
           icon: Icons.star,
-          iconColor: ProfileUi.warning,
+          iconColor: AppColors.warning,
           onTap: () async {
             final inAppReview = InAppReview.instance;
             if (await inAppReview.isAvailable()) {
@@ -101,7 +101,7 @@ class ProfileSupportRow extends StatelessWidget {
               Icon(
                 icon ?? Icons.open_in_new,
                 size: 20,
-                color: iconColor ?? ProfileUi.textTertiary,
+                color: iconColor ?? AppColors.textTertiary,
               ),
             ],
           ),
@@ -142,10 +142,10 @@ class ProfileMenuTile extends StatelessWidget {
           );
     final subStyle = scaleForWebPanel
         ? AppTextStyles.cardLabel.copyWith(
-            color: ProfileUi.textTertiary,
+            color: AppColors.textTertiary,
             fontSize: AppBreakpoints.scaledFontSize(11, sw),
           )
-        : AppTextStyles.cardLabel.copyWith(color: ProfileUi.textTertiary);
+        : AppTextStyles.cardLabel.copyWith(color: AppColors.textTertiary);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -156,7 +156,7 @@ class ProfileMenuTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(icon, size: 22, color: ProfileUi.primary),
+              Icon(icon, size: 22, color: AppColors.brand),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -172,7 +172,7 @@ class ProfileMenuTile extends StatelessWidget {
               Icon(
                 Icons.chevron_right,
                 size: 20,
-                color: ProfileUi.textTertiary,
+                color: AppColors.textTertiary,
               ),
             ],
           ),
@@ -194,8 +194,8 @@ class ProfileLogOutButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: ProfileUi.danger,
-          side: const BorderSide(color: ProfileUi.danger, width: 1),
+          foregroundColor: AppColors.danger,
+          side: const BorderSide(color: AppColors.danger, width: 1),
         ),
         child: Text(ProfileConstants.logOut, style: AppTextStyles.labelLarge),
       ),
@@ -216,7 +216,7 @@ class ProfileDeleteAccountLink extends StatelessWidget {
         child: Text(
           ProfileConstants.deleteAccount,
           style: AppTextStyles.cardLabel.copyWith(
-            color: ProfileUi.danger,
+            color: AppColors.danger,
             decoration: TextDecoration.underline,
           ),
         ),

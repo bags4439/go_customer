@@ -63,13 +63,6 @@ class OrderNotAvailableView extends StatelessWidget {
                 height: 52,
                 child: FilledButton(
                   onPressed: () => context.go('/home'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
                   child: Text(
                     OrderEditConstants.backToHome,
                     style: GoogleFonts.dmSans(

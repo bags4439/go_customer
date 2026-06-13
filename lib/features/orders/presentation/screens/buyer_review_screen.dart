@@ -6,6 +6,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../../core/utils/responsive_layout.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -118,7 +119,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFFEAF3DE), Color(0xFFF5FAF0)],
+                    colors: [AppColors.successMutedBackground, AppColors.successGradientLight],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
@@ -161,7 +162,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                       style: AppTextStyles.titleSmall.copyWith(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1A4731),
+                        color: AppColors.successHeroDark,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -170,7 +171,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
                       'your agent\'s work.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: const Color(0xFF2D6A4F),
+                        color: AppColors.successHeroMid,
                         height: 1.45,
                       ),
                     ),
@@ -246,18 +247,14 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
               const SizedBox(height: 24),
               SizedBox(
                 height: 52,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: (!_canSubmit || _isSubmitting || order == null)
                       ? null
                       : () => _submit(order),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.borderSolid,
-                    disabledForegroundColor: AppColors.textTertiary,
-                    elevation: _canSubmit ? 2 : 0,
-                    shadowColor: AppColors.secondary.withValues(alpha: 0.3),
-                    minimumSize: const Size(double.infinity, 52),
+                  style: AppButtonStyles.primary(
+                    enabled:
+                        _canSubmit && !_isSubmitting && order != null,
+                    minimumHeight: 52,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -302,7 +299,7 @@ class _BuyerReviewScreenState extends ConsumerState<BuyerReviewScreen> {
           onBack: _isSubmitting ? null : () => Navigator.of(context).pop(),
           titleStyle: AppTextStyles.titleMedium.copyWith(
             fontSize: 18,
-            color: AppColors.primary,
+            color: AppColors.foreground,
           ),
         ),
         body: DashboardPortraitFrame(child: form),
@@ -383,12 +380,12 @@ class _PremiumStarRow extends StatelessWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   color: filled
-                      ? const Color(0xFFFFB800).withValues(alpha: 0.12)
+                      ? AppColors.ratingStar.withValues(alpha: 0.12)
                       : AppColors.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: filled
-                        ? const Color(0xFFFFB800).withValues(alpha: 0.5)
+                        ? AppColors.ratingStar.withValues(alpha: 0.5)
                         : AppColors.borderSolid,
                   ),
                 ),
@@ -397,7 +394,7 @@ class _PremiumStarRow extends StatelessWidget {
                     filled ? Icons.star_rounded : Icons.star_outline_rounded,
                     size: 32,
                     color: filled
-                        ? const Color(0xFFFFB800)
+                        ? AppColors.ratingStar
                         : AppColors.textTertiary,
                   ),
                 ),
@@ -468,7 +465,7 @@ class _GateScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 height: 48,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () {
                     if (embedInWebPanel) {
                       onClosePanel?.call();
@@ -476,12 +473,9 @@ class _GateScreen extends StatelessWidget {
                       context.push('/order/$orderId/delivery');
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  style: AppButtonStyles.primary(
+                    minimumHeight: 52,
+                    shape: AppButtonStyles.roundedMdShape,
                   ),
                   child: Text(
                     'Go to delivery →',
@@ -562,7 +556,7 @@ class _SubmittedScreen extends ConsumerWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFFF0F9F4), Color(0xFFEAF3DE)],
+                    colors: [AppColors.successSurfaceLight, AppColors.successMutedBackground],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
@@ -626,7 +620,7 @@ class _SubmittedScreen extends ConsumerWidget {
                           : Icons.star_outline_rounded,
                       size: 36,
                       color: i < stars
-                          ? const Color(0xFFFFB800)
+                          ? AppColors.ratingStar
                           : AppColors.borderSolid,
                     ),
                   ),
@@ -653,7 +647,7 @@ class _SubmittedScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               SizedBox(
                 height: 52,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () {
                     if (embedInWebPanel) {
                       resetWebOrderPanelTask(ref);
@@ -661,9 +655,8 @@ class _SubmittedScreen extends ConsumerWidget {
                       Navigator.of(context).pop();
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    foregroundColor: Colors.white,
+                  style: AppButtonStyles.primary(
+                    minimumHeight: 52,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -696,7 +689,7 @@ class _SubmittedScreen extends ConsumerWidget {
         onBack: () => Navigator.of(context).pop(),
         titleStyle: AppTextStyles.titleMedium.copyWith(
           fontSize: 18,
-          color: AppColors.primary,
+          color: AppColors.foreground,
         ),
       ),
       body: DashboardPortraitFrame(child: body),

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
 import 'order_detail_agent_app_bar_title.dart';
-import 'order_detail_ui.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Mobile order-detail app bar with animated order-ref / agent title.
 class OrderDetailMobileAppBar extends ConsumerWidget
@@ -48,7 +48,7 @@ class OrderDetailMobileAppBar extends ConsumerWidget
               key: const ValueKey('order'),
               ref.watch(orderProvider(orderId)).valueOrNull?.orderRef ?? '--',
               style: AppTextStyles.titleMedium.copyWith(
-                color: OrderDetailUi.textPrimary,
+                color: AppColors.textPrimary,
               ),
             ),
     );
@@ -64,7 +64,7 @@ class OrderDetailMobileAppBar extends ConsumerWidget
           children: [
             DashboardAppBarIconButton(
               icon: Icons.arrow_back_ios_new_rounded,
-              iconColor: OrderDetailUi.textPrimary,
+              iconColor: AppColors.textPrimary,
               onPressed: () => context.go('/home'),
             ),
             const SizedBox(width: 8),
@@ -74,7 +74,7 @@ class OrderDetailMobileAppBar extends ConsumerWidget
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(height: 0.5, color: OrderDetailUi.border),
+        child: Container(height: 0.5, color: AppColors.borderSolid),
       ),
     );
   }

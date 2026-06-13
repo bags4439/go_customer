@@ -8,7 +8,7 @@ import '../../core/constants/profile_constants.dart';
 import '../../domain/entities/user_session_entity.dart';
 import '../providers/profile_providers.dart';
 import 'profile_section_shell.dart';
-import 'profile_ui_tokens.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Active sessions and “stay logged in” controls on the profile screen.
 class ProfileSessionSection extends ConsumerWidget {
@@ -127,14 +127,14 @@ class _ProfileStayLoggedInRowState
               height: 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: ProfileUi.primary,
+                color: AppColors.brand,
               ),
             )
           else
             CupertinoSwitch(
               value: _localValue,
               onChanged: widget.sessionId != null ? _onToggle : null,
-              activeTrackColor: ProfileUi.primary,
+              activeTrackColor: AppColors.brand,
             ),
         ],
       ),
@@ -189,7 +189,7 @@ class ProfileActiveSessionsRow extends StatelessWidget {
               ),
               const Icon(
                 Icons.chevron_right,
-                color: ProfileUi.textTertiary,
+                color: AppColors.textTertiary,
                 size: 24,
               ),
             ],
@@ -235,7 +235,7 @@ class ProfileSessionsBottomSheet extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.phone_android,
-                    color: ProfileUi.textTertiary,
+                    color: AppColors.textTertiary,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -251,7 +251,7 @@ class ProfileSessionsBottomSheet extends StatelessWidget {
                         Text(
                           date,
                           style: AppTextStyles.cardLabel.copyWith(
-                            color: ProfileUi.textTertiary,
+                            color: AppColors.textTertiary,
                           ),
                         ),
                       ],
@@ -265,7 +265,7 @@ class ProfileSessionsBottomSheet extends StatelessWidget {
                     child: Text(
                       'Sign out of this session',
                       style: AppTextStyles.cardLabel.copyWith(
-                        color: ProfileUi.danger,
+                        color: AppColors.danger,
                       ),
                     ),
                   ),

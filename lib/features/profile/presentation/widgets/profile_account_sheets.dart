@@ -13,7 +13,7 @@ import '../../../auth/presentation/providers/countries_providers.dart';
 import '../../../auth/presentation/widgets/phone_dial_input_field.dart';
 import '../../core/constants/profile_constants.dart';
 import '../providers/profile_providers.dart';
-import 'profile_ui_tokens.dart';
+import 'package:go_customer/core/theme/app_button_styles.dart';
 
 class ProfileDeleteAccountBottomSheet extends ConsumerStatefulWidget {
   const ProfileDeleteAccountBottomSheet({
@@ -79,24 +79,24 @@ class _ProfileDeleteAccountBottomSheetState
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: ProfileUi.amberBg,
+              color: AppColors.amberBackground,
               borderRadius: BorderRadius.circular(8),
               border: const Border(
-                left: BorderSide(color: ProfileUi.warning, width: 3),
+                left: BorderSide(color: AppColors.warning, width: 3),
               ),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.warning_amber_rounded,
-                  color: ProfileUi.warning,
+                  color: AppColors.warning,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     ProfileConstants.deleteConfirmWarning,
                     style: AppTextStyles.cardLabel.copyWith(
-                      color: ProfileUi.darkBrown,
+                      color: AppColors.amberText,
                     ),
                   ),
                 ),
@@ -124,12 +124,9 @@ class _ProfileDeleteAccountBottomSheetState
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: _canConfirm ? _confirmDelete : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ProfileUi.danger,
-                    disabledBackgroundColor: ProfileUi.textTertiary,
-                  ),
+                  style: AppButtonStyles.destructive(enabled: _canConfirm),
                   child: Text(
                     ProfileConstants.deleteConfirmButton,
                     style: AppTextStyles.titleSmall.copyWith(
@@ -384,14 +381,9 @@ class _ProfilePhoneChangeSheetState
             const SizedBox(height: 20),
             SizedBox(
               height: 52,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: _busy ? null : _sendOtp,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.borderSolid,
-                  elevation: 0,
-                ),
+                style: AppButtonStyles.primary(),
                 child: _busy
                     ? const SizedBox(
                         width: 20,
@@ -504,14 +496,9 @@ class _ProfilePhoneChangeSheetState
             const SizedBox(height: 20),
             SizedBox(
               height: 52,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: (_otpCode.length == 6 && !_busy) ? _verifyOtp : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.borderSolid,
-                  elevation: 0,
-                ),
+                style: AppButtonStyles.primary(),
                 child: _busy
                     ? const SizedBox(
                         width: 20,

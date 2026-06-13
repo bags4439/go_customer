@@ -173,13 +173,6 @@ class _PendingActions extends StatelessWidget {
           height: 48,
           child: FilledButton(
             onPressed: isSubmitting ? null : onInterested,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
             child: isSubmitting
                 ? const SizedBox(
                     width: 20,

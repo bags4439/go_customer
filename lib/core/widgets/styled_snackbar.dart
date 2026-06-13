@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 /// Success-style SnackBar: dark background, white text, 8dp radius, 3s, floating.
@@ -11,9 +12,9 @@ void showSuccessSnackBar(BuildContext context, String message) {
     SnackBar(
       content: Text(
         message,
-        style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.onBrand),
       ),
-      backgroundColor: const Color(0xFF1A1A18),
+      backgroundColor: AppColors.snackbarBackground,
       behavior: SnackBarBehavior.floating,
       duration: const Duration(seconds: 3),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -22,7 +23,7 @@ void showSuccessSnackBar(BuildContext context, String message) {
 }
 
 /// Error-style SnackBar: dark background, white text, 8dp radius,
-/// 3s duration, floating, optional action in primary blue.
+/// 3s duration, floating, optional action in brand blue.
 void showErrorSnackBar(
   BuildContext context,
   String message, {
@@ -36,16 +37,16 @@ void showErrorSnackBar(
     SnackBar(
       content: Text(
         message,
-        style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.onBrand),
       ),
-      backgroundColor: const Color(0xFF1A1A18),
+      backgroundColor: AppColors.snackbarBackground,
       behavior: SnackBarBehavior.floating,
       duration: const Duration(seconds: 3),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       action: (actionLabel != null && onAction != null)
           ? SnackBarAction(
               label: actionLabel,
-              textColor: const Color(0xFF378ADD),
+              textColor: AppColors.brand,
               onPressed: onAction,
             )
           : null,

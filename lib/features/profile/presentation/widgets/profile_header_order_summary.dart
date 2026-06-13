@@ -3,7 +3,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../auth/domain/entities/app_user.dart';
 import '../../core/constants/profile_constants.dart';
-import 'profile_ui_tokens.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class ProfileAnimatedHeaderCard extends StatelessWidget {
   const ProfileAnimatedHeaderCard({
@@ -91,7 +91,7 @@ class ProfileAvatarCircle extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: const BoxDecoration(
-              color: ProfileUi.primary,
+              color: AppColors.brand,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -111,7 +111,7 @@ class ProfileAvatarCircle extends StatelessWidget {
                 width: 16,
                 height: 16,
                 decoration: const BoxDecoration(
-                  color: ProfileUi.success,
+                  color: AppColors.success,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.check, size: 10, color: Colors.white),
@@ -150,7 +150,7 @@ class ProfileOrderSummaryRow extends StatelessWidget {
           Expanded(
             child: ProfileSummaryBox(
               value: '$activeCount',
-              valueColor: ProfileUi.primary,
+              valueColor: AppColors.brand,
               label: ProfileConstants.activeLabel,
             ),
           ),
@@ -158,7 +158,7 @@ class ProfileOrderSummaryRow extends StatelessWidget {
           Expanded(
             child: ProfileSummaryBox(
               value: '$completedCount',
-              valueColor: ProfileUi.success,
+              valueColor: AppColors.success,
               label: ProfileConstants.completedLabel,
             ),
           ),
@@ -196,7 +196,7 @@ class ProfileSummaryBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: ProfileUi.surface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -245,7 +245,7 @@ class ProfileOrderSummaryShimmer extends StatelessWidget {
               height: 60,
               margin: const EdgeInsets.only(right: 4),
               decoration: BoxDecoration(
-                color: ProfileUi.surface,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),

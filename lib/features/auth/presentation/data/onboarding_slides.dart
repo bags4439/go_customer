@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Single source of truth for all onboarding slide content (all breakpoints).
 class OnboardingSlide {
@@ -59,24 +60,24 @@ const List<OnboardingSlide> kOnboardingSlides = [
         ' make, model, and what matters'
         ' to you. Your agent handles the rest.',
     buttonLabel: 'Get started',
-    accentColor: Color(0xFF234A83),
+    accentColor: AppColors.onboardingAccentNavy,
     tiles: [
       OnboardingTile(
         icon: Icons.directions_car_outlined,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
+        iconBg: AppColors.infoBackground,
+        iconColor: AppColors.accent,
         label: 'Describe the car you want',
       ),
       OnboardingTile(
         icon: Icons.attach_money_rounded,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
+        iconBg: AppColors.successMutedBackground,
+        iconColor: AppColors.successMutedForeground,
         label: 'Share a budget guide (optional)',
       ),
       OnboardingTile(
         icon: Icons.public_rounded,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
+        iconBg: AppColors.amberBackground,
+        iconColor: AppColors.amberText,
         label: 'US, Dubai, China, or let your agent decide',
       ),
     ],
@@ -91,24 +92,24 @@ const List<OnboardingSlide> kOnboardingSlides = [
         ' with updates at every step,'
         ' in chat.',
     buttonLabel: 'Continue',
-    accentColor: Color(0xFF0F6A25),
+    accentColor: AppColors.onboardingAccentGreen,
     tiles: [
       OnboardingTile(
         icon: Icons.search_rounded,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
+        iconBg: AppColors.infoBackground,
+        iconColor: AppColors.accent,
         label: 'Sources vehicles globally across US, Dubai, China and more',
       ),
       OnboardingTile(
         icon: Icons.chat_bubble_outline_rounded,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
+        iconBg: AppColors.successMutedBackground,
+        iconColor: AppColors.successMutedForeground,
         label: 'Communicates via chat and call directly',
       ),
       OnboardingTile(
         icon: Icons.description_outlined,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
+        iconBg: AppColors.amberBackground,
+        iconColor: AppColors.amberText,
         label: 'Sends real options with photos, specs and cost breakdowns',
       ),
     ],
@@ -132,24 +133,24 @@ const List<OnboardingSlide> kOnboardingSlides = [
         ' end to end. You watch,'
         ' we handle it.',
     buttonLabel: 'Continue',
-    accentColor: Color(0xFF8C6B00),
+    accentColor: AppColors.warningDark,
     tiles: [
       OnboardingTile(
         icon: Icons.directions_boat_outlined,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
+        iconBg: AppColors.infoBackground,
+        iconColor: AppColors.accent,
         label: 'Shipping booked and tracked',
       ),
       OnboardingTile(
         icon: Icons.account_balance_outlined,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
+        iconBg: AppColors.successMutedBackground,
+        iconColor: AppColors.successMutedForeground,
         label: 'Port clearance and duty handled',
       ),
       OnboardingTile(
         icon: Icons.build_outlined,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
+        iconBg: AppColors.amberBackground,
+        iconColor: AppColors.amberText,
         label: 'Repairs discussed and arranged after clearance, if needed',
       ),
     ],
@@ -164,24 +165,24 @@ const List<OnboardingSlide> kOnboardingSlides = [
         ' or ready for collection.'
         ' Keys in hand.',
     buttonLabel: 'Continue',
-    accentColor: Color(0xFF378ADD),
+    accentColor: AppColors.brand,
     tiles: [
       OnboardingTile(
         icon: Icons.verified_outlined,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
+        iconBg: AppColors.successMutedBackground,
+        iconColor: AppColors.successMutedForeground,
         label: 'Car inspected and road-ready',
       ),
       OnboardingTile(
         icon: Icons.home_outlined,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
+        iconBg: AppColors.infoBackground,
+        iconColor: AppColors.accent,
         label: 'Delivery or collection',
       ),
       OnboardingTile(
         icon: Icons.star_outline_rounded,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
+        iconBg: AppColors.amberBackground,
+        iconColor: AppColors.amberText,
         label: 'Rate your experience',
       ),
     ],

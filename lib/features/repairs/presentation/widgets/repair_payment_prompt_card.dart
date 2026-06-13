@@ -70,16 +70,12 @@ class RepairPaymentPromptCard extends ConsumerWidget {
           const SizedBox(height: 12),
           SizedBox(
             height: 48,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: () => OrderDetailWebNavigation.openPaymentRequest(
                 context,
                 ref,
                 orderId: orderId,
                 requestId: payment.id,
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
               ),
               child: Text(buttonLabel),
             ),

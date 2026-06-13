@@ -197,14 +197,8 @@ class _ClearanceAgentManagedStateState
             20,
             14 + MediaQuery.paddingOf(context).bottom,
           ),
-          child: ElevatedButton(
+          child: FilledButton(
             onPressed: () => context.go('/order/${widget.orderId}?tab=chat'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              minimumSize: const Size(double.infinity, 50),
-            ),
             child: Text(
               ClearanceConstants.askAgentButton(agentName),
               style: AppTextStyles.buttonLarge,

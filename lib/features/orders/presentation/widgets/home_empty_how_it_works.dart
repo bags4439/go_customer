@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'home_empty_illustrations.dart';
-import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Responsive "How it works" feature grid using [Wrap] so tile height
 /// follows content instead of a fixed [GridView] aspect ratio.
@@ -13,25 +13,25 @@ class HomeEmptyHowItWorksGrid extends StatelessWidget {
 
   static final List<_HowItWorksFeatureData> _features = [
     _HowItWorksFeatureData(
-      iconBg: HomeColors.infoBg,
+      iconBg: AppColors.infoBackground,
       title: 'Dedicated agent',
       subtitle: 'Matched to you\nwithin minutes',
       painter: HomeEmptyAgentIconPainter(),
     ),
     _HowItWorksFeatureData(
-      iconBg: HomeColors.successBg,
+      iconBg: AppColors.successMutedBackground,
       title: 'Every step tracked',
       subtitle: 'Live updates from\nauction/purchase to delivery',
       painter: HomeEmptyTrackingIconPainter(),
     ),
     _HowItWorksFeatureData(
-      iconBg: HomeColors.warningBg,
+      iconBg: AppColors.amberBackground,
       title: 'Duty & clearance',
       subtitle: 'GRA paperwork\nfully managed',
       painter: HomeEmptyClearanceIconPainter(),
     ),
     _HowItWorksFeatureData(
-      iconBg: HomeColors.infoBg,
+      iconBg: AppColors.infoBackground,
       title: 'Door delivery',
       subtitle: 'Straight to your\nhome in Ghana',
       painter: HomeEmptyDeliveryIconPainter(),

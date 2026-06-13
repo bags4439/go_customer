@@ -304,7 +304,7 @@ class _LoginWebActionPanel extends StatelessWidget {
   Color get _progressColor {
     switch (state.step) {
       case LoginStep.referral:
-        return const Color(0xFF8C6B00);
+        return AppColors.warningDark;
       default:
         return AppColors.secondary;
     }
@@ -457,12 +457,12 @@ class _AuthPrimaryButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          color: canTap ? const Color(0xFF378ADD) : const Color(0xFFE0DFD8),
+          color: canTap ? AppColors.brand : AppColors.borderSolid,
           borderRadius: AppTheme.pillBorderRadius(52),
           boxShadow: canTap
               ? [
                   BoxShadow(
-                    color: const Color(0xFF378ADD).withValues(alpha: 0.30),
+                    color: AppColors.brand.withValues(alpha: 0.30),
                     blurRadius: 14,
                     offset: const Offset(0, 5),
                   ),
@@ -496,7 +496,7 @@ class _AuthPrimaryButton extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                           color: canTap
                               ? Colors.white
-                              : const Color(0xFFAAAAAA),
+                              : AppColors.textTertiary,
                         ),
                       ),
               ),
@@ -556,13 +556,13 @@ class _StyledTextFieldState extends State<_StyledTextField> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
-        color: widget.hasError ? const Color(0xFFFCEBEB) : Colors.white,
+        color: widget.hasError ? AppColors.dangerMutedBackground : Colors.white,
         border: Border.all(
           color: widget.hasError
-              ? const Color(0xFFE24B4A)
+              ? AppColors.danger
               : _focused
-              ? const Color(0xFF378ADD)
-              : const Color(0xFFE0DFD8),
+              ? AppColors.brand
+              : AppColors.borderSolid,
           width: 1.0,
         ),
         borderRadius: BorderRadius.circular(12),
@@ -578,14 +578,14 @@ class _StyledTextFieldState extends State<_StyledTextField> {
         onFieldSubmitted: (_) => widget.onSubmit?.call(),
         style: AppTextStyles.bodyLarge.copyWith(
           fontSize: 15,
-          color: const Color(0xFF1A1A18),
+          color: AppColors.textPrimary,
           height: null,
         ),
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: AppTextStyles.bodyLarge.copyWith(
             fontSize: 15,
-            color: const Color(0xFFAAAAAA),
+            color: AppColors.textTertiary,
             height: null,
           ),
           border: InputBorder.none,
@@ -621,19 +621,19 @@ class _CountryPickerField extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        splashColor: const Color(0xFF378ADD).withValues(alpha: 0.08),
-        highlightColor: const Color(0xFF378ADD).withValues(alpha: 0.04),
+        splashColor: AppColors.brand.withValues(alpha: 0.08),
+        highlightColor: AppColors.brand.withValues(alpha: 0.04),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           height: 56,
           decoration: BoxDecoration(
-            color: hasError ? const Color(0xFFFCEBEB) : Colors.white,
+            color: hasError ? AppColors.dangerMutedBackground : Colors.white,
             border: Border.all(
               color: hasError
-                  ? const Color(0xFFE24B4A)
+                  ? AppColors.danger
                   : borderFocused
-                  ? const Color(0xFF378ADD)
-                  : const Color(0xFFE0DFD8),
+                  ? AppColors.brand
+                  : AppColors.borderSolid,
               width: (hasError || borderFocused) ? 1.5 : 1.0,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -657,8 +657,8 @@ class _CountryPickerField extends StatelessWidget {
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontSize: 15,
                       color: hasSelection
-                          ? const Color(0xFF1A1A18)
-                          : const Color(0xFFAAAAAA),
+                          ? AppColors.textPrimary
+                          : AppColors.textTertiary,
                       height: null,
                     ),
                   ),
@@ -666,7 +666,7 @@ class _CountryPickerField extends StatelessWidget {
                 const Icon(
                   Icons.chevron_right_rounded,
                   size: 22,
-                  color: Color(0xFFAAAAAA),
+                  color: AppColors.textTertiary,
                 ),
               ],
             ),
@@ -727,14 +727,14 @@ class _InlineError extends StatelessWidget {
                   const Icon(
                     Icons.info_outline,
                     size: 14,
-                    color: Color(0xFFE24B4A),
+                    color: AppColors.danger,
                   ),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
                       error!,
                       style: AppTextStyles.cardLabel.copyWith(
-                        color: const Color(0xFFE24B4A),
+                        color: AppColors.danger,
                       ),
                     ),
                   ),
@@ -903,18 +903,18 @@ class _OtpBox extends StatelessWidget {
           height: 56,
           decoration: BoxDecoration(
             color: hasError
-                ? const Color(0xFFFCEBEB)
+                ? AppColors.dangerMutedBackground
                 : isFocused
-                ? const Color(0xFFEBF4FD)
+                ? AppColors.brandMuted
                 : Colors.white,
             border: Border.all(
               color: hasError
-                  ? const Color(0xFFE24B4A)
+                  ? AppColors.danger
                   : isFocused
-                  ? const Color(0xFF378ADD)
+                  ? AppColors.brand
                   : isFilled
-                  ? const Color(0xFF378ADD)
-                  : const Color(0xFFE0DFD8),
+                  ? AppColors.brand
+                  : AppColors.borderSolid,
               width: (isFocused || hasError) ? 2.0 : 1.0,
             ),
             borderRadius: BorderRadius.circular(10),
@@ -925,8 +925,8 @@ class _OtpBox extends StatelessWidget {
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w600,
                 color: hasError
-                    ? const Color(0xFFE24B4A)
-                    : const Color(0xFF1A1A18),
+                    ? AppColors.danger
+                    : AppColors.textPrimary,
               ),
             ),
           ),
@@ -978,28 +978,28 @@ class _PhoneTermsRichTextState extends State<_PhoneTermsRichText> {
           TextSpan(
             text: 'By continuing you agree to our ',
             style: AppTextStyles.cardLabel.copyWith(
-              color: const Color(0xFFAAAAAA),
+              color: AppColors.textTertiary,
             ),
           ),
           TextSpan(
             text: 'Terms of Service',
             style: AppTextStyles.labelMedium.copyWith(
               fontSize: 12,
-              color: const Color(0xFF378ADD),
+              color: AppColors.brand,
             ),
             recognizer: _termsTap,
           ),
           TextSpan(
             text: ' and ',
             style: AppTextStyles.cardLabel.copyWith(
-              color: const Color(0xFFAAAAAA),
+              color: AppColors.textTertiary,
             ),
           ),
           TextSpan(
             text: 'Privacy Policy',
             style: AppTextStyles.labelMedium.copyWith(
               fontSize: 12,
-              color: const Color(0xFF378ADD),
+              color: AppColors.brand,
             ),
             recognizer: _privacyTap,
           ),
@@ -1130,7 +1130,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                   Text(
                     'PHONE NUMBER',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1154,7 +1154,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                           ? 'Sending to ${state.dialCode} ${state.phone}'
                           : 'We\'ll send a code to this number',
                       style: AppTextStyles.cardLabel.copyWith(
-                        color: const Color(0xFFAAAAAA),
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ],
@@ -1216,7 +1216,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                   welcomeCopy.subtitle,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: 12,
-                    color: const Color(0xFF666666),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -1242,7 +1242,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                   Text(
                     'PHONE NUMBER',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1266,7 +1266,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                           ? 'Sending to ${state.dialCode} ${state.phone}'
                           : 'We\'ll send a code to this number',
                       style: AppTextStyles.cardLabel.copyWith(
-                        color: const Color(0xFFAAAAAA),
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ],
@@ -1458,7 +1458,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                   Text(
                     '6-DIGIT CODE',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1504,7 +1504,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                                       TextSpan(
                                         text: 'Didn\'t receive a code? ',
                                         style: AppTextStyles.bodySmall.copyWith(
-                                          color: const Color(0xFF666666),
+                                          color: AppColors.textSecondary,
                                         ),
                                       ),
                                       TextSpan(
@@ -1526,7 +1526,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                                 _resendLabel(state),
                                 textAlign: TextAlign.center,
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: const Color(0xFFAAAAAA),
+                                  color: AppColors.textTertiary,
                                 ),
                               ),
                             ),
@@ -1575,7 +1575,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                       Text(
                         '·',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: const Color(0xFFAAAAAA),
+                          color: AppColors.textTertiary,
                           fontSize: 12,
                         ),
                       ),
@@ -1615,7 +1615,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                   'Check your SMS for the 6-digit verification code.',
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: 12,
-                    color: const Color(0xFF666666),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -1633,7 +1633,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                   Text(
                     '6-DIGIT CODE',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1680,7 +1680,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                                     TextSpan(
                                       text: 'Didn\'t receive a code? ',
                                       style: AppTextStyles.bodySmall.copyWith(
-                                        color: const Color(0xFF666666),
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
                                     TextSpan(
@@ -1702,7 +1702,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
                               _resendLabel(state),
                               textAlign: TextAlign.center,
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: const Color(0xFFAAAAAA),
+                                color: AppColors.textTertiary,
                               ),
                             ),
                           ),
@@ -1901,7 +1901,7 @@ class _NameStepState extends ConsumerState<_NameStep>
                   Text(
                     'FULL NAME',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1929,7 +1929,7 @@ class _NameStepState extends ConsumerState<_NameStep>
                   Text(
                     'COUNTRY',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1986,7 +1986,7 @@ class _NameStepState extends ConsumerState<_NameStep>
                   'you by name throughout your entire import '
                   'journey.',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF666666),
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -2009,7 +2009,7 @@ class _NameStepState extends ConsumerState<_NameStep>
                   Text(
                     'FULL NAME',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -2040,7 +2040,7 @@ class _NameStepState extends ConsumerState<_NameStep>
                   Text(
                     'COUNTRY',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -2193,7 +2193,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                   Text(
                     'REFERRAL CODE (OPTIONAL)',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -2217,7 +2217,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                   Text(
                     '6 characters, letters and numbers only',
                     style: AppTextStyles.cardLabel.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                     ),
                   ),
                 ],
@@ -2247,7 +2247,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                       child: Text(
                         'Skip',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFFAAAAAA),
+                          color: AppColors.textTertiary,
                         ),
                       ),
                     ),
@@ -2282,7 +2282,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                 Text(
                   referralPanel.subheading,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF666666),
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -2303,7 +2303,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                 Text(
                   'REFERRAL CODE (OPTIONAL)',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: const Color(0xFFAAAAAA),
+                    color: AppColors.textTertiary,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -2327,7 +2327,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                 Text(
                   '6 characters, letters and numbers only',
                   style: AppTextStyles.cardLabel.copyWith(
-                    color: const Color(0xFFAAAAAA),
+                    color: AppColors.textTertiary,
                   ),
                 ),
               ],
@@ -2357,7 +2357,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                     child: Text(
                       'Skip',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: const Color(0xFFAAAAAA),
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ),
@@ -2553,7 +2553,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                   Text(
                     'Make sure this number has WhatsApp installed.',
                     style: AppTextStyles.caption.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -2575,7 +2575,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                     'asked to add it before your first payment if '
                     'left empty.',
                     style: AppTextStyles.caption.copyWith(
-                      color: const Color(0xFFAAAAAA),
+                      color: AppColors.textTertiary,
                       height: 1.4,
                     ),
                   ),
@@ -2608,7 +2608,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                       child: Text(
                         'Skip for now',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: const Color(0xFFAAAAAA),
+                          color: AppColors.textTertiary,
                         ),
                       ),
                     ),
@@ -2644,7 +2644,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                   'We\'ll keep you updated on your order progress '
                   'via the channels you choose.',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: const Color(0xFF666666),
+                    color: AppColors.textSecondary,
                     height: 1.5,
                     fontSize: 12,
                   ),
@@ -2720,7 +2720,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                       Text(
                         'Make sure this number has WhatsApp installed.',
                         style: AppTextStyles.caption.copyWith(
-                          color: const Color(0xFFAAAAAA),
+                          color: AppColors.textTertiary,
                         ),
                       ),
                     ],
@@ -2750,7 +2750,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                         'asked to add it before your first payment if '
                         'left empty.',
                         style: AppTextStyles.caption.copyWith(
-                          color: const Color(0xFFAAAAAA),
+                          color: AppColors.textTertiary,
                           height: 1.4,
                         ),
                       ),
@@ -2786,7 +2786,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
                     child: Text(
                       'Skip for now',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: const Color(0xFFAAAAAA),
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ),
@@ -2817,7 +2817,7 @@ class _ContactFieldLabel extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.labelSmall.copyWith(
-            color: const Color(0xFFAAAAAA),
+            color: AppColors.textTertiary,
             letterSpacing: 0.5,
           ),
         ),
@@ -2843,7 +2843,7 @@ class _ContactFieldLabel extends StatelessWidget {
           Text(
             'Optional',
             style: AppTextStyles.caption.copyWith(
-              color: const Color(0xFFCCCCCC),
+              color: AppColors.textCaption,
               fontSize: 9,
             ),
           ),
@@ -2868,9 +2868,9 @@ class _WebContextTiles extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAF8),
+        color: AppColors.referralTileBackground,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFECEAE4), width: .5),
+        border: Border.all(color: AppColors.referralTileBorder, width: .5),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -2897,7 +2897,7 @@ class _WebContextTile extends StatelessWidget {
           left: BorderSide(color: tile.accentColor, width: 2.5),
           top: isFirst
               ? BorderSide.none
-              : const BorderSide(color: Color(0xFFF0EFE9), width: .5),
+              : const BorderSide(color: AppColors.hoverSurface, width: .5),
         ),
       ),
       padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),

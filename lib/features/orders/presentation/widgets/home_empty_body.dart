@@ -10,7 +10,7 @@ import 'home_empty_illustrations.dart';
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import 'home_layout_utils.dart';
-import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeEmptyBody extends ConsumerWidget {
   final String? firstName;
@@ -35,7 +35,7 @@ class HomeEmptyBody extends ConsumerWidget {
                       style: AppTextStyles.sectionLabel.copyWith(
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.6,
-                        color: HomeColors.textTertiary,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -47,7 +47,7 @@ class HomeEmptyBody extends ConsumerWidget {
                         fontSize: 26,
                         fontWeight: FontWeight.w600,
                         height: 1.15,
-                        color: HomeColors.textPrimary,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -55,7 +55,7 @@ class HomeEmptyBody extends ConsumerWidget {
                       'Ready to buy your first car?',
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 13.5,
-                        color: HomeColors.textSecondary,
+                        color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -65,10 +65,10 @@ class HomeEmptyBody extends ConsumerWidget {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: HomeColors.bgPrimary,
+                        color: AppColors.background,
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: HomeColors.border,
+                          color: AppColors.borderSolid,
                           width: 0.5,
                         ),
                         boxShadow: [
@@ -95,7 +95,7 @@ class HomeEmptyBody extends ConsumerWidget {
                                   style: AppTextStyles.titleMedium.copyWith(
                                     fontSize: 18,
                                     height: 1.25,
-                                    color: HomeColors.textPrimary,
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -104,7 +104,7 @@ class HomeEmptyBody extends ConsumerWidget {
                                   'Your agent handles sourcing, shipping, duty, '
                                   'and delivery — you just choose the car.',
                                   style: AppTextStyles.bodySmall.copyWith(
-                                    color: HomeColors.textSecondary,
+                                    color: AppColors.textSecondary,
                                     height: 1.5,
                                   ),
                                 ),
@@ -113,15 +113,10 @@ class HomeEmptyBody extends ConsumerWidget {
                                 SizedBox(
                                   width: double.infinity,
                                   height: 52,
-                                  child: ElevatedButton(
+                                  child: FilledButton(
                                     onPressed: () => GoRouter.of(
                                       context,
                                     ).push('/preferences/new'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: HomeColors.primary,
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                    ),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
@@ -163,14 +158,14 @@ class HomeEmptyBody extends ConsumerWidget {
                               vertical: 11,
                             ),
                             decoration: BoxDecoration(
-                              color: HomeColors.bgSecondary,
+                              color: AppColors.surface,
                               borderRadius: const BorderRadius.only(
                                 bottomLeft: Radius.circular(17),
                                 bottomRight: Radius.circular(17),
                               ),
                               border: Border(
                                 top: BorderSide(
-                                  color: HomeColors.border,
+                                  color: AppColors.borderSolid,
                                   width: 0.5,
                                 ),
                               ),
@@ -181,13 +176,13 @@ class HomeEmptyBody extends ConsumerWidget {
                                 Icon(
                                   Icons.lock_outline,
                                   size: 11,
-                                  color: HomeColors.primary,
+                                  color: AppColors.brand,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   'No payment until your agent sends a request',
                                   style: AppTextStyles.caption.copyWith(
-                                    color: HomeColors.primary,
+                                    color: AppColors.brand,
                                   ),
                                 ),
                               ],
@@ -203,7 +198,7 @@ class HomeEmptyBody extends ConsumerWidget {
                       'HOW IT WORKS',
                       style: AppTextStyles.sectionLabel.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: HomeColors.textTertiary,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                     const SizedBox(height: 10),

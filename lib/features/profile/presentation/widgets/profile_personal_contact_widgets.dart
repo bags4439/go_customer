@@ -10,7 +10,7 @@ import '../providers/profile_providers.dart';
 import 'ghana_card_profile_row.dart';
 import 'profile_language_currency_widgets.dart';
 import 'profile_section_shell.dart';
-import 'profile_ui_tokens.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class ProfilePersonalDetailsSection extends ConsumerWidget {
   const ProfilePersonalDetailsSection({
@@ -264,7 +264,7 @@ class ProfileEditRow extends StatelessWidget {
                     const Icon(
                       Icons.edit_outlined,
                       size: 20,
-                      color: ProfileUi.textTertiary,
+                      color: AppColors.textTertiary,
                     ),
                 ],
               ),
@@ -291,7 +291,7 @@ class ProfileEditRow extends StatelessWidget {
                           isDense: true,
                           errorText: errorMessage,
                           errorStyle: AppTextStyles.caption.copyWith(
-                            color: ProfileUi.danger,
+                            color: AppColors.danger,
                           ),
                         ),
                         onChanged: onDraftChanged,
@@ -302,7 +302,7 @@ class ProfileEditRow extends StatelessWidget {
                         Text(
                           subtitle!,
                           style: AppTextStyles.caption.copyWith(
-                            color: ProfileUi.textTertiary,
+                            color: AppColors.textTertiary,
                           ),
                         ),
                       ],
@@ -315,12 +315,12 @@ class ProfileEditRow extends StatelessWidget {
                             child: Text(
                               ProfileConstants.cancel,
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: ProfileUi.textTertiary,
+                                color: AppColors.textTertiary,
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
-                          ElevatedButton(
+                          FilledButton(
                             onPressed: () {
                               final v = draftValue ?? value;
                               if (validator != null && validator!(v) != null) {
@@ -328,10 +328,6 @@ class ProfileEditRow extends StatelessWidget {
                               }
                               onSave();
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ProfileUi.primary,
-                              foregroundColor: Colors.white,
-                            ),
                             child: Text(
                               'Save',
                               style: AppTextStyles.titleSmall.copyWith(
@@ -355,7 +351,7 @@ class ProfileEditRow extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
               child: Text(
                 errorMessage!,
-                style: AppTextStyles.caption.copyWith(color: ProfileUi.danger),
+                style: AppTextStyles.caption.copyWith(color: AppColors.danger),
               ),
             ),
           ),
@@ -488,7 +484,7 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
                     const Icon(
                       Icons.edit_outlined,
                       size: 20,
-                      color: ProfileUi.textTertiary,
+                      color: AppColors.textTertiary,
                     ),
                 ],
               ),
@@ -526,7 +522,7 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
                         Text(
                           widget.errorMessage!,
                           style: AppTextStyles.caption.copyWith(
-                            color: ProfileUi.danger,
+                            color: AppColors.danger,
                           ),
                         ),
                       ],
@@ -535,7 +531,7 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
                         Text(
                           widget.subtitle!,
                           style: AppTextStyles.caption.copyWith(
-                            color: ProfileUi.textTertiary,
+                            color: AppColors.textTertiary,
                           ),
                         ),
                       ],
@@ -548,12 +544,12 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
                             child: Text(
                               ProfileConstants.cancel,
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: ProfileUi.textTertiary,
+                                color: AppColors.textTertiary,
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
-                          ElevatedButton(
+                          FilledButton(
                             onPressed: () {
                               final digits = _digits.trim();
                               if (digits.isEmpty) {
@@ -561,10 +557,6 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
                               }
                               widget.onSave('$_dialCode$digits');
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ProfileUi.primary,
-                              foregroundColor: Colors.white,
-                            ),
                             child: Text(
                               'Save',
                               style: AppTextStyles.titleSmall.copyWith(

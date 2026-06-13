@@ -19,7 +19,7 @@ class ForceUpdateAmbientBackground extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFF7F6F2),
+            AppColors.surfaceWarm,
             AppColors.background,
             AppColors.background,
           ],
@@ -121,7 +121,7 @@ class ForceUpdateHeroBadge extends StatelessWidget {
                 border: Border.all(color: AppColors.borderSolid),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x14000000),
+                    color: AppColors.shadowSubtle,
                     blurRadius: 32,
                     offset: Offset(0, 12),
                   ),
@@ -146,7 +146,7 @@ class ForceUpdateHeroBadge extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF5FA3E5),
+                      AppColors.referralCardGradientStart,
                       AppColors.secondary,
                     ],
                   ),
@@ -299,7 +299,7 @@ class ForceUpdateVersionCard extends StatelessWidget {
         border: Border.all(color: AppColors.borderSolid),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x08000000),
+            color: AppColors.shadowFaint,
             blurRadius: 20,
             offset: Offset(0, 6),
           ),

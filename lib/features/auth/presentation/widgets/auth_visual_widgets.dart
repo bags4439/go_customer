@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Text-based logo for auth flows (DM Sans; primary mark per design spec).
 class AuthAppLogo extends StatelessWidget {
@@ -7,8 +8,6 @@ class AuthAppLogo extends StatelessWidget {
 
   const AuthAppLogo({super.key, this.fontSize = 26});
 
-  static const Color _primary = Color(0xFF378ADD);
-  static const Color _textPrimary = Color(0xFF1A1A18);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +19,7 @@ class AuthAppLogo extends StatelessWidget {
           width: fontSize * 1.4,
           height: fontSize * 1.4,
           decoration: BoxDecoration(
-            color: _primary,
+            color: AppColors.brand,
             borderRadius: BorderRadius.circular(fontSize * 0.3),
           ),
           child: Icon(
@@ -35,7 +34,7 @@ class AuthAppLogo extends StatelessWidget {
           style: AppTextStyles.titleLarge.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
-            color: _textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
@@ -43,7 +42,7 @@ class AuthAppLogo extends StatelessWidget {
           style: AppTextStyles.titleLarge.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
-            color: _primary,
+            color: AppColors.brand,
           ),
         ),
       ],
@@ -61,7 +60,7 @@ class AuthFormFieldLabel extends StatelessWidget {
     return Text(
       label,
       style: AppTextStyles.labelSmall.copyWith(
-        color: const Color(0xFFAAAAAA),
+        color: AppColors.textTertiary,
         letterSpacing: 11 * 0.08,
       ),
     );
@@ -93,13 +92,12 @@ class StyledAuthTextField extends StatelessWidget {
     this.hasError = false,
   });
 
-  static const Color _border = Color(0xFFE0DFD8);
-  static const Color _primary = Color(0xFF378ADD);
-  static const Color _danger = Color(0xFFE24B4A);
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = hasError ? _danger : (focused ? _primary : _border);
+    final borderColor = hasError
+        ? AppColors.danger
+        : (focused ? AppColors.brand : AppColors.borderSolid);
     final borderWidth = hasError || focused ? 1.5 : 1.0;
 
     return AnimatedContainer(
@@ -121,7 +119,7 @@ class StyledAuthTextField extends StatelessWidget {
         style: AppTextStyles.bodyLarge.copyWith(
           fontSize: 15,
           fontWeight: FontWeight.w400,
-          color: const Color(0xFF1A1A18),
+          color: AppColors.textPrimary,
           height: null,
         ),
         decoration: InputDecoration(
@@ -129,7 +127,7 @@ class StyledAuthTextField extends StatelessWidget {
           hintStyle: AppTextStyles.bodyLarge.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.w400,
-            color: const Color(0xFFAAAAAA),
+            color: AppColors.textTertiary,
             height: null,
           ),
           border: InputBorder.none,
@@ -145,7 +143,7 @@ void showAuthSnackBar(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: const Color(0xFF1A1A18),
+      backgroundColor: AppColors.textPrimary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       duration: const Duration(seconds: 3),
       content: Text(

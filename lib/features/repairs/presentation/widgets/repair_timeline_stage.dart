@@ -26,7 +26,7 @@ class RepairTimelineStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const activeColor = Color(0xFF185FA5);
+    const activeColor = AppColors.accent;
     return AnimatedOpacity(
       opacity: visible ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 200),

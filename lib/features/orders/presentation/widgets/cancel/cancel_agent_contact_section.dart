@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_button_styles.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../core/widgets/card_container.dart';
 import '../../../core/constants/order_edit_constants.dart';
@@ -194,7 +195,7 @@ class _ContactCard extends StatelessWidget {
                 child: _ContactActionButton(
                   icon: Icons.chat_rounded,
                   label: OrderEditConstants.whatsappAgentButton,
-                  accentColor: const Color(0xFF25D366),
+                  accentColor: AppColors.whatsapp,
                   onTap: hasWhatsApp ? onWhatsApp : null,
                   enabled: hasWhatsApp,
                 ),
@@ -264,14 +265,10 @@ class _ContactActionButton extends StatelessWidget {
         height: 52,
         child: FilledButton(
           onPressed: canTap ? onTap : null,
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.secondary,
-            disabledBackgroundColor: AppColors.borderSolid,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+          style: AppButtonStyles.primary(
+            shape: AppButtonStyles.roundedMdShape,
+            minimumHeight: 52,
+            minimumSize: const Size(double.infinity, 52),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

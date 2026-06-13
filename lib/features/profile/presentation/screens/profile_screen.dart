@@ -134,7 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       actions: const <Widget>[],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(0.5),
-        child: Container(color: ProfileUi.border),
+        child: Container(color: AppColors.borderSolid),
       ),
     );
   }
@@ -291,7 +291,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         child: Text(
                           ref.watch(appVersionLabelProvider),
                           style: AppTextStyles.caption.copyWith(
-                            color: ProfileUi.textTertiary,
+                            color: AppColors.textTertiary,
                           ),
                         ),
                       ),
@@ -470,7 +470,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             child: Text(
               ProfileConstants.stayLoggedInAction,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: ProfileUi.primary,
+                color: AppColors.brand,
               ),
             ),
           ),
@@ -482,7 +482,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             child: Text(
               ProfileConstants.logOutConfirmAction,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: ProfileUi.danger,
+                color: AppColors.danger,
                 fontWeight: FontWeight.w500,
               ),
             ),

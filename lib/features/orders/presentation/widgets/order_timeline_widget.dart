@@ -380,7 +380,7 @@ class _TimelineError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFFF5F4F0),
+      color: AppColors.surface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -396,7 +396,7 @@ class _TimelineError extends StatelessWidget {
               child: Text(
                 OrderTimelineConstants.retry,
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: const Color(0xFF378ADD),
+                  color: AppColors.brand,
                 ),
               ),
             ),

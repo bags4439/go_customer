@@ -6,6 +6,7 @@ import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/utils/currency_formatter.dart';
 import 'package:go_customer/shared/providers/preferred_currency_provider.dart';
 import 'package:go_customer/features/orders/domain/entities/payment_request_view.dart';
+import 'package:go_customer/core/theme/app_button_styles.dart';
 
 String? formatOrderDetailDeadline(DateTime deadlineAt) {
   final now = DateTime.now();
@@ -137,13 +138,9 @@ class OrderDetailPaymentCard extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             height: 44,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: onPayPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.background,
-                foregroundColor: AppColors.secondary,
-                elevation: 0,
-              ),
+              style: AppButtonStyles.inversePrimary(),
               child: Text(
                 'Pay now →',
                 style: AppTextStyles.labelLarge.copyWith(

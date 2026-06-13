@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:go_customer/core/theme/app_button_styles.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_customer/core/widgets/styled_snackbar.dart';
@@ -223,23 +224,12 @@ class _IdVerificationFormState extends ConsumerState<IdVerificationForm> {
               const SizedBox(height: 32),
               SizedBox(
                 height: 52,
-                child: ElevatedButton(
-                  onPressed: (canSave && !isSaving) ? _save : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    foregroundColor: AppColors.background,
-                    disabledBackgroundColor: AppColors.borderSolid,
-                    elevation: 0,
-                  ).copyWith(
-                    elevation: WidgetStateProperty.resolveWith((s) {
-                      if (s.contains(WidgetState.disabled)) return 0;
-                      if (s.contains(WidgetState.pressed)) return 0;
-                      return canSave ? 3.0 : 0.0;
-                    }),
-                    shadowColor: WidgetStateProperty.all(
-                      AppColors.secondary.withValues(alpha: 0.3),
-                    ),
-                  ),
+              child: FilledButton(
+                onPressed: (canSave && !isSaving) ? _save : null,
+                style: AppButtonStyles.primary(
+                  enabled: canSave && !isSaving,
+                  minimumHeight: 52,
+                ),
                   child: isSaving
                       ? const SizedBox(
                           width: 20,

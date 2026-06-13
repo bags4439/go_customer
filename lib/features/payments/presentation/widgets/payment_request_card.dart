@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/theme/app_button_styles.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -10,16 +11,8 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../orders/core/constants/order_timeline_constants.dart';
 import '../../../orders/presentation/widgets/order_detail/order_detail_web_navigation.dart';
 import '../../data/models/payment_request_model.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
-const _kBorder = 0xFFE0DFD8;
-const _kPrimary = 0xFF378ADD;
-const _kAmberBg = 0xFFFAEEDA;
-const _kAmberText = 0xFF633806;
-const _kTextSecondary = 0xFF666666;
-const _kTextTertiary = 0xFFAAAAAA;
-const _kSuccess = 0xFF1D9E75;
-const _kDanger = 0xFFE24B4A;
-const _kWarn = 0xFFBA7517;
 
 /// Timeline-embedded payment request card with breakdown, invoice, deadline.
 class PaymentRequestCard extends ConsumerStatefulWidget {
@@ -70,21 +63,21 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
         OrderTimelineConstants.dueToday,
         style: AppTextStyles.caption.copyWith(
           fontWeight: FontWeight.w600,
-          color: const Color(_kDanger),
+          color: AppColors.danger,
         ),
       );
     } else if (days >= 0 && days < 5) {
       text = Text(
         OrderTimelineConstants.daysLeft.replaceAll('[n]', '$days'),
         style: AppTextStyles.labelSmall.copyWith(
-          color: const Color(_kWarn),
+          color: AppColors.warning,
         ),
       );
     } else {
       text = Text(
         DateFormatter.formatDateTime(deadline),
         style: AppTextStyles.caption.copyWith(
-          color: const Color(_kTextTertiary),
+          color: AppColors.textTertiary,
         ),
       );
     }
@@ -92,7 +85,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
       padding: const EdgeInsets.only(top: 8),
       child: Row(
         children: [
-          const Icon(Icons.schedule, size: 14, color: Color(_kTextTertiary)),
+          const Icon(Icons.schedule, size: 14, color: AppColors.textTertiary),
           const SizedBox(width: 6),
           Expanded(child: text),
         ],
@@ -149,7 +142,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: const Color(_kBorder)),
+                    border: Border.all(color: AppColors.borderSolid),
                   ),
                 ),
               ),
@@ -158,7 +151,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                 top: 0,
                 bottom: 0,
                 child: ColoredBox(
-                  color: Color(_kPrimary),
+                  color: AppColors.brand,
                   child: SizedBox(width: 3),
                 ),
               ),
@@ -173,7 +166,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                           child: Text(
                             OrderTimelineConstants.paymentRequestLabel,
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: const Color(_kTextTertiary),
+                              color: AppColors.textTertiary,
                             ),
                           ),
                         ),
@@ -183,14 +176,14 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(_kAmberBg),
+                            color: AppColors.amberBackground,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             OrderTimelineConstants.awaitingPayment,
                             style: AppTextStyles.labelSmall.copyWith(
                               fontSize: 10,
-                              color: const Color(_kAmberText),
+                              color: AppColors.amberText,
                             ),
                           ),
                         ),
@@ -213,7 +206,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                           Text(
                             display.primary,
                             style: AppTextStyles.titleLarge.copyWith(
-                              color: const Color(_kPrimary),
+                              color: AppColors.brand,
                             ),
                           ),
                           if (display.hasSecondary) ...[
@@ -242,7 +235,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                     ? OrderTimelineConstants.hideBreakdown
                                     : OrderTimelineConstants.seeBreakdown,
                                 style: AppTextStyles.labelMedium.copyWith(
-                                  color: const Color(_kPrimary),
+                                  color: AppColors.brand,
                                 ),
                               ),
                               Icon(
@@ -250,7 +243,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                     ? Icons.expand_less
                                     : Icons.expand_more,
                                 size: 18,
-                                color: const Color(_kPrimary),
+                                color: AppColors.brand,
                               ),
                             ],
                           ),
@@ -276,9 +269,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                               b.label,
                                               style: AppTextStyles.cardLabel
                                                   .copyWith(
-                                                color: const Color(
-                                                  _kTextSecondary,
-                                                ),
+                                                color: AppColors.textSecondary,
                                               ),
                                             ),
                                           ),
@@ -290,7 +281,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                             style: AppTextStyles.labelMedium
                                                 .copyWith(
                                               color: b.isDeduction
-                                                  ? const Color(_kSuccess)
+                                                  ? AppColors.success
                                                   : Colors.black87,
                                             ),
                                           ),
@@ -328,14 +319,14 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                             const Icon(
                               Icons.receipt_outlined,
                               size: 14,
-                              color: Color(_kTextTertiary),
+                              color: AppColors.textTertiary,
                             ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 OrderTimelineConstants.invoiceAttached,
                                 style: AppTextStyles.caption.copyWith(
-                                  color: const Color(_kTextSecondary),
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -343,7 +334,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                               OrderTimelineConstants.viewInvoice,
                               style: AppTextStyles.caption.copyWith(
                                 fontWeight: FontWeight.w500,
-                                color: const Color(_kPrimary),
+                                color: AppColors.brand,
                               ),
                             ),
                           ],
@@ -355,7 +346,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                     SizedBox(
                       width: double.infinity,
                       height: 48,
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: _payLoading
                             ? null
                             : () async {
@@ -371,10 +362,7 @@ class _PaymentRequestCardState extends ConsumerState<PaymentRequestCard> {
                                   setState(() => _payLoading = false);
                                 }
                               },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(_kPrimary),
-                          foregroundColor: Colors.white,
-                        ),
+                        style: AppButtonStyles.primary(),
                         child: _payLoading
                             ? const SizedBox(
                                 width: 20,

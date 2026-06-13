@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeAppLogo extends StatelessWidget {
   const HomeAppLogo({super.key});
@@ -15,7 +15,7 @@ class HomeAppLogo extends StatelessWidget {
           width: 30,
           height: 30,
           decoration: BoxDecoration(
-            color: HomeColors.primary,
+            color: AppColors.brand,
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(
@@ -28,12 +28,12 @@ class HomeAppLogo extends StatelessWidget {
         Text(
           'AutoImport',
           style: AppTextStyles.appBarTitle.copyWith(
-            color: HomeColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
           ' GH',
-          style: AppTextStyles.appBarTitle.copyWith(color: HomeColors.primary),
+          style: AppTextStyles.appBarTitle.copyWith(color: AppColors.brand),
         ),
       ],
     );

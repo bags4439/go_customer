@@ -123,8 +123,8 @@ class SupportContactSection extends ConsumerWidget {
                     icon: Icons.chat_rounded,
                     label: 'WhatsApp',
                     number: contact.whatsappNumber!.trim(),
-                    accentColor: const Color(0xFF25D366),
-                    accentBg: const Color(0xFFECFDF5),
+                    accentColor: AppColors.whatsapp,
+                    accentBg: AppColors.whatsappMuted,
                     onTap: () => _launch(
                       context,
                       Uri.parse('https://wa.me/$waDigits'),

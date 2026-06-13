@@ -131,14 +131,9 @@ class _PaymentConfirmedScreenState
               if (widget.embedInWebPanel)
                 SizedBox(
                   height: 52,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: widget.onClosePanel ??
                         () => resetWebOrderPanelTask(ref),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                    ),
                     child: Text(
                       'Done',
                       style: AppTextStyles.buttonLarge,
@@ -148,14 +143,9 @@ class _PaymentConfirmedScreenState
               else ...[
                 SizedBox(
                   height: 52,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () =>
                         context.go('/order/${widget.orderId}'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                    ),
                     child: Text(
                       'View order →',
                       style: AppTextStyles.buttonLarge,
@@ -356,8 +346,8 @@ class _SuccessHero extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [
-                Color(0xFF1D9E75),
-                Color(0xFF27C28D),
+                AppColors.success,
+                AppColors.successGradientEnd,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -365,7 +355,7 @@ class _SuccessHero extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1D9E75).withValues(alpha: 0.4),
+                color: AppColors.success.withValues(alpha: 0.4),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -451,7 +441,7 @@ class _ReceiptCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: lightTheme
                   ? AppColors.successMutedBackground
-                  : const Color(0xFF1D9E75).withValues(alpha: 0.15),
+                  : AppColors.success.withValues(alpha: 0.15),
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(lightTheme ? 12 : 20),
               ),
@@ -664,7 +654,7 @@ class _NextStep extends StatelessWidget {
           height: 20,
           decoration: BoxDecoration(
             color: done
-                ? const Color(0xFF1D9E75).withValues(alpha: 0.3)
+                ? AppColors.success.withValues(alpha: 0.3)
                 : Colors.transparent,
             border: done
                 ? null
@@ -678,7 +668,7 @@ class _NextStep extends StatelessWidget {
               ? const Icon(
                   Icons.check_rounded,
                   size: 12,
-                  color: Color(0xFF1D9E75),
+                  color: AppColors.success,
                 )
               : Center(
                   child: Container(

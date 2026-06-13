@@ -563,8 +563,6 @@ class _ErrorState extends StatelessWidget {
 class _DocumentsShimmer extends StatelessWidget {
   const _DocumentsShimmer();
 
-  static const Color _base = Color(0xFFE0E0E0);
-  static const Color _highlight = Color(0xFFF5F5F5);
 
   @override
   Widget build(BuildContext context) {
@@ -572,8 +570,8 @@ class _DocumentsShimmer extends StatelessWidget {
       padding: DashboardLayout.bodyScrollPadding(context, top: 16, bottom: 16),
       children: [
         Shimmer.fromColors(
-          baseColor: _base,
-          highlightColor: _highlight,
+          baseColor: AppColors.shimmerBase,
+          highlightColor: AppColors.shimmerHighlight,
           child: Container(
             height: 12,
             width: 80,
@@ -585,8 +583,8 @@ class _DocumentsShimmer extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Shimmer.fromColors(
-          baseColor: _base,
-          highlightColor: _highlight,
+          baseColor: AppColors.shimmerBase,
+          highlightColor: AppColors.shimmerHighlight,
           child: Container(
             height: 72,
             decoration: BoxDecoration(
@@ -598,8 +596,8 @@ class _DocumentsShimmer extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Shimmer.fromColors(
-          baseColor: _base,
-          highlightColor: _highlight,
+          baseColor: AppColors.shimmerBase,
+          highlightColor: AppColors.shimmerHighlight,
           child: Container(
             height: 12,
             width: 120,
@@ -615,8 +613,8 @@ class _DocumentsShimmer extends StatelessWidget {
           (_) => Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Shimmer.fromColors(
-              baseColor: _base,
-              highlightColor: _highlight,
+              baseColor: AppColors.shimmerBase,
+              highlightColor: AppColors.shimmerHighlight,
               child: Container(
                 height: 80,
                 decoration: BoxDecoration(

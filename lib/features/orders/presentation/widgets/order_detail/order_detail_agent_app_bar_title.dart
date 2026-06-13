@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
 import 'order_detail_agent_photo_viewer.dart';
-import 'order_detail_ui.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Mobile app bar title when the Chat tab is active.
 class OrderDetailAgentAppBarTitle extends ConsumerWidget {
@@ -62,7 +62,7 @@ class OrderDetailAgentAppBarTitle extends ConsumerWidget {
                   height: 36,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: OrderDetailUi.border, width: 0.5),
+                    border: Border.all(color: AppColors.borderSolid, width: 0.5),
                   ),
                   child: ClipOval(
                     child: agent.photoUrl != null && agent.photoUrl!.isNotEmpty
@@ -86,7 +86,7 @@ class OrderDetailAgentAppBarTitle extends ConsumerWidget {
                   Text(
                     agent.fullName,
                     style: AppTextStyles.titleSmall.copyWith(
-                      color: OrderDetailUi.textPrimary,
+                      color: AppColors.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -94,7 +94,7 @@ class OrderDetailAgentAppBarTitle extends ConsumerWidget {
                     '${agent.totalOrdersCompleted} orders · '
                     '${agent.rating.toStringAsFixed(1)} ★',
                     style: AppTextStyles.caption.copyWith(
-                      color: OrderDetailUi.textMuted,
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -108,13 +108,13 @@ class OrderDetailAgentAppBarTitle extends ConsumerWidget {
                   height: 34,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: const BoxDecoration(
-                    color: OrderDetailUi.infoBg,
+                    color: AppColors.infoBackground,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.call_rounded,
                     size: 17,
-                    color: OrderDetailUi.primary,
+                    color: AppColors.brand,
                   ),
                 ),
               ),
@@ -127,7 +127,7 @@ class OrderDetailAgentAppBarTitle extends ConsumerWidget {
             width: 36,
             height: 36,
             decoration: const BoxDecoration(
-              color: OrderDetailUi.shimmer,
+              color: AppColors.shimmer,
               shape: BoxShape.circle,
             ),
           ),
@@ -136,7 +136,7 @@ class OrderDetailAgentAppBarTitle extends ConsumerWidget {
             width: 120,
             height: 13,
             decoration: BoxDecoration(
-              color: OrderDetailUi.shimmer,
+              color: AppColors.shimmer,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -148,19 +148,19 @@ class OrderDetailAgentAppBarTitle extends ConsumerWidget {
 
   Widget _avatarPlaceholder() {
     return const ColoredBox(
-      color: OrderDetailUi.infoBg,
-      child: Icon(Icons.person_outline, size: 18, color: OrderDetailUi.primary),
+      color: AppColors.infoBackground,
+      child: Icon(Icons.person_outline, size: 18, color: AppColors.brand),
     );
   }
 
   Widget _avatarInitial(String name) {
     return ColoredBox(
-      color: OrderDetailUi.infoBg,
+      color: AppColors.infoBackground,
       child: Center(
         child: Text(
           name.isNotEmpty ? name[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: OrderDetailUi.primary,
+            color: AppColors.brand,
           ),
         ),
       ),

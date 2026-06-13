@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
@@ -184,15 +185,12 @@ class _PaymentRequestViewScreenState
                 const SizedBox(height: 14),
                 SizedBox(
                   height: 52,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _paying ? null : () => _onPay(request),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: AppColors.secondary.withValues(
-                        alpha: 0.6,
-                      ),
-                      elevation: 0,
+                    style: AppButtonStyles.primary(
+                      minimumHeight: 52,
+                      disabledBackgroundColor:
+                          AppColors.brand.withValues(alpha: 0.6),
                     ),
                     child: _paying
                         ? const SizedBox(
@@ -971,13 +969,8 @@ class _EmailGateSheetState extends State<_EmailGateSheet> {
           const SizedBox(height: 20),
           SizedBox(
             height: 52,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: _isSaving ? null : _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-              ),
               child: _isSaving
                   ? const SizedBox(
                       width: 20,

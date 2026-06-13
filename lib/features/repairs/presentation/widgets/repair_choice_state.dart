@@ -164,7 +164,7 @@ class _RepairChoiceStateState extends ConsumerState<RepairChoiceState>
             RepairConstants.state1Heading,
             style: AppTextStyles.bodySmall.copyWith(
               fontWeight: FontWeight.w500,
-              color: AppColors.primary,
+              color: AppColors.foreground,
             ),
           ),
           const SizedBox(height: 16),

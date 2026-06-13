@@ -8,6 +8,7 @@ import '../../../../shared/providers/preferred_currency_provider.dart';
 import '../../domain/entities/order_view.dart';
 import '../../domain/entities/payment_request_view.dart';
 import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeOrderStatusBadge extends StatelessWidget {
   final OrderView order;
@@ -22,123 +23,123 @@ class HomeOrderStatusBadge extends StatelessWidget {
 
     if (order.needsPayment) {
       label = 'Pay now';
-      bg = HomeColors.dangerBg;
-      text = HomeColors.danger;
+      bg = AppColors.dangerMutedBackground;
+      text = AppColors.danger;
     } else if (order.isCompleted) {
       label = 'Delivered';
-      bg = HomeColors.successBg;
-      text = HomeColors.success;
+      bg = AppColors.successMutedBackground;
+      text = AppColors.success;
     } else {
       switch (order.status) {
         case FirestoreEnumValues.orderStatusOpen:
           label = 'Submitted';
-          bg = HomeColors.bgSecondary;
-          text = HomeColors.textSecondary;
+          bg = AppColors.surface;
+          text = AppColors.textSecondary;
           break;
         case FirestoreEnumValues.orderStatusAgentAssigned:
           label = 'Agent assigned';
-          bg = HomeColors.infoBg;
-          text = HomeColors.infoText;
+          bg = AppColors.infoBackground;
+          text = AppColors.accent;
           break;
         case FirestoreEnumValues.orderStatusSearching:
           label = 'Searching';
-          bg = HomeColors.warningBg;
-          text = HomeColors.warning;
+          bg = AppColors.amberBackground;
+          text = AppColors.warning;
           break;
         case FirestoreEnumValues.orderStatusBidPlaced:
           label = 'Bid placed';
-          bg = HomeColors.warningBg;
-          text = HomeColors.warning;
+          bg = AppColors.amberBackground;
+          text = AppColors.warning;
           break;
         case FirestoreEnumValues.orderStatusBidWon:
           label = 'Vehicle found';
-          bg = HomeColors.successBg;
-          text = HomeColors.success;
+          bg = AppColors.successMutedBackground;
+          text = AppColors.success;
           break;
         case FirestoreEnumValues.orderStatusBidLost:
           label = 'Bid lost';
-          bg = HomeColors.dangerBg;
-          text = HomeColors.danger;
+          bg = AppColors.dangerMutedBackground;
+          text = AppColors.danger;
           break;
         case FirestoreEnumValues.orderStatusPaymentReceived:
           label = 'Paid';
-          bg = HomeColors.successBg;
-          text = HomeColors.success;
+          bg = AppColors.successMutedBackground;
+          text = AppColors.success;
           break;
         case FirestoreEnumValues.orderStatusShipping:
           label = 'Shipping';
-          bg = HomeColors.infoBg;
-          text = HomeColors.infoText;
+          bg = AppColors.infoBackground;
+          text = AppColors.accent;
           break;
         case FirestoreEnumValues.orderStatusArrived:
           label = 'Arrived';
-          bg = HomeColors.successBg;
-          text = HomeColors.success;
+          bg = AppColors.successMutedBackground;
+          text = AppColors.success;
           break;
         case FirestoreEnumValues.orderStatusDutyPending:
           label = 'Duty pending';
-          bg = HomeColors.warningBg;
-          text = HomeColors.warning;
+          bg = AppColors.amberBackground;
+          text = AppColors.warning;
           break;
         case FirestoreEnumValues.orderStatusDutyPaid:
           label = 'Duty paid';
-          bg = HomeColors.infoBg;
-          text = HomeColors.infoText;
+          bg = AppColors.infoBackground;
+          text = AppColors.accent;
           break;
         case FirestoreEnumValues.orderStatusClearanceInProgress:
           label = 'Clearance';
-          bg = HomeColors.infoBg;
-          text = HomeColors.infoText;
+          bg = AppColors.infoBackground;
+          text = AppColors.accent;
           break;
         case FirestoreEnumValues.orderStatusClearanceComplete:
           label = 'Cleared';
-          bg = HomeColors.successBg;
-          text = HomeColors.success;
+          bg = AppColors.successMutedBackground;
+          text = AppColors.success;
           break;
         case FirestoreEnumValues.orderStatusRepairPending:
           label = 'Repairs';
-          bg = HomeColors.warningBg;
-          text = HomeColors.warning;
+          bg = AppColors.amberBackground;
+          text = AppColors.warning;
           break;
         case FirestoreEnumValues.orderStatusRepairInProgress:
           label = 'In repair';
-          bg = HomeColors.warningBg;
-          text = HomeColors.warning;
+          bg = AppColors.amberBackground;
+          text = AppColors.warning;
           break;
         case FirestoreEnumValues.orderStatusRepairComplete:
           label = 'Repairs done';
-          bg = HomeColors.successBg;
-          text = HomeColors.success;
+          bg = AppColors.successMutedBackground;
+          text = AppColors.success;
           break;
         case FirestoreEnumValues.orderStatusCancelled:
           label = 'Cancelled';
-          bg = HomeColors.dangerBg;
-          text = HomeColors.danger;
+          bg = AppColors.dangerMutedBackground;
+          text = AppColors.danger;
           break;
         case FirestoreEnumValues.orderStatusDeliveryInProgress:
           label = 'Delivery';
-          bg = HomeColors.infoBg;
-          text = HomeColors.infoText;
+          bg = AppColors.infoBackground;
+          text = AppColors.accent;
           break;
         case AppConstants.statusDeliveryConfirmed:
           label = 'Rate us ⭐';
-          bg = HomeColors.successBg;
-          text = HomeColors.success;
+          bg = AppColors.successMutedBackground;
+          text = AppColors.success;
           break;
         case AppConstants.statusDelivered:
           label = 'Complete';
-          bg = HomeColors.successBg;
-          text = HomeColors.success;
+          bg = AppColors.successMutedBackground;
+          text = AppColors.success;
           break;
         case FirestoreEnumValues.orderStatusDormant:
           label = 'On hold';
-          bg = HomeColors.bgSecondary;
-          text = HomeColors.textSecondary;
+          bg = AppColors.surface;
+          text = AppColors.textSecondary;
           break;
         default:
           label = 'In progress';
-          bg = HomeColors.bgSecondary;
-          text = HomeColors.textSecondary;
+          bg = AppColors.surface;
+          text = AppColors.textSecondary;
       }
     }
 
@@ -176,7 +177,7 @@ class HomeOrderPaymentInlineCta extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: HomeColors.primary,
+        color: AppColors.brand,
         borderRadius: BorderRadius.circular(8),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -225,7 +226,7 @@ class HomeOrderPaymentInlineCta extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: HomeColors.bgPrimary,
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -233,7 +234,7 @@ class HomeOrderPaymentInlineCta extends ConsumerWidget {
                 style: homeTextStyle(
                   size: 12,
                   weight: FontWeight.w600,
-                  color: HomeColors.primary,
+                  color: AppColors.brand,
                 ),
               ),
             ),

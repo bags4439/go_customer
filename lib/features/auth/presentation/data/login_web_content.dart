@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../referral/domain/entities/referral_share_settings.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Single source of truth for all
 /// web login and account setup
@@ -89,9 +90,9 @@ List<LoginWebTile> buildReferralTrustTiles(ReferralShareSettings settings) {
   final amountTile = settings.hasDiscount
       ? LoginWebTile(
           icon: Icons.card_giftcard_outlined,
-          iconBg: const Color(0xFFEAF3DE),
-          iconColor: const Color(0xFF27500A),
-          accentColor: const Color(0xFF1D9E75),
+          iconBg: AppColors.successMutedBackground,
+          iconColor: AppColors.successMutedForeground,
+          accentColor: AppColors.success,
           label:
               'Up to ${CurrencyFormatter.formatGhs(settings.referralDiscountGhs!)} '
               'in referral rewards',
@@ -101,9 +102,9 @@ List<LoginWebTile> buildReferralTrustTiles(ReferralShareSettings settings) {
         )
       : const LoginWebTile(
           icon: Icons.card_giftcard_outlined,
-          iconBg: Color(0xFFEAF3DE),
-          iconColor: Color(0xFF27500A),
-          accentColor: Color(0xFF1D9E75),
+          iconBg: AppColors.successMutedBackground,
+          iconColor: AppColors.successMutedForeground,
+          accentColor: AppColors.success,
           label: 'Referral rewards for your friend',
           sublabel:
               'They stand a chance to win when you complete your order',
@@ -118,18 +119,18 @@ List<LoginWebTile> buildReferralTrustTiles(ReferralShareSettings settings) {
 
 const LoginWebTile kReferralOptionalTile = LoginWebTile(
   icon: Icons.skip_next_outlined,
-  iconBg: Color(0xFFE6F1FB),
-  iconColor: Color(0xFF185FA5),
-  accentColor: Color(0xFF378ADD),
+  iconBg: AppColors.infoBackground,
+  iconColor: AppColors.accent,
+  accentColor: AppColors.brand,
   label: 'Optional step',
   sublabel: 'Skip if you weren\'t referred',
 );
 
 const LoginWebTile kReferralOwnCodeTile = LoginWebTile(
   icon: Icons.people_outline_rounded,
-  iconBg: Color(0xFFFAEEDA),
-  iconColor: Color(0xFF633806),
-  accentColor: Color(0xFFBA7517),
+  iconBg: AppColors.amberBackground,
+  iconColor: AppColors.amberText,
+  accentColor: AppColors.warning,
   label: 'You\'ll get your own code',
   sublabel: 'Share it from your profile after signup',
 );
@@ -152,25 +153,25 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
     tiles: [
       LoginWebTile(
         icon: Icons.support_agent_outlined,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
-        accentColor: Color(0xFF378ADD),
+        iconBg: AppColors.infoBackground,
+        iconColor: AppColors.accent,
+        accentColor: AppColors.brand,
         label: 'Dedicated agent per order',
         sublabel: 'One person from search to delivery',
       ),
       LoginWebTile(
         icon: Icons.notifications_active_outlined,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
-        accentColor: Color(0xFF1D9E75),
+        iconBg: AppColors.successMutedBackground,
+        iconColor: AppColors.successMutedForeground,
+        accentColor: AppColors.success,
         label: 'Live order updates',
         sublabel: 'Chat, timeline, and documents in one place',
       ),
       LoginWebTile(
         icon: Icons.receipt_long_outlined,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
-        accentColor: Color(0xFFBA7517),
+        iconBg: AppColors.amberBackground,
+        iconColor: AppColors.amberText,
+        accentColor: AppColors.warning,
         label: 'Clear cost breakdown',
         sublabel: 'See fees before you pay',
       ),
@@ -188,27 +189,27 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
     tiles: [
       LoginWebTile(
         icon: Icons.person_outline_rounded,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
-        accentColor: Color(0xFF378ADD),
+        iconBg: AppColors.infoBackground,
+        iconColor: AppColors.accent,
+        accentColor: AppColors.brand,
         label:
             'Your agent knows who'
             ' to contact',
       ),
       LoginWebTile(
         icon: Icons.chat_bubble_outline_rounded,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
-        accentColor: Color(0xFF1D9E75),
+        iconBg: AppColors.successMutedBackground,
+        iconColor: AppColors.successMutedForeground,
+        accentColor: AppColors.success,
         label:
             'Personal communication'
             ' throughout',
       ),
       LoginWebTile(
         icon: Icons.verified_outlined,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
-        accentColor: Color(0xFFBA7517),
+        iconBg: AppColors.amberBackground,
+        iconColor: AppColors.amberText,
+        accentColor: AppColors.warning,
         label:
             'Required for port'
             ' clearance documents',

@@ -185,11 +185,6 @@ class OrderDetailWebAgentCardContent extends ConsumerWidget {
                             fontSize: 13,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                        ),
                       ),
                     ),
                   ),

@@ -10,6 +10,7 @@ import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/dashboard_mobile_app_bar.dart';
 import '../../../catalogue/domain/entities/car_make.dart';
 import '../../../catalogue/domain/entities/car_model.dart';
@@ -664,59 +665,17 @@ class PreferencesPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canTap = isEnabled && !isLoading;
-    return SizedBox(
-      width: double.infinity,
+    return AppPrimaryButton(
+      label: label,
+      onPressed: onTap,
+      isLoading: isLoading,
+      enabled: isEnabled,
       height: 52,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: canTap ? AppColors.secondary : AppColors.borderSolid,
-          borderRadius: AppTheme.pillBorderRadius(52),
-          boxShadow: canTap
-              ? [
-                  BoxShadow(
-                    color: AppColors.secondary.withValues(alpha: 0.30),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
-                  ),
-                ]
-              : const [],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: canTap ? onTap : null,
-            borderRadius: AppTheme.pillBorderRadius(52),
-            splashColor: Colors.white.withValues(alpha: 0.15),
-            highlightColor: Colors.white.withValues(alpha: 0.08),
-            child: Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: isLoading
-                    ? const SizedBox(
-                        key: ValueKey<String>('loading'),
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        label,
-                        key: ValueKey<String>(label),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: canTap ? Colors.white : AppColors.textTertiary,
-                        ),
-                      ),
-              ),
-            ),
-          ),
-        ),
+      prominent: true,
+      textStyle: GoogleFonts.dmSans(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: AppColors.onBrand,
       ),
     );
   }

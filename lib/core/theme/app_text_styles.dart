@@ -170,13 +170,13 @@ class AppTextStyles {
   static TextStyle get buttonLarge => GoogleFonts.dmSans(
         fontSize: 15,
         fontWeight: FontWeight.w600,
-        color: Colors.white,
+        color: AppColors.onBrand,
       );
 
   static TextStyle get buttonMedium => GoogleFonts.dmSans(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: Colors.white,
+        color: AppColors.onBrand,
       );
 
   // ─── Captions ────────────────────
@@ -194,9 +194,9 @@ class AppTextStyles {
   static TextStyle get link => GoogleFonts.dmSans(
         fontSize: 13,
         fontWeight: FontWeight.w500,
-        color: AppColors.secondary,
+        color: AppColors.brand,
         decoration: TextDecoration.underline,
-        decorationColor: AppColors.secondary,
+        decorationColor: AppColors.brand,
       );
 
   // ─── AppBar title ─────────────────

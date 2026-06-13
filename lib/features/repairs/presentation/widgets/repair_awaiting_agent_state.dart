@@ -84,12 +84,8 @@ class RepairAwaitingAgentState extends ConsumerWidget {
           const SizedBox(height: 24),
           SizedBox(
             height: 48,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: repairScreenChatTap(context, orderId, onOpenChat),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-              ),
               child: Text(
                 RepairConstants.chatWithAgentButton(agentName),
                 style: AppTextStyles.buttonMedium.copyWith(

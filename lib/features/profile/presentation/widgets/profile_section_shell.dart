@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import 'profile_ui_tokens.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Animated section wrapper with title and optional “unsaved” dot.
 class ProfileAnimatedSection extends StatelessWidget {
@@ -56,7 +56,7 @@ class ProfileAnimatedSection extends StatelessWidget {
                       width: 6,
                       height: 6,
                       decoration: const BoxDecoration(
-                        color: ProfileUi.primary,
+                        color: AppColors.brand,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -79,7 +79,7 @@ class ProfileSectionDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.only(left: 14),
-      child: Divider(height: 1, color: ProfileUi.border, thickness: 0.5),
+      child: Divider(height: 1, color: AppColors.borderSolid, thickness: 0.5),
     );
   }
 }

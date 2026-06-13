@@ -86,7 +86,7 @@ class DarkSplitPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF0C447C),
+      color: AppColors.brandPanel,
       child: Stack(
         children: [
           // SVG geometric background
@@ -292,16 +292,16 @@ class _DarkPanelBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final p1 = Paint()
-      ..color = const Color(0xFF185FA5).withValues(alpha: 0.35)
+      ..color = AppColors.accent.withValues(alpha: 0.35)
       ..style = PaintingStyle.fill;
     final p2 = Paint()
-      ..color = const Color(0xFF042C53).withValues(alpha: 0.7)
+      ..color = AppColors.brandDeep.withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
     final p3 = Paint()
-      ..color = const Color(0xFF378ADD).withValues(alpha: 0.1)
+      ..color = AppColors.brand.withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
     final lineP = Paint()
-      ..color = const Color(0xFF378ADD).withValues(alpha: 0.2)
+      ..color = AppColors.brand.withValues(alpha: 0.2)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 

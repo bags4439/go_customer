@@ -74,7 +74,7 @@ class _RepairInProgressStateState extends ConsumerState<RepairInProgressState>
     final garageName = widget.job.garageNameCustom ?? garage?.name ?? '—';
     final pendingPayment =
         ref.watch(repairPendingPaymentProvider(widget.orderId)).valueOrNull;
-    const activeColor = Color(0xFF185FA5);
+    const activeColor = AppColors.accent;
     final estCompletion = widget.job.estimatedCompletion;
     final now = DateTime.now();
     final daysLeft = estCompletion != null && estCompletion.isAfter(now)
@@ -91,7 +91,7 @@ class _RepairInProgressStateState extends ConsumerState<RepairInProgressState>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFE6F1FB),
+              color: AppColors.infoBackground,
               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             child: Row(
@@ -268,15 +268,11 @@ class _RepairInProgressStateState extends ConsumerState<RepairInProgressState>
           const SizedBox(height: 24),
           SizedBox(
             height: 48,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: repairScreenChatTap(
                 context,
                 widget.orderId,
                 widget.onOpenChat,
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
               ),
               child: Text(RepairConstants.askAgentButton(agentName)),
             ),

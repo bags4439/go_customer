@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import '../../../guide/core/constants/guide_keys.dart';
@@ -309,10 +310,11 @@ class _AgentConnectionAssignedViewState
                   flex: 3,
                   child: SizedBox(
                     height: 52,
-                    child: ElevatedButton.icon(
+                    child: FilledButton.icon(
                       onPressed: () {
                         context.push('/order/${widget.orderId}?tab=chat');
                       },
+                      style: AppButtonStyles.primary(minimumHeight: 52),
                       icon: const Icon(
                         Icons.chat_bubble_outline_rounded,
                         size: 18,
@@ -328,17 +330,6 @@ class _AgentConnectionAssignedViewState
                           letterSpacing: 0.0,
                         ),
                       ),
-                      style:
-                          ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                          ).copyWith(
-                            overlayColor: WidgetStateProperty.all(
-                              Colors.white.withValues(alpha: 0.1),
-                            ),
-                          ),
                     ),
                   ),
                 ),

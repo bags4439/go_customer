@@ -60,7 +60,7 @@ class _RepairNoRepairStateState extends ConsumerState<RepairNoRepairState> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: switching
                             ? null
                             : () async {
@@ -83,10 +83,6 @@ class _RepairNoRepairStateState extends ConsumerState<RepairNoRepairState> {
                                   (_) => Navigator.of(sheetContext).pop(),
                                 );
                               },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          foregroundColor: Colors.white,
-                        ),
                         child: switching
                             ? const SizedBox(
                                 width: 20,
@@ -170,15 +166,11 @@ class _RepairNoRepairStateState extends ConsumerState<RepairNoRepairState> {
           const SizedBox(height: 24),
           SizedBox(
             height: 48,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: repairScreenChatTap(
                 context,
                 widget.orderId,
                 widget.onOpenChat,
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
               ),
               child: Text(RepairConstants.askAgentButton(agentName)),
             ),

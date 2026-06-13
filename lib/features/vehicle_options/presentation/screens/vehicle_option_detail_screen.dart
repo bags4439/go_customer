@@ -257,13 +257,6 @@ class _LinkPreviewCard extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
             ),
           ),
         ],

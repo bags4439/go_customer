@@ -24,7 +24,7 @@ class ProfileBodyShimmer extends StatelessWidget {
         Container(
           height: 100,
           decoration: BoxDecoration(
-            color: ProfileUi.surface,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
           ),
         ),
@@ -37,7 +37,7 @@ class ProfileBodyShimmer extends StatelessWidget {
                 height: 60,
                 margin: const EdgeInsets.only(right: 4),
                 decoration: BoxDecoration(
-                  color: ProfileUi.surface,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -92,12 +92,8 @@ class ProfileIncompleteSetupBody extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 height: 48,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () => context.go('/login'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ProfileUi.primary,
-                    shape: AppTheme.buttonPillShape,
-                  ),
                   child: Text(
                     'Continue setup',
                     style: AppTextStyles.titleSmall.copyWith(
@@ -144,11 +140,8 @@ class ProfileBodyError extends StatelessWidget {
               style: AppTextStyles.bodyMedium.copyWith(color: Colors.black87),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
+            FilledButton(
               onPressed: onRetry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ProfileUi.primary,
-              ),
               child: Text(
                 ProfileConstants.retry,
                 style: AppTextStyles.titleSmall.copyWith(color: Colors.white),

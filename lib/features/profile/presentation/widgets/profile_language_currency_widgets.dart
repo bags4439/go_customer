@@ -15,7 +15,6 @@ import '../../../auth/presentation/widgets/country_picker_sheet.dart';
 import '../../core/constants/profile_constants.dart';
 import '../providers/profile_providers.dart';
 import 'profile_section_shell.dart';
-import 'profile_ui_tokens.dart';
 
 class ProfileLanguageCurrencySection extends ConsumerWidget {
   const ProfileLanguageCurrencySection({super.key, required this.user});
@@ -104,7 +103,7 @@ class ProfileLanguageRow extends StatelessWidget {
               Text(ProfileConstants.languageEnglish, style: valueStyle),
               const Icon(
                 Icons.chevron_right,
-                color: ProfileUi.textTertiary,
+                color: AppColors.textTertiary,
                 size: 24,
               ),
             ],
@@ -227,7 +226,7 @@ class ProfileCurrencyRow extends ConsumerWidget {
               const Icon(
                 Icons.edit_outlined,
                 size: 20,
-                color: ProfileUi.textTertiary,
+                color: AppColors.textTertiary,
               ),
             ],
           ),
@@ -499,7 +498,7 @@ class ProfileCountryRow extends ConsumerWidget {
               const Icon(
                 Icons.edit_outlined,
                 size: 20,
-                color: ProfileUi.textTertiary,
+                color: AppColors.textTertiary,
               ),
             ],
           ),

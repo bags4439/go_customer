@@ -16,6 +16,7 @@ import '../utils/active_order_stage.dart';
 import '../utils/home_order_status_resolver.dart';
 import 'home_order_status.dart';
 import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeOrderReviewCta extends ConsumerWidget {
   const HomeOrderReviewCta({
@@ -37,10 +38,10 @@ class HomeOrderReviewCta extends ConsumerWidget {
         borderRadius: BorderRadius.circular(8),
         child: Container(
         decoration: BoxDecoration(
-          color: HomeColors.successBg,
+          color: AppColors.successMutedBackground,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: HomeColors.success.withValues(alpha: 0.25),
+            color: AppColors.success.withValues(alpha: 0.25),
             width: 0.5,
           ),
         ),
@@ -56,7 +57,7 @@ class HomeOrderReviewCta extends ConsumerWidget {
                     style: homeTextStyle(
                       size: 14,
                       weight: FontWeight.w600,
-                      color: HomeColors.success,
+                      color: AppColors.success,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -64,7 +65,7 @@ class HomeOrderReviewCta extends ConsumerWidget {
                     OrderTimelineConstants.deliveryHomeCtaLine,
                     style: homeTextStyle(
                       size: 11,
-                      color: HomeColors.textSecondary,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -73,10 +74,10 @@ class HomeOrderReviewCta extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: HomeColors.bgPrimary,
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: HomeColors.success.withValues(alpha: 0.35),
+                  color: AppColors.success.withValues(alpha: 0.35),
                   width: 0.5,
                 ),
               ),
@@ -85,7 +86,7 @@ class HomeOrderReviewCta extends ConsumerWidget {
                 style: homeTextStyle(
                   size: 12,
                   weight: FontWeight.w600,
-                  color: HomeColors.success,
+                  color: AppColors.success,
                 ),
               ),
             ),
@@ -109,10 +110,10 @@ class HomeOrderClearanceUpdateCta extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
-        color: HomeColors.infoBg,
+        color: AppColors.infoBackground,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: HomeColors.primary.withValues(alpha: 0.25),
+          color: AppColors.brand.withValues(alpha: 0.25),
           width: 0.5,
         ),
       ),
@@ -128,7 +129,7 @@ class HomeOrderClearanceUpdateCta extends ConsumerWidget {
                   style: homeTextStyle(
                     size: 14,
                     weight: FontWeight.w600,
-                    color: HomeColors.primary,
+                    color: AppColors.brand,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -136,7 +137,7 @@ class HomeOrderClearanceUpdateCta extends ConsumerWidget {
                   OrderTimelineConstants.clearanceHomeUpdateLine,
                   style: homeTextStyle(
                     size: 11,
-                    color: HomeColors.textSecondary,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -151,10 +152,10 @@ class HomeOrderClearanceUpdateCta extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: HomeColors.bgPrimary,
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: HomeColors.primary.withValues(alpha: 0.35),
+                  color: AppColors.brand.withValues(alpha: 0.35),
                   width: 0.5,
                 ),
               ),
@@ -163,7 +164,7 @@ class HomeOrderClearanceUpdateCta extends ConsumerWidget {
                 style: homeTextStyle(
                   size: 12,
                   weight: FontWeight.w600,
-                  color: HomeColors.primary,
+                  color: AppColors.brand,
                 ),
               ),
             ),
@@ -188,10 +189,10 @@ class HomeOrderVehicleFeedbackCta extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
-        color: HomeColors.warningBg,
+        color: AppColors.amberBackground,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: HomeColors.warning.withValues(alpha: 0.25),
+          color: AppColors.warning.withValues(alpha: 0.25),
           width: 0.5,
         ),
       ),
@@ -207,7 +208,7 @@ class HomeOrderVehicleFeedbackCta extends ConsumerWidget {
                   style: homeTextStyle(
                     size: 14,
                     weight: FontWeight.w600,
-                    color: HomeColors.amberText,
+                    color: AppColors.amberText,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -215,7 +216,7 @@ class HomeOrderVehicleFeedbackCta extends ConsumerWidget {
                   VehicleOptionConstants.pendingBannerBody,
                   style: homeTextStyle(
                     size: 11,
-                    color: HomeColors.amberText,
+                    color: AppColors.amberText,
                   ),
                 ),
               ],
@@ -230,16 +231,16 @@ class HomeOrderVehicleFeedbackCta extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: HomeColors.bgPrimary,
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: HomeColors.warning, width: 0.5),
+                border: Border.all(color: AppColors.warning, width: 0.5),
               ),
               child: Text(
                 VehicleOptionConstants.homeCtaAction,
                 style: homeTextStyle(
                   size: 12,
                   weight: FontWeight.w600,
-                  color: HomeColors.warning,
+                  color: AppColors.warning,
                 ),
               ),
             ),
@@ -260,16 +261,16 @@ class HomeOrderOriginPill extends StatelessWidget {
     final (String label, Color bg, Color text) = switch (origin) {
       'us_canada' => (
         '🇺🇸 US / Canada',
-        HomeColors.pillSoftBlue,
-        HomeColors.infoText,
+        AppColors.selectionTint,
+        AppColors.accent,
       ),
-      'dubai' => ('🇦🇪 Dubai', HomeColors.warningBg, HomeColors.amberText),
+      'dubai' => ('🇦🇪 Dubai', AppColors.amberBackground, AppColors.amberText),
       'china' => (
         '🇨🇳 China',
-        HomeColors.successBg,
-        HomeColors.successMutedForeground,
+        AppColors.successMutedBackground,
+        AppColors.successMutedForeground,
       ),
-      _ => (origin, HomeColors.bgSecondary, HomeColors.textSecondary),
+      _ => (origin, AppColors.surface, AppColors.textSecondary),
     };
 
     return Container(
@@ -330,18 +331,18 @@ class HomeOrderCard extends ConsumerWidget {
         order.status == AppConstants.statusDeliveryConfirmed;
 
     final accentColor = order.isCancelled
-        ? HomeColors.textTertiary
+        ? AppColors.textTertiary
         : order.needsPayment
-        ? HomeColors.danger
+        ? AppColors.danger
         : pendingListings > 0
-        ? HomeColors.warning
+        ? AppColors.warning
         : needsReview
-        ? HomeColors.success
+        ? AppColors.success
         : clearanceUpdate
-        ? HomeColors.primary
+        ? AppColors.brand
         : order.isCompleted
-        ? HomeColors.success
-        : HomeColors.primary;
+        ? AppColors.success
+        : AppColors.brand;
 
     final progress =
         (order.stageNumber.clamp(1, totalStages)) / totalStages;
@@ -350,16 +351,16 @@ class HomeOrderCard extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: HomeColors.bgPrimary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(radius),
         child: InkWell(
           onTap: () => router.push('/order/${order.id}'),
           borderRadius: BorderRadius.circular(radius),
-          splashColor: HomeColors.infoBg,
-          highlightColor: HomeColors.bgSecondary,
+          splashColor: AppColors.infoBackground,
+          highlightColor: AppColors.surface,
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(color: HomeColors.border, width: 0.5),
+              border: Border.all(color: AppColors.borderSolid, width: 0.5),
               borderRadius: BorderRadius.circular(radius),
             ),
             child: ClipRRect(
@@ -423,7 +424,7 @@ class HomeOrderCard extends ConsumerWidget {
                                         order.orderRef,
                                         style: homeTextStyle(
                                           size: 11,
-                                          color: HomeColors.textTertiary,
+                                          color: AppColors.textTertiary,
                                         ),
                                       ),
                                       if (order.purchaseOrigin != 'any') ...[
@@ -465,7 +466,7 @@ class HomeOrderCard extends ConsumerWidget {
                                   statusDescription,
                                   style: homeTextStyle(
                                     size: 12,
-                                    color: HomeColors.textSecondary,
+                                    color: AppColors.textSecondary,
                                   ),
                                 );
                               },
@@ -474,7 +475,7 @@ class HomeOrderCard extends ConsumerWidget {
                                 statusDescription,
                                 style: homeTextStyle(
                                   size: 12,
-                                  color: HomeColors.textSecondary,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -487,7 +488,7 @@ class HomeOrderCard extends ConsumerWidget {
                                     child: LinearProgressIndicator(
                                       value: progress,
                                       minHeight: 6,
-                                      backgroundColor: HomeColors.border,
+                                      backgroundColor: AppColors.borderSolid,
                                       valueColor: AlwaysStoppedAnimation<Color>(
                                         accentColor,
                                       ),
@@ -498,7 +499,7 @@ class HomeOrderCard extends ConsumerWidget {
                                 Text(
                                   'Step ${order.stageNumber} of $totalStages',
                                   style: AppTextStyles.labelSmall.copyWith(
-                                    color: HomeColors.textTertiary,
+                                    color: AppColors.textTertiary,
                                   ),
                                 ),
                               ],

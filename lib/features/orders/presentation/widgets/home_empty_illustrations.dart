@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
-import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeEmptyFeatureItem extends StatelessWidget {
   final Widget iconWidget;
@@ -22,9 +22,9 @@ class HomeEmptyFeatureItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: HomeColors.bgPrimary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: HomeColors.border, width: 0.5),
+        border: Border.all(color: AppColors.borderSolid, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +63,7 @@ class HomeEmptyCtaIllustration extends StatelessWidget {
       width: double.infinity,
       height: 96,
       decoration: BoxDecoration(
-        color: HomeColors.infoBg,
+        color: AppColors.infoBackground,
         borderRadius: BorderRadius.circular(12),
       ),
       child: CustomPaint(painter: HomeEmptyCtaIllustrationPainter()),
@@ -75,14 +75,14 @@ class HomeEmptyCtaIllustrationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bluePaint = Paint()
-      ..color = HomeColors.primary
+      ..color = AppColors.brand
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     final blueFill = Paint()
-      ..color = HomeColors.primary.withValues(alpha: 0.12)
+      ..color = AppColors.brand.withValues(alpha: 0.12)
       ..style = PaintingStyle.fill;
 
     final cx = size.width * 0.26;
@@ -109,12 +109,12 @@ class HomeEmptyCtaIllustrationPainter extends CustomPainter {
     canvas.drawPath(
       windPath,
       Paint()
-        ..color = HomeColors.primary.withValues(alpha: 0.25)
+        ..color = AppColors.brand.withValues(alpha: 0.25)
         ..style = PaintingStyle.fill,
     );
 
     final wheelPaint = Paint()
-      ..color = HomeColors.primary
+      ..color = AppColors.brand
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(cx - 16, cy + 9), 5, wheelPaint);
     canvas.drawCircle(Offset(cx + 16, cy + 9), 5, wheelPaint);
@@ -122,19 +122,19 @@ class HomeEmptyCtaIllustrationPainter extends CustomPainter {
       Offset(cx - 16, cy + 9),
       2.5,
       Paint()
-        ..color = HomeColors.infoBg
+        ..color = AppColors.infoBackground
         ..style = PaintingStyle.fill,
     );
     canvas.drawCircle(
       Offset(cx + 16, cy + 9),
       2.5,
       Paint()
-        ..color = HomeColors.infoBg
+        ..color = AppColors.infoBackground
         ..style = PaintingStyle.fill,
     );
 
     final dashPaint = Paint()
-      ..color = HomeColors.primary.withValues(alpha: 0.4)
+      ..color = AppColors.brand.withValues(alpha: 0.4)
       ..strokeWidth = 1
       ..strokeCap = StrokeCap.round;
     final startX = cx + 30.0;
@@ -150,20 +150,20 @@ class HomeEmptyCtaIllustrationPainter extends CustomPainter {
       Offset(endX, cy),
       6,
       Paint()
-        ..color = HomeColors.primary.withValues(alpha: 0.15)
+        ..color = AppColors.brand.withValues(alpha: 0.15)
         ..style = PaintingStyle.fill,
     );
     canvas.drawCircle(
       Offset(endX, cy),
       6,
       Paint()
-        ..color = HomeColors.primary
+        ..color = AppColors.brand
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1,
     );
 
     final checkPaint = Paint()
-      ..color = HomeColors.primary
+      ..color = AppColors.brand
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -177,9 +177,9 @@ class HomeEmptyCtaIllustrationPainter extends CustomPainter {
     final labelX = endX + 14;
     final labelSpacing = size.height * 0.22;
     final origins = <(String, Color, Color)>[
-      ('US / Canada', HomeColors.infoText, HomeColors.infoBg),
-      ('Dubai', HomeColors.amberText, HomeColors.warningBg),
-      ('China', HomeColors.successMutedForeground, HomeColors.successBg),
+      ('US / Canada', AppColors.accent, AppColors.infoBackground),
+      ('Dubai', AppColors.amberText, AppColors.amberBackground),
+      ('China', AppColors.successMutedForeground, AppColors.successMutedBackground),
     ];
 
     for (var i = 0; i < origins.length; i++) {
@@ -228,7 +228,7 @@ class HomeEmptyAgentIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = HomeColors.infoText
+      ..color = AppColors.accent
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
@@ -245,7 +245,7 @@ class HomeEmptyAgentIconPainter extends CustomPainter {
     canvas.drawPath(bodyPath, p);
 
     final ap = Paint()
-      ..color = HomeColors.primary
+      ..color = AppColors.brand
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
       ..strokeCap = StrokeCap.round
@@ -260,7 +260,7 @@ class HomeEmptyAgentIconPainter extends CustomPainter {
       Offset(cx + 12.5, cy - 6),
       1.2,
       Paint()
-        ..color = HomeColors.primary
+        ..color = AppColors.brand
         ..style = PaintingStyle.fill,
     );
   }
@@ -273,7 +273,7 @@ class HomeEmptyTrackingIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = HomeColors.successMutedForeground
+      ..color = AppColors.successMutedForeground
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
@@ -289,7 +289,7 @@ class HomeEmptyTrackingIconPainter extends CustomPainter {
     canvas.drawRRect(rrect, p);
 
     final cp = Paint()
-      ..color = HomeColors.success
+      ..color = AppColors.success
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3
       ..strokeCap = StrokeCap.round
@@ -310,7 +310,7 @@ class HomeEmptyClearanceIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = HomeColors.amberText
+      ..color = AppColors.amberText
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
@@ -339,7 +339,7 @@ class HomeEmptyClearanceIconPainter extends CustomPainter {
       Offset(cx, cy + 2),
       1.8,
       Paint()
-        ..color = HomeColors.warning
+        ..color = AppColors.warning
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1,
     );
@@ -347,7 +347,7 @@ class HomeEmptyClearanceIconPainter extends CustomPainter {
       Offset(cx, cy + 3.5),
       Offset(cx, cy + 5.5),
       Paint()
-        ..color = HomeColors.warning
+        ..color = AppColors.warning
         ..strokeWidth = 1
         ..strokeCap = StrokeCap.round,
     );
@@ -362,7 +362,7 @@ class HomeEmptyDeliveryIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = HomeColors.infoText
+      ..color = AppColors.accent
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
@@ -382,14 +382,14 @@ class HomeEmptyDeliveryIconPainter extends CustomPainter {
       Offset(cx - 11, cy + 3.5),
       1.8,
       Paint()
-        ..color = HomeColors.infoText
+        ..color = AppColors.accent
         ..style = PaintingStyle.fill,
     );
     canvas.drawCircle(
       Offset(cx - 4, cy + 3.5),
       1.8,
       Paint()
-        ..color = HomeColors.infoText
+        ..color = AppColors.accent
         ..style = PaintingStyle.fill,
     );
 
@@ -409,7 +409,7 @@ class HomeEmptyDeliveryIconPainter extends CustomPainter {
     canvas.drawPath(
       cabPath,
       Paint()
-        ..color = HomeColors.infoText.withValues(alpha: 0.3)
+        ..color = AppColors.accent.withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1
         ..strokeCap = StrokeCap.round,
@@ -418,14 +418,14 @@ class HomeEmptyDeliveryIconPainter extends CustomPainter {
       Offset(cx + 2, cy + 3.5),
       1.8,
       Paint()
-        ..color = HomeColors.infoText
+        ..color = AppColors.accent
         ..style = PaintingStyle.fill,
     );
     canvas.drawCircle(
       Offset(cx + 7.5, cy + 3.5),
       1.8,
       Paint()
-        ..color = HomeColors.infoText
+        ..color = AppColors.accent
         ..style = PaintingStyle.fill,
     );
   }

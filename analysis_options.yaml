@@ -9,6 +9,13 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+# Colour & button conventions are enforced by tests in test/core/theme/:
+#   no_hardcoded_colors_test.dart  — hex literals only in app_colors.dart
+#   duplicate_palettes_test.dart   — no per-feature colour palette classes
+#   app_colors_test.dart           — token sanity
+#   app_button_styles_test.dart    — shared button style factories
+# Run: fvm flutter test test/core/theme/
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/card_container.dart';
 import '../../../../core/widgets/styled_snackbar.dart';
@@ -141,10 +142,6 @@ class _BackToOrderButton extends StatelessWidget {
       height: 52,
       child: FilledButton(
         onPressed: () => context.go('/order/$orderId'),
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.secondary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
         child: Text(
           OrderEditConstants.backToOrder,
           style: GoogleFonts.dmSans(
@@ -223,12 +220,9 @@ class _CancelContent extends ConsumerWidget {
             onPressed: cancelState == CancelOrderStatus.cancelling
                 ? null
                 : () => _confirmCancel(context, ref),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+            style: AppButtonStyles.destructive(
+              shape: AppButtonStyles.roundedMdShape,
+              minimumHeight: 52,
             ),
             child: cancelState == CancelOrderStatus.cancelling
                 ? const SizedBox(

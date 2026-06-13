@@ -117,7 +117,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
       actions: [standaloneOrderRefTrailing(orderRef)],
       titleStyle: AppTextStyles.titleMedium.copyWith(
         fontSize: 18,
-        color: AppColors.primary,
+        color: AppColors.foreground,
       ),
       body: body,
     );

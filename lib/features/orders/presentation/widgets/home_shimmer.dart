@@ -3,7 +3,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/layout/dashboard_layout.dart';
 import 'home_layout_utils.dart';
-import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeShimmer extends StatelessWidget {
   const HomeShimmer({super.key});
@@ -11,7 +11,7 @@ class HomeShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: HomeColors.bgSecondary,
+      baseColor: AppColors.surface,
       highlightColor: Colors.white,
       child: Padding(
         padding: DashboardLayout.flowScrollPadding(
@@ -67,7 +67,7 @@ class HomeShimmerBox extends StatelessWidget {
       width: width ?? double.infinity,
       height: height,
       decoration: BoxDecoration(
-        color: HomeColors.bgSecondary,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(radius),
       ),
     );

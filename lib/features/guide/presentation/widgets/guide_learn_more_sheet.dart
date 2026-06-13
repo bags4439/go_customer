@@ -37,7 +37,7 @@ class GuideLearnMoreSheet extends ConsumerWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
-                color: Color(0x14000000),
+                color: AppColors.shadowSubtle,
                 blurRadius: 24,
                 offset: Offset(0, -4),
               ),

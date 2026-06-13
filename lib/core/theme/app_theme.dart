@@ -20,10 +20,13 @@ class AppTheme {
 
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.secondary,
-      primary: AppColors.primary,
-      secondary: AppColors.secondary,
+      seedColor: AppColors.brand,
+      primary: AppColors.brand,
+      onPrimary: AppColors.onBrand,
+      secondary: AppColors.accent,
+      onSecondary: AppColors.onBrand,
       surface: AppColors.surface,
+      onSurface: AppColors.foreground,
       error: AppColors.danger,
       brightness: Brightness.light,
     );
@@ -35,7 +38,7 @@ class AppTheme {
       textTheme: AppTextStyles.textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
-        foregroundColor: AppColors.primary,
+        foregroundColor: AppColors.foreground,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         titleTextStyle: AppTextStyles.appBarTitle,
@@ -52,7 +55,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
           borderSide: const BorderSide(color: AppColors.border),
@@ -63,13 +66,13 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: AppColors.secondary, width: 2),
+          borderSide: const BorderSide(color: AppColors.brand, width: 2),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.secondary,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.brand,
+          foregroundColor: AppColors.onBrand,
           elevation: 0,
           shape: buttonPillShape,
           minimumSize: buttonMinimumSize,
@@ -78,8 +81,8 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.secondary,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.brand,
+          foregroundColor: AppColors.onBrand,
           elevation: 0,
           shape: buttonPillShape,
           minimumSize: buttonMinimumSize,
@@ -88,8 +91,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.border),
+          foregroundColor: AppColors.foreground,
+          side: const BorderSide(color: AppColors.borderSolid),
           shape: buttonPillShape,
           minimumSize: buttonMinimumSize,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -97,7 +100,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.secondary,
+          foregroundColor: AppColors.brand,
           shape: buttonPillShape,
           minimumSize: buttonMinimumSize,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -113,4 +116,3 @@ class AppTheme {
     );
   }
 }
-

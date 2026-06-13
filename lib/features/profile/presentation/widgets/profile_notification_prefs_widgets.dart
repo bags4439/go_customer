@@ -8,7 +8,7 @@ import '../../../auth/domain/entities/app_user.dart';
 import '../../core/constants/profile_constants.dart';
 import '../providers/profile_providers.dart';
 import 'profile_section_shell.dart';
-import 'profile_ui_tokens.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class ProfileNotificationsSection extends ConsumerWidget {
   const ProfileNotificationsSection({super.key, required this.user});
@@ -153,7 +153,7 @@ class _ProfileNotificationToggleRowState
                   height: 14,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: ProfileUi.primary,
+                    color: AppColors.brand,
                   ),
                 ),
               ),
@@ -162,7 +162,7 @@ class _ProfileNotificationToggleRowState
             CupertinoSwitch(
               value: _localValue,
               onChanged: _onToggle,
-              activeTrackColor: ProfileUi.primary,
+              activeTrackColor: AppColors.brand,
             ),
         ],
       ),

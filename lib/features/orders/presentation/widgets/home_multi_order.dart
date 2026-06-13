@@ -14,7 +14,7 @@ import 'home_layout_utils.dart';
 import 'home_metric_card.dart';
 import 'home_order_card.dart';
 import 'home_staggered_item.dart';
-import 'home_theme.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 class HomeMultiOrderBody extends ConsumerWidget {
   final List<OrderView> orders;
@@ -82,14 +82,14 @@ class HomeMultiOrderBody extends ConsumerWidget {
               style: AppTextStyles.displaySmall.copyWith(
                 fontSize: 26,
                 fontWeight: FontWeight.w600,
-                color: HomeColors.textPrimary,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               _subtitleText(active, needsAction),
               style: AppTextStyles.bodySmall.copyWith(
-                color: HomeColors.textSecondary,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -102,7 +102,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
             child: HomeMetricCard(
               label: 'Active',
               value: '$active',
-              valueColor: HomeColors.primary,
+              valueColor: AppColors.brand,
               icon: Icons.directions_car_outlined,
             ),
           ),
@@ -112,8 +112,8 @@ class HomeMultiOrderBody extends ConsumerWidget {
               label: 'Action needed',
               value: '$needsAction',
               valueColor: needsAction > 0
-                  ? HomeColors.danger
-                  : HomeColors.textTertiary,
+                  ? AppColors.danger
+                  : AppColors.textTertiary,
               icon: Icons.notifications_outlined,
               pulse: needsAction > 0,
             ),
@@ -123,7 +123,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
             child: HomeMetricCard(
               label: 'Completed',
               value: '$completed',
-              valueColor: HomeColors.success,
+              valueColor: AppColors.success,
               icon: Icons.check_circle_outline,
             ),
           ),
@@ -134,7 +134,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
         'YOUR ORDERS',
         style: AppTextStyles.sectionLabel.copyWith(
           fontWeight: FontWeight.w600,
-          color: HomeColors.textTertiary,
+          color: AppColors.textTertiary,
         ),
       ),
       const SizedBox(height: 10),
@@ -152,15 +152,15 @@ class HomeMultiOrderBody extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: HomeColors.bgPrimary,
+            color: AppColors.background,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: HomeColors.primary.withValues(alpha: 0.25),
+              color: AppColors.brand.withValues(alpha: 0.25),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: HomeColors.primary.withValues(alpha: 0.06),
+                color: AppColors.brand.withValues(alpha: 0.06),
                 blurRadius: 12,
                 offset: const Offset(0, 3),
               ),
@@ -172,12 +172,12 @@ class HomeMultiOrderBody extends ConsumerWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: HomeColors.primary.withValues(alpha: 0.10),
+                  color: AppColors.brand.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.add_circle_outline,
-                  color: HomeColors.primary,
+                  color: AppColors.brand,
                   size: 20,
                 ),
               ),
@@ -189,7 +189,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
                     Text(
                       'Buy another car',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: HomeColors.primary,
+                        color: AppColors.brand,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -203,7 +203,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
               const Icon(
                 Icons.arrow_forward_ios,
                 size: 14,
-                color: HomeColors.primary,
+                color: AppColors.brand,
               ),
             ],
           ),

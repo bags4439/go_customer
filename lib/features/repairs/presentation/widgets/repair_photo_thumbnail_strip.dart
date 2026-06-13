@@ -282,7 +282,7 @@ class _LabelChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: isBefore
             ? Colors.white.withValues(alpha: 0.92)
-            : const Color(0xFFEAF3DE),
+            : AppColors.successMutedBackground,
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
@@ -297,7 +297,7 @@ class _LabelChip extends StatelessWidget {
         style: AppTextStyles.caption.copyWith(
           fontSize: 9,
           fontWeight: FontWeight.w600,
-          color: isBefore ? AppColors.textSecondary : const Color(0xFF27500A),
+          color: isBefore ? AppColors.textSecondary : AppColors.successMutedForeground,
         ),
       ),
     );

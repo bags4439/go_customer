@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/core/theme/app_colors.dart';
 
 /// Full-screen agent photo with pinch-zoom.
 class OrderDetailAgentPhotoViewer extends StatelessWidget {
@@ -35,7 +36,7 @@ class OrderDetailAgentPhotoViewer extends StatelessWidget {
                     ),
                   ),
                   errorWidget: (_, __, ___) => const ColoredBox(
-                    color: Color(0xFF1A1A18),
+                    color: AppColors.textPrimary,
                     child: Icon(
                       Icons.person_outline,
                       size: 64,

@@ -169,7 +169,7 @@ class _StepItem extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: const BoxDecoration(
-                color: Color(0xFFE0DFD8),
+                color: AppColors.borderSolid,
                 shape: BoxShape.circle,
               ),
             ),
@@ -224,13 +224,8 @@ class _TimeoutBody extends StatelessWidget {
             const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: onTryAgain,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                ),
                 child: const Text('Check again'),
               ),
             ),

@@ -33,7 +33,7 @@ class RepairAwaitingQuoteState extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.infoBackground,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFB5D4F4)),
+              border: Border.all(color: AppColors.filterActiveBorder),
             ),
             child: Column(
               children: [
@@ -65,12 +65,8 @@ class RepairAwaitingQuoteState extends ConsumerWidget {
           const SizedBox(height: 24),
           SizedBox(
             height: 48,
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: repairScreenChatTap(context, orderId, onOpenChat),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-              ),
               child: Text(
                 RepairConstants.chatWithAgentButton(agentName),
                 style: AppTextStyles.buttonMedium.copyWith(

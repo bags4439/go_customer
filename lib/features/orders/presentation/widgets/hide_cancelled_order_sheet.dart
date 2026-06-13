@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/theme/app_button_styles.dart';
 import 'package:go_customer/features/orders/core/constants/order_edit_constants.dart';
 
 /// Confirmation sheet before hiding a cancelled order.
@@ -65,12 +66,9 @@ class _HideCancelledOrderSheet extends StatelessWidget {
             height: 52,
             child: FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              style: AppButtonStyles.destructive(
+                shape: AppButtonStyles.roundedMdShape,
+                minimumHeight: 52,
               ),
               child: Text(
                 OrderEditConstants.removeConfirmAction,

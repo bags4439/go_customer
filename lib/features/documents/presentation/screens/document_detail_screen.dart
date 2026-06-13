@@ -312,7 +312,7 @@ class _DocumentDetailContentState extends ConsumerState<_DocumentDetailContent> 
               style: AppTextStyles.bodySmall
                   .copyWith(color: Colors.white, height: 1.2),
             ),
-            backgroundColor: const Color(0xFF1A1A18),
+            backgroundColor: AppColors.textPrimary,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -436,14 +436,14 @@ class _PreviewAreaState extends State<_PreviewArea> {
     return Container(
       height: 180,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F4F0),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Shimmer.fromColors(
-          baseColor: const Color(0xFFE0E0E0),
-          highlightColor: const Color(0xFFF5F5F5),
+          baseColor: AppColors.shimmerBase,
+          highlightColor: AppColors.shimmerHighlight,
           child: Container(
             height: 180,
             color: Colors.white,
@@ -457,7 +457,7 @@ class _PreviewAreaState extends State<_PreviewArea> {
     return Container(
       height: 180,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F4F0),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       alignment: Alignment.center,
@@ -488,7 +488,7 @@ class _PreviewAreaState extends State<_PreviewArea> {
     return Container(
       height: 180,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F4F0),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       alignment: Alignment.center,
@@ -522,7 +522,7 @@ class _PreviewAreaState extends State<_PreviewArea> {
       child: Container(
         height: 180,
         decoration: BoxDecoration(
-          color: const Color(0xFFF5F4F0),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
         ),
         clipBehavior: Clip.antiAlias,
@@ -611,7 +611,7 @@ class _PreviewAreaState extends State<_PreviewArea> {
         child: Container(
           height: 180,
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F4F0),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
           ),
           clipBehavior: Clip.antiAlias,
@@ -623,8 +623,8 @@ class _PreviewAreaState extends State<_PreviewArea> {
               width: double.infinity,
               height: 180,
               placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: const Color(0xFFE0E0E0),
-                highlightColor: const Color(0xFFF5F5F5),
+                baseColor: AppColors.shimmerBase,
+                highlightColor: AppColors.shimmerHighlight,
                 child: Container(height: 180, color: Colors.white),
               ),
               errorWidget: (context, url, error) => _buildErrorPreview(context),
@@ -751,7 +751,7 @@ class _MetadataCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F4F0),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -821,9 +821,9 @@ class _RejectionReasonCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFCEBEB),
+        color: AppColors.dangerMutedBackground,
         border: Border(
-          left: BorderSide(color: const Color(0xFFE24B4A), width: 3),
+          left: BorderSide(color: AppColors.danger, width: 3),
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -833,14 +833,14 @@ class _RejectionReasonCard extends StatelessWidget {
           Text(
             DocumentConstants.rejectionReason.toUpperCase(),
             style: AppTextStyles.sectionLabel.copyWith(
-              color: const Color(0xFFA32D2D),
+              color: AppColors.dangerMutedText,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             reason ?? DocumentConstants.notApplicable,
             style: AppTextStyles.labelMedium
-                .copyWith(color: const Color(0xFFA32D2D)),
+                .copyWith(color: AppColors.dangerMutedText),
           ),
           const SizedBox(height: 8),
           GestureDetector(
@@ -921,8 +921,8 @@ class _DocumentDetailLoading extends StatelessWidget {
         padding: DashboardLayout.flowOuterPaddingAll(context, inset: 14),
         children: [
           Shimmer.fromColors(
-            baseColor: const Color(0xFFE0E0E0),
-            highlightColor: const Color(0xFFF5F5F5),
+            baseColor: AppColors.shimmerBase,
+            highlightColor: AppColors.shimmerHighlight,
             child: Container(
               height: 180,
               decoration: BoxDecoration(
@@ -933,8 +933,8 @@ class _DocumentDetailLoading extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Shimmer.fromColors(
-            baseColor: const Color(0xFFE0E0E0),
-            highlightColor: const Color(0xFFF5F5F5),
+            baseColor: AppColors.shimmerBase,
+            highlightColor: AppColors.shimmerHighlight,
             child: Container(
               height: 200,
               decoration: BoxDecoration(

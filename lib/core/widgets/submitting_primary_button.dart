@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_button_styles.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -26,27 +27,18 @@ class SubmittingPrimaryButton extends StatelessWidget {
     return SizedBox(
       height: 48,
       width: double.infinity,
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: hasSelection && !isSubmitting ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor:
-              hasSelection ? AppColors.secondary : AppColors.surface,
-          foregroundColor:
-              hasSelection ? Colors.white : AppColors.textTertiary,
-          disabledBackgroundColor:
-              hasSelection ? AppColors.secondary : AppColors.surface,
-          disabledForegroundColor:
-              hasSelection ? Colors.white : AppColors.textTertiary,
-          elevation: 0,
-          minimumSize: const Size(double.infinity, 48),
-        ),
+        style: hasSelection
+            ? AppButtonStyles.primaryLoading()
+            : AppButtonStyles.primary(enabled: false),
         child: isSubmitting
             ? const SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: AppColors.onBrand,
                 ),
               )
             : Text(
