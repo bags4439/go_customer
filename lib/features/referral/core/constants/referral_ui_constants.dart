@@ -11,11 +11,12 @@ class ReferralUiConstants {
   static const String linkWebsite = 'Website';
 
   /// Shown when [referralDiscountAmount] is present (amount inserted between prefix/suffix).
-  static const String bodyWithRewardPrefix = 'Earn a fixed credit of ';
+  static const String bodyWithRewardPrefix =
+      'Stand a chance to win up to ';
   static const String bodyWithRewardMiddle =
-      ' when a friend joins with your code and completes onboarding. ';
+      ' in referral rewards when a friend joins with your code and completes their order. ';
   static const String bodyPerks =
-      'Top referrers can unlock extra perks and qualify for prize draws.';
+      'Top referrers can unlock extra perks.';
 
   static const String bodyGeneric =
       'Invite friends to import with us using your referral code. ';

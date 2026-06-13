@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../referral/domain/entities/referral_share_settings.dart';
+
 /// Single source of truth for all
 /// web login and account setup
 /// left panel content.
@@ -47,6 +50,90 @@ class LoginWebTile {
   final String? sublabel;
 }
 
+class LoginPhoneWelcomeCopy {
+  const LoginPhoneWelcomeCopy({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+}
+
+LoginPhoneWelcomeCopy loginPhoneWelcomeCopy({required bool isReturning}) {
+  return isReturning
+      ? const LoginPhoneWelcomeCopy(
+          title: 'Welcome back.',
+          subtitle:
+              'Enter your phone number to receive a verification code.',
+        )
+      : const LoginPhoneWelcomeCopy(
+          title: 'Sign in to get started.',
+          subtitle:
+              'Enter your phone number to receive a verification code.',
+        );
+}
+
+/// Compact phone / portrait-tablet login tiles (agent + pricing).
+List<LoginWebTile> loginTrustTilesForPhone() {
+  final tiles = kLoginWebPanels['login']!.tiles;
+  return [tiles[0], tiles[2]];
+}
+
+/// Full login trust tiles for web split layout.
+List<LoginWebTile> loginTrustTilesForWeb() =>
+    kLoginWebPanels['login']!.tiles;
+
+/// Referral step tiles — tile 2 reflects [settings.referralDiscountGhs].
+List<LoginWebTile> buildReferralTrustTiles(ReferralShareSettings settings) {
+  final amountTile = settings.hasDiscount
+      ? LoginWebTile(
+          icon: Icons.card_giftcard_outlined,
+          iconBg: const Color(0xFFEAF3DE),
+          iconColor: const Color(0xFF27500A),
+          accentColor: const Color(0xFF1D9E75),
+          label:
+              'Up to ${CurrencyFormatter.formatGhs(settings.referralDiscountGhs!)} '
+              'in referral rewards',
+          sublabel:
+              'Your friend stands a chance to win when you '
+              'complete your order',
+        )
+      : const LoginWebTile(
+          icon: Icons.card_giftcard_outlined,
+          iconBg: Color(0xFFEAF3DE),
+          iconColor: Color(0xFF27500A),
+          accentColor: Color(0xFF1D9E75),
+          label: 'Referral rewards for your friend',
+          sublabel:
+              'They stand a chance to win when you complete your order',
+        );
+
+  return [
+    kReferralOptionalTile,
+    amountTile,
+    kReferralOwnCodeTile,
+  ];
+}
+
+const LoginWebTile kReferralOptionalTile = LoginWebTile(
+  icon: Icons.skip_next_outlined,
+  iconBg: Color(0xFFE6F1FB),
+  iconColor: Color(0xFF185FA5),
+  accentColor: Color(0xFF378ADD),
+  label: 'Optional step',
+  sublabel: 'Skip if you weren\'t referred',
+);
+
+const LoginWebTile kReferralOwnCodeTile = LoginWebTile(
+  icon: Icons.people_outline_rounded,
+  iconBg: Color(0xFFFAEEDA),
+  iconColor: Color(0xFF633806),
+  accentColor: Color(0xFFBA7517),
+  label: 'You\'ll get your own code',
+  sublabel: 'Share it from your profile after signup',
+);
+
 /// Panel content for each login
 /// step. All steps use the same
 /// photo (onboarding_preference.jpg)
@@ -64,28 +151,28 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         ' and keeps you updated every step.',
     tiles: [
       LoginWebTile(
-        icon: Icons.map_outlined,
+        icon: Icons.support_agent_outlined,
         iconBg: Color(0xFFE6F1FB),
         iconColor: Color(0xFF185FA5),
         accentColor: Color(0xFF378ADD),
-        label: '48+ vehicles imported',
-        sublabel: 'Across Ghana',
+        label: 'Dedicated agent per order',
+        sublabel: 'One person from search to delivery',
       ),
       LoginWebTile(
-        icon: Icons.star_outline_rounded,
+        icon: Icons.notifications_active_outlined,
         iconBg: Color(0xFFEAF3DE),
         iconColor: Color(0xFF27500A),
         accentColor: Color(0xFF1D9E75),
-        label: '4.9 ★ customer rating',
-        sublabel: 'Average across all orders',
+        label: 'Live order updates',
+        sublabel: 'Chat, timeline, and documents in one place',
       ),
       LoginWebTile(
         icon: Icons.receipt_long_outlined,
         iconBg: Color(0xFFFAEEDA),
         iconColor: Color(0xFF633806),
         accentColor: Color(0xFFBA7517),
-        label: '100% transparent pricing',
-        sublabel: 'No hidden fees ever',
+        label: 'Clear cost breakdown',
+        sublabel: 'See fees before you pay',
       ),
     ],
   ),
@@ -131,38 +218,11 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
 
   'referral': LoginWebPanel(
     eyebrow: 'STEP 2 OF 3 · REFERRAL',
-    heading: 'Share the journey.\nEarn rewards.',
+    heading: 'Were you referred?',
     subheading:
-        'If a friend referred you,'
-        ' enter their code. They'
-        ' earn a reward when you'
-        ' complete your first order.',
-    tiles: [
-      LoginWebTile(
-        icon: Icons.card_giftcard_outlined,
-        iconBg: Color(0xFFE6F1FB),
-        iconColor: Color(0xFF185FA5),
-        accentColor: Color(0xFF378ADD),
-        label: 'GHS 500 reward',
-        sublabel: 'Per successful referral',
-      ),
-      LoginWebTile(
-        icon: Icons.flash_on_outlined,
-        iconBg: Color(0xFFEAF3DE),
-        iconColor: Color(0xFF27500A),
-        accentColor: Color(0xFF1D9E75),
-        label: 'Instant credit',
-        sublabel: 'Applied on order completion',
-      ),
-      LoginWebTile(
-        icon: Icons.people_outline_rounded,
-        iconBg: Color(0xFFFAEEDA),
-        iconColor: Color(0xFF633806),
-        accentColor: Color(0xFFBA7517),
-        label: 'No limit on referrals',
-        sublabel: 'Refer as many as you want',
-      ),
-    ],
+        'If a friend referred you, enter their code. They stand a '
+        'chance to win referral rewards when you complete your order.',
+    tiles: [],
   ),
 
   'contactChannels': LoginWebPanel(

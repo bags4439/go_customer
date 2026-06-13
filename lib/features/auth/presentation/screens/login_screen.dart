@@ -20,6 +20,8 @@ import '../notifiers/login_notifier.dart';
 import '../notifiers/login_state.dart';
 import '../providers/countries_providers.dart';
 import '../providers/login_providers.dart';
+import '../providers/referral_login_tiles_provider.dart';
+import '../providers/returning_user_provider.dart';
 import '../widgets/country_picker_sheet.dart';
 import '../widgets/mobile_auth_shell.dart';
 import '../widgets/phone_dial_input_field.dart';
@@ -1107,13 +1109,17 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
 
     final isWeb = AcquisitionLayout.useWebLayout(context);
     final loginPanel = kLoginWebPanels['login']!;
+    final isReturning =
+        ref.watch(isReturningLoginUserProvider).valueOrNull ?? false;
+    final welcomeCopy = loginPhoneWelcomeCopy(isReturning: isReturning);
 
     if (!isWeb) {
       return MobileAuthShell(
         panel: loginPanel,
-        title: 'Welcome back.',
-        subtitle:
-            'Enter your phone number to receive a verification code.',
+        title: welcomeCopy.title,
+        subtitle: welcomeCopy.subtitle,
+        trustTiles: loginTrustTilesForPhone(),
+        showEyebrow: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -1199,7 +1205,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Welcome back.',
+                  welcomeCopy.title,
                   style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
@@ -1207,7 +1213,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Enter your phone number to receive a verification code.',
+                  welcomeCopy.subtitle,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: 12,
                     color: const Color(0xFF666666),
@@ -1222,7 +1228,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
           _animated(
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: _WebContextTiles(tiles: loginPanel.tiles),
+              child: _WebContextTiles(tiles: loginTrustTilesForWeb()),
             ),
             _fieldFade,
             _fieldSlide,
@@ -2169,12 +2175,14 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
 
     final isWeb = AcquisitionLayout.useWebLayout(context);
     final referralPanel = kLoginWebPanels['referral']!;
+    final referralTiles = ref.watch(referralLoginTrustTilesProvider);
 
     if (!isWeb) {
       return MobileAuthShell(
         panel: referralPanel,
         setupStepCurrent: 1,
         onBack: notifier.goBack,
+        trustTiles: referralTiles,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -2264,7 +2272,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Share the journey.\nEarn rewards.',
+                  referralPanel.heading,
                   style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
@@ -2272,9 +2280,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'If a friend referred you, enter their code. '
-                  'They earn a reward when you complete your '
-                  'first order.',
+                  referralPanel.subheading,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: const Color(0xFF666666),
                     fontSize: 12,
@@ -2287,7 +2293,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: _WebContextTiles(tiles: referralPanel.tiles),
+            child: _WebContextTiles(tiles: referralTiles),
           ),
           const SizedBox(height: 12),
           _fadeSlide(

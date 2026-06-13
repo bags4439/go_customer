@@ -13,6 +13,7 @@ import '../../domain/usecases/get_current_user_use_case.dart';
 import '../../domain/usecases/request_otp_use_case.dart';
 import '../../domain/usecases/verify_otp_use_case.dart';
 import '../../domain/value_objects/phone_number.dart';
+import '../providers/returning_user_provider.dart';
 import 'login_state.dart';
 
 class LoginNotifier extends StateNotifier<LoginState> {
@@ -191,6 +192,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
       (result) async {
         final (uid, isNewUser) = result;
         await _syncOneSignalUseCase.call(uid);
+        await _markHasEverSignedIn();
         if (isNewUser) {
           state = state.copyWith(
             isLoading: false,
@@ -339,6 +341,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
     }
 
     if (!_alive) return;
+    await _markHasEverSignedIn();
     state = state.copyWith(isLoading: false, nav: LoginNav.goHome);
   }
 
@@ -346,7 +349,18 @@ class LoginNotifier extends StateNotifier<LoginState> {
     state = state.copyWith(isLoading: true, error: null);
     await _markRegistrationComplete();
     if (!_alive) return;
+    await _markHasEverSignedIn();
     state = state.copyWith(isLoading: false, nav: LoginNav.goHome);
+  }
+
+  Future<void> _markHasEverSignedIn() async {
+    try {
+      final storage = await _ref.read(returningUserStorageProvider.future);
+      await storage.markHasEverSignedIn();
+      _ref.invalidate(isReturningLoginUserProvider);
+    } catch (_) {
+      // Non-fatal — welcome copy falls back to first-time.
+    }
   }
 
   Future<void> _persistRegistrationWizardStep(String stepKey) async {

@@ -35,6 +35,7 @@ class MobileAuthShell extends StatelessWidget {
     this.onBack,
     this.showTrustTiles = true,
     this.showEyebrow = true,
+    this.trustTiles,
   });
 
   final LoginWebPanel panel;
@@ -55,6 +56,9 @@ class MobileAuthShell extends StatelessWidget {
   final VoidCallback? onBack;
   final bool showTrustTiles;
   final bool showEyebrow;
+
+  /// When set, used instead of [LoginWebPanel.tiles] for trust tiles.
+  final List<LoginWebTile>? trustTiles;
 
   @override
   Widget build(BuildContext context) {
@@ -124,9 +128,19 @@ class MobileAuthShell extends StatelessWidget {
             const SizedBox(height: 10),
             headerExtra!,
           ],
-          if (showTrustTiles && panel.tiles.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            MobileAuthTrustTiles(tiles: panel.tiles),
+          if (showTrustTiles) ...[
+            Builder(
+              builder: (context) {
+                final tiles = trustTiles ?? panel.tiles;
+                if (tiles.isEmpty) return const SizedBox.shrink();
+                return Column(
+                  children: [
+                    const SizedBox(height: 14),
+                    MobileAuthTrustTiles(tiles: tiles),
+                  ],
+                );
+              },
+            ),
           ],
           const SizedBox(height: 18),
           child,
