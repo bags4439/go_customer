@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import '../utils/crash_reporter.dart';
 import 'failures.dart';
 
+bool shouldReportFailure(Failure failure) {
+  return failure is! ValidationFailure &&
+      failure is! NetworkFailure;
+}
+
 Future<void> reportFailure(Failure failure, [StackTrace? stackTrace]) async {
+  if (!shouldReportFailure(failure)) return;
+
   await CrashReporter.reportError(
     failure,
     stackTrace: stackTrace ?? StackTrace.current,

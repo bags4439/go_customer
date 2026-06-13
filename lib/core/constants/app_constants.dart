@@ -9,6 +9,11 @@ class AppConstants {
   /// Keeping it as a constant avoids scattering the value across the codebase.
   static const String oneSignalAppId = '9a05e7b1-ca1c-4de2-b521-a175c1d66e34';
 
+  /// Sentry DSN for web error reporting (profile/release only).
+  /// Client-safe — not a server secret.
+  static const String sentryDsn =
+      'https://0ed742aaf110229b2a43bc1b9e3db9ca@o4511555146743808.ingest.de.sentry.io/4511555160244304';
+
   /// Paystack PUBLIC key — safe to include in client code.
   /// NEVER put the secret key here. Secret key lives in Firebase Secret Manager only.
   static const String paystackPublicKey =

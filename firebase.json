@@ -12,7 +12,7 @@
         "default": {
           "projectId": "velocitech-auto-go",
           "appId": "1:359295127098:ios:af0e5acd80f864138a2f03",
-          "uploadDebugSymbols": false,
+          "uploadDebugSymbols": true,
           "fileOutput": "ios/Runner/GoogleService-Info.plist"
         }
       },
@@ -20,7 +20,7 @@
         "default": {
           "projectId": "velocitech-auto-go",
           "appId": "1:359295127098:ios:af0e5acd80f864138a2f03",
-          "uploadDebugSymbols": false,
+          "uploadDebugSymbols": true,
           "fileOutput": "macos/Runner/GoogleService-Info.plist"
         }
       },

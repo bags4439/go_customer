@@ -48,8 +48,8 @@ final authStateProvider = StreamProvider<String?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges();
 });
 
-/// Side-effect provider — sets Crashlytics
-/// user identity whenever auth state changes.
+/// Side-effect provider — syncs auth UID to
+/// Crashlytics (mobile) / Sentry (web).
 /// Must be watched somewhere that is always
 /// alive (e.g. the root widget or shell).
 final crashlyticsUserSyncProvider = Provider<void>((ref) {
