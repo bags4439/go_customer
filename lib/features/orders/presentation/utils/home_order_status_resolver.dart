@@ -177,7 +177,7 @@ String _legacyOrderStatusFallback(OrderView order) {
     case AppConstants.statusDeliveryConfirmed:
       return '🎉 Vehicle received · please rate your experience';
     case AppConstants.statusDelivered:
-      return 'Order complete · thank you for choosing AutoImport GH';
+      return 'Order complete · thank you for choosing ${AppBrandingDefaults.displayName}';
     case FirestoreEnumValues.orderStatusDormant:
     default:
       return 'No recent activity · open chat if needed';

@@ -13,12 +13,12 @@
 			<array>
 				<string>$(FIREBASE_REVERSED_CLIENT_ID)</string>
 				<string>$(FIREBASE_IOS_URL_SCHEME)</string>
-				<string>autoimportgh</string>
+				<string>whiplyn</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>Go Customer</string>
+	<string>Whiplyn</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -61,10 +61,10 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to suggest your delivery address.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>AutoImport GH uses your camera to capture photos of identity documents and files for upload.</string>
+	<string>Whiplyn uses your camera to capture photos of identity documents and files for upload.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>AutoImport GH accesses your photo library to select images for upload.</string>
+	<string>Whiplyn accesses your photo library to select images for upload.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>AutoImport GH may use the microphone for video recording.</string>
+	<string>Whiplyn may use the microphone for video recording.</string>
 </dict>
 </plist>

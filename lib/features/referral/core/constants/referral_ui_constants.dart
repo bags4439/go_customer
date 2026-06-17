@@ -28,5 +28,7 @@ class ReferralUiConstants {
   static const String codeMissingHint =
       'Your personal code appears once your profile is complete.';
 
+  static String shareMessageOpener(String appName) => 'Join me on $appName.';
+
   static String shareMessageFooter(String appName) => '\n\n— $appName';
 }

@@ -101,8 +101,4 @@ class ProfileConstants {
       'File too large. Maximum size is 5MB.';
   static const String retry = 'Retry';
   static const String tryAgain = 'Try again';
-
-  static const String supportEmail = 'support@autoimportgh.com';
-  static const String faqUrl = 'https://autoimportgh.com/faq';
-  static const String termsUrl = 'https://autoimportgh.com/terms';
 }

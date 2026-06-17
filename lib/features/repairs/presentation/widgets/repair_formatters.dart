@@ -158,7 +158,7 @@ class RepairQuoteBreakdown extends StatelessWidget {
         if (platformFee != null) ...[
           const SizedBox(height: 14),
           Text(
-            RepairConstants.autoImportFeeSectionLabel,
+            RepairConstants.platformFeeSectionLabel,
             style: AppTextStyles.sectionLabel.copyWith(
               fontWeight: FontWeight.w500,
               letterSpacing: 0.6,

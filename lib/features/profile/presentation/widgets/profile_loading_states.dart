@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_customer/core/constants/app_constants.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/layout/acquisition_layout.dart';
 import '../../../../core/layout/dashboard_layout.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../core/constants/profile_constants.dart';
 import 'profile_ui_tokens.dart';
 
@@ -82,7 +82,7 @@ class ProfileIncompleteSetupBody extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Finish account setup to start using AutoImport GH.',
+                'Finish account setup to start using ${AppBrandingDefaults.displayName}.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,

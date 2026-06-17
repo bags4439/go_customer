@@ -1,3 +1,5 @@
+import 'package:go_customer/core/constants/app_constants.dart';
+
 /// Strings for the dynamic order timeline (no hardcoded copy in widgets).
 class OrderTimelineConstants {
   OrderTimelineConstants._();
@@ -22,7 +24,8 @@ class OrderTimelineConstants {
   static const String rateExperience = 'Rate your experience →';
   static const String reviewScreenTitle = 'Rate your experience';
   static const String deliveredTitle = '🎉 Your vehicle has been delivered!';
-  static const String deliveredThanks = 'Thank you for choosing AutoImport GH.';
+  static final String deliveredThanks =
+      'Thank you for choosing ${AppBrandingDefaults.displayName}.';
 
   /// Generic searching subtitle when origin is unknown or not yet wired.
   static const String searchingSub =

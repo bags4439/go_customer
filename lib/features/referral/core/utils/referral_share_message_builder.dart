@@ -10,7 +10,7 @@ class ReferralShareMessageBuilder {
     required String referralCode,
   }) {
     final buf = StringBuffer();
-    buf.writeln(AppConstants.appName);
+    buf.writeln(ReferralUiConstants.shareMessageOpener(AppConstants.appName));
     buf.writeln();
     if (referralCode.trim().isNotEmpty) {
       buf.writeln('My referral code: ${referralCode.trim()}');

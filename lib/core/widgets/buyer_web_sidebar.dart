@@ -6,6 +6,7 @@ import '../../features/profile/presentation/providers/profile_providers.dart';
 import '../layout/app_nav_destinations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import 'app_logo.dart';
 import 'buyer_web_sidebar_nav_item.dart';
 
 /// Full-width buyer web sidebar: brand, shell destinations, optional user strip.
@@ -81,36 +82,9 @@ class _BuyerWebBrandHeader extends StatelessWidget {
           bottom: BorderSide(color: AppColors.borderSolid, width: .5),
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: AppColors.secondary,
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: const Icon(
-              Icons.directions_car_filled,
-              color: Colors.white,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: 'AutoImport', style: AppTextStyles.titleSmall),
-                TextSpan(
-                  text: ' GH',
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: AppColors.secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: const Align(
+        alignment: Alignment.centerLeft,
+        child: AppLogo(style: AppLogoStyle.compact),
       ),
     );
   }

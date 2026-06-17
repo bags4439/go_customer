@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/layout/app_breakpoints.dart';
 import '../../../../core/router/app_router_refresh.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../force_update/presentation/providers/force_update_providers.dart';
@@ -604,23 +605,11 @@ class _WebLaunchActionPanel extends StatelessWidget {
                     const SizedBox(height: 20),
                     FadeTransition(
                       opacity: logoOpacity,
-                      child: RichText(
-                        text: TextSpan(
-                          style: AppTextStyles.titleLarge.copyWith(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          children: [
-                            const TextSpan(text: 'AutoImport '),
-                            TextSpan(
-                              text: 'GH',
-                              style: AppTextStyles.titleLarge.copyWith(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.secondary,
-                              ),
-                            ),
-                          ],
+                      child: Text(
+                        AppBrandingDefaults.displayName,
+                        style: AppTextStyles.titleLarge.copyWith(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/layout/app_breakpoints.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
+import 'package:go_customer/shared/providers/app_config_provider.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -10,13 +12,14 @@ import '../../core/constants/profile_constants.dart';
 import 'profile_section_shell.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 
-class ProfileSupportSection extends StatelessWidget {
+class ProfileSupportSection extends ConsumerWidget {
   const ProfileSupportSection({super.key, required this.onResetGuide});
 
   final Future<void> Function() onResetGuide;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final config = ref.watch(appConfigProvider);
     return Column(
       children: [
         ProfileSupportRow(
@@ -32,7 +35,7 @@ class ProfileSupportSection extends StatelessWidget {
         ProfileSupportRow(
           label: ProfileConstants.termsAndPrivacy,
           onTap: () => launchUrl(
-            Uri.parse(ProfileConstants.termsUrl),
+            Uri.parse(config.termsUrl),
             mode: LaunchMode.inAppWebView,
           ),
         ),

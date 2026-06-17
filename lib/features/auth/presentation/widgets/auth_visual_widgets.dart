@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
+import 'package:go_customer/core/widgets/app_logo.dart';
 
 /// Text-based logo for auth flows (DM Sans; primary mark per design spec).
 class AuthAppLogo extends StatelessWidget {
@@ -8,45 +9,9 @@ class AuthAppLogo extends StatelessWidget {
 
   const AuthAppLogo({super.key, this.fontSize = 26});
 
-
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: fontSize * 1.4,
-          height: fontSize * 1.4,
-          decoration: BoxDecoration(
-            color: AppColors.brand,
-            borderRadius: BorderRadius.circular(fontSize * 0.3),
-          ),
-          child: Icon(
-            Icons.directions_car_filled,
-            color: Colors.white,
-            size: fontSize * 0.85,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          'AutoImport',
-          style: AppTextStyles.titleLarge.copyWith(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        Text(
-          ' GH',
-          style: AppTextStyles.titleLarge.copyWith(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w700,
-            color: AppColors.brand,
-          ),
-        ),
-      ],
-    );
+    return AppLogo(fontSize: fontSize, style: AppLogoStyle.standard);
   }
 }
 

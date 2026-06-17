@@ -1,3 +1,5 @@
+import 'package:go_customer/core/constants/app_constants.dart';
+
 /// All copy for repair screens. No hardcoded strings in UI.
 class RepairConstants {
   RepairConstants._();
@@ -68,11 +70,11 @@ class RepairConstants {
       'Review the details below. Work only starts after you approve.';
   static const String quoteBadge = 'Awaiting your approval';
   static const String platformServiceFeeLabel = 'Platform service fee';
-  static const String platformServiceFeeSub =
-      'AutoImport coordination · separate from garage costs';
+  static final String platformServiceFeeSub =
+      '${AppBrandingDefaults.displayName} coordination · separate from garage costs';
   static const String garageInvoiceLabel = 'Garage invoice';
   static const String garageCostsSectionLabel = 'GARAGE COSTS';
-  static const String autoImportFeeSectionLabel = 'AUTOIMPORT FEE';
+  static const String platformFeeSectionLabel = 'PLATFORM FEE';
   static const String invoiceSplitHint =
       'Split across two payments that make up the garage invoice';
   static const String partsDepositLabel = 'Parts deposit';

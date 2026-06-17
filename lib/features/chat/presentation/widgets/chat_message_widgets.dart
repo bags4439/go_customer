@@ -17,7 +17,7 @@ import 'package:go_customer/core/theme/app_colors.dart';
 
 // ─────────────────────────────────────
 // Design constants — WhatsApp adapted
-// to AutoImport GH brand palette
+// to Whiplyn brand palette
 // ─────────────────────────────────────
 const _kBubbleRadius = 7.5;
 const _kMaxBubbleWidth = 280.0;

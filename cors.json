@@ -3,7 +3,8 @@
     "origin": [
       "http://localhost:*",
       "https://velocitech-auto-go.web.app",
-      "https://velocitech-auto-go.firebaseapp.com"
+      "https://velocitech-auto-go.firebaseapp.com",
+      "https://www.whiplyn.com"
     ],
     "method": ["GET", "HEAD"],
     "responseHeader": ["Content-Type"],

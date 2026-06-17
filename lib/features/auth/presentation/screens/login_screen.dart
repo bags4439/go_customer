@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:go_customer/core/constants/app_constants.dart';
 import 'package:go_customer/core/theme/app_colors.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_customer/core/theme/app_theme.dart';
@@ -250,7 +251,7 @@ class _LoginWebPhotoPanel extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'AutoImport GH',
+                AppBrandingDefaults.displayName,
                 style: AppTextStyles.caption.copyWith(
                   color: Colors.white.withValues(alpha: 0.35),
                   fontSize: 9,

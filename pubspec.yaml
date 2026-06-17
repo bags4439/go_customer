@@ -118,6 +118,11 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   adaptive_icon_foreground: "assets/icon/app_icon.png"
   adaptive_icon_background: "#009fe8"
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+    background_color: "#009fe8"
+    theme_color: "#009fe8"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

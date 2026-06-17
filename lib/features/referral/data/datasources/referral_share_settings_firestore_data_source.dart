@@ -1,3 +1,4 @@
+import '../../../../core/constants/app_constants.dart';
 import '../../core/constants/referral_firestore_keys.dart';
 
 /// Extracts referral share settings from a pre-loaded `system_settings` map.
@@ -45,7 +46,8 @@ class ReferralShareSettingsFirestoreDataSource {
         ReferralFirestoreKeys.websiteUrl,
         'webUrl',
         'siteUrl',
-      ]),
+      ]) ??
+          AppBrandingDefaults.websiteUrl,
     };
   }
 }

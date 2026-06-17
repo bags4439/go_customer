@@ -144,7 +144,7 @@ class _CustomerAppState extends ConsumerState<CustomerApp> {
 
   void _onLink(Uri uri) {
     debugPrint('[DeepLink] received: $uri');
-    // autoimportgh://payment/callback — the processing screen is already
+    // whiplyn://payment/callback — the processing screen is already
     // watching Firestore. No navigation needed here. The app simply comes to
     // foreground.
   }

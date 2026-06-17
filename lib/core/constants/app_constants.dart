@@ -1,9 +1,51 @@
+/// Compile-time brand identity and URL defaults.
+///
+/// Remote overrides for [supportEmail], [faqUrl], [termsUrl], and [websiteUrl]
+/// are merged at runtime via [appConfigProvider].
+class AppBrandingDefaults {
+  AppBrandingDefaults._();
+
+  static const String displayName = 'Whiplyn';
+  static const String webBaseUrl = 'https://www.whiplyn.com';
+
+  static const String supportEmail = 'support@whiplyn.com';
+
+  static String urlPath(String baseUrl, String path) {
+    final normalized = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    return '$normalized/$path';
+  }
+
+  static String get faqUrl => urlPath(webBaseUrl, 'faq');
+  static String get termsUrl => urlPath(webBaseUrl, 'terms');
+  static String get privacyUrl => urlPath(webBaseUrl, 'privacy');
+  static String get websiteUrl => webBaseUrl;
+
+  /// Must match Android intent-filter and iOS CFBundleURLSchemes.
+  static const String deepLinkScheme = 'whiplyn';
+
+  static String get paystackCallbackUrl =>
+      '$deepLinkScheme://payment/callback';
+
+  static const String launcherIconAsset = 'assets/icon/app_icon.png';
+}
+
+/// `system_settings` document `key` values for remotely configurable branding.
+class SystemSettingsKeys {
+  SystemSettingsKeys._();
+
+  static const String supportEmail = 'supportEmail';
+  static const String faqUrl = 'faqUrl';
+  static const String termsUrl = 'termsUrl';
+  static const String websiteUrl = 'websiteUrl';
+}
+
 class AppConstants {
-  static const String appName = 'AutoImport GH';
-  /// Support email shown on
-  /// receipts and error screens.
-  static const String supportEmail =
-      'support@autoimportgh.com';
+  static const String appName = AppBrandingDefaults.displayName;
+
+  /// Default support email; use [appConfigProvider] for the resolved value.
+  static const String supportEmail = AppBrandingDefaults.supportEmail;
   /// Set this to your OneSignal App ID.
   ///
   /// Keeping it as a constant avoids scattering the value across the codebase.
@@ -19,9 +61,10 @@ class AppConstants {
   static const String paystackPublicKey =
       'pk_test_863222f7f4a7f5217eabbf1b8dc56afcb254c1c0';
 
-  /// Deep link URI that Paystack redirects to after checkout.
-  /// Handled by AppLinks in main.dart.
-  static const String paystackCallbackScheme = 'autoimportgh';
+  /// Deep link scheme Paystack redirects to after checkout.
+  /// Must match native manifests — not overridable remotely.
+  static const String paystackCallbackScheme =
+      AppBrandingDefaults.deepLinkScheme;
 
   /// Google Places / Geocoding (delivery address search). Replace with your key from Google Cloud.
   static const String googlePlacesApiKey = 'YOUR_KEY';
