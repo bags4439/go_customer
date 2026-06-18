@@ -48,6 +48,12 @@ class ReferralShareSettingsFirestoreDataSource {
         'siteUrl',
       ]) ??
           AppBrandingDefaults.websiteUrl,
+      'appUrl': firstStringAmong([
+        ReferralFirestoreKeys.appUrl,
+        'appWebUrl',
+        'webAppUrl',
+      ]) ??
+          AppBrandingDefaults.appWebUrl,
     };
   }
 }

@@ -21,6 +21,7 @@ class ReferralShareSettingsRepositoryImpl
           referralDiscountGhs: raw['referralDiscountGhs'] as double?,
           appStoreUrl: raw['appStoreUrl'] as String?,
           playstoreUrl: raw['playstoreUrl'] as String?,
+          appUrl: raw['appUrl'] as String?,
           websiteUrl: raw['websiteUrl'] as String?,
         ),
       );

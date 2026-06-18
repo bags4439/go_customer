@@ -4,6 +4,8 @@
       "http://localhost:*",
       "https://velocitech-auto-go.web.app",
       "https://velocitech-auto-go.firebaseapp.com",
+      "https://app.whiplyn.com",
+      "https://whiplyn.com",
       "https://www.whiplyn.com"
     ],
     "method": ["GET", "HEAD"],

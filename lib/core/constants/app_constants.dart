@@ -1,12 +1,17 @@
 /// Compile-time brand identity and URL defaults.
 ///
-/// Remote overrides for [supportEmail], [faqUrl], [termsUrl], and [websiteUrl]
-/// are merged at runtime via [appConfigProvider].
+/// Remote overrides for [supportEmail], [faqUrl], [termsUrl], [websiteUrl], and
+/// [appUrl] are merged at runtime via [appConfigProvider].
 class AppBrandingDefaults {
   AppBrandingDefaults._();
 
   static const String displayName = 'Whiplyn';
-  static const String webBaseUrl = 'https://www.whiplyn.com';
+
+  /// Marketing / landing site (FAQ, terms, public website).
+  static const String webBaseUrl = 'https://whiplyn.com';
+
+  /// Flutter web app (login, orders, payments).
+  static const String appWebUrl = 'https://app.whiplyn.com';
 
   static const String supportEmail = 'support@whiplyn.com';
 
@@ -39,6 +44,7 @@ class SystemSettingsKeys {
   static const String faqUrl = 'faqUrl';
   static const String termsUrl = 'termsUrl';
   static const String websiteUrl = 'websiteUrl';
+  static const String appUrl = 'appUrl';
 }
 
 class AppConstants {

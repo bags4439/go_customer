@@ -27,8 +27,8 @@ class ReferralShareMessageBuilder {
     if (_nonEmpty(settings.playstoreUrl)) {
       lines.add('Android (Google Play): ${settings.playstoreUrl!.trim()}');
     }
-    if (_nonEmpty(settings.websiteUrl)) {
-      lines.add('Web: ${settings.websiteUrl!.trim()}');
+    if (_nonEmpty(settings.appUrl)) {
+      lines.add('Web: ${settings.appUrl!.trim()}');
     }
     if (lines.isNotEmpty) {
       buf.writeln('Get the app:');

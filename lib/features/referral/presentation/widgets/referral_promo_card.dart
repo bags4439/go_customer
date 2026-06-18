@@ -158,6 +158,12 @@ class _ReferralPromoCardBody extends StatelessWidget {
                           icon: Icons.android_rounded,
                           onTap: () => _openUrl(context, s.playstoreUrl!),
                         ),
+                      if (_nonEmpty(s.appUrl))
+                        _GhostLinkChip(
+                          label: ReferralUiConstants.linkWebApp,
+                          icon: Icons.open_in_browser_rounded,
+                          onTap: () => _openUrl(context, s.appUrl!),
+                        ),
                       if (_nonEmpty(s.websiteUrl))
                         _GhostLinkChip(
                           label: ReferralUiConstants.linkWebsite,

@@ -8,4 +8,5 @@ class ReferralFirestoreKeys {
   static const String appStoreUrl = 'appStoreUrl';
   static const String playstoreUrl = 'playstoreUrl';
   static const String websiteUrl = SystemSettingsKeys.websiteUrl;
+  static const String appUrl = SystemSettingsKeys.appUrl;
 }

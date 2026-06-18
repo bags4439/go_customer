@@ -9,6 +9,7 @@ class ReferralUiConstants {
   static const String linkAppStore = 'App Store';
   static const String linkGooglePlay = 'Google Play';
   static const String linkWebsite = 'Website';
+  static const String linkWebApp = 'Web app';
 
   /// Shown when [referralDiscountAmount] is present (amount inserted between prefix/suffix).
   static const String bodyWithRewardPrefix =

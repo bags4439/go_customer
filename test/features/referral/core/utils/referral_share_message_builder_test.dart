@@ -7,7 +7,7 @@ void main() {
     test('opens with invitation line, not a bare duplicate app name', () {
       final message = ReferralShareMessageBuilder.build(
         settings: const ReferralShareSettings(
-          websiteUrl: 'https://www.whiplyn.com',
+          appUrl: 'https://app.whiplyn.com',
         ),
         referralCode: 'YHSQGB',
       );
@@ -15,7 +15,21 @@ void main() {
       expect(message.startsWith('Join me on Whiplyn.'), isTrue);
       expect(message.startsWith('Whiplyn\n'), isFalse);
       expect(message, contains('My referral code: YHSQGB'));
+      expect(message, contains('Web: https://app.whiplyn.com'));
       expect(message.trimRight(), endsWith('— Whiplyn'));
+    });
+
+    test('uses appUrl for Web line, not marketing websiteUrl', () {
+      final message = ReferralShareMessageBuilder.build(
+        settings: const ReferralShareSettings(
+          appUrl: 'https://app.whiplyn.com',
+          websiteUrl: 'https://whiplyn.com',
+        ),
+        referralCode: 'ABC',
+      );
+
+      expect(message, contains('Web: https://app.whiplyn.com'));
+      expect(message, isNot(contains('Web: https://whiplyn.com')));
     });
   });
 }
