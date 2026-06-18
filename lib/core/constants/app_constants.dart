@@ -72,8 +72,7 @@ class AppConstants {
   static const String paystackCallbackScheme =
       AppBrandingDefaults.deepLinkScheme;
 
-  /// Google Places / Geocoding (delivery address search). Replace with your key from Google Cloud.
-  static const String googlePlacesApiKey = 'YOUR_KEY';
+  // Google Places keys: [GooglePlacesApiKey] (platform-specific).
 
   // payment_requests.type — used for conditional UI (deposit note, repair note)
   static const String paymentRequestTypeVehicleBalanceAndShipping =

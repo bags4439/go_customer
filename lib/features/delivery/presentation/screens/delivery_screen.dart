@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/layout/dashboard_layout.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/config/google_places_api_key.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_button_styles.dart';
@@ -346,7 +346,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
   }
 
   Future<void> _fetchSuggestions(String query) async {
-    if (AppConstants.googlePlacesApiKey == 'YOUR_KEY') {
+    if (!GooglePlacesApiKey.isConfigured) {
       if (mounted) {
         setState(() => _isSearching = false);
       }
@@ -357,7 +357,7 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
       final url = Uri.parse(
         'https://maps.googleapis.com/maps/api/place/autocomplete/json'
         '?input=${Uri.encodeComponent(query)}'
-        '&key=${AppConstants.googlePlacesApiKey}'
+        '&key=${GooglePlacesApiKey.current}'
         '&components=country:gh',
       );
       final response = await http.get(url);
@@ -388,13 +388,13 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
     _searchCtrl.text = suggestion.description;
     setState(() => _suggestions = []);
 
-    if (AppConstants.googlePlacesApiKey != 'YOUR_KEY') {
+    if (GooglePlacesApiKey.isConfigured) {
       try {
         final url = Uri.parse(
           'https://maps.googleapis.com/maps/api/place/details/json'
           '?place_id=${Uri.encodeComponent(suggestion.placeId)}'
           '&fields=geometry,formatted_address'
-          '&key=${AppConstants.googlePlacesApiKey}',
+          '&key=${GooglePlacesApiKey.current}',
         );
         final response = await http.get(url);
         if (response.statusCode == 200 && mounted) {
@@ -512,11 +512,11 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
 
       String? address;
       String? city;
-      if (AppConstants.googlePlacesApiKey != 'YOUR_KEY') {
+      if (GooglePlacesApiKey.isConfigured) {
         final url = Uri.parse(
           'https://maps.googleapis.com/maps/api/geocode/json'
           '?latlng=${position.latitude},${position.longitude}'
-          '&key=${AppConstants.googlePlacesApiKey}',
+          '&key=${GooglePlacesApiKey.current}',
         );
         final response = await http.get(url);
         if (response.statusCode == 200) {
