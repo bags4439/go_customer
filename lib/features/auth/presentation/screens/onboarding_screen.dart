@@ -140,18 +140,25 @@ class _MobileOnboardingLayout extends StatelessWidget {
           slide: slide,
           child: Stack(
             fit: StackFit.expand,
+            clipBehavior: Clip.hardEdge,
             children: [
               PageView.builder(
                 controller: controller,
                 itemCount: kOnboardingSlides.length,
                 onPageChanged: onIndexChanged,
                 itemBuilder: (context, i) {
+                  final slideData = kOnboardingSlides[i];
+                  final viewportHeight = MediaQuery.sizeOf(context).height;
+                  final heroOffset = -viewportHeight *
+                      slideData.mobileHeroOffsetFraction.clamp(0.0, 0.5);
+
                   return OnboardingAssetImage(
-                    key: ValueKey(kOnboardingSlides[i].imagePath),
-                    imagePath: kOnboardingSlides[i].imagePath,
+                    key: ValueKey(slideData.imagePath),
+                    imagePath: slideData.imagePath,
                     fit: BoxFit.cover,
                     alignment: Alignment.topCenter,
                     expand: true,
+                    verticalOffset: heroOffset,
                   );
                 },
               ),
@@ -293,10 +300,6 @@ class _MobileBottomPanel extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             OnboardingFeatureTiles(tiles: slide.tiles, compact: true),
-            if (slide.quote != null) ...[
-              const SizedBox(height: 10),
-              OnboardingQuoteCard(quote: slide.quote!, compact: true),
-            ],
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,

@@ -12,7 +12,12 @@ class OnboardingSlide {
     required this.accentColor,
     required this.tiles,
     this.quote,
+    this.mobileHeroOffsetFraction = 0,
   });
+
+  /// Shifts the mobile hero image upward by this fraction of viewport height
+  /// so focal content sits above the bottom sheet (0.0–0.5).
+  final double mobileHeroOffsetFraction;
 
   final String imagePath;
   final String eyebrow;
@@ -52,7 +57,7 @@ class OnboardingQuote {
 
 const List<OnboardingSlide> kOnboardingSlides = [
   OnboardingSlide(
-    imagePath: 'assets/onboarding_preference.jpg',
+    imagePath: 'assets/onboarding_preference.png',
     eyebrow: 'STEP 1 · YOUR PREFERENCES',
     title: 'Tell us what\nyou want.',
     subtitle:
@@ -81,9 +86,10 @@ const List<OnboardingSlide> kOnboardingSlides = [
         label: 'US, Dubai, China, or let your agent decide',
       ),
     ],
+    mobileHeroOffsetFraction: 0.10,
   ),
   OnboardingSlide(
-    imagePath: 'assets/onboarding_agent.jpg',
+    imagePath: 'assets/onboarding_agent.png',
     eyebrow: 'STEP 2 · YOUR AGENT',
     title: 'Your personal\nagent.',
     subtitle:
@@ -122,6 +128,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
           ' different sources. Here are the'
           ' details and my recommendations."',
     ),
+    mobileHeroOffsetFraction: 0.20,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_journey.jpg',
@@ -154,6 +161,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
         label: 'Repairs discussed and arranged after clearance, if needed',
       ),
     ],
+    mobileHeroOffsetFraction: 0.30,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_ready.jpg',
@@ -186,5 +194,6 @@ const List<OnboardingSlide> kOnboardingSlides = [
         label: 'Rate your experience',
       ),
     ],
+    mobileHeroOffsetFraction: 0.05,
   ),
 ];

@@ -15,6 +15,7 @@ class OnboardingAssetImage extends StatelessWidget {
     this.height,
     this.borderRadius,
     this.expand = false,
+    this.verticalOffset = 0,
   });
 
   final String imagePath;
@@ -26,6 +27,9 @@ class OnboardingAssetImage extends StatelessWidget {
 
   /// When true, fills all space from the parent (full-bleed heroes).
   final bool expand;
+
+  /// Pixels to shift the image on the Y axis (negative moves up).
+  final double verticalOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -53,10 +57,17 @@ class OnboardingAssetImage extends StatelessWidget {
         ? image
         : ClipRRect(borderRadius: borderRadius!, child: image);
 
+    final positioned = verticalOffset == 0
+        ? clipped
+        : Transform.translate(
+            offset: Offset(0, verticalOffset),
+            child: clipped,
+          );
+
     if (expand) {
-      return SizedBox.expand(child: clipped);
+      return SizedBox.expand(child: positioned);
     }
-    return clipped;
+    return positioned;
   }
 }
 
