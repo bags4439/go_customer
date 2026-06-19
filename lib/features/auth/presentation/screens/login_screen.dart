@@ -139,7 +139,7 @@ class _LoginWebPhotoPanel extends StatelessWidget {
 
   final LoginStep step;
 
-  static const String _photo = 'assets/onboarding_preference.jpg';
+  static const String _photo = kLoginHeroPhotoPath;
 
   bool _isSetupStep() {
     switch (step) {
@@ -1116,6 +1116,7 @@ class _PhoneStepState extends ConsumerState<_PhoneStep>
 
     if (!isWeb) {
       return MobileAuthShell(
+        panelKey: 'login',
         panel: loginPanel,
         title: welcomeCopy.title,
         subtitle: welcomeCopy.subtitle,
@@ -1411,6 +1412,7 @@ class _OtpStepState extends ConsumerState<_OtpStep>
 
     if (!isWeb) {
       return MobileAuthShell(
+        panelKey: 'otp',
         panel: loginPanel,
         title: 'Enter your code.',
         subtitle: 'Check your SMS for the 6-digit verification code.',
@@ -1890,6 +1892,7 @@ class _NameStepState extends ConsumerState<_NameStep>
 
     if (!isWeb) {
       return MobileAuthShell(
+        panelKey: 'name',
         panel: namePanel,
         setupStepCurrent: 0,
         child: Column(
@@ -1975,7 +1978,7 @@ class _NameStepState extends ConsumerState<_NameStep>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'It all starts\nwith a name.',
+                  'Let\'s start with a name.',
                   style: AppTextStyles.titleLarge.copyWith(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
@@ -2180,6 +2183,7 @@ class _ReferralStepState extends ConsumerState<_ReferralStep>
 
     if (!isWeb) {
       return MobileAuthShell(
+        panelKey: 'referral',
         panel: referralPanel,
         setupStepCurrent: 1,
         onBack: notifier.goBack,
@@ -2495,6 +2499,7 @@ class _ContactChannelsStepState extends ConsumerState<_ContactChannelsStep>
 
     if (!isWeb) {
       return MobileAuthShell(
+        panelKey: 'contactChannels',
         panel: contactPanel,
         setupStepCurrent: 2,
         onBack: notifier.goBack,

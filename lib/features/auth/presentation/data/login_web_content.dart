@@ -13,6 +13,56 @@ import 'package:go_customer/core/theme/app_colors.dart';
 /// Mobile and portrait-tablet layouts
 /// reuse panels via [MobileAuthShell].
 
+/// Mobile-shell and web split-panel hero photo.
+///
+/// Change this path to update login / profile-setup imagery on all breakpoints.
+const String kLoginHeroPhotoPath = 'assets/onboarding_preference.jpg';
+
+/// Per-step hero push for mobile and portrait-tablet auth shells.
+///
+/// Cover viewport height is `1.0 - push`. Higher push → smaller hero, less zoom.
+class LoginHeroPush {
+  const LoginHeroPush({
+    required this.mobileHeroPushFromBottom,
+    required this.portraitTabletHeroPushFromBottom,
+  });
+
+  final double mobileHeroPushFromBottom;
+  final double portraitTabletHeroPushFromBottom;
+
+  double heroPushFromBottom({required bool portraitTablet}) =>
+      portraitTablet
+          ? portraitTabletHeroPushFromBottom
+          : mobileHeroPushFromBottom;
+}
+
+/// Keys: `login`, `otp`, `name`, `referral`, `contactChannels`.
+const Map<String, LoginHeroPush> kLoginHeroPush = {
+  'login': LoginHeroPush(
+    mobileHeroPushFromBottom: 0.45,
+    portraitTabletHeroPushFromBottom: 0.0,
+  ),
+  'otp': LoginHeroPush(
+    mobileHeroPushFromBottom: 0.35,
+    portraitTabletHeroPushFromBottom: 0.0,
+  ),
+  'name': LoginHeroPush(
+    mobileHeroPushFromBottom: 0.40,
+    portraitTabletHeroPushFromBottom: 0.0,
+  ),
+  'referral': LoginHeroPush(
+    mobileHeroPushFromBottom: 0.42,
+    portraitTabletHeroPushFromBottom: 0.0,
+  ),
+  'contactChannels': LoginHeroPush(
+    mobileHeroPushFromBottom: 0.44,
+    portraitTabletHeroPushFromBottom: 0.0,
+  ),
+};
+
+LoginHeroPush loginHeroPushForPanelKey(String panelKey) =>
+    kLoginHeroPush[panelKey] ?? kLoginHeroPush['login']!;
+
 class LoginWebPanel {
   const LoginWebPanel({
     required this.eyebrow,
@@ -180,7 +230,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
 
   'name': LoginWebPanel(
     eyebrow: 'STEP 1 OF 3 · YOUR PROFILE',
-    heading: 'It all starts\nwith a name.',
+    heading: 'Let\'s start with a name.',
     subheading:
         'Your agent is a real person'
         ' who will address you by'
@@ -228,7 +278,7 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
 
   'contactChannels': LoginWebPanel(
     eyebrow: 'STEP 3 OF 3 · STAY IN THE LOOP',
-    heading: 'Never miss\na moment.',
+    heading: 'Never miss a moment.',
     subheading:
         'We\'ll keep you updated on'
         ' your order progress via'

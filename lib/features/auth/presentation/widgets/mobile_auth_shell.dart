@@ -4,27 +4,16 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../data/login_web_content.dart';
-import '../notifiers/login_state.dart';
 import 'onboarding_widgets.dart';
-
-/// Hero photo shared with web login and onboarding.
-const String kMobileAuthHeroPhoto = 'assets/onboarding_preference.jpg';
-
-String loginPanelKeyForStep(LoginStep step) {
-  return switch (step) {
-    LoginStep.phone || LoginStep.otp => 'login',
-    LoginStep.name => 'name',
-    LoginStep.referral => 'referral',
-    LoginStep.contactChannels => 'contactChannels',
-  };
-}
 
 /// Onboarding-style shell for phone and portrait-tablet auth/setup steps.
 ///
-/// Hero imagery on top, elevated form card anchored to the bottom.
+/// Hero photo path: [kLoginHeroPhotoPath] in `login_web_content.dart`.
+/// Hero push tuning: [kLoginHeroPush] in `login_web_content.dart`.
 class MobileAuthShell extends StatelessWidget {
   const MobileAuthShell({
     super.key,
+    required this.panelKey,
     required this.panel,
     required this.child,
     this.title,
@@ -38,6 +27,8 @@ class MobileAuthShell extends StatelessWidget {
     this.trustTiles,
   });
 
+  /// Lookup key for [kLoginHeroPush] (`login`, `otp`, `name`, etc.).
+  final String panelKey;
   final LoginWebPanel panel;
   final Widget child;
 
@@ -65,7 +56,7 @@ class MobileAuthShell extends StatelessWidget {
     final portraitTablet = AcquisitionLayout.isPortraitTablet(context);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final screenH = MediaQuery.sizeOf(context).height;
-    final heroH = (screenH * 0.38).clamp(240.0, 360.0);
+    final heroPush = loginHeroPushForPanelKey(panelKey);
     final frameColor =
         portraitTablet ? AppColors.surface : AppColors.background;
 
@@ -166,39 +157,30 @@ class MobileAuthShell extends StatelessWidget {
       color: frameColor,
       child: Stack(
         fit: StackFit.expand,
+        clipBehavior: Clip.hardEdge,
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: heroH,
-            child: Stack(
-              fit: StackFit.expand,
-              clipBehavior: Clip.hardEdge,
-              children: [
-                const OnboardingAssetImage(
-                  imagePath: kMobileAuthHeroPhoto,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                  expand: true,
+          OnboardingMobileHeroImage(
+            imagePath: kLoginHeroPhotoPath,
+            pushFromBottom: heroPush.heroPushFromBottom(
+              portraitTablet: portraitTablet,
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.06),
+                    Colors.transparent,
+                    frameColor.withValues(alpha: 0.45),
+                    frameColor.withValues(alpha: 0.88),
+                    frameColor,
+                  ],
+                  stops: const [0.0, 0.3, 0.58, 0.78, 1.0],
                 ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.06),
-                        Colors.transparent,
-                        frameColor.withValues(alpha: 0.45),
-                        frameColor.withValues(alpha: 0.88),
-                        frameColor,
-                      ],
-                      stops: const [0.0, 0.3, 0.58, 0.78, 1.0],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           Positioned(
