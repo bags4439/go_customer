@@ -530,7 +530,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       backgroundColor: Colors.transparent,
       builder: (ctx) => ProfileDeleteAccountBottomSheet(
         userId: ref.read(authStateProvider).value ?? '',
-        onDeleted: () => context.go('/login'),
+        onDeleted: () => _signOutAndGoLogin(context),
       ),
     );
   }

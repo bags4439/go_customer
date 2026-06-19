@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 
 import '../constants/firestore_collections.dart';
 import '../../features/auth/domain/profile_setup_gate.dart';
+import '../../features/notifications/onesignal/notification_onesignal_handler.dart';
 
 /// Shared instance wired into [GoRouter.refreshListenable].
 final appRouterRefresh = AppRouterRefresh();
@@ -56,12 +57,7 @@ class AppRouterRefresh extends ChangeNotifier {
         .snapshots()
         .listen(
       (snap) {
-        _profileKnown = true;
-        _registrationComplete = isRegistrationCompleteMap(
-          snap.data(),
-          exists: snap.exists,
-        );
-        notifyListeners();
+        unawaited(_onUserProfileSnapshot(snap, user.uid));
       },
       onError: (_) {
         _profileKnown = true;
@@ -69,6 +65,44 @@ class AppRouterRefresh extends ChangeNotifier {
         notifyListeners();
       },
     );
+  }
+
+  Future<void> _onUserProfileSnapshot(
+    DocumentSnapshot<Map<String, dynamic>> snap,
+    String uid,
+  ) async {
+    if (!snap.exists) {
+      if (_auth.currentUser?.uid != uid) return;
+
+      final archived = await _firestore
+          .collection(FirestoreCollections.deletedUsers)
+          .doc(uid)
+          .get();
+
+      if (_auth.currentUser?.uid != uid) return;
+
+      if (archived.exists) {
+        clearOneSignalUser();
+        await _auth.signOut();
+        _profileKnown = true;
+        _registrationComplete = false;
+        notifyListeners();
+        return;
+      }
+
+      // New buyer mid-registration — no users doc yet, not a deleted account.
+      _profileKnown = true;
+      _registrationComplete = false;
+      notifyListeners();
+      return;
+    }
+
+    _profileKnown = true;
+    _registrationComplete = isRegistrationCompleteMap(
+      snap.data(),
+      exists: snap.exists,
+    );
+    notifyListeners();
   }
 
   @override

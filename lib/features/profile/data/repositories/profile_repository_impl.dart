@@ -1,7 +1,9 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/error/failures.dart';
+import '../delete_user_account_failure_message.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../../auth/data/models/user_session_model.dart';
 import '../../../auth/domain/entities/app_user.dart';
@@ -245,7 +247,23 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'userId': userId,
       });
       return right(unit);
+    } on FirebaseFunctionsException catch (e) {
+      if (kDebugMode) {
+        debugPrint(
+          '[deleteUserAccount] FirebaseFunctionsException '
+          'code=${e.code}, message=${e.message}, details=${e.details}',
+        );
+      }
+      return left(
+        UnexpectedFailure(
+          message: deleteUserAccountFailureMessage(e),
+          cause: e,
+        ),
+      );
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[deleteUserAccount] unexpected error: $e');
+      }
       return left(
         UnexpectedFailure(message: 'Could not delete account.', cause: e),
       );

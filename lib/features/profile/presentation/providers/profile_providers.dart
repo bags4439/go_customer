@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -24,11 +25,16 @@ final userSessionDataSourceProvider = Provider<UserSessionFirestoreDataSource>((
   return UserSessionFirestoreDataSource(ref.watch(firestoreProvider));
 });
 
+/// Profile callables (`deleteUserAccount`, etc.) are deployed in europe-west1.
+final profileFunctionsProvider = Provider<FirebaseFunctions>((ref) {
+  return FirebaseFunctions.instanceFor(region: 'europe-west1');
+});
+
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepositoryImpl(
     ref.watch(profileDataSourceProvider),
     ref.watch(userSessionDataSourceProvider),
-    ref.watch(functionsProvider),
+    ref.watch(profileFunctionsProvider),
   );
 });
 

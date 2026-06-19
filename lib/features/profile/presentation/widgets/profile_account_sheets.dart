@@ -23,7 +23,7 @@ class ProfileDeleteAccountBottomSheet extends ConsumerStatefulWidget {
   });
 
   final String userId;
-  final VoidCallback onDeleted;
+  final Future<void> Function() onDeleted;
 
   @override
   ConsumerState<ProfileDeleteAccountBottomSheet> createState() =>
@@ -231,11 +231,13 @@ class _ProfileDeleteAccountBottomSheetState
     if (!mounted) return;
     setState(() => _deleting = false);
 
-    result.fold(
-      (_) => showErrorSnackBar(context, 'Could not delete account.'),
-      (_) {
+    await result.fold(
+      (failure) async {
+        showErrorSnackBar(context, failure.message);
+      },
+      (_) async {
         Navigator.pop(context);
-        widget.onDeleted();
+        await widget.onDeleted();
       },
     );
   }
