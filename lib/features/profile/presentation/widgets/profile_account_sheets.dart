@@ -33,127 +33,368 @@ class ProfileDeleteAccountBottomSheet extends ConsumerStatefulWidget {
 class _ProfileDeleteAccountBottomSheetState
     extends ConsumerState<ProfileDeleteAccountBottomSheet> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
   bool _canConfirm = false;
+  bool _deleting = false;
+  bool _focused = false;
 
   @override
   void initState() {
     super.initState();
-    _controller.addListener(() {
-      setState(() => _canConfirm = _controller.text == 'DELETE');
+    _focusNode.addListener(() {
+      if (mounted) setState(() => _focused = _focusNode.hasFocus);
     });
+    _controller.addListener(_syncConfirmState);
+  }
+
+  void _syncConfirmState() {
+    final canConfirm = _controller.text.trim() == 'DELETE';
+    if (canConfirm != _canConfirm) {
+      setState(() => _canConfirm = canConfirm);
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_syncConfirmState);
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        24,
-        24,
-        24,
-        24 + MediaQuery.of(context).padding.bottom,
-      ),
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+
+    final sheet = Container(
+      width: double.infinity,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            ProfileConstants.deleteConfirmHeading,
-            style: AppTextStyles.titleSmall.copyWith(fontSize: 16),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            ProfileConstants.deleteConfirmWarning,
-            style: AppTextStyles.bodySmall.copyWith(color: Colors.black87),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.amberBackground,
-              borderRadius: BorderRadius.circular(8),
-              border: const Border(
-                left: BorderSide(color: AppColors.warning, width: 3),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: AppColors.warning,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    ProfileConstants.deleteConfirmWarning,
-                    style: AppTextStyles.cardLabel.copyWith(
-                      color: AppColors.amberText,
-                    ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + bottomInset),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 3,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.borderSolid,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              labelText: ProfileConstants.deleteTypeToConfirm,
-              border: const OutlineInputBorder(),
-            ),
-            onChanged: (_) =>
-                setState(() => _canConfirm = _controller.text == 'DELETE'),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(ProfileConstants.cancel),
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.danger.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.delete_forever_outlined,
+                      color: AppColors.danger,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ProfileConstants.deleteConfirmHeading,
+                          style: AppTextStyles.titleSmall.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            height: 1.15,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          ProfileConstants.deleteConfirmSubtitle,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _DeleteWarningCard(
+                items: ProfileConstants.deleteConfirmBulletItems,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                ProfileConstants.deleteTypeToConfirm.toUpperCase(),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.textTertiary,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _canConfirm ? _confirmDelete : null,
-                  style: AppButtonStyles.destructive(enabled: _canConfirm),
+              const SizedBox(height: 8),
+              _DeleteConfirmField(
+                controller: _controller,
+                focusNode: _focusNode,
+                focused: _focused,
+                confirmed: _canConfirm,
+                enabled: !_deleting,
+                onSubmit:
+                    _canConfirm && !_deleting ? _confirmDelete : null,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 52,
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed:
+                      _deleting ? null : () => Navigator.pop(context),
+                  style: AppButtonStyles.outlined(),
                   child: Text(
-                    ProfileConstants.deleteConfirmButton,
+                    ProfileConstants.cancel,
                     style: AppTextStyles.titleSmall.copyWith(
-                      color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 52,
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed:
+                      _canConfirm && !_deleting ? _confirmDelete : null,
+                  style: AppButtonStyles.destructive(
+                    enabled: _canConfirm && !_deleting,
+                    minimumHeight: 52,
+                  ),
+                  child: _deleting
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.onBrand,
+                          ),
+                        )
+                      : Text(
+                          ProfileConstants.deleteConfirmButton,
+                          style: AppTextStyles.titleSmall.copyWith(
+                            color: AppColors.onBrand,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                ),
+              ),
             ],
           ),
-        ],
+        ),
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: sheet,
+        ),
       ),
     );
   }
 
   Future<void> _confirmDelete() async {
+    if (!_canConfirm || _deleting) return;
+    setState(() => _deleting = true);
+
     final result = await ref
         .read(profileRepositoryProvider)
         .deleteUserAccount(widget.userId);
+
     if (!mounted) return;
+    setState(() => _deleting = false);
+
     result.fold(
       (_) => showErrorSnackBar(context, 'Could not delete account.'),
       (_) {
         Navigator.pop(context);
         widget.onDeleted();
       },
+    );
+  }
+}
+
+class _DeleteWarningCard extends StatelessWidget {
+  const _DeleteWarningCard({required this.items});
+
+  final List<String> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.dangerMutedBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.danger.withValues(alpha: 0.18),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.danger,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'You will lose access to',
+                style: AppTextStyles.labelMedium.copyWith(
+                  fontSize: 12,
+                  color: AppColors.dangerMutedText,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 7),
+                    child: Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: AppColors.dangerMutedText,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.dangerMutedText,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeleteConfirmField extends StatelessWidget {
+  const _DeleteConfirmField({
+    required this.controller,
+    required this.focusNode,
+    required this.focused,
+    required this.confirmed,
+    required this.enabled,
+    this.onSubmit,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool focused;
+  final bool confirmed;
+  final bool enabled;
+  final VoidCallback? onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      decoration: BoxDecoration(
+        color: confirmed
+            ? AppColors.successMutedBackground
+            : AppColors.surface,
+        border: Border.all(
+          color: confirmed
+              ? AppColors.success
+              : focused
+              ? AppColors.brand
+              : AppColors.borderSolid,
+          width: confirmed || focused ? 1.25 : 0.5,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        controller: controller,
+        focusNode: focusNode,
+        enabled: enabled,
+        autofocus: true,
+        textCapitalization: TextCapitalization.characters,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => onSubmit?.call(),
+        style: AppTextStyles.bodyLarge.copyWith(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 1.2,
+          color: AppColors.textPrimary,
+        ),
+        decoration: InputDecoration(
+          hintText: 'DELETE',
+          hintStyle: AppTextStyles.bodyLarge.copyWith(
+            fontSize: 15,
+            letterSpacing: 1.2,
+            color: AppColors.textTertiary,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          suffixIcon: confirmed
+              ? const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.success,
+                    size: 22,
+                  ),
+                )
+              : null,
+          suffixIconConstraints: const BoxConstraints(
+            minWidth: 34,
+            minHeight: 34,
+          ),
+        ),
+      ),
     );
   }
 }

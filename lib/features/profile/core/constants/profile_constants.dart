@@ -65,10 +65,15 @@ class ProfileConstants {
   static const String stayLoggedInAction = 'Stay logged in';
 
   static const String deleteConfirmHeading = 'Delete your account?';
-  static const String deleteConfirmWarning =
-      'This will permanently delete all your order history, documents, and personal data. This cannot be undone.';
+  static const String deleteConfirmSubtitle =
+      'This action is permanent and cannot be undone.';
+  static const List<String> deleteConfirmBulletItems = [
+    'All order history and timelines',
+    'Documents, ID uploads, and messages',
+    'Profile data and preferences',
+  ];
   static const String deleteTypeToConfirm = 'Type DELETE to confirm';
-  static const String deleteConfirmButton = 'Permanently delete account';
+  static const String deleteConfirmButton = 'Delete account permanently';
   static const String cancel = 'Cancel';
 
   static const String phoneChangeNote = 'Phone change requires verification';

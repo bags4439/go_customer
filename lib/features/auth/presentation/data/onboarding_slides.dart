@@ -68,7 +68,7 @@ class OnboardingQuote {
 
 const List<OnboardingSlide> kOnboardingSlides = [
   OnboardingSlide(
-    imagePath: 'assets/onboarding_preference.png',
+    imagePath: 'assets/onboarding_preference.jpg',
     eyebrow: 'STEP 1 · YOUR PREFERENCES',
     title: 'Tell us what you want.',
     subtitle:
@@ -101,7 +101,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
     portraitTabletHeroPushFromBottom: 0.0,
   ),
   OnboardingSlide(
-    imagePath: 'assets/onboarding_agent.png',
+    imagePath: 'assets/onboarding_agent.jpg',
     eyebrow: 'STEP 2 · YOUR AGENT',
     title: 'Your personal agent.',
     subtitle:
