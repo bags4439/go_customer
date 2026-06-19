@@ -151,7 +151,9 @@ class _MobileOnboardingLayout extends StatelessWidget {
 
                   return OnboardingMobileHeroImage(
                     imagePath: slideData.imagePath,
-                    pushFromBottom: slideData.mobileHeroPushFromBottom,
+                    pushFromBottom: slideData.heroPushFromBottom(
+                      portraitTablet: portraitTablet,
+                    ),
                   );
                 },
               ),

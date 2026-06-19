@@ -13,12 +13,22 @@ class OnboardingSlide {
     required this.tiles,
     this.quote,
     this.mobileHeroPushFromBottom = 0,
+    this.portraitTabletHeroPushFromBottom = 0,
   });
 
-  /// Fraction of screen height reserved below the mobile hero cover viewport
-  /// (0.0–0.5). Cover height is `1.0 - mobileHeroPushFromBottom`, which
-  /// reduces zoom and lifts focal content above the overlapping bottom sheet.
+  /// Fraction of screen height reserved below the phone hero cover viewport
+  /// (0.0–0.5). Cover height is `1.0 - mobileHeroPushFromBottom`.
   final double mobileHeroPushFromBottom;
+
+  /// Portrait-tablet hero push (600–959dp, portrait). Same semantics as
+  /// [mobileHeroPushFromBottom] but tuned for the floating-card bottom panel.
+  final double portraitTabletHeroPushFromBottom;
+
+  /// Resolves hero push for the current mobile-shell layout variant.
+  double heroPushFromBottom({required bool portraitTablet}) =>
+      portraitTablet
+          ? portraitTabletHeroPushFromBottom
+          : mobileHeroPushFromBottom;
 
   final String imagePath;
   final String eyebrow;
@@ -88,6 +98,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
       ),
     ],
     mobileHeroPushFromBottom: 0.35,
+    portraitTabletHeroPushFromBottom: 0.0,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_agent.png',
@@ -130,6 +141,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
           ' details and my recommendations."',
     ),
     mobileHeroPushFromBottom: 0.35,
+    portraitTabletHeroPushFromBottom: 0.0,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_journey.jpg',
@@ -163,6 +175,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
       ),
     ],
     mobileHeroPushFromBottom: 0.30,
+    portraitTabletHeroPushFromBottom: 0.2,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_ready.jpg',
@@ -196,5 +209,6 @@ const List<OnboardingSlide> kOnboardingSlides = [
       ),
     ],
     mobileHeroPushFromBottom: 0.3,
+    portraitTabletHeroPushFromBottom: 0.0,
   ),
 ];
