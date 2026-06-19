@@ -37,6 +37,7 @@ class _ProfileDeleteAccountBottomSheetState
   bool _canConfirm = false;
   bool _deleting = false;
   bool _focused = false;
+  String? _error;
 
   @override
   void initState() {
@@ -49,8 +50,11 @@ class _ProfileDeleteAccountBottomSheetState
 
   void _syncConfirmState() {
     final canConfirm = _controller.text.trim() == 'DELETE';
-    if (canConfirm != _canConfirm) {
-      setState(() => _canConfirm = canConfirm);
+    if (canConfirm != _canConfirm || _error != null) {
+      setState(() {
+        _canConfirm = canConfirm;
+        if (_error != null) _error = null;
+      });
     }
   }
 
@@ -157,6 +161,7 @@ class _ProfileDeleteAccountBottomSheetState
                 onSubmit:
                     _canConfirm && !_deleting ? _confirmDelete : null,
               ),
+              _DeleteAccountErrorBanner(message: _error),
               const SizedBox(height: 20),
               SizedBox(
                 height: 52,
@@ -222,7 +227,10 @@ class _ProfileDeleteAccountBottomSheetState
 
   Future<void> _confirmDelete() async {
     if (!_canConfirm || _deleting) return;
-    setState(() => _deleting = true);
+    setState(() {
+      _deleting = true;
+      _error = null;
+    });
 
     final result = await ref
         .read(profileRepositoryProvider)
@@ -233,12 +241,65 @@ class _ProfileDeleteAccountBottomSheetState
 
     await result.fold(
       (failure) async {
-        showErrorSnackBar(context, failure.message);
+        setState(() => _error = failure.message);
       },
       (_) async {
         Navigator.pop(context);
         await widget.onDeleted();
       },
+    );
+  }
+}
+
+class _DeleteAccountErrorBanner extends StatelessWidget {
+  const _DeleteAccountErrorBanner({required this.message});
+
+  final String? message;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      alignment: Alignment.topCenter,
+      child: message == null
+          ? const SizedBox.shrink()
+          : Padding(
+              padding: const EdgeInsets.only(top: 14),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.dangerMutedBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.danger.withValues(alpha: 0.22),
+                    width: 0.5,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 18,
+                      color: AppColors.danger,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        message!,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.dangerMutedText,
+                          height: 1.45,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }
