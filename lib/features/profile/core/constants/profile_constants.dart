@@ -47,7 +47,8 @@ class ProfileConstants {
 
   static const String contactSupport = 'Contact support';
   static const String faqs = 'FAQs';
-  static const String termsAndPrivacy = 'Terms & privacy policy';
+  static const String termsOfService = 'Terms of service';
+  static const String privacyPolicy = 'Privacy policy';
   static const String rateTheApp = 'Rate the app';
 
   static const String stayLoggedIn = 'Stay logged in';

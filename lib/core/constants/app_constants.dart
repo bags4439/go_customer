@@ -1,7 +1,7 @@
 /// Compile-time brand identity and URL defaults.
 ///
-/// Remote overrides for [supportEmail], [faqUrl], [termsUrl], [websiteUrl], and
-/// [appUrl] are merged at runtime via [appConfigProvider].
+/// Remote overrides for [supportEmail], [faqUrl], [termsUrl], [privacyUrl],
+/// [websiteUrl], and [appUrl] are merged at runtime via [appConfigProvider].
 class AppBrandingDefaults {
   AppBrandingDefaults._();
 
@@ -47,6 +47,7 @@ class SystemSettingsKeys {
   static const String supportEmail = 'supportEmail';
   static const String faqUrl = 'faqUrl';
   static const String termsUrl = 'termsUrl';
+  static const String privacyUrl = 'privacyUrl';
   static const String websiteUrl = 'websiteUrl';
   static const String appUrl = 'appUrl';
 }

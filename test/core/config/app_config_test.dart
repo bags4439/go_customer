@@ -13,6 +13,7 @@ void main() {
       expect(config.appUrl, 'https://app.whiplyn.com');
       expect(config.faqUrl, 'https://whiplyn.com/faq');
       expect(config.termsUrl, 'https://whiplyn.com/terms');
+      expect(config.privacyUrl, 'https://whiplyn.com/privacy');
       expect(config.deepLinkScheme, 'whiplyn');
       expect(config.paystackCallbackUrl, 'whiplyn://payment/callback');
     });
@@ -23,23 +24,27 @@ void main() {
         SystemSettingsKeys.websiteUrl: 'https://example.com',
         SystemSettingsKeys.appUrl: 'https://app.example.com',
         SystemSettingsKeys.faqUrl: 'https://example.com/help',
+        SystemSettingsKeys.termsUrl: 'https://example.com/legal/terms',
+        SystemSettingsKeys.privacyUrl: 'https://example.com/legal/privacy',
       });
 
       expect(config.supportEmail, 'help@example.com');
       expect(config.websiteUrl, 'https://example.com');
       expect(config.appUrl, 'https://app.example.com');
       expect(config.faqUrl, 'https://example.com/help');
-      expect(config.termsUrl, 'https://example.com/terms');
+      expect(config.termsUrl, 'https://example.com/legal/terms');
+      expect(config.privacyUrl, 'https://example.com/legal/privacy');
       expect(config.displayName, 'Whiplyn');
     });
 
-    test('derives faq and terms from overridden website when not set', () {
+    test('derives faq, terms, and privacy from overridden website when not set', () {
       final config = resolveAppConfig({
         SystemSettingsKeys.websiteUrl: 'https://shop.example.com/',
       });
 
       expect(config.faqUrl, 'https://shop.example.com/faq');
       expect(config.termsUrl, 'https://shop.example.com/terms');
+      expect(config.privacyUrl, 'https://shop.example.com/privacy');
       expect(config.appUrl, 'https://app.whiplyn.com');
     });
   });

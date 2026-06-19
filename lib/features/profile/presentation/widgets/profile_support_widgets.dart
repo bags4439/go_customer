@@ -33,9 +33,17 @@ class ProfileSupportSection extends ConsumerWidget {
         ),
         const ProfileSectionDivider(),
         ProfileSupportRow(
-          label: ProfileConstants.termsAndPrivacy,
+          label: ProfileConstants.termsOfService,
           onTap: () => launchUrl(
             Uri.parse(config.termsUrl),
+            mode: LaunchMode.inAppWebView,
+          ),
+        ),
+        const ProfileSectionDivider(),
+        ProfileSupportRow(
+          label: ProfileConstants.privacyPolicy,
+          onTap: () => launchUrl(
+            Uri.parse(config.privacyUrl),
             mode: LaunchMode.inAppWebView,
           ),
         ),

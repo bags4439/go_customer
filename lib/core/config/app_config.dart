@@ -10,6 +10,7 @@ class AppConfig {
     required this.appUrl,
     required this.faqUrl,
     required this.termsUrl,
+    required this.privacyUrl,
     required this.websiteUrl,
     required this.deepLinkScheme,
     required this.paystackCallbackUrl,
@@ -26,6 +27,7 @@ class AppConfig {
 
   final String faqUrl;
   final String termsUrl;
+  final String privacyUrl;
 
   /// Same as [webBaseUrl] — public marketing website.
   final String websiteUrl;
@@ -40,6 +42,7 @@ class AppConfig {
     appUrl: AppBrandingDefaults.appWebUrl,
     faqUrl: AppBrandingDefaults.faqUrl,
     termsUrl: AppBrandingDefaults.termsUrl,
+    privacyUrl: AppBrandingDefaults.privacyUrl,
     websiteUrl: AppBrandingDefaults.websiteUrl,
     deepLinkScheme: AppBrandingDefaults.deepLinkScheme,
     paystackCallbackUrl: AppBrandingDefaults.paystackCallbackUrl,
@@ -63,6 +66,8 @@ AppConfig resolveAppConfig(Map<String, dynamic> settings) {
         AppBrandingDefaults.urlPath(websiteUrl, 'faq'),
     termsUrl: settings.stringValue(SystemSettingsKeys.termsUrl) ??
         AppBrandingDefaults.urlPath(websiteUrl, 'terms'),
+    privacyUrl: settings.stringValue(SystemSettingsKeys.privacyUrl) ??
+        AppBrandingDefaults.urlPath(websiteUrl, 'privacy'),
     websiteUrl: websiteUrl,
     deepLinkScheme: AppBrandingDefaults.deepLinkScheme,
     paystackCallbackUrl: AppBrandingDefaults.paystackCallbackUrl,

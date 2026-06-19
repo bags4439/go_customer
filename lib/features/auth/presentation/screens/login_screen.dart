@@ -23,6 +23,7 @@ import '../providers/countries_providers.dart';
 import '../providers/login_providers.dart';
 import '../providers/referral_login_tiles_provider.dart';
 import '../providers/returning_user_provider.dart';
+import '../../../../shared/providers/app_config_provider.dart';
 import '../widgets/country_picker_sheet.dart';
 import '../widgets/mobile_auth_shell.dart';
 import '../widgets/phone_dial_input_field.dart';
@@ -937,24 +938,30 @@ class _OtpBox extends StatelessWidget {
   }
 }
 
-class _PhoneTermsRichText extends StatefulWidget {
+class _PhoneTermsRichText extends ConsumerStatefulWidget {
   const _PhoneTermsRichText();
 
   @override
-  State<_PhoneTermsRichText> createState() => _PhoneTermsRichTextState();
+  ConsumerState<_PhoneTermsRichText> createState() =>
+      _PhoneTermsRichTextState();
 }
 
-class _PhoneTermsRichTextState extends State<_PhoneTermsRichText> {
-  late TapGestureRecognizer _termsTap;
-  late TapGestureRecognizer _privacyTap;
+class _PhoneTermsRichTextState extends ConsumerState<_PhoneTermsRichText> {
+  TapGestureRecognizer? _termsTap;
+  TapGestureRecognizer? _privacyTap;
+  String? _boundTermsUrl;
+  String? _boundPrivacyUrl;
 
-  @override
-  void initState() {
-    super.initState();
-    _termsTap = TapGestureRecognizer()
-      ..onTap = () => _open('https://example.com/terms');
-    _privacyTap = TapGestureRecognizer()
-      ..onTap = () => _open('https://example.com/privacy');
+  void _bindRecognizers(String termsUrl, String privacyUrl) {
+    if (_boundTermsUrl == termsUrl && _boundPrivacyUrl == privacyUrl) {
+      return;
+    }
+    _termsTap?.dispose();
+    _privacyTap?.dispose();
+    _boundTermsUrl = termsUrl;
+    _boundPrivacyUrl = privacyUrl;
+    _termsTap = TapGestureRecognizer()..onTap = () => _open(termsUrl);
+    _privacyTap = TapGestureRecognizer()..onTap = () => _open(privacyUrl);
   }
 
   Future<void> _open(String url) async {
@@ -966,13 +973,16 @@ class _PhoneTermsRichTextState extends State<_PhoneTermsRichText> {
 
   @override
   void dispose() {
-    _termsTap.dispose();
-    _privacyTap.dispose();
+    _termsTap?.dispose();
+    _privacyTap?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final config = ref.watch(appConfigProvider);
+    _bindRecognizers(config.termsUrl, config.privacyUrl);
+
     return Text.rich(
       TextSpan(
         children: [
