@@ -12,12 +12,13 @@ class OnboardingSlide {
     required this.accentColor,
     required this.tiles,
     this.quote,
-    this.mobileHeroOffsetFraction = 0,
+    this.mobileHeroPushFromBottom = 0,
   });
 
-  /// Shifts the mobile hero image upward by this fraction of viewport height
-  /// so focal content sits above the bottom sheet (0.0–0.5).
-  final double mobileHeroOffsetFraction;
+  /// Fraction of screen height reserved below the mobile hero cover viewport
+  /// (0.0–0.5). Cover height is `1.0 - mobileHeroPushFromBottom`, which
+  /// reduces zoom and lifts focal content above the overlapping bottom sheet.
+  final double mobileHeroPushFromBottom;
 
   final String imagePath;
   final String eyebrow;
@@ -59,7 +60,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
   OnboardingSlide(
     imagePath: 'assets/onboarding_preference.png',
     eyebrow: 'STEP 1 · YOUR PREFERENCES',
-    title: 'Tell us what\nyou want.',
+    title: 'Tell us what you want.',
     subtitle:
         'Share the car you have in mind:'
         ' make, model, and what matters'
@@ -86,12 +87,12 @@ const List<OnboardingSlide> kOnboardingSlides = [
         label: 'US, Dubai, China, or let your agent decide',
       ),
     ],
-    mobileHeroOffsetFraction: 0.10,
+    mobileHeroPushFromBottom: 0.35,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_agent.png',
     eyebrow: 'STEP 2 · YOUR AGENT',
-    title: 'Your personal\nagent.',
+    title: 'Your personal agent.',
     subtitle:
         'A dedicated agent sources,'
         ' negotiates, and guides you'
@@ -128,12 +129,12 @@ const List<OnboardingSlide> kOnboardingSlides = [
           ' different sources. Here are the'
           ' details and my recommendations."',
     ),
-    mobileHeroOffsetFraction: 0.20,
+    mobileHeroPushFromBottom: 0.35,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_journey.jpg',
     eyebrow: 'STEP 3 · THE JOURNEY',
-    title: 'We handle\nthe journey.',
+    title: 'We handle the journey.',
     subtitle:
         'Shipping, port clearance,'
         ' duty, repairs tracked'
@@ -161,12 +162,12 @@ const List<OnboardingSlide> kOnboardingSlides = [
         label: 'Repairs discussed and arranged after clearance, if needed',
       ),
     ],
-    mobileHeroOffsetFraction: 0.30,
+    mobileHeroPushFromBottom: 0.30,
   ),
   OnboardingSlide(
     imagePath: 'assets/onboarding_ready.jpg',
     eyebrow: 'STEP 4 · ROAD READY',
-    title: 'Road ready.\nDelivered.',
+    title: 'Road ready. Delivered.',
     subtitle:
         'Your car arrives cleared and'
         ' road-ready, delivered to you'
@@ -194,6 +195,6 @@ const List<OnboardingSlide> kOnboardingSlides = [
         label: 'Rate your experience',
       ),
     ],
-    mobileHeroOffsetFraction: 0.05,
+    mobileHeroPushFromBottom: 0.3,
   ),
 ];

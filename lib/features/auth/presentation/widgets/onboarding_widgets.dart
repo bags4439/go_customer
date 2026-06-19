@@ -4,6 +4,51 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../data/onboarding_slides.dart';
 
+/// Cover viewport height for mobile onboarding heroes.
+///
+/// [pushFromBottom] reserves the lower screen area for the overlapping sheet;
+/// the image is cover-fit inside the remaining upper viewport.
+double mobileHeroCoverViewportFraction(double pushFromBottom) {
+  return 1.0 - pushFromBottom.clamp(0.0, 0.5);
+}
+
+/// Mobile onboarding hero: cover-fit inside a viewport sized from
+/// [pushFromBottom] so push and zoom stay coupled.
+class OnboardingMobileHeroImage extends StatelessWidget {
+  const OnboardingMobileHeroImage({
+    super.key,
+    required this.imagePath,
+    required this.pushFromBottom,
+    this.alignment = Alignment.topCenter,
+  });
+
+  final String imagePath;
+  final double pushFromBottom;
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    final viewportHeight =
+        MediaQuery.sizeOf(context).height *
+        mobileHeroCoverViewportFraction(pushFromBottom);
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        height: viewportHeight,
+        width: double.infinity,
+        child: OnboardingAssetImage(
+          key: ValueKey(imagePath),
+          imagePath: imagePath,
+          fit: BoxFit.cover,
+          alignment: alignment,
+          expand: true,
+        ),
+      ),
+    );
+  }
+}
+
 /// Onboarding hero image with shimmer-style fallback on load failure.
 class OnboardingAssetImage extends StatelessWidget {
   const OnboardingAssetImage({
@@ -15,7 +60,6 @@ class OnboardingAssetImage extends StatelessWidget {
     this.height,
     this.borderRadius,
     this.expand = false,
-    this.verticalOffset = 0,
   });
 
   final String imagePath;
@@ -27,9 +71,6 @@ class OnboardingAssetImage extends StatelessWidget {
 
   /// When true, fills all space from the parent (full-bleed heroes).
   final bool expand;
-
-  /// Pixels to shift the image on the Y axis (negative moves up).
-  final double verticalOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -57,17 +98,10 @@ class OnboardingAssetImage extends StatelessWidget {
         ? image
         : ClipRRect(borderRadius: borderRadius!, child: image);
 
-    final positioned = verticalOffset == 0
-        ? clipped
-        : Transform.translate(
-            offset: Offset(0, verticalOffset),
-            child: clipped,
-          );
-
     if (expand) {
-      return SizedBox.expand(child: positioned);
+      return SizedBox.expand(child: clipped);
     }
-    return positioned;
+    return clipped;
   }
 }
 

@@ -148,17 +148,10 @@ class _MobileOnboardingLayout extends StatelessWidget {
                 onPageChanged: onIndexChanged,
                 itemBuilder: (context, i) {
                   final slideData = kOnboardingSlides[i];
-                  final viewportHeight = MediaQuery.sizeOf(context).height;
-                  final heroOffset = -viewportHeight *
-                      slideData.mobileHeroOffsetFraction.clamp(0.0, 0.5);
 
-                  return OnboardingAssetImage(
-                    key: ValueKey(slideData.imagePath),
+                  return OnboardingMobileHeroImage(
                     imagePath: slideData.imagePath,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                    expand: true,
-                    verticalOffset: heroOffset,
+                    pushFromBottom: slideData.mobileHeroPushFromBottom,
                   );
                 },
               ),
