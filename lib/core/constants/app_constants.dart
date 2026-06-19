@@ -7,6 +7,10 @@ class AppBrandingDefaults {
 
   static const String displayName = 'Whiplyn';
 
+  /// Primary brand tagline — splash, launch, and marketing surfaces.
+  static const String tagline =
+      'Expert-led. Safety guaranteed. Fully tracked.';
+
   /// Marketing / landing site (FAQ, terms, public website).
   static const String webBaseUrl = 'https://whiplyn.com';
 

@@ -11,21 +11,32 @@ import '../constants/app_constants.dart';
 /// - Debug: console only on all platforms
 ///
 /// Never call [FirebaseCrashlytics.instance] or Sentry APIs directly
-/// outside of [main] initialisation.
+/// outside of [CrashReporter.initialiseSentryAfterFirstFrame].
 class CrashReporter {
   CrashReporter._();
 
   static FirebaseCrashlytics get _crashlytics =>
       FirebaseCrashlytics.instance;
 
-  /// Whether Sentry should be initialised in [main].
+  /// Whether Sentry should be initialised on web (after first frame).
   static bool get shouldInitialiseSentry => kIsWeb && !kDebugMode;
+
+  static bool _sentryReady = false;
 
   static bool get _reportsEnabled => !kDebugMode;
 
   static bool get _useSentry => kIsWeb;
 
   static bool get _useCrashlytics => !kIsWeb;
+
+  /// Web release: call after the first frame so startup paints sooner.
+  static Future<void> initialiseSentryAfterFirstFrame() async {
+    if (!shouldInitialiseSentry || _sentryReady) return;
+    await SentryFlutter.init(CrashReporter.configureSentry);
+    _sentryReady = true;
+  }
+
+  static bool get _sentryActive => !_useSentry || _sentryReady || kDebugMode;
 
   /// Sentry options — only called from [SentryFlutter.init] on web.
   static void configureSentry(SentryFlutterOptions options) {
@@ -54,6 +65,7 @@ class CrashReporter {
     if (!_reportsEnabled) return;
 
     if (_useSentry) {
+      if (!_sentryActive) return;
       await Sentry.configureScope((scope) {
         scope.setUser(
           userId == null ? null : SentryUser(id: userId),
@@ -80,6 +92,7 @@ class CrashReporter {
     }
 
     if (_useSentry) {
+      if (!_sentryActive) return;
       if (context != null) {
         Sentry.addBreadcrumb(Breadcrumb(message: context));
       }
@@ -112,6 +125,7 @@ class CrashReporter {
     if (!_reportsEnabled) return;
 
     if (_useSentry) {
+      if (!_sentryActive) return;
       Sentry.addBreadcrumb(Breadcrumb(message: message));
       return;
     }
@@ -127,6 +141,7 @@ class CrashReporter {
     if (!_reportsEnabled) return;
 
     if (_useSentry) {
+      if (!_sentryActive) return;
       await Sentry.configureScope((scope) {
         scope.setTag(key, value.toString());
       });

@@ -15,6 +15,7 @@ import '../../domain/launch_timing.dart';
 import '../providers/onboarding_seen_provider.dart';
 import '../widgets/auth_visual_widgets.dart';
 import '../widgets/launch_brand_logo.dart';
+import '../widgets/launch_percent_progress.dart';
 
 /// Single launch experience: native splash handoff, force-update check, auth
 /// routing, and profile readiness — then one navigation to the right screen.
@@ -41,6 +42,9 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
   DateTime? _firstPaintAt;
   String? _departureRoute;
   bool _departureDelayScheduled = false;
+
+  /// Continues the HTML splash stage progress (70 → 85 → 100) on web launch.
+  int _launchProgressPercent = kIsWeb ? 70 : 0;
 
   @override
   void initState() {
@@ -73,6 +77,9 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
     _entranceController.forward();
     _entranceController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
+        if (kIsWeb && mounted) {
+          setState(() => _launchProgressPercent = 85);
+        }
         _scheduleNavigation();
       }
     });
@@ -199,6 +206,9 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
 
     _isDeparting = true;
     _shimmerController.stop();
+    if (kIsWeb && mounted) {
+      setState(() => _launchProgressPercent = 100);
+    }
 
     await _exitController.forward();
     if (!mounted) return;
@@ -237,7 +247,7 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
       return 'Sign in to continue';
     }
 
-    return 'Import your dream car from anywhere in the world.';
+    return AppBrandingDefaults.tagline;
   }
 
   @override
@@ -263,9 +273,7 @@ class _LaunchScreenState extends ConsumerState<LaunchScreen>
         child: _WebLaunchScaffold(
           logoOpacity: _logoOpacity,
           logoScale: _logoScale,
-          taglineOpacity: _taglineOpacity,
-          shimmerController: _shimmerController,
-          statusLine: statusLine,
+          progressPercent: _launchProgressPercent,
         ),
       );
     }
@@ -455,16 +463,12 @@ class _WebLaunchScaffold extends StatelessWidget {
   const _WebLaunchScaffold({
     required this.logoOpacity,
     required this.logoScale,
-    required this.taglineOpacity,
-    required this.shimmerController,
-    required this.statusLine,
+    required this.progressPercent,
   });
 
   final Animation<double> logoOpacity;
   final Animation<double> logoScale;
-  final Animation<double> taglineOpacity;
-  final AnimationController shimmerController;
-  final String statusLine;
+  final int progressPercent;
 
   @override
   Widget build(BuildContext context) {
@@ -486,9 +490,7 @@ class _WebLaunchScaffold extends StatelessWidget {
                     child: _WebLaunchActionPanel(
                       logoOpacity: logoOpacity,
                       logoScale: logoScale,
-                      taglineOpacity: taglineOpacity,
-                      shimmerController: shimmerController,
-                      statusLine: statusLine,
+                      progressPercent: progressPercent,
                     ),
                   ),
                 ],
@@ -545,98 +547,35 @@ class _WebLaunchActionPanel extends StatelessWidget {
   const _WebLaunchActionPanel({
     required this.logoOpacity,
     required this.logoScale,
-    required this.taglineOpacity,
-    required this.shimmerController,
-    required this.statusLine,
+    required this.progressPercent,
   });
 
   final Animation<double> logoOpacity;
   final Animation<double> logoScale;
-  final Animation<double> taglineOpacity;
-  final AnimationController shimmerController;
-  final String statusLine;
+  final int progressPercent;
 
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
       color: AppColors.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
-            child: AuthAppLogo(fontSize: 16),
-          ),
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FadeTransition(
-                      opacity: logoOpacity,
-                      child: ScaleTransition(
-                        scale: logoScale,
-                        child: Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary,
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.secondary.withValues(
-                                  alpha: 0.25,
-                                ),
-                                blurRadius: 20,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.directions_car_filled,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    FadeTransition(
-                      opacity: logoOpacity,
-                      child: Text(
-                        AppBrandingDefaults.displayName,
-                        style: AppTextStyles.titleLarge.copyWith(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    FadeTransition(
-                      opacity: taglineOpacity,
-                      child: Text(
-                        statusLine,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    _LaunchShimmerBar(
-                      controller: shimmerController,
-                      color: AppColors.secondary,
-                    ),
-                  ],
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FadeTransition(
+                opacity: logoOpacity,
+                child: ScaleTransition(
+                  scale: logoScale,
+                  child: const AuthAppLogo(fontSize: 28),
                 ),
               ),
-            ),
+              const SizedBox(height: 24),
+              LaunchPercentProgress(percent: progressPercent),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

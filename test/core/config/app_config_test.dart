@@ -45,6 +45,13 @@ void main() {
   });
 
   group('AppBrandingDefaults', () {
+    test('tagline is defined', () {
+      expect(
+        AppBrandingDefaults.tagline,
+        'Expert-led. Safety guaranteed. Fully tracked.',
+      );
+    });
+
     test('urlPath normalizes trailing slash', () {
       expect(
         AppBrandingDefaults.urlPath('https://whiplyn.com/', 'faq'),
