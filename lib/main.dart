@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import 'core/constants/app_constants.dart';
+import 'core/session/session_inactivity_gate.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/crash_reporter.dart';
 import 'core/utils/onesignal_web_helper.dart';
@@ -162,7 +163,9 @@ class _CustomerAppState extends ConsumerState<CustomerApp> {
       routerConfig: router,
       builder: (context, child) {
         return ForceUpdateGate(
-          child: child ?? const SizedBox.shrink(),
+          child: SessionInactivityGate(
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
     );

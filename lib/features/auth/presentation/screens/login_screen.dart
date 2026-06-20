@@ -50,37 +50,37 @@ class LoginScreen extends ConsumerWidget {
     return _LoginSessionHydrator(
       child: useWeb
           ? Scaffold(
-        backgroundColor: AppColors.surface,
-        resizeToAvoidBottomInset: false,
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: _LoginWebPhotoPanel(step: state.step),
-                    ),
-                    SizedBox(
-                      width: 400,
-                      child: _LoginWebActionPanel(
-                        state: state,
-                        notifier: notifier,
-                        stepWidget: _stepWidget(state, notifier),
+              backgroundColor: AppColors.surface,
+              resizeToAvoidBottomInset: false,
+              body: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: _LoginWebPhotoPanel(step: state.step),
+                          ),
+                          SizedBox(
+                            width: 400,
+                            child: _LoginWebActionPanel(
+                              state: state,
+                              notifier: notifier,
+                              stepWidget: _stepWidget(state, notifier),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-      )
+            )
           : Scaffold(
               backgroundColor: AcquisitionLayout.usePhoneLayout(context)
                   ? (AcquisitionLayout.isPortraitTablet(context)
