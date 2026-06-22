@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack_plus/flutter_paystack_plus.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import 'paystack_browser_launcher.dart';
 
 /// Launches Paystack checkout using a server-generated [authorizationUrl].
@@ -12,6 +13,8 @@ import 'paystack_browser_launcher.dart';
 ///
 /// **Mobile** — opens checkout in an in-app WebView. Returns `true` when the
 /// user completes payment, `false` if they cancel or an error occurs.
+/// [AppBrandingDefaults.paystackWebCallbackUrl] must match Paystack dashboard
+/// and the `callback_url` sent by `initializePaystackTransaction`.
 ///
 /// **Web** — opens [authorizationUrl] in a centered browser popup. Returns `true`
 /// if the popup opened. Payment completion is handled by the Paystack webhook;
@@ -72,6 +75,7 @@ Future<bool> _launchPaystackCheckoutMobile({
         amount: amountInPesewas.toString(),
         reference: reference,
         authorizationUrl: authorizationUrl,
+        callBackUrl: AppBrandingDefaults.paystackWebCallbackUrl,
         currency: 'GHS',
         onSuccess: () {
           if (!completer.isCompleted) {

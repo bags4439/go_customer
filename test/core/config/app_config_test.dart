@@ -16,6 +16,10 @@ void main() {
       expect(config.privacyUrl, 'https://whiplyn.com/privacy');
       expect(config.deepLinkScheme, 'whiplyn');
       expect(config.paystackCallbackUrl, 'whiplyn://payment/callback');
+      expect(
+        AppBrandingDefaults.paystackWebCallbackUrl,
+        'https://app.whiplyn.com/payment/callback',
+      );
     });
 
     test('merges Firestore overrides for remote keys', () {

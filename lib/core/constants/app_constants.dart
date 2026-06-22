@@ -34,8 +34,14 @@ class AppBrandingDefaults {
   /// Must match Android intent-filter and iOS CFBundleURLSchemes.
   static const String deepLinkScheme = 'whiplyn';
 
+  /// Native deep link Paystack may redirect to after checkout (mobile return).
   static String get paystackCallbackUrl =>
       '$deepLinkScheme://payment/callback';
+
+  /// HTTPS callback for Paystack WebView checkout close detection.
+  /// Must match Paystack dashboard callback URL and Cloud Function init.
+  static String get paystackWebCallbackUrl =>
+      urlPath(appWebUrl, 'payment/callback');
 
   static const String launcherIconAsset = 'assets/icon/app_icon.png';
 }
