@@ -88,29 +88,27 @@ class LoginScreen extends ConsumerWidget {
                       : AppColors.background)
                   : Colors.white,
               resizeToAvoidBottomInset: true,
-              body: SafeArea(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 320),
-                  transitionBuilder: (child, animation) {
-                    final slide =
-                        Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutCubic,
-                          ),
-                        );
-                    return SlideTransition(
-                      position: slide,
-                      child: FadeTransition(opacity: animation, child: child),
-                    );
-                  },
-                  child: KeyedSubtree(
-                    key: ValueKey(state.step),
-                    child: _stepWidget(state, notifier),
-                  ),
+              body: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 320),
+                transitionBuilder: (child, animation) {
+                  final slide =
+                      Tween<Offset>(
+                        begin: const Offset(1.0, 0.0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      );
+                  return SlideTransition(
+                    position: slide,
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey(state.step),
+                  child: _stepWidget(state, notifier),
                 ),
               ),
             ),

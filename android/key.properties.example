@@ -1,0 +1,9 @@
+# Copy to key.properties and fill in values, or run:
+#   ./tool/setup_android_release_signing.sh
+#
+# Never commit key.properties or *.jks to git.
+
+storePassword=your-store-password
+keyPassword=your-key-password
+keyAlias=upload
+storeFile=upload-keystore.jks
