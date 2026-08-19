@@ -76,7 +76,7 @@ class AppConstants {
   /// Paystack PUBLIC key — safe to include in client code.
   /// NEVER put the secret key here. Secret key lives in Firebase Secret Manager only.
   static const String paystackPublicKey =
-      'pk_test_863222f7f4a7f5217eabbf1b8dc56afcb254c1c0';
+      'pk_live_5779b9a0222b42aaf3eb17375a050c12102a17e0';
 
   /// Deep link scheme Paystack redirects to after checkout.
   /// Must match native manifests — not overridable remotely.

@@ -103,12 +103,11 @@ const List<OnboardingSlide> kOnboardingSlides = [
   OnboardingSlide(
     imagePath: 'assets/onboarding_agent.jpg',
     eyebrow: 'STEP 2 · YOUR AGENT',
-    title: 'Your personal agent.',
+    title: 'Your Whiplyn-certified agent.',
     subtitle:
         'A dedicated agent sources,'
         ' negotiates, and guides you'
-        ' with updates at every step,'
-        ' in chat.',
+        ' with updates at every step.',
     buttonLabel: 'Continue',
     accentColor: AppColors.onboardingAccentGreen,
     tiles: [
@@ -133,7 +132,7 @@ const List<OnboardingSlide> kOnboardingSlides = [
     ],
     quote: OnboardingQuote(
       initials: 'EB',
-      name: 'Ernest · Senior Agent',
+      name: 'Kwame · Certified Agent',
       text:
           '"I found 3 strong options that'
           ' fit what you described, from'

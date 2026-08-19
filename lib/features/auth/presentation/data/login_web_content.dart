@@ -128,7 +128,7 @@ LoginPhoneWelcomeCopy loginPhoneWelcomeCopy({required bool isReturning}) {
 /// Compact phone / portrait-tablet login tiles (agent + pricing).
 List<LoginWebTile> loginTrustTilesForPhone() {
   final tiles = kLoginWebPanels['login']!.tiles;
-  return [tiles[0], tiles[2]];
+  return [];
 }
 
 /// Full login trust tiles for web split layout.
@@ -161,20 +161,19 @@ List<LoginWebTile> buildReferralTrustTiles(ReferralShareSettings settings) {
         );
 
   return [
-    kReferralOptionalTile,
     amountTile,
     kReferralOwnCodeTile,
   ];
 }
 
-const LoginWebTile kReferralOptionalTile = LoginWebTile(
-  icon: Icons.skip_next_outlined,
-  iconBg: AppColors.infoBackground,
-  iconColor: AppColors.accent,
-  accentColor: AppColors.brand,
-  label: 'Optional step',
-  sublabel: 'Skip if you weren\'t referred',
-);
+// const LoginWebTile kReferralOptionalTile = LoginWebTile(
+//   icon: Icons.skip_next_outlined,
+//   iconBg: AppColors.infoBackground,
+//   iconColor: AppColors.accent,
+//   accentColor: AppColors.brand,
+//   label: 'Optional step',
+//   sublabel: 'Skip if you weren\'t referred',
+// );
 
 const LoginWebTile kReferralOwnCodeTile = LoginWebTile(
   icon: Icons.people_outline_rounded,
@@ -200,52 +199,16 @@ const Map<String, LoginWebPanel> kLoginWebPanels = {
         ' your dedicated agent sources,'
         ' manages shipping and clearance,'
         ' and keeps you updated every step.',
-    tiles: [
-      LoginWebTile(
-        icon: Icons.support_agent_outlined,
-        iconBg: AppColors.infoBackground,
-        iconColor: AppColors.accent,
-        accentColor: AppColors.brand,
-        label: 'Dedicated agent per order',
-        sublabel: 'One person from search to delivery',
-      ),
-      LoginWebTile(
-        icon: Icons.notifications_active_outlined,
-        iconBg: AppColors.successMutedBackground,
-        iconColor: AppColors.successMutedForeground,
-        accentColor: AppColors.success,
-        label: 'Live order updates',
-        sublabel: 'Chat, timeline, and documents in one place',
-      ),
-      LoginWebTile(
-        icon: Icons.receipt_long_outlined,
-        iconBg: AppColors.amberBackground,
-        iconColor: AppColors.amberText,
-        accentColor: AppColors.warning,
-        label: 'Clear cost breakdown',
-        sublabel: 'See fees before you pay',
-      ),
-    ],
+    tiles: [],
   ),
 
   'name': LoginWebPanel(
     eyebrow: 'STEP 1 OF 3 · YOUR PROFILE',
     heading: 'Let\'s start with a name.',
     subheading:
-        'Your agent is a real person'
-        ' who will address you by'
-        ' name throughout your'
-        ' entire import journey.',
+        'So that, your agent can address you by name'
+        ' throughout the journey.',
     tiles: [
-      LoginWebTile(
-        icon: Icons.person_outline_rounded,
-        iconBg: AppColors.infoBackground,
-        iconColor: AppColors.accent,
-        accentColor: AppColors.brand,
-        label:
-            'Your agent knows who'
-            ' to contact',
-      ),
       LoginWebTile(
         icon: Icons.chat_bubble_outline_rounded,
         iconBg: AppColors.successMutedBackground,

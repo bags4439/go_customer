@@ -102,7 +102,7 @@ class HomeEmptyBody extends ConsumerWidget {
 
                                 Text(
                                   'Your agent handles sourcing, shipping, duty, '
-                                  'and delivery — you just choose the car.',
+                                  'and delivery. You just choose the car.',
                                   style: AppTextStyles.bodySmall.copyWith(
                                     color: AppColors.textSecondary,
                                     height: 1.5,

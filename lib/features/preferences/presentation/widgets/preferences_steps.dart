@@ -69,7 +69,7 @@ class _CarStepHeader extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Tell us the car — your agent handles sourcing, shipping, and clearance.',
+          'Tell us the car. Your agent handles sourcing, shipping, and clearance.',
           style: GoogleFonts.dmSans(
             fontSize: 14,
             fontWeight: FontWeight.w400,
