@@ -30,13 +30,13 @@ class PhoneNumber {
     required String digits,
   }) {
     final cleanDial = dialCode.trim();
-    final cleanDigits = digits.trim().replaceAll(RegExp(r'\D'), '');
+    final enteredDigits = digits.trim().replaceAll(RegExp(r'\D'), '');
 
     if (!cleanDial.startsWith('+')) {
       return const Left(ValidationFailure(message: 'Invalid country code.'));
     }
 
-    if (cleanDigits.isEmpty) {
+    if (enteredDigits.isEmpty) {
       return const Left(
         ValidationFailure(
           message:
@@ -47,6 +47,11 @@ class PhoneNumber {
     }
 
     final dialDigits = cleanDial.replaceAll(RegExp(r'\D'), '');
+    // Ghanaian users commonly enter local numbers with the national trunk
+    // prefix (for example 027...). E.164 omits that zero after +233.
+    final cleanDigits = cleanDial == '+233' && enteredDigits.startsWith('0')
+        ? enteredDigits.substring(1)
+        : enteredDigits;
     final totalDigits = dialDigits.length + cleanDigits.length;
 
     if (totalDigits < 7 || totalDigits > 15) {

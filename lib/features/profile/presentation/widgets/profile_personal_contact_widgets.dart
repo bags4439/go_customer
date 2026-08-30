@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_customer/core/theme/app_text_styles.dart';
 
 import '../../../auth/domain/entities/app_user.dart';
+import '../../../auth/domain/value_objects/phone_number.dart';
 import '../../../auth/presentation/providers/countries_providers.dart';
 import '../../../auth/presentation/widgets/phone_dial_input_field.dart';
 import '../../core/constants/profile_constants.dart';
@@ -551,11 +552,13 @@ class _ProfilePhoneEditRowState extends ConsumerState<ProfilePhoneEditRow> {
                           const SizedBox(width: 8),
                           FilledButton(
                             onPressed: () {
-                              final digits = _digits.trim();
-                              if (digits.isEmpty) {
-                                return;
-                              }
-                              widget.onSave('$_dialCode$digits');
+                              PhoneNumber.fromDialCodeAndDigits(
+                                dialCode: _dialCode,
+                                digits: _digits,
+                              ).fold(
+                                (_) {},
+                                (phone) => widget.onSave(phone.value),
+                              );
                             },
                             child: Text(
                               'Save',

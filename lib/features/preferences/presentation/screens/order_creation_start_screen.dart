@@ -22,7 +22,9 @@ class OrderCreationStartScreen extends ConsumerWidget {
         data: (allowed) {
           if (!allowed) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (context.mounted) context.go('/preferences/new');
+              if (context.mounted) {
+                context.pushReplacement('/preferences/new');
+              }
             });
             return const Center(child: CircularProgressIndicator());
           }
@@ -59,7 +61,7 @@ class _StartChoices extends StatelessWidget {
               icon: Icons.person_outline,
               title: 'For myself',
               subtitle: 'Create a personal import order using your account.',
-              onTap: () => context.go('/preferences/new'),
+              onTap: () => context.push('/preferences/new'),
             ),
             if (showAssisted) ...[
               const SizedBox(height: 14),
@@ -67,7 +69,7 @@ class _StartChoices extends StatelessWidget {
                 icon: Icons.group_add_outlined,
                 title: 'For another customer',
                 subtitle: 'Find a registered customer by phone number.',
-                onTap: () => context.go('/preferences/customer'),
+                onTap: () => context.push('/preferences/customer'),
               ),
             ],
           ],

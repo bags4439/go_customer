@@ -177,7 +177,7 @@ class _CustomerLookupScreenState extends ConsumerState<CustomerLookupScreen> {
                 const SizedBox(height: 16),
                 AppPrimaryButton(
                   label: 'Continue for this customer',
-                  onPressed: () => context.go('/preferences/new?assisted=1'),
+                  onPressed: () => context.push('/preferences/new?assisted=1'),
                 ),
               ],
             ],

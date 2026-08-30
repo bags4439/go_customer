@@ -7,6 +7,7 @@ import 'package:go_customer/core/theme/app_text_styles.dart';
 import 'package:go_customer/core/widgets/styled_snackbar.dart';
 
 import '../../../auth/domain/entities/country.dart';
+import '../../../auth/domain/value_objects/phone_number.dart';
 import '../../../auth/presentation/providers/auth_providers.dart'
     show startPhoneVerificationUseCaseProvider, verifyOtpUseCaseProvider;
 import '../../../auth/presentation/providers/countries_providers.dart';
@@ -552,13 +553,15 @@ class _ProfilePhoneChangeSheetState
   }
 
   Future<void> _sendOtp() async {
-    final digits = _phoneDigits.replaceAll(RegExp(r'\D'), '');
-    if (digits.length < 7 || digits.length > 15) {
-      showErrorSnackBar(context, 'Enter a valid phone number');
-      return;
-    }
-
-    final phone = '$_dialCode$digits';
+    final phoneResult = PhoneNumber.fromDialCodeAndDigits(
+      dialCode: _dialCode,
+      digits: _phoneDigits,
+    );
+    final phone = phoneResult.fold<String?>((failure) {
+      showErrorSnackBar(context, failure.message);
+      return null;
+    }, (value) => value.value);
+    if (phone == null) return;
 
     setState(() => _busy = true);
 
