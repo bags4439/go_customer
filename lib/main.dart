@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'core/constants/app_constants.dart';
 import 'core/session/session_inactivity_gate.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/app_entry_link.dart';
 import 'core/utils/crash_reporter.dart';
 import 'core/utils/onesignal_web_helper.dart';
 import 'features/auth/presentation/providers/auth_providers.dart';
@@ -135,9 +137,11 @@ class _CustomerAppState extends ConsumerState<CustomerApp> {
 
   void _onLink(Uri uri) {
     debugPrint('[DeepLink] received: $uri');
-    // whiplyn://payment/callback — the processing screen is already
-    // watching Firestore. No navigation needed here. The app simply comes to
-    // foreground.
+    if (AppEntryLink.isPaystackCallback(uri)) return;
+    if (!AppEntryLink.isAppEntry(uri)) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    router.go(user == null ? '/login' : '/home');
   }
 
   @override

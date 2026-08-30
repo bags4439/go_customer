@@ -45,9 +45,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isWeb = AppBreakpoints.useWebShell(context);
 
-    final active = orders
-        .where((o) => !o.isCompleted && !o.isCancelled)
-        .length;
+    final active = orders.where((o) => !o.isCompleted && !o.isCancelled).length;
     final completed = orders.where((o) => o.isCompleted).length;
     final needsAction =
         orders.where((o) => o.needsPayment).length +
@@ -147,7 +145,7 @@ class HomeMultiOrderBody extends ConsumerWidget {
       const SizedBox(height: 8),
       const SizedBox(height: 4),
       GestureDetector(
-        onTap: () => GoRouter.of(context).push('/preferences/new'),
+        onTap: () => GoRouter.of(context).push('/preferences/start'),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),

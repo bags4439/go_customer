@@ -25,6 +25,9 @@ import 'features/payments/presentation/screens/payment_request_view_screen.dart'
 import 'features/payments/presentation/screens/payment_processing_screen.dart';
 import 'features/payments/presentation/screens/payment_confirmed_screen.dart';
 import 'features/preferences/presentation/screens/preferences_new_screen.dart';
+import 'features/preferences/presentation/screens/order_creation_start_screen.dart';
+import 'features/preferences/presentation/screens/customer_lookup_screen.dart';
+import 'features/preferences/presentation/screens/assisted_order_success_screen.dart';
 import 'features/profile/presentation/screens/id_verification_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/repairs/presentation/screens/repair_screen.dart';
@@ -41,6 +44,13 @@ final router = GoRouter(
   redirect: (context, state) {
     final user = FirebaseAuth.instance.currentUser;
     final location = state.matchedLocation;
+
+    if (location == '/') {
+      if (user == null) return '/login';
+      if (!appRouterRefresh.profileKnown) return null;
+      if (!appRouterRefresh.registrationComplete) return '/login';
+      return '/home';
+    }
 
     if (user == null) {
       if (kUnauthenticatedAllowedPaths.contains(location)) return null;
@@ -69,18 +79,14 @@ final router = GoRouter(
     GoRoute(
       name: RouteConstants.onboarding,
       path: '/onboarding',
-      pageBuilder: (context, state) => launchDestinationPage(
-        state: state,
-        child: const OnboardingScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          launchDestinationPage(state: state, child: const OnboardingScreen()),
     ),
     GoRoute(
       name: RouteConstants.login,
       path: '/login',
-      pageBuilder: (context, state) => launchDestinationPage(
-        state: state,
-        child: const LoginScreen(),
-      ),
+      pageBuilder: (context, state) =>
+          launchDestinationPage(state: state, child: const LoginScreen()),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -120,9 +126,23 @@ final router = GoRouter(
       ],
     ),
     GoRoute(
+      path: '/preferences/start',
+      builder: (context, state) => const OrderCreationStartScreen(),
+    ),
+    GoRoute(
+      path: '/preferences/customer',
+      builder: (context, state) => const CustomerLookupScreen(),
+    ),
+    GoRoute(
+      path: '/preferences/assisted/success',
+      builder: (context, state) => const AssistedOrderSuccessScreen(),
+    ),
+    GoRoute(
       name: RouteConstants.preferencesNew,
       path: '/preferences/new',
-      builder: (context, state) => const PreferencesNewScreen(),
+      builder: (context, state) => PreferencesNewScreen(
+        assisted: state.uri.queryParameters['assisted'] == '1',
+      ),
     ),
     GoRoute(
       name: RouteConstants.orderDetail,

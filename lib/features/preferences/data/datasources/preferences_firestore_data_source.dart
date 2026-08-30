@@ -1,13 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../domain/repair_preference_defaults.dart';
 import '../../domain/entities/preference_submission.dart';
 
 class PreferencesFirestoreDataSource {
   final FirebaseFirestore _firestore;
+  final FirebaseFunctions _functions;
 
-  const PreferencesFirestoreDataSource(this._firestore);
+  PreferencesFirestoreDataSource(
+    this._firestore, [
+    FirebaseFunctions? functions,
+  ]) : _functions =
+           functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   Future<Map<String, dynamic>?> getCarPreferences(String orderId) async {
     final snapshot = await _firestore
@@ -24,62 +29,34 @@ class PreferencesFirestoreDataSource {
   Future<String> createOrderFromPreferences({
     required String buyerId,
     required PreferenceSubmission submission,
+    required String idempotencyKey,
+    String? assistedCustomerPhone,
   }) async {
-    final orderRef =
-    _firestore.collection(FirestoreCollections.orders).doc();
-    final preferenceRef =
-    _firestore.collection(FirestoreCollections.carPreferences).doc();
-
-    final orderCode =
-        'ORD-${DateTime.now().millisecondsSinceEpoch % 1000000}';
-
-    final batch = _firestore.batch();
-    final now = FieldValue.serverTimestamp();
-
-    // Create order document
-    // NOTE: order_timeline documents are NOT created here.
-    // The onOrderCreated Cloud Function handles timeline creation
-    // exclusively. Creating them here would cause duplicates.
-    batch.set(orderRef, {
-      'id': orderRef.id,
-      'orderRef': orderCode,
-      'buyerId': buyerId,
-      'agentId': null,
-      'status': FirestoreEnumValues.orderStatusOpen,
-      'currentStage': 'agent_assigned',
-      'stageNumber': 2,
-      'firstPaymentMade': false,
-      'createdAt': now,
-      'updatedAt': now,
-    });
-
-    // Create car preferences document
-    batch.set(preferenceRef, {
-      'id': preferenceRef.id,
-      'orderId': orderRef.id,
-      'make': submission.make,
-      'model': submission.model,
-      'yearMin': submission.yearMin,
-      'yearMax': submission.yearMax,
-      'isSingleYear': submission.yearMin == submission.yearMax,
-      'condition': submission.condition,
-      'conditionLabel': submission.conditionLabel,
-      'maxMileage': submission.maxMileage,
-      'repairOptedIn': defaultRepairOptedIn(
-        isNewVehicle: submission.isNewVehicle,
-      ),
-      'clearanceOptedIn': null,
-      'trim': submission.trim,
-      'purchaseOrigin': submission.purchaseOrigin,
-      'isNewVehicle': submission.isNewVehicle,
-      if (submission.maxBudgetUsd != null)
-        'maxBudgetUsd': submission.maxBudgetUsd,
-      if (submission.maxBudgetGhs != null)
-        'maxBudgetGhs': submission.maxBudgetGhs,
-      'createdAt': now,
-    });
-
-    await batch.commit();
-    return orderRef.id;
+    final result = await _functions
+        .httpsCallable('createCustomerOrder')
+        .call<Map<String, dynamic>>({
+          'mode': assistedCustomerPhone == null ? 'self' : 'assisted',
+          if (assistedCustomerPhone != null)
+            'customerPhone': assistedCustomerPhone,
+          'idempotencyKey': idempotencyKey,
+          'preferences': {
+            'make': submission.make,
+            'model': submission.model,
+            'yearMin': submission.yearMin,
+            'yearMax': submission.yearMax,
+            'isSingleYear': submission.yearMin == submission.yearMax,
+            'condition': submission.condition,
+            'conditionLabel': submission.conditionLabel,
+            'maxMileage': submission.maxMileage,
+            'trim': submission.trim,
+            'purchaseOrigin': submission.purchaseOrigin,
+            'isNewVehicle': submission.isNewVehicle,
+            if (submission.maxBudgetUsd != null)
+              'maxBudgetUsd': submission.maxBudgetUsd,
+            if (submission.maxBudgetGhs != null)
+              'maxBudgetGhs': submission.maxBudgetGhs,
+          },
+        });
+    return result.data['orderId'] as String;
   }
 }

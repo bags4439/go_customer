@@ -17,6 +17,9 @@ class AppBrandingDefaults {
   /// Flutter web app (login, orders, payments).
   static const String appWebUrl = 'https://app.whiplyn.com';
 
+  /// Host for [appWebUrl] — App Links / Universal Links.
+  static const String appWebHost = 'app.whiplyn.com';
+
   static const String supportEmail = 'support@whiplyn.com';
 
   static String urlPath(String baseUrl, String path) {

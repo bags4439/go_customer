@@ -12,11 +12,14 @@ class CreateOrderFromPreferencesUseCase {
   Future<Either<Failure, String>> call({
     required String buyerId,
     required PreferenceSubmission submission,
+    required String idempotencyKey,
+    String? assistedCustomerPhone,
   }) {
     return _repository.createOrderFromPreferences(
       buyerId: buyerId,
       submission: submission,
+      idempotencyKey: idempotencyKey,
+      assistedCustomerPhone: assistedCustomerPhone,
     );
   }
 }
-

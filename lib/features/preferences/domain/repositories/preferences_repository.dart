@@ -7,5 +7,7 @@ abstract class PreferencesRepository {
   Future<Either<Failure, String>> createOrderFromPreferences({
     required String buyerId,
     required PreferenceSubmission submission,
+    required String idempotencyKey,
+    String? assistedCustomerPhone,
   });
 }

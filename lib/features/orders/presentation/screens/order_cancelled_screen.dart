@@ -162,7 +162,7 @@ class _OrderCancelledContent extends ConsumerWidget {
           width: double.infinity,
           height: 52,
           child: FilledButton(
-            onPressed: () => context.go('/preferences/new'),
+            onPressed: () => context.go('/preferences/start'),
             child: Text(
               OrderEditConstants.startNewOrder,
               style: GoogleFonts.dmSans(

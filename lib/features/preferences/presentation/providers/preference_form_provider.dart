@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -24,13 +25,13 @@ enum PreferenceCondition {
   fairCondition;
 
   static PreferenceCondition fromString(String s) => switch (s) {
-        'run_and_drive' => PreferenceCondition.readyToDrive,
-        'repairable' => PreferenceCondition.needsModerateRepair,
-        'new_vehicle' => PreferenceCondition.newVehicle,
-        'good_condition' => PreferenceCondition.goodCondition,
-        'fair_condition' => PreferenceCondition.fairCondition,
-        _ => PreferenceCondition.readyToDrive,
-      };
+    'run_and_drive' => PreferenceCondition.readyToDrive,
+    'repairable' => PreferenceCondition.needsModerateRepair,
+    'new_vehicle' => PreferenceCondition.newVehicle,
+    'good_condition' => PreferenceCondition.goodCondition,
+    'fair_condition' => PreferenceCondition.fairCondition,
+    _ => PreferenceCondition.readyToDrive,
+  };
 }
 
 class CostEstimate {
@@ -78,12 +79,12 @@ String preferenceConditionToFirestoreString(PreferenceCondition c) =>
     };
 
 String preferenceConditionUiLabel(PreferenceCondition c) => switch (c) {
-      PreferenceCondition.readyToDrive => 'Ready to use',
-      PreferenceCondition.needsModerateRepair => 'Needs some work',
-      PreferenceCondition.newVehicle => 'Brand new',
-      PreferenceCondition.goodCondition => 'Good condition',
-      PreferenceCondition.fairCondition => 'Fair condition',
-    };
+  PreferenceCondition.readyToDrive => 'Ready to use',
+  PreferenceCondition.needsModerateRepair => 'Needs some work',
+  PreferenceCondition.newVehicle => 'Brand new',
+  PreferenceCondition.goodCondition => 'Good condition',
+  PreferenceCondition.fairCondition => 'Fair condition',
+};
 
 /// Rolling 4-year window ending at the most recent full model year.
 (int, int) preferenceDefaultYearRange() {
@@ -157,15 +158,15 @@ class PreferenceFormState {
   int get yearMax => yearRangeExpanded ? yearTo : yearFrom;
 
   String get purchaseOrigin => resolvePurchaseOrigin(
-        chinaImportMode: chinaImportMode,
-        advancedPurchaseOrigin: advancedPurchaseOrigin,
-      );
+    chinaImportMode: chinaImportMode,
+    advancedPurchaseOrigin: advancedPurchaseOrigin,
+  );
 
   String get progressLabel => switch (currentStep) {
-        1 => 'Your car',
-        2 => 'Confirm',
-        _ => 'Your car',
-      };
+    1 => 'Your car',
+    2 => 'Confirm',
+    _ => 'Your car',
+  };
 
   bool get canProceedFromCar => make.isNotEmpty && model.isNotEmpty;
 
@@ -197,8 +198,9 @@ class PreferenceFormState {
           ? this.maxBudgetUsd
           : maxBudgetUsd as int?,
       trim: identical(trim, _undefined) ? this.trim : trim as String?,
-      makeSlug:
-          identical(makeSlug, _undefined) ? this.makeSlug : makeSlug as String?,
+      makeSlug: identical(makeSlug, _undefined)
+          ? this.makeSlug
+          : makeSlug as String?,
       modelSlug: identical(modelSlug, _undefined)
           ? this.modelSlug
           : modelSlug as String?,
@@ -305,10 +307,7 @@ class PreferenceFormNotifier extends StateNotifier<PreferenceFormState> {
 
   void setYearRangeExpanded(bool expanded) {
     if (!expanded) {
-      state = state.copyWith(
-        yearRangeExpanded: false,
-        yearTo: state.yearFrom,
-      );
+      state = state.copyWith(yearRangeExpanded: false, yearTo: state.yearFrom);
     } else {
       state = state.copyWith(yearRangeExpanded: true);
     }
@@ -355,13 +354,14 @@ class PreferenceFormNotifier extends StateNotifier<PreferenceFormState> {
 
 final preferenceFormProvider =
     StateNotifierProvider<PreferenceFormNotifier, PreferenceFormState>(
-  (ref) => PreferenceFormNotifier(),
-);
+      (ref) => PreferenceFormNotifier(),
+    );
 
 final costDefaultsProvider = FutureProvider<Map<String, double>>((ref) async {
   final firestore = ref.watch(firestoreProvider);
-  final snapshot =
-      await firestore.collection(FirestoreCollections.costDefaults).get();
+  final snapshot = await firestore
+      .collection(FirestoreCollections.costDefaults)
+      .get();
   if (snapshot.docs.isNotEmpty) {
     final map = <String, double>{};
     for (final doc in snapshot.docs) {
@@ -383,8 +383,9 @@ final costDefaultsProvider = FutureProvider<Map<String, double>>((ref) async {
   };
 });
 
-final _liveCostEstimateFutureProvider =
-    FutureProvider.autoDispose<CostEstimate?>((ref) async {
+final _liveCostEstimateFutureProvider = FutureProvider.autoDispose<CostEstimate?>((
+  ref,
+) async {
   final state = ref.watch(preferenceFormProvider);
 
   if (state.isNewVehicle) return null;
@@ -423,8 +424,7 @@ final _liveCostEstimateFutureProvider =
       state.yearMin,
       state.yearMax,
     );
-    baseAuctionUsd =
-        modelPrice ?? defaults['averageAuctionPriceUsd'] ?? 8000.0;
+    baseAuctionUsd = modelPrice ?? defaults['averageAuctionPriceUsd'] ?? 8000.0;
   } else {
     baseAuctionUsd = defaults['averageAuctionPriceUsd'] ?? 8000.0;
   }
@@ -441,11 +441,7 @@ final _liveCostEstimateFutureProvider =
   final dutyGhs = totalUsd * exchangeRate * dutyRate;
   final totalGhs = (totalUsd * exchangeRate) + dutyGhs;
 
-  return CostEstimate(
-    usd: totalUsd,
-    ghs: totalGhs,
-    exchangeRate: exchangeRate,
-  );
+  return CostEstimate(usd: totalUsd, ghs: totalGhs, exchangeRate: exchangeRate);
 });
 
 final liveCostEstimateProvider = Provider<AsyncValue<CostEstimate?>>((ref) {
@@ -453,15 +449,18 @@ final liveCostEstimateProvider = Provider<AsyncValue<CostEstimate?>>((ref) {
 });
 
 /// Qualitative budget fit for review — never exposes estimate figures to UI.
-final budgetFitAssessmentProvider =
-    Provider<AsyncValue<BudgetFitAssessment?>>((ref) {
+final budgetFitAssessmentProvider = Provider<AsyncValue<BudgetFitAssessment?>>((
+  ref,
+) {
   final state = ref.watch(preferenceFormProvider);
   final budget = state.maxBudgetUsd;
   if (budget == null || state.isNewVehicle) {
     return const AsyncValue.data(null);
   }
 
-  return ref.watch(liveCostEstimateProvider).when(
+  return ref
+      .watch(liveCostEstimateProvider)
+      .when(
         data: (estimate) {
           if (estimate == null) return const AsyncValue.data(null);
           final assessment = resolveBudgetFit(
@@ -478,51 +477,57 @@ final budgetFitAssessmentProvider =
 
 final preferenceDepositBreakdownProvider =
     FutureProvider.autoDispose<DepositBreakdown?>((ref) async {
-  final state = ref.watch(preferenceFormProvider);
-  if (state.isNewVehicle) return null;
+      final state = ref.watch(preferenceFormProvider);
+      if (state.isNewVehicle) return null;
 
-  final estimate = await ref.watch(_liveCostEstimateFutureProvider.future);
-  if (estimate == null) return null;
+      final estimate = await ref.watch(_liveCostEstimateFutureProvider.future);
+      if (estimate == null) return null;
 
-  final defaults = await ref.watch(costDefaultsProvider.future);
-  final settings = await ref.watch(systemSettingsProvider.future);
+      final defaults = await ref.watch(costDefaultsProvider.future);
+      final settings = await ref.watch(systemSettingsProvider.future);
 
-  final depositPct = settings.numValue('depositPercentage', fallback: 0.10);
-  final serviceFee = defaults['serviceFeeGhs'] ??
-      settings.numValue('serviceFeeGhs', fallback: 1500);
+      final depositPct = settings.numValue('depositPercentage', fallback: 0.10);
+      final serviceFee =
+          defaults['serviceFeeGhs'] ??
+          settings.numValue('serviceFeeGhs', fallback: 1500);
 
-  return DepositBreakdown(
-    estimatedLandedGhs: estimate.ghs,
-    depositGhs: estimate.ghs * depositPct,
-    serviceFeeGhs: serviceFee,
-    depositPercent: depositPct,
-  );
-});
+      return DepositBreakdown(
+        estimatedLandedGhs: estimate.ghs,
+        depositGhs: estimate.ghs * depositPct,
+        serviceFeeGhs: serviceFee,
+        depositPercent: depositPct,
+      );
+    });
 
 /// Popular make + first model pairs for one-tap quick picks.
 final popularQuickPicksProvider =
-    FutureProvider.autoDispose<List<({CarMake make, CarModel model})>>(
-        (ref) async {
-  final state = ref.watch(preferenceFormProvider);
-  final popular = ref.watch(popularMakesProvider);
-  final picks = <({CarMake make, CarModel model})>[];
+    FutureProvider.autoDispose<List<({CarMake make, CarModel model})>>((
+      ref,
+    ) async {
+      final state = ref.watch(preferenceFormProvider);
+      final popular = ref.watch(popularMakesProvider);
+      final picks = <({CarMake make, CarModel model})>[];
 
-  for (final make in popular.take(6)) {
-    if (!isMakeAllowedForImportMode(make, state.chinaImportMode)) continue;
-    try {
-      final models = await ref.read(carModelsProvider(make.slug).future);
-      if (models.isEmpty) continue;
-      picks.add((make: make, model: models.first));
-    } catch (_) {
-      continue;
-    }
-  }
-  return picks;
-});
+      for (final make in popular.take(6)) {
+        if (!isMakeAllowedForImportMode(make, state.chinaImportMode)) continue;
+        try {
+          final models = await ref.read(carModelsProvider(make.slug).future);
+          if (models.isEmpty) continue;
+          picks.add((make: make, model: models.first));
+        } catch (_) {
+          continue;
+        }
+      }
+      return picks;
+    });
 
-final preferencesDataSourceProvider =
-    Provider<PreferencesFirestoreDataSource>((ref) {
-  return PreferencesFirestoreDataSource(ref.watch(firestoreProvider));
+final preferencesDataSourceProvider = Provider<PreferencesFirestoreDataSource>((
+  ref,
+) {
+  return PreferencesFirestoreDataSource(
+    ref.watch(firestoreProvider),
+    FirebaseFunctions.instanceFor(region: 'europe-west1'),
+  );
 });
 
 final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {
@@ -531,10 +536,10 @@ final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {
 
 final createOrderFromPreferencesUseCaseProvider =
     Provider<CreateOrderFromPreferencesUseCase>((ref) {
-  return CreateOrderFromPreferencesUseCase(
-    ref.watch(preferencesRepositoryProvider),
-  );
-});
+      return CreateOrderFromPreferencesUseCase(
+        ref.watch(preferencesRepositoryProvider),
+      );
+    });
 
 PreferenceSubmission toSubmission(
   PreferenceFormState state, {

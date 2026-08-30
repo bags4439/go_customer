@@ -183,8 +183,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String country,
   }) async {
     try {
-      final firebasePhone =
-          _firebaseAuth.currentUser?.phoneNumber ?? '';
+      final firebasePhone = _firebaseAuth.currentUser?.phoneNumber ?? '';
       String code = ReferralCodeGenerator.generate();
       for (var attempt = 0; attempt < 5; attempt++) {
         final existing = await _firestore
@@ -219,6 +218,10 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       final location = await _resolveCountryName(country);
+      final userSnap = await _firestore
+          .collection(FirestoreCollections.users)
+          .doc(uid)
+          .get();
 
       final batch = _firestore.batch();
 
@@ -229,7 +232,8 @@ class AuthRepositoryImpl implements AuthRepository {
           'fullName': fullName.trim(),
           'country': country,
           'location': location,
-          'role': FirestoreEnumValues.roleBuyer,
+          if (!userSnap.exists || userSnap.data()?['role'] == null)
+            'role': FirestoreEnumValues.roleBuyer,
           'isFirstTimeBuyer': true,
           'isVerified': false,
           'preferredCurrency': preferredCurrency,
@@ -282,9 +286,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String idDocumentType = 'ghana_card',
   }) async {
     try {
-      final data = <String, dynamic>{
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
+      final data = <String, dynamic>{'updatedAt': FieldValue.serverTimestamp()};
 
       if (idNumber != null && idNumber.trim().isNotEmpty) {
         data['ghanaCardNumber'] = idNumber.trim().toUpperCase();
