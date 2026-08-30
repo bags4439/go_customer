@@ -1,0 +1,14 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.velocitech.go_customer",
+      "sha256_cert_fingerprints": [
+        "D1:40:FF:8A:19:D2:44:9B:F9:96:03:54:7F:7B:6A:DD:17:2E:0A:74:26:B5:68:DC:EB:07:E5:6B:B6:33:68:F3",
+        "74:49:3B:B5:67:D3:C2:BC:7A:0B:02:5B:43:D9:91:79:57:B8:8E:32:20:6B:0A:E1:24:20:B6:79:E0:C3:CC:29",
+        "6E:DE:E1:C7:F5:37:37:C9:D9:47:13:76:FA:96:DB:C4:68:03:3E:2D:34:EB:2D:AC:52:4C:27:E0:8B:26:AC:57"
+      ]
+    }
+  }
+]
