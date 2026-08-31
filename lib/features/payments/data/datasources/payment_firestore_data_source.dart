@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../domain/entities/bank_account.dart';
 import '../../domain/entities/breakdown_item.dart' as domain_breakdown;
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_request.dart';
@@ -11,6 +12,47 @@ class PaymentFirestoreDataSource {
   final FirebaseFirestore _firestore;
 
   const PaymentFirestoreDataSource(this._firestore);
+
+  Stream<List<BankAccount>> watchActiveBankAccounts(String currency) {
+    return _firestore
+        .collection(FirestoreCollections.bankAccounts)
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+      final accounts = snapshot.docs.map((doc) {
+        final data = doc.data();
+        final instructions = data['instructions'];
+        return BankAccount(
+          id: doc.id,
+          bankName: (data['bankName'] as String? ?? '').trim(),
+          accountName: (data['accountName'] as String? ?? '').trim(),
+          accountNumber: (data['accountNumber'] as String? ?? '').trim(),
+          currency:
+              (data['currency'] as String? ?? '').trim().toUpperCase(),
+          countryCode:
+              (data['countryCode'] as String? ?? '').trim().toUpperCase(),
+          instructions: instructions is List
+              ? instructions.whereType<String>().toList(growable: false)
+              : const [],
+          displayOrder: (data['displayOrder'] as num?)?.toInt() ?? 0,
+          branchName: data['branchName'] as String?,
+          branchAddress: data['branchAddress'] as String?,
+          swiftCode: data['swiftCode'] as String?,
+          routingNumber: data['routingNumber'] as String?,
+          iban: data['iban'] as String?,
+          bankLogoUrl: data['bankLogoUrl'] as String?,
+        );
+      }).where(
+        (account) =>
+            account.currency == currency.toUpperCase() &&
+            account.bankName.isNotEmpty &&
+            account.accountName.isNotEmpty &&
+            account.accountNumber.isNotEmpty,
+      ).toList();
+      accounts.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+      return accounts;
+    });
+  }
 
   Stream<PaymentRequest?> watchPaymentRequest(String requestId) {
     return _firestore

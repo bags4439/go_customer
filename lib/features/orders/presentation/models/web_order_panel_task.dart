@@ -49,6 +49,16 @@ final class WebOrderPanelPaymentRequest extends WebOrderPanelTask {
   final String requestId;
 }
 
+final class WebOrderPanelBankTransfer extends WebOrderPanelTask {
+  const WebOrderPanelBankTransfer({
+    required this.orderId,
+    required this.requestId,
+  });
+
+  final String orderId;
+  final String requestId;
+}
+
 final class WebOrderPanelPaymentProcessing extends WebOrderPanelTask {
   const WebOrderPanelPaymentProcessing({
     required this.orderId,

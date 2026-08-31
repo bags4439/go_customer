@@ -10,6 +10,7 @@ import '../../../orders/presentation/providers/order_providers.dart';
 import '../../data/datasources/payment_firestore_data_source.dart';
 import '../../data/repositories/payment_repository_impl.dart';
 import '../../data/repositories/payment_request_repository_impl.dart';
+import '../../domain/entities/bank_account.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_request.dart';
 import '../../domain/repositories/payment_repository.dart';
@@ -48,6 +49,13 @@ final paymentRequestProvider = StreamProvider.family<PaymentRequest?, String>((
   return ref
       .watch(paymentRequestRepositoryProvider)
       .watchPaymentRequest(requestId);
+});
+
+final activeBankAccountsProvider =
+    StreamProvider.family<List<BankAccount>, String>((ref, currency) {
+  return ref
+      .watch(paymentFirestoreDataSourceProvider)
+      .watchActiveBankAccounts(currency);
 });
 
 // --- Agent for payment header (users/{agentUserId} via agent doc) ---

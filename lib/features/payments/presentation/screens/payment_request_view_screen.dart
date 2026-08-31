@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/currency_model.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_button_styles.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/providers/preferred_currency_provider.dart';
@@ -183,48 +182,30 @@ class _PaymentRequestViewScreenState
                   ),
                 ],
                 const SizedBox(height: 14),
-                SizedBox(
-                  height: 52,
-                  child: FilledButton(
-                    onPressed: _paying ? null : () => _onPay(request),
-                    style: AppButtonStyles.primary(
-                      minimumHeight: 52,
-                      disabledBackgroundColor:
-                          AppColors.brand.withValues(alpha: 0.6),
-                    ),
-                    child: _paying
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.credit_card_rounded,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Pay ${ghsDisplay.primary} →',
-                                style: AppTextStyles.buttonLarge,
-                              ),
-                            ],
+                Text('Choose how to pay', style: AppTextStyles.titleMedium),
+                const SizedBox(height: 10),
+                _PaymentMethodCard(
+                  icon: Icons.credit_card_rounded,
+                  title: 'Pay online',
+                  subtitle: 'Instant confirmation with secure Paystack checkout',
+                  trailing: ghsDisplay.primary,
+                  isPrimary: true,
+                  isLoading: _paying,
+                  onTap: _paying ? null : () => _onPay(request),
+                ),
+                const SizedBox(height: 10),
+                _PaymentMethodCard(
+                  icon: Icons.account_balance_rounded,
+                  title: 'Bank transfer',
+                  subtitle: 'Use bank details and download a transfer invoice',
+                  onTap: _paying
+                      ? null
+                      : () => OrderDetailWebNavigation.openBankTransfer(
+                            context,
+                            ref,
+                            orderId: widget.orderId,
+                            requestId: widget.requestId,
                           ),
-                  ),
                 ),
                 if (!widget.embedInWebPanel) ...[
                   const SizedBox(height: 10),
@@ -380,6 +361,131 @@ class _PaymentRequestViewScreenState
       builder: (ctx) => _EmailGateSheet(userId: user.id, ref: ref),
     );
     return email;
+  }
+}
+
+class _PaymentMethodCard extends StatelessWidget {
+  const _PaymentMethodCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.trailing,
+    this.isPrimary = false,
+    this.isLoading = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onTap;
+  final String? trailing;
+  final bool isPrimary;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = isPrimary ? Colors.white : AppColors.textPrimary;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          decoration: BoxDecoration(
+            color: isPrimary ? AppColors.brand : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isPrimary ? AppColors.brand : AppColors.borderSolid,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isPrimary
+                    ? AppColors.brand.withValues(alpha: 0.22)
+                    : Colors.black.withValues(alpha: 0.035),
+                blurRadius: isPrimary ? 18 : 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isPrimary
+                      ? Colors.white.withValues(alpha: 0.16)
+                      : AppColors.brandMuted,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: isLoading
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(
+                        icon,
+                        color: isPrimary ? Colors.white : AppColors.brand,
+                      ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: AppTextStyles.titleSmall.copyWith(
+                              color: foreground,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        if (trailing != null)
+                          Text(
+                            trailing!,
+                            style: AppTextStyles.titleSmall.copyWith(
+                              color: foreground,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: isPrimary
+                            ? Colors.white.withValues(alpha: 0.78)
+                            : AppColors.textSecondary,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_rounded,
+                size: 20,
+                color: isPrimary
+                    ? Colors.white.withValues(alpha: 0.85)
+                    : AppColors.brand,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

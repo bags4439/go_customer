@@ -24,6 +24,7 @@ import 'features/orders/presentation/screens/order_detail_screen.dart';
 import 'features/payments/presentation/screens/payment_request_view_screen.dart';
 import 'features/payments/presentation/screens/payment_processing_screen.dart';
 import 'features/payments/presentation/screens/payment_confirmed_screen.dart';
+import 'features/payments/presentation/screens/bank_transfer_screen.dart';
 import 'features/preferences/presentation/screens/preferences_new_screen.dart';
 import 'features/preferences/presentation/screens/order_creation_start_screen.dart';
 import 'features/preferences/presentation/screens/customer_lookup_screen.dart';
@@ -177,6 +178,13 @@ final router = GoRouter(
             requestId: state.pathParameters['requestId']!,
           ),
           routes: [
+            GoRoute(
+              path: 'bank-transfer',
+              builder: (context, state) => BankTransferScreen(
+                orderId: state.pathParameters['orderId']!,
+                requestId: state.pathParameters['requestId']!,
+              ),
+            ),
             GoRoute(
               name: RouteConstants.paymentProcessing,
               path: 'processing',

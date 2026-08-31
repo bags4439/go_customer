@@ -142,6 +142,7 @@ class FirestoreCollections {
   static const String maxBids = 'max_bids';
   static const String payments = 'payments';
   static const String paymentRequests = 'payment_requests';
+  static const String bankAccounts = 'bank_accounts';
   static const String documents = 'documents';
   static const String orderTimeline = 'order_timeline';
   static const String delivery = 'delivery';

@@ -134,6 +134,23 @@ abstract final class OrderDetailWebNavigation {
     );
   }
 
+  static void openBankTransfer(
+    BuildContext context,
+    WidgetRef ref, {
+    required String orderId,
+    required String requestId,
+  }) {
+    if (_useWebShell(context)) {
+      ref.read(webOrderPanelTaskProvider.notifier).state =
+          WebOrderPanelBankTransfer(
+        orderId: orderId,
+        requestId: requestId,
+      );
+      return;
+    }
+    context.push('/order/$orderId/payment-request/$requestId/bank-transfer');
+  }
+
   static void openPaymentConfirmed(
     WidgetRef ref, {
     required String orderId,

@@ -10,6 +10,7 @@ import 'package:go_customer/features/orders/presentation/models/web_order_panel_
 import 'package:go_customer/features/orders/presentation/providers/order_detail_providers.dart';
 import 'package:go_customer/features/orders/presentation/providers/order_providers.dart';
 import 'package:go_customer/features/orders/presentation/screens/buyer_review_screen.dart';
+import 'package:go_customer/features/payments/presentation/screens/bank_transfer_screen.dart';
 import 'package:go_customer/features/payments/presentation/screens/payment_confirmed_screen.dart';
 import 'package:go_customer/features/payments/presentation/screens/payment_processing_screen.dart';
 import 'package:go_customer/features/payments/presentation/screens/payment_request_view_screen.dart';
@@ -84,6 +85,19 @@ class OrderDetailWebPanelContent extends ConsumerWidget {
           requestId: requestId,
           embedInWebPanel: true,
           onClosePanel: onClose,
+        ),
+      WebOrderPanelBankTransfer(:final orderId, :final requestId) =>
+        BankTransferScreen(
+          orderId: orderId,
+          requestId: requestId,
+          embedInWebPanel: true,
+          onClosePanel: () {
+            ref.read(webOrderPanelTaskProvider.notifier).state =
+                WebOrderPanelPaymentRequest(
+              orderId: orderId,
+              requestId: requestId,
+            );
+          },
         ),
       WebOrderPanelPaymentProcessing(
         :final orderId,
